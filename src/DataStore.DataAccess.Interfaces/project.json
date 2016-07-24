@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0-*",
+  "description": "DataAccess.Interfaces Class Library",
+  "authors": [ "AaronNavarro" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "Microsoft.Azure.DocumentDB": "1.5.2",
+        "Newtonsoft.Json": "8.0.2"
+      }
+    }
+  },
+  "dependencies": {
+    "DataStore.DataAccess.Messages": "1.0.0-*"
+  }
+}

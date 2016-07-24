@@ -1,0 +1,14 @@
+{
+  "authors": [ "AaronNavarro" ],
+  "description": "Infrastructure.PureFunctions Class Library",
+  "dependencies": {
+    "FluentValidation": "6.2.1"
+  },
+  "frameworks": {
+    "net451": { }
+  },
+  "licenseUrl": "",
+  "projectUrl": "",
+  "tags": [ "" ],
+  "version": "1.0.0-*"
+}

@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-*",
+  "description": "DataAccess.Models Class Library",
+  "authors": [ "AaronNavarro" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "DataStore.DataAccess.Impl.DocumentDb": "1.0.0-*",
+        "FluentValidation": "6.2.1",
+        "DataStore.Infrastructure.PureFunctions": "1.0.0-*"
+      }    
+    }
+  },
+  "dependencies": {
+    "DataStore.DataAccess.Interfaces": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3"
+  }
+}

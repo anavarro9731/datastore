@@ -1,0 +1,14 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "DataAccess.Messages Class Library",
+  "authors": [ "AaronNavarro" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "net451": { }
+  },
+  "dependencies": {
+    "DataStore.Infrastructure.Messages": "1.0.0-*"
+  }
+}

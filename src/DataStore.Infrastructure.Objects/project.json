@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0-*",
+  "description": "Infrastructure.Objects Class Library",
+  "authors": [ "AaronNavarro" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "PWDTK": "2.0.0.2"
+      }
+    }
+  },
+  "dependencies": {
+    "DataStore.Infrastructure.Interfaces": "1.0.0-*"
+  }
+}

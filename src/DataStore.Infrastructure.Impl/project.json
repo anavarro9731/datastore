@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0-*",
+  "description": "Infrastructure.HandlerServices Class Library",
+  "authors": [ "AaronNavarro" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "net451": {
+        "frameworkAssemblies": {"System.Threading.Tasks": "4.0.0.0"}
+    }
+  },
+  "dependencies": {
+    "Apogee.Azure.Website": "4.0.3",
+    "Apogee.Storage": "4.0.5",
+    "Braintree": "2.58.0",
+    "DataStore": "1.0.0-*",
+    "DataStore.Infrastructure.Configuration": "1.0.0-*",
+    "DataStore.Infrastructure.Interfaces": "1.0.0-*",
+    "DataStore.Infrastructure.Objects": "1.0.0-*",
+    "Microsoft.Net.Http": "2.2.22",
+    "Postmark": "2.1.5",
+    "PWDTK": "2.0.0.2"
+  }
+}
