@@ -2,8 +2,8 @@
 {
     using System;
 
-    using Apogee.Azure.Website;
-    using Apogee.Storage;
+    //using Apogee.Azure.Website;
+    //using Apogee.Storage;
 
     using DataAccess.Interfaces;
 
@@ -14,10 +14,10 @@
 
     public class StateManagerWithoutAuthorization : IStateManagerWithoutAuthorization
     {
-        public StateManagerWithoutAuthorization(IDocumentRepository repository, IFileStorageProvider fileStorage, IEventAggregator eventAggregator)
+        public StateManagerWithoutAuthorization(IDocumentRepository repository, IEventAggregator eventAggregator)
         {
             DocumentDbPrimary = new DataStore(repository, eventAggregator);
-            FileStoragePrimary = fileStorage;
+            //FileStoragePrimary = fileStorage;
             TransactionId = Guid.NewGuid();
         }
 
@@ -25,7 +25,7 @@
 
         public Guid TransactionId { get; set; }
 
-        public IFileStorageProvider FileStoragePrimary { get; }
+//        public IFileStorageProvider FileStoragePrimary { get; }
 
         public virtual void Dispose()
         {

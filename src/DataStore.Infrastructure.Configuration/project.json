@@ -1,14 +1,10 @@
 {
   "authors": [ "AaronNavarro" ],
     "dependencies": {
-        "Braintree": "2.58.0"
     },
     "description": "Infrastructure.Configuration Class Library",
     "frameworks": {
         "net451": { }
     },
-  "licenseUrl": "",
-  "projectUrl": "",
-  "tags": [ "" ],
   "version": "1.0.0-*"
 }

@@ -2,14 +2,13 @@
   "version": "1.0.0-*",
   "description": "Infrastructure.HandlerServiceInterfaces Class Library",
   "authors": [ "AaronNavarro" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
   "frameworks": {
-    "net451": { }
+    "net451": {
+      "dependencies": {
+      }
+    }
   },
   "dependencies": {
-    "Apogee.Storage": "4.0.5",
     "DataStore.DataAccess.Models": "1.0.0-*",
     "DataStore.Infrastructure.Messages": "1.0.0-*"
   }

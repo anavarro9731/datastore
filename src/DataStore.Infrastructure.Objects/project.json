@@ -2,9 +2,6 @@
   "version": "1.0.0-*",
   "description": "Infrastructure.Objects Class Library",
   "authors": [ "AaronNavarro" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
   "frameworks": {
     "net451": {
       "dependencies": {

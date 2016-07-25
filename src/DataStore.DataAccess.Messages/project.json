@@ -2,9 +2,6 @@
   "version": "1.0.0-*",
   "description": "DataAccess.Messages Class Library",
   "authors": [ "AaronNavarro" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
   "frameworks": {
     "net451": { }
   },

@@ -1,22 +1,19 @@
 {
   "authors": [ "flytzen" ],
+  "description": "DocumentDb Class Library",
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": { "System.Runtime": "4.0.10.0" },
+      "Microsoft.Azure.DocumentDB": "1.5.2",
+      "Newtonsoft.Json": "8.0.2"
+    }
+  },
   "dependencies": {
     "DataStore.DataAccess.Interfaces": "1.0.0-*",
     "DataStore.DataAccess.Messages": "1.0.0-*",
     "DataStore.Infrastructure.Configuration": "1.0.0-*",
     "DataStore.Infrastructure.PureFunctions": "1.0.0-*",
-    "Microsoft.Azure.DocumentDB": "1.5.2",
-    "Newtonsoft.Json": "8.0.2",
     "Serilog.Sinks.AzureDocumentDB": "1.5.7"
   },
-  "description": "DocumentDb Class Library",
-  "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {"System.Runtime": "4.0.10.0"}
-    }
-  },
-  "licenseUrl": "",
-  "projectUrl": "",
-  "tags": [ "" ],
   "version": "1.0.0-*"
 }
