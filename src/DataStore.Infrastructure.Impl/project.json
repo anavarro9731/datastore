@@ -14,7 +14,6 @@
     "DataStore.Infrastructure.Configuration": "1.0.0-*",
     "DataStore.Infrastructure.Interfaces": "1.0.0-*",
     "DataStore.Infrastructure.Objects": "1.0.0-*",
-    "Microsoft.Net.Http": "2.2.22",
-    
+    "Microsoft.Net.Http": "2.2.22"
   }
 }
