@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.HandlerServiceInterfaces
+﻿namespace Infrastructure.Interfaces
 {
     public interface IValueReturner
     {

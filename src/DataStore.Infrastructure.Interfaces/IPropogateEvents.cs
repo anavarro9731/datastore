@@ -1,9 +1,8 @@
-﻿namespace Infrastructure.HandlerServiceInterfaces
+﻿namespace Infrastructure.Interfaces
 {
     using System;
     using System.Threading.Tasks;
-
-    using Infrastructure.Messages;
+    using Messages;
 
     public interface IPropogateEvents<out T> 
         where T : Event

@@ -5,9 +5,7 @@
     using System.Linq;
 
     using DataAccess.Interfaces;
-
     using Infrastructure.PureFunctions.Extensions;
-
     using Newtonsoft.Json;
 
     /// <summary>

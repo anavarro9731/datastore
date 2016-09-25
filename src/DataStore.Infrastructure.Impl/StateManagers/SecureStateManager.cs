@@ -1,10 +1,8 @@
-﻿namespace Infrastructure.HandlerServices.StateManagers
+﻿namespace Infrastructure.Impl.StateManagers
 {
     using System;
-
     using DataAccess.Interfaces;
-
-    using Infrastructure.HandlerServiceInterfaces;
+    using Interfaces;
 
     /// <summary>
     ///     a state manager which uses secure datastores

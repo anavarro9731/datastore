@@ -1,13 +1,11 @@
-namespace Infrastructure.HandlerServices
+namespace Infrastructure.Impl
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Security;
-
     using DataAccess.Interfaces;
-
-    using Infrastructure.HandlerServiceInterfaces;
+    using Interfaces;
 
     public class AuthorizationHelper
     {

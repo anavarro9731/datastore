@@ -1,12 +1,9 @@
-﻿namespace Finygo.DocumentDb
+﻿namespace DataAccess.Impl.DocumentDb
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-
     using Microsoft.Azure.Documents;
-
-    using Serilog;
 
     public static class DocumentDbUtils
     {

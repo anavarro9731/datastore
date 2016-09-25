@@ -1,11 +1,10 @@
-namespace Infrastructure.HandlerServiceInterfaces
+namespace Infrastructure.Interfaces
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-
     using DataAccess.Interfaces;
     using DataAccess.Models;
 

@@ -1,18 +1,14 @@
-﻿namespace Infrastructure.HandlerServices
+﻿namespace Infrastructure.Impl
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-
     using DataAccess.Interfaces;
     using DataAccess.Models;
-
     using DataStore;
-
-    using Infrastructure.HandlerServiceInterfaces;
-    using Infrastructure.Objects.Permissions;
+    using Interfaces;
 
     /// <summary>
     ///     a datastore capable of validating requests against a users permissions

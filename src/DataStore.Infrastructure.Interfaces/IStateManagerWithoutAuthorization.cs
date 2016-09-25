@@ -1,7 +1,6 @@
-﻿namespace Infrastructure.HandlerServiceInterfaces
+﻿namespace Infrastructure.Interfaces
 {
     //using Apogee.Storage;
-
     using DataAccess.Interfaces;
 
     public interface IStateManagerWithoutAuthorization : IStateManager

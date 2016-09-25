@@ -6,8 +6,7 @@
 
     using DataAccess.Interfaces;
     using DataAccess.Messages.Events;
-
-    using Infrastructure.HandlerServiceInterfaces;
+    using Infrastructure.Interfaces;
     using Infrastructure.PureFunctions.Extensions;
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities

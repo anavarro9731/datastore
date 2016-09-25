@@ -1,9 +1,7 @@
-﻿namespace Finygo.DocumentDb
+﻿namespace DataAccess.Impl.DocumentDb
 {
     using System.Collections.Generic;
-
     using Infrastructure.Configuration.Settings;
-
     using Microsoft.Azure.Documents.Client;
 
     public class SimplePartitionResolver : IPartitionResolver

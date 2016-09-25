@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Infrastructure.HandlerServices Class Library",
+  "description": "Infrastructure.Impl Class Library",
   "authors": [ "AaronNavarro" ],
   "frameworks": {
     "net451": {

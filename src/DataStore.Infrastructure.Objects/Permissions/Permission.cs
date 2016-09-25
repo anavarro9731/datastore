@@ -2,8 +2,6 @@
 {
     using System;
 
-    using Infrastructure.HandlerServiceInterfaces;
-
     public class Permission
     {
         public Permission(

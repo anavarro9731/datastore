@@ -1,9 +1,8 @@
-﻿namespace Infrastructure.HandlerServices
+﻿namespace Infrastructure.Impl
 {
     using System.Collections.Generic;
-
-    using Infrastructure.HandlerServiceInterfaces;
-    using Infrastructure.Messages;
+    using Interfaces;
+    using Messages;
 
     public class EventAggregator : IEventAggregator
     {

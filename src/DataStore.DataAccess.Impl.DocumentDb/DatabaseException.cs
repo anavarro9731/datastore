@@ -1,4 +1,4 @@
-namespace Finygo.DocumentDb
+namespace DataAccess.Impl.DocumentDb
 {
     using System;
 

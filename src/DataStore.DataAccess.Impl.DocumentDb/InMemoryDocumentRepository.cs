@@ -1,18 +1,14 @@
-﻿namespace Finygo.SmokeTests
+﻿namespace DataAccess.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-
     using DataAccess.Interfaces;
-    using DataAccess.Messages.Events;
-
     using Infrastructure.PureFunctions.Extensions;
-
+    using Messages.Events;
     using Microsoft.Azure.Documents;
-
     using Newtonsoft.Json;
 
     public class InMemoryDocumentRepository : IDocumentRepository

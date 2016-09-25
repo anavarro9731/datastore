@@ -1,12 +1,10 @@
-namespace Infrastructure.HandlerServices
+namespace Infrastructure.Impl
 {
     using System;
     using System.Threading.Tasks;
-
-    using DataAccess.Messages.Events;
-
-    using Infrastructure.HandlerServiceInterfaces;
-    using Infrastructure.Messages;
+    using DataAccess.Messages;
+    using Interfaces;
+    using Messages;
 
     public class EventPropogator<TEvent> : IPropogateEvents<TEvent>
         where TEvent : Event

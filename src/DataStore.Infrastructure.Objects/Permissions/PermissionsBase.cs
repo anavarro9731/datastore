@@ -4,8 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-
-    using Infrastructure.HandlerServiceInterfaces;
+    using Interfaces;
 
     public abstract class PermissionsBase : IPermissions
     {

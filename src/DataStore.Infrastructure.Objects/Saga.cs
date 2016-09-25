@@ -5,9 +5,8 @@
 
     using DataAccess.Interfaces;
     using DataAccess.Models;
-
-    using Infrastructure.HandlerServiceInterfaces;
-    using Infrastructure.Messages.Events;
+    using Interfaces;
+    using Messages;
 
     public class SagaState : Aggregate
     {

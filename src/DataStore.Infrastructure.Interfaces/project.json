@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Infrastructure.HandlerServiceInterfaces Class Library",
+  "description": "Infrastructure.Interfaces Class Library",
   "authors": [ "AaronNavarro" ],
   "frameworks": {
     "net451": {

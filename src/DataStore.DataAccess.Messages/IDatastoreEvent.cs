@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Messages.Events
+﻿namespace DataAccess.Messages
 {
     public interface IDataStoreEvent
     {

@@ -1,8 +1,8 @@
-﻿using System.Security;
-
-// ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
 namespace Infrastructure.PureFunctions.Extensions
 {
+    using System.Security;
+
     public static class SecureStringExtensions
     {
         public static SecureString ToSecureString(this string unsecuredString)

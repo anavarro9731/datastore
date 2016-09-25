@@ -1,16 +1,11 @@
-﻿namespace Infrastructure.HandlerServices.StateManagers
+﻿namespace Infrastructure.Impl.StateManagers
 {
     using System;
-
-    //using Apogee.Azure.Website;
-    //using Apogee.Storage;
-
     using DataAccess.Interfaces;
-
     using DataStore;
-
-    using Infrastructure.Configuration;
-    using Infrastructure.HandlerServiceInterfaces;
+    using Interfaces;
+//using Apogee.Azure.Website;
+    //using Apogee.Storage;
 
     public class StateManagerWithoutAuthorization : IStateManagerWithoutAuthorization
     {

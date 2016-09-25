@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "datastore",
+  "description": "DataStore",
   "authors": [ "Aaron Navarro" ],
   "frameworks": {
     "net451": { }

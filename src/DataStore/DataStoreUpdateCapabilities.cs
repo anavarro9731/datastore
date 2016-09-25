@@ -9,7 +9,7 @@
     using DataAccess.Interfaces;
     using DataAccess.Messages.Events;
 
-    using Infrastructure.HandlerServiceInterfaces;
+    using Infrastructure.Interfaces;
 
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {

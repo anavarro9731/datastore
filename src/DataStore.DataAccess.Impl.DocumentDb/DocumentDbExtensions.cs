@@ -1,7 +1,6 @@
-﻿namespace Finygo.DocumentDb
+﻿namespace DataAccess.Impl.DocumentDb
 {
     using Infrastructure.Configuration.Settings;
-
     using Microsoft.Azure.Documents.Client;
 
     public static class DocumentDbExtensions

@@ -1,8 +1,7 @@
-﻿namespace Infrastructure.HandlerServices
+﻿namespace Infrastructure.Impl
 {
     using System.Collections.Generic;
-
-    using Infrastructure.HandlerServiceInterfaces;
+    using Interfaces;
 
     public class ValueReturner : IValueReturner
     {

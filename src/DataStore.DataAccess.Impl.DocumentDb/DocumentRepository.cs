@@ -1,15 +1,12 @@
-﻿namespace Finygo.DocumentDb
+﻿namespace DataAccess.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
     using DataAccess.Interfaces;
-    using DataAccess.Messages.Events;
-
     using Infrastructure.Configuration.Settings;
-
+    using Messages.Events;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;

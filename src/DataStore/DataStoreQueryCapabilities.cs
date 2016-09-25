@@ -6,12 +6,6 @@
     using System.Threading.Tasks;
 
     using DataAccess.Interfaces;
-
-    using Finygo.DocumentDb;
-
-    using Infrastructure.HandlerServiceInterfaces;
-    using Infrastructure.PureFunctions;
-
     using Microsoft.Azure.Documents;
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities

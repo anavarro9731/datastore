@@ -1,8 +1,7 @@
-﻿namespace Infrastructure.HandlerServiceInterfaces
+﻿namespace Infrastructure.Interfaces
 {
     using System.Collections.Generic;
-    
-    
+
     /// <summary>
     /// used to remove dependencies on high-level permission classes
     /// </summary>

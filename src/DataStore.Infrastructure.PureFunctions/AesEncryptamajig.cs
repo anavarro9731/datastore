@@ -4,6 +4,7 @@ namespace Infrastructure.PureFunctions
     using System.IO;
     using System.Linq;
     using System.Security.Cryptography;
+
     /// <summary>
     ///     A simple wrapper to the AesManaged class and the AES algorithm.
     ///     Requires a securely stored key which should be a random string of characters that an attacker could never guess.

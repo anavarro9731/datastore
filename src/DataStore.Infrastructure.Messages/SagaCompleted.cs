@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Messages.Events
+﻿namespace Infrastructure.Messages
 {
     public class SagaCompleted : Event
     {

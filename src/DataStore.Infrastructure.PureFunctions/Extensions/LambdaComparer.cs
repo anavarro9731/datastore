@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+
     // see http://stackoverflow.com/questions/6277760/can-i-use-linqs-except-with-a-lambda-expression-comparer
     // Usage: //var availableItems = allItems.Except(filterItems, (p, p1) => p.Id== p1.Id);
 

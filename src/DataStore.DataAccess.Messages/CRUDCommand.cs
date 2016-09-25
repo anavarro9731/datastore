@@ -1,5 +1,7 @@
-﻿namespace Infrastructure.Messages
+﻿namespace DataAccess.Messages
 {
+    using Infrastructure.Messages;
+
     public class CRUDCommand<TCommand> : Command
     {
         public CRUDCommand(TCommand model)
