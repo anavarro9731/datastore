@@ -9,5 +9,10 @@
         {
             if (test()) throw new ApplicationException(errorMessage);
         }
-    }
+
+
+        public static bool Fails(Func<bool> test)
+        {
+            return test();
+        }
 }
