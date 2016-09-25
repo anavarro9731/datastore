@@ -1,9 +1,15 @@
 {
   "version": "1.0.0-*",
-  "description": "DataStore",
   "authors": [ "Aaron Navarro" ],
+  "description": "A Document-Centric Data Access Framework for Azure DocumentDb",
+  "projectUrl": "https://github.com/anavarro9731/datastore",
+  "copyright": "Copyright (c) 2016 Aaron Navarro",
+  "packOptions": {
+    "summary": "A Document-Centric Data Access Framework for Azure DocumentDb",
+    "tags": [ "DocumentDb", "Azure", "Data Access" ]
+  },
   "frameworks": {
-    "net451": { }
+    "net451": {}
   },
   "dependencies": {
     "DataStore.DataAccess.Messages": "1.0.0-*",
