@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
-  "description": "DataStore Class Library",
-  "authors": [ "AaronNavarro" ],
+  "description": "datastore",
+  "authors": [ "Aaron Navarro" ],
   "frameworks": {
     "net451": { }
   },
