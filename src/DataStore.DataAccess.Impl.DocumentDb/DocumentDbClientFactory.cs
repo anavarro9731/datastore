@@ -7,8 +7,6 @@
 
     using Microsoft.Azure.Documents.Client;
 
-    using Serilog;
-
     public class DocumentDbClientFactory
     {
         private static readonly object Locker = new object();
@@ -30,26 +28,19 @@
 
         public DocumentClient GetDocumentClient()
         {
-            try
-            {
-                this.InitialiseIfRequired();
+            this.InitialiseIfRequired();
 
-                var client = this.CreateDocumentClient();
+            var client = this.CreateDocumentClient();
 
-                return client;
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e, "Failed to get documentclient: {error}", e.Message);
-                throw;
-            }
+            return client;
         }
 
         private DocumentClient CreateDocumentClient()
         {
             var client = new DocumentClient(
-                new Uri(this.config.EndpointUrl), 
-                this.config.AuthorizationKey.ToSecureString());
+                new Uri(this.config.EndpointUrl),
+                this.config.AuthorizationKey.ToSecureString(),
+                new ConnectionPolicy { ConnectionMode = ConnectionMode.Direct, ConnectionProtocol = Protocol.Tcp });
             client.PartitionResolvers[this.config.DatabaseSelfLink()] = this.partitionResolver;
             return client;
         }
@@ -64,15 +55,7 @@
                     {
                         this.CreateDocumentClient();
 
-                        try
-                        {
-                            this.initialiser.Initialise();
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Logger.Fatal(e, "Failed to initialise the database: {err}", e.Message);
-                            throw;
-                        }
+                        this.initialiser.Initialise();
 
                         initialised = true;
                     }

@@ -14,123 +14,127 @@
         ///     Method that will detect "go slower" messages from DocDb and wait the correct time
         ///     It does not currently retry on network failures, though this really should be added
         /// </summary>
-        /// <typeparam name="V">The return value of your lambda</typeparam>
+        /// <typeparam name="TV">The return value of your lambda</typeparam>
         /// <param name="function">The lambda you want to run</param>
         /// <returns>The output of your operation</returns>
-        // ReSharper disable once InconsistentNaming
-        public static async Task<V> ExecuteWithRetries<V>(Func<Task<V>> function)
+        public static async Task<TV> ExecuteWithRetries<TV>(Func<Task<TV>> function)
         {
-            while (true)
+            DocumentClientException retryableException = null;
+            var retryCount = 0;
+            while (retryCount < 10)
             {
-                TimeSpan sleepTime;
+                TimeSpan? timeToSleepBeforeRetry;
+
                 try
                 {
                     return await function().ConfigureAwait(false);
                 }
-                catch (DocumentClientException de)
+                catch (DocumentClientException clientException)
                 {
-                    if (de.StatusCode != null && (int)de.StatusCode != 429)
+                    if (IsRetryableError<TV>(clientException))
                     {
-                        Log.Logger.Error(
-                            de, 
-                            "A DocumentDbSettings operation failed with code {statusCode}. {error}", 
-                            de.StatusCode, 
-                            de.Message);
-                        throw;
+                        timeToSleepBeforeRetry = clientException.RetryAfter;
+                        retryableException = clientException;
                     }
-
-                    sleepTime = de.RetryAfter;
-                }
-                catch (AggregateException ae)
-                {
-                    if (!(ae.InnerException is DocumentClientException))
+                    else
                     {
                         throw;
                     }
+                }
+                catch (AggregateException aggregateException)
+                {
+                    var exception = aggregateException.InnerException as DocumentClientException;
 
-                    var de = (DocumentClientException)ae.InnerException;
-                    if (de.StatusCode != null && (int)de.StatusCode != 429)
+                    if (exception != null)
                     {
-                        Log.Logger.Error(
-                            de, 
-                            "A DocumentDbSettings operation failed with code {statusCode}. {error}", 
-                            de.StatusCode, 
-                            de.Message);
+                        var documentClientException = exception;
+                        if (IsRetryableError<TV>(documentClientException))
+                        {
+                            timeToSleepBeforeRetry = documentClientException.RetryAfter;
+                            retryableException = documentClientException;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    else
+                    {
                         throw;
                     }
-
-                    sleepTime = de.RetryAfter;
-                }
-                catch (Exception e)
-                {
-                    Log.Logger.Error(e, "A DocumentDbSettings operation failed: {error}", e.Message);
-                    throw new DatabaseException($"A DocumentDb operation failed: {e.Message}", e);
                 }
 
-                Log.Logger.Information("Got throttled, waiting {sleepTime:g}", sleepTime);
-                await Task.Delay(sleepTime).ConfigureAwait(false);
+                retryCount++;
+                await Task.Delay(timeToSleepBeforeRetry.Value).ConfigureAwait(false);
             }
+
+            throw new DatabaseException("Document db exception, retries exceeded", retryableException);
         }
 
         /// <summary>
         ///     Method that will detect "go slower" messages from DocDb and wait the correct time
         ///     It does not currently retry on network failures, though this really should be added
         /// </summary>
-        /// <typeparam name="V">The return value of your lambda</typeparam>
+        /// <typeparam name="TV">The return value of your lambda</typeparam>
         /// <param name="function">The lambda you want to run</param>
         /// <returns>The output of your operation</returns>
-        public static V ExecuteWithRetries<V>(Func<V> function)
+        public static TV ExecuteWithRetries<TV>(Func<TV> function)
         {
-            while (true)
+            DocumentClientException retryableException = null;
+            var retryCount = 0;
+            while (retryCount < 10)
             {
-                TimeSpan sleepTime;
+                TimeSpan? timeToSleepBeforeRetry;
+
                 try
                 {
                     return function();
                 }
-                catch (DocumentClientException de)
+                catch (DocumentClientException clientException)
                 {
-                    if (de.StatusCode != null && (int)de.StatusCode != 429)
+                    if (IsRetryableError<TV>(clientException))
                     {
-                        Log.Logger.Error(
-                            de, 
-                            "A DocumentDbSettings operation failed with code {statusCode}. {error}", 
-                            de.StatusCode, 
-                            de.Message);
-                        throw;
+                        timeToSleepBeforeRetry = clientException.RetryAfter;
+                        retryableException = clientException;
                     }
-
-                    sleepTime = de.RetryAfter;
-                }
-                catch (AggregateException ae)
-                {
-                    if (!(ae.InnerException is DocumentClientException))
+                    else
                     {
                         throw;
                     }
+                }
+                catch (AggregateException aggregateException)
+                {
+                    var exception = aggregateException.InnerException as DocumentClientException;
 
-                    var de = (DocumentClientException)ae.InnerException;
-                    if (de.StatusCode != null && (int)de.StatusCode != 429)
+                    if (exception != null)
                     {
-                        Log.Logger.Error(
-                            de, 
-                            "A DocumentDbSettings operation failed with code {statusCode}. {error}", 
-                            de.StatusCode, 
-                            de.Message);
+                        var documentClientException = exception;
+                        if (IsRetryableError<TV>(documentClientException))
+                        {
+                            timeToSleepBeforeRetry = documentClientException.RetryAfter;
+                            retryableException = documentClientException;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    else
+                    {
                         throw;
                     }
-
-                    sleepTime = de.RetryAfter;
-                }
-                catch (Exception e)
-                {
-                    Log.Logger.Error(e, "A DocumentDbSettings operation failed: {error}", e.Message);
-                    throw new DatabaseException($"A DocumentDb operation failed: {e.Message}", e);
                 }
 
-                Log.Logger.Information("Got throttled, waiting {sleepTime:g}", sleepTime);
-                Thread.Sleep(sleepTime);
+                retryCount++;
+                Thread.Sleep(timeToSleepBeforeRetry.Value);
             }
+
+            throw new DatabaseException("Document db exception, retries exceeded", retryableException);
+        }
+
+        private static bool IsRetryableError<V>(DocumentClientException de)
+        {
+            return de.StatusCode != null && ((int)de.StatusCode == 429 || (int)de.StatusCode == 449);
         }
     }
 }
