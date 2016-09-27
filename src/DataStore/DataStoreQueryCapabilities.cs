@@ -39,8 +39,7 @@
 
         // get a filtered list of the models from a set of active DataObjects
         public async Task<IEnumerable<T>> ReadActive<T>(
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null, 
-            bool includeHidden = false) where T : IAggregate
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
         {
             Func<IQueryable<T>, IQueryable<T>> queryableExtension2 = (q) =>
                 {
@@ -50,10 +49,6 @@
                     }
 
                     q = q.Where(a => a.Active);
-                    if (!includeHidden)
-                    {
-                        q = q.Where(a => !a.Hidden);
-                    }
 
                     return q;
                 };

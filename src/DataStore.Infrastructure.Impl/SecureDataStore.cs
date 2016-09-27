@@ -34,12 +34,12 @@
             //this.Unsecured.CommitChanges();
         }
 
-        public async Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false, bool hidden = false)
+        public async Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false)
             where T : IAggregate, new()
         {
             AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new IAggregate[] { model });
 
-            return await this.Unsecured.Create(model, readOnly, hidden);
+            return await this.Unsecured.Create(model, readOnly);
         }
 
         public Task<IEnumerable<Guid>> DeleteHardWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate)
@@ -70,10 +70,9 @@
 
         public async Task<IEnumerable<T>> ReadActive<T>(
             IApplicationPermission permission,
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null,
-            bool includeHidden = false) where T : IAggregate
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
         {
-            var dataQueried = await this.Unsecured.ReadActive(queryableExtension, includeHidden);
+            var dataQueried = await this.Unsecured.ReadActive(queryableExtension);
 
             AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
 

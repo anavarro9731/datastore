@@ -15,7 +15,7 @@ namespace DataStore.Infrastructure.Interfaces
 
         void CommitChanges();
 
-        Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false, bool hidden = false)
+        Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false)
             where T : IAggregate, new();
 
         Task<IEnumerable<Guid>> DeleteHardWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate)
@@ -31,8 +31,7 @@ namespace DataStore.Infrastructure.Interfaces
 
         Task<IEnumerable<T>> ReadActive<T>(
             IApplicationPermission permission,
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null,
-            bool includeHidden = false) where T : IAggregate;
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate;
 
         Task<T> ReadActiveById<T>(IApplicationPermission permission, Guid modelId) where T : IAggregate;
 

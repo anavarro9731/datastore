@@ -21,7 +21,7 @@
 
         private IDocumentRepository DsConnection { get; }
 
-        public async Task<T> Create<T>(T model, bool readOnly = false, bool hidden = false) where T : IAggregate, new()
+        public async Task<T> Create<T>(T model, bool readOnly = false) where T : IAggregate, new()
         {
             var enriched = new T();
             enriched.UpdateFromAnotherObject(model);
@@ -29,7 +29,6 @@
                 e =>
                     {
                         e.Active = true;
-                        e.Hidden = hidden;
                         e.ReadOnly = readOnly;
 
                         e.Created = DateTime.UtcNow;

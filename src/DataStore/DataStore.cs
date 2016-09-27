@@ -44,9 +44,9 @@
             // this requires a re-work to merge events in read queries made before committing
         }
 
-        public Task<T> Create<T>(T model, bool readOnly = false, bool hidden = false) where T : IAggregate, new()
+        public Task<T> Create<T>(T model, bool readOnly = false) where T : IAggregate, new()
         {
-            return this.CreateCapabilities.Create(model, readOnly, hidden);
+            return this.CreateCapabilities.Create(model, readOnly);
         }
 
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
@@ -86,10 +86,9 @@
         }
 
         public async Task<IEnumerable<T>> ReadActive<T>(
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension,
-            bool includeHidden = false) where T : IAggregate
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension) where T : IAggregate
         {
-            return await this.QueryCapabilities.ReadActive(queryableExtension, includeHidden);
+            return await this.QueryCapabilities.ReadActive(queryableExtension);
         }
 
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate

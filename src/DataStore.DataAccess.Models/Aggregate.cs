@@ -12,8 +12,6 @@
         // .. high level filters
         public bool Active { get; set; }
 
-        public bool Hidden { get; set; }
-
         public bool ReadOnly { get; set; }
 
         // .. relationships

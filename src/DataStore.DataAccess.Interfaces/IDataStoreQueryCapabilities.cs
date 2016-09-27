@@ -13,8 +13,7 @@
         Task<IEnumerable<T>> Read<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate;
 
         Task<IEnumerable<T>> ReadActive<T>(
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null, 
-            bool includeHidden = false) where T : IAggregate;
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate;
 
         Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate;
 
