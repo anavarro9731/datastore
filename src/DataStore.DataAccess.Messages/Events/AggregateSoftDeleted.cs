@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Messages.Events
+﻿namespace DataStore.DataAccess.Messages.Events
 {
     using Infrastructure.Messages;
 

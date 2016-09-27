@@ -1,12 +1,10 @@
-namespace DataAccess.Interfaces
+namespace DataStore.DataAccess.Interfaces
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using DataAccess.Messages.Events;
-
+    using Messages.Events;
     using Microsoft.Azure.Documents;
 
     public interface IDocumentRepository : IDisposable

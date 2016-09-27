@@ -1,4 +1,4 @@
-namespace DataAccess.Interfaces
+namespace DataStore.DataAccess.Interfaces
 {
     using System.Threading.Tasks;
 

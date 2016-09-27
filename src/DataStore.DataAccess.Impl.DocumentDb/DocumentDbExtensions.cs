@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Impl.DocumentDb
+﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using Infrastructure.Configuration.Settings;
     using Microsoft.Azure.Documents.Client;

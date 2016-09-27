@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Interfaces
+﻿namespace DataStore.Infrastructure.Interfaces
 {
     public interface IValueReturner
     {

@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Impl
+﻿namespace DataStore.Infrastructure.Impl
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,6 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using DataAccess.Interfaces;
-    using DataAccess.Models;
-    using DataStore;
     using Interfaces;
 
     /// <summary>
@@ -37,20 +35,20 @@
         }
 
         public async Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false, bool hidden = false)
-            where T : Aggregate, new()
+            where T : IAggregate, new()
         {
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new[] { model });
+            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new IAggregate[] { model });
 
             return await this.Unsecured.Create(model, readOnly, hidden);
         }
 
         public Task<IEnumerable<Guid>> DeleteHardWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate)
-            where T : Aggregate
+            where T : IAggregate
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<T>> DeleteSoftWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate) where T : Aggregate
+        public Task<IEnumerable<T>> DeleteSoftWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate) where T : IAggregate
         {
             throw new NotImplementedException();
         }
@@ -61,11 +59,11 @@
         }
 
         public async Task<IEnumerable<T>> Read<T>(IApplicationPermission permission, Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
-            where T : Aggregate
+            where T : IAggregate
         {
             var dataQueried = await this.Unsecured.Read(queryableExtension);
 
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried);
+            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
 
             return dataQueried;
         }
@@ -73,35 +71,35 @@
         public async Task<IEnumerable<T>> ReadActive<T>(
             IApplicationPermission permission,
             Func<IQueryable<T>, IQueryable<T>> queryableExtension = null,
-            bool includeHidden = false) where T : Aggregate
+            bool includeHidden = false) where T : IAggregate
         {
             var dataQueried = await this.Unsecured.ReadActive(queryableExtension, includeHidden);
 
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried);
+            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
 
             return dataQueried;
         }
 
-        public async Task<T> ReadActiveById<T>(IApplicationPermission permission, Guid modelId) where T : Aggregate
+        public async Task<T> ReadActiveById<T>(IApplicationPermission permission, Guid modelId) where T : IAggregate
         {
             var dataQueried = await this.Unsecured.ReadActiveById<T>(modelId);
 
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new[] { dataQueried });
+            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new IAggregate[] { dataQueried });
 
             return dataQueried;
         }
 
-        public Task<T> UpdateById<T>(IApplicationPermission permission, Guid id, Action<T> action) where T : Aggregate
+        public Task<T> UpdateById<T>(IApplicationPermission permission, Guid id, Action<T> action) where T : IAggregate
         {
             throw new NotImplementedException();
         }
 
-        public Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(IApplicationPermission permission, Guid id, T src) where T : Aggregate
+        public Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(IApplicationPermission permission, Guid id, T src) where T : IAggregate
         {
             throw new NotImplementedException();
         }
 
-        public Task<T> UpdateUsingValuesFromAnotherInstanceWithTheSameId<T>(IApplicationPermission permission, T src) where T : Aggregate
+        public Task<T> UpdateUsingValuesFromAnotherInstanceWithTheSameId<T>(IApplicationPermission permission, T src) where T : IAggregate
         {
             throw new NotImplementedException();
         }
@@ -110,7 +108,7 @@
             IApplicationPermission permission,
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            bool overwriteReadOnly = false) where T : Aggregate
+            bool overwriteReadOnly = false) where T : IAggregate
         {
             throw new NotImplementedException();
         }

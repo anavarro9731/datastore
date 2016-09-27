@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Impl.StateManagers
+﻿namespace DataStore.Infrastructure.Impl.StateManagers
 {
     using System;
     using DataAccess.Interfaces;

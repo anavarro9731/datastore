@@ -1,12 +1,11 @@
-﻿namespace DataAccess.Models
+﻿namespace DataStore.DataAccess.Models
 {
     using System;
     using System.Dynamic;
-    using System.Linq;
-
-    using DataAccess.Interfaces;
-    using Infrastructure.PureFunctions.Extensions;
+    using Interfaces;
     using Newtonsoft.Json;
+    using Infrastructure.PureFunctions.Extensions;
+    using System.Linq;
 
     /// <summary>
     ///     represents an objects with a unique id

@@ -1,4 +1,4 @@
-namespace Infrastructure.Interfaces
+namespace DataStore.Infrastructure.Interfaces
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,6 @@ namespace Infrastructure.Interfaces
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using DataAccess.Interfaces;
-    using DataAccess.Models;
 
     public interface ISecureDataStore
     {
@@ -17,37 +16,37 @@ namespace Infrastructure.Interfaces
         void CommitChanges();
 
         Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false, bool hidden = false)
-            where T : Aggregate, new();
+            where T : IAggregate, new();
 
         Task<IEnumerable<Guid>> DeleteHardWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate)
-            where T : Aggregate;
+            where T : IAggregate;
 
         Task<IEnumerable<T>> DeleteSoftWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate)
-            where T : Aggregate;
+            where T : IAggregate;
 
         void Dispose();
 
         Task<IEnumerable<T>> Read<T>(IApplicationPermission permission, Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
-            where T : Aggregate;
+            where T : IAggregate;
 
         Task<IEnumerable<T>> ReadActive<T>(
             IApplicationPermission permission,
             Func<IQueryable<T>, IQueryable<T>> queryableExtension = null,
-            bool includeHidden = false) where T : Aggregate;
+            bool includeHidden = false) where T : IAggregate;
 
-        Task<T> ReadActiveById<T>(IApplicationPermission permission, Guid modelId) where T : Aggregate;
+        Task<T> ReadActiveById<T>(IApplicationPermission permission, Guid modelId) where T : IAggregate;
 
-        Task<T> UpdateById<T>(IApplicationPermission permission, Guid id, Action<T> action) where T : Aggregate;
+        Task<T> UpdateById<T>(IApplicationPermission permission, Guid id, Action<T> action) where T : IAggregate;
 
-        Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(IApplicationPermission permission, Guid id, T src) where T : Aggregate;
+        Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(IApplicationPermission permission, Guid id, T src) where T : IAggregate;
 
-        Task<T> UpdateUsingValuesFromAnotherInstanceWithTheSameId<T>(IApplicationPermission permission, T src) where T : Aggregate;
+        Task<T> UpdateUsingValuesFromAnotherInstanceWithTheSameId<T>(IApplicationPermission permission, T src) where T : IAggregate;
 
         Task<IEnumerable<T>> UpdateWhere<T>(
             IApplicationPermission permission,
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            bool overwriteReadOnly = false) where T : Aggregate;
+            bool overwriteReadOnly = false) where T : IAggregate;
 
         ISecureDataStore UsingSecurityContext(IUserWithPermissions user);
     }

@@ -1,10 +1,9 @@
-﻿namespace DataAccess.Interfaces
+﻿namespace DataStore.DataAccess.Interfaces
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
     using Microsoft.Azure.Documents;
 
     public interface IDataStoreQueryCapabilities

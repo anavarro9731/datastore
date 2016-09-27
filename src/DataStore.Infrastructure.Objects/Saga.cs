@@ -1,8 +1,7 @@
-﻿namespace Infrastructure.Objects
+﻿namespace DataStore.Infrastructure.Objects
 {
     using System;
     using System.Threading.Tasks;
-
     using DataAccess.Interfaces;
     using DataAccess.Models;
     using Interfaces;

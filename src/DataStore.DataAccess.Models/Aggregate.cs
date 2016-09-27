@@ -1,11 +1,10 @@
-﻿namespace DataAccess.Models
+﻿namespace DataStore.DataAccess.Models
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Interfaces;
     using System.Linq;
-
-    using DataAccess.Interfaces;
     using Infrastructure.PureFunctions.Extensions;
 
     public abstract class Aggregate : Entity, IAggregate

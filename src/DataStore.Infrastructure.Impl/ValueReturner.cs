@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Impl
+﻿namespace DataStore.Infrastructure.Impl
 {
     using System.Collections.Generic;
     using Interfaces;

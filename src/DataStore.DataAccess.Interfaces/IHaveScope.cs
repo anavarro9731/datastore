@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Interfaces
+﻿namespace DataStore.DataAccess.Interfaces
 {
     using System;
     using System.Collections.Generic;

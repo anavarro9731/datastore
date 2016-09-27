@@ -15,6 +15,7 @@
     "DataStore.DataAccess.Messages": "1.0.0-*",
     "DataStore.DataAccess.Models": "1.0.0-*",
     "DataStore.DataAccess.Impl.DocumentDb": "1.0.0-*",
-    "DataStore.Infrastructure.Interfaces": "1.0.0-*"
+    "DataStore.Infrastructure.Interfaces": "1.0.0-*",
+    "DataStore.Infrastructure.PureFunctions": "1.0.0-*"
   }
 }

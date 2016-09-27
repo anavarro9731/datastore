@@ -1,10 +1,9 @@
-﻿namespace Infrastructure.Objects
+﻿namespace DataStore.Infrastructure.Objects
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-
     using Newtonsoft.Json;
+    using System.Linq;
 
     public class FlaggedState
     {

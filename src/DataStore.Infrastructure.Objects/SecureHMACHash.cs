@@ -1,4 +1,4 @@
-namespace Infrastructure.Objects
+namespace DataStore.Infrastructure.Objects
 {
     using PWDTK_DOTNET451;
 

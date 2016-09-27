@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore", "DataStore\DataStore.xproj", "{6368A73A-49AB-40AB-8847-724E8820566D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Infrastructure.PureFunctions", "DataStore.Infrastructure.PureFunctions\Infrastructure.PureFunctions.xproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.PureFunctions", "DataStore.Infrastructure.PureFunctions\DataStore.Infrastructure.PureFunctions.xproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{648EBFE5-272F-46F6-A666-2EAFF3D62902}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,27 +14,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Infrastructure.Interfaces", "DataStore.Infrastructure.Interfaces\Infrastructure.Interfaces.xproj", "{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Interfaces", "DataStore.Infrastructure.Interfaces\DataStore.Infrastructure.Interfaces.xproj", "{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Infrastructure.Impl", "DataStore.Infrastructure.Impl\Infrastructure.Impl.xproj", "{624E340B-234C-482E-977E-C77D1457206B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Impl", "DataStore.Infrastructure.Impl\DataStore.Infrastructure.Impl.xproj", "{624E340B-234C-482E-977E-C77D1457206B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Infrastructure.Configuration", "DataStore.Infrastructure.Configuration\Infrastructure.Configuration.xproj", "{E1E60108-CD95-41D4-B95E-F86F7B924B78}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Configuration", "DataStore.Infrastructure.Configuration\DataStore.Infrastructure.Configuration.xproj", "{E1E60108-CD95-41D4-B95E-F86F7B924B78}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataAccess.Impl.DocumentDb", "DataStore.DataAccess.Impl.DocumentDb\DataAccess.Impl.DocumentDb.xproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Impl.DocumentDb", "DataStore.DataAccess.Impl.DocumentDb\DataStore.DataAccess.Impl.DocumentDb.xproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataAccess.Interfaces", "DataStore.DataAccess.Interfaces\DataAccess.Interfaces.xproj", "{05013952-DE52-4EF3-8F76-4E1B076134B6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Interfaces", "DataStore.DataAccess.Interfaces\DataStore.DataAccess.Interfaces.xproj", "{05013952-DE52-4EF3-8F76-4E1B076134B6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataAccess.Messages", "DataStore.DataAccess.Messages\DataAccess.Messages.xproj", "{873803F9-C13C-487E-AA1F-2D515E2A0E41}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Messages", "DataStore.DataAccess.Messages\DataStore.DataAccess.Messages.xproj", "{873803F9-C13C-487E-AA1F-2D515E2A0E41}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataAccess.Models", "DataStore.DataAccess.Models\DataAccess.Models.xproj", "{50BDE363-B183-44DA-AACC-366D2F6ECA60}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Models", "DataStore.DataAccess.Models\DataStore.DataAccess.Models.xproj", "{50BDE363-B183-44DA-AACC-366D2F6ECA60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Infrastructure.Messages", "DataStore.Infrastructure.Messages\Infrastructure.Messages.xproj", "{23714A79-7B89-41B1-9B7F-F82FE137004D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Messages", "DataStore.Infrastructure.Messages\DataStore.Infrastructure.Messages.xproj", "{23714A79-7B89-41B1-9B7F-F82FE137004D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Infrastructure.Objects", "DataStore.Infrastructure.Objects\Infrastructure.Objects.xproj", "{24313DE5-AD63-4291-A618-FBD4410FF3CC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccess", "DataAccess", "{14EFB36D-A70B-40D0-80BD-6319433CB614}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{DDA52086-E6FE-429C-80AD-C48059DBD69C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Objects", "DataStore.Infrastructure.Objects\DataStore.Infrastructure.Objects.xproj", "{24313DE5-AD63-4291-A618-FBD4410FF3CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,17 +85,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164} = {DDA52086-E6FE-429C-80AD-C48059DBD69C}
-		{88DFF1C3-EB24-4E3B-AC23-931E70720ACB} = {DDA52086-E6FE-429C-80AD-C48059DBD69C}
-		{624E340B-234C-482E-977E-C77D1457206B} = {DDA52086-E6FE-429C-80AD-C48059DBD69C}
-		{E1E60108-CD95-41D4-B95E-F86F7B924B78} = {DDA52086-E6FE-429C-80AD-C48059DBD69C}
-		{C855DC43-D88F-4800-8AEE-A451724B14F9} = {14EFB36D-A70B-40D0-80BD-6319433CB614}
-		{05013952-DE52-4EF3-8F76-4E1B076134B6} = {14EFB36D-A70B-40D0-80BD-6319433CB614}
-		{873803F9-C13C-487E-AA1F-2D515E2A0E41} = {14EFB36D-A70B-40D0-80BD-6319433CB614}
-		{50BDE363-B183-44DA-AACC-366D2F6ECA60} = {14EFB36D-A70B-40D0-80BD-6319433CB614}
-		{23714A79-7B89-41B1-9B7F-F82FE137004D} = {DDA52086-E6FE-429C-80AD-C48059DBD69C}
-		{24313DE5-AD63-4291-A618-FBD4410FF3CC} = {DDA52086-E6FE-429C-80AD-C48059DBD69C}
 	EndGlobalSection
 EndGlobal

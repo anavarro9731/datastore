@@ -1,4 +1,4 @@
-namespace DataAccess.Interfaces
+namespace DataStore.DataAccess.Interfaces
 {
     public interface IAggregate : IHaveScope, IEntity
     {

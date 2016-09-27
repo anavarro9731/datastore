@@ -1,10 +1,10 @@
-﻿namespace Infrastructure.PureFunctions.Extensions
+﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using FluentValidation;
     using FluentValidation.Validators;
+    using System.Linq;
 
     public static class FluentValidationExtensions
     {

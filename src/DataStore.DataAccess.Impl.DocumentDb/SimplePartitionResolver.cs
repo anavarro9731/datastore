@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Impl.DocumentDb
+﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System.Collections.Generic;
     using Infrastructure.Configuration.Settings;

@@ -4,9 +4,7 @@
   "authors": [ "AaronNavarro" ],
   "frameworks": {
     "net451": {
-      "frameworkAssemblies": { "System.Threading.Tasks": "4.0.0.0" },
-      "Postmark": "2.1.5",
-      "PWDTK": "2.0.0.2"
+      "frameworkAssemblies": { "System.Threading.Tasks": "4.0.0.0" }
     }
   },
   "dependencies": {

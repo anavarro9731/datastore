@@ -1,15 +1,15 @@
-﻿namespace DataAccess.Impl.DocumentDb
+﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using Infrastructure.PureFunctions.Extensions;
+    using Interfaces;
     using Messages.Events;
     using Microsoft.Azure.Documents;
     using Newtonsoft.Json;
+    using Infrastructure.PureFunctions.Extensions;
 
     public class InMemoryDocumentRepository : IDocumentRepository
     {

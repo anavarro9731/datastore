@@ -1,8 +1,9 @@
-﻿namespace Infrastructure.Interfaces
+﻿namespace DataStore.Infrastructure.Interfaces
 {
-    //using Apogee.Storage;
     using DataAccess.Interfaces;
 
+    //using Apogee.Storage;
+    
     public interface IStateManagerWithoutAuthorization : IStateManager
     {
         IDataStore DocumentDbPrimary { get; }

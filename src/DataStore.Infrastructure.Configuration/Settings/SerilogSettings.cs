@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Configuration.Settings
+﻿namespace DataStore.Infrastructure.Configuration.Settings
 {
     public class SerilogSettings
     {

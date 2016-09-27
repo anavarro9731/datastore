@@ -1,8 +1,7 @@
-namespace DataAccess.Models
+namespace DataStore.DataAccess.Models
 {
     using System.Collections.Generic;
-
-    using DataAccess.Interfaces;
+    using Interfaces;
 
     public class IdEqualityComparer : IEqualityComparer<IHaveAUniqueId>
     {

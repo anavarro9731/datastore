@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Interfaces
+﻿namespace DataStore.Infrastructure.Interfaces
 {
     using System;
     using System.Collections.Generic;

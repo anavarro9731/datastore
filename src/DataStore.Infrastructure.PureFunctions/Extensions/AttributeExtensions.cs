@@ -1,4 +1,5 @@
-﻿namespace Infrastructure.PureFunctions.Extensions
+﻿
+namespace DataStore.Infrastructure.PureFunctions.Extensions
 {
     using System;
     using System.Linq;

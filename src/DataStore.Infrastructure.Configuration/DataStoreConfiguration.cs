@@ -1,6 +1,6 @@
-﻿namespace Infrastructure.Configuration
+﻿namespace DataStore.Infrastructure.Configuration
 {
-    using Infrastructure.Configuration.Settings;
+    using Settings;
 
     /* 
     Because what goes in this class is effectively global, it is important that it stays limited to 2 things:

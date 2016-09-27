@@ -1,12 +1,12 @@
-﻿namespace DataAccess.Impl.DocumentDb
+﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Infrastructure.Configuration.Settings;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
+    using System.Linq;
     using Microsoft.Azure.Documents.Linq;
 
     public interface IDocumentDbInitialiser

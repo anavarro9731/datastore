@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Messages
+﻿namespace DataStore.Infrastructure.Messages
 {
     using System;
 

@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Objects.Permissions
+﻿namespace DataStore.Infrastructure.Objects.Permissions
 {
     using System;
 
