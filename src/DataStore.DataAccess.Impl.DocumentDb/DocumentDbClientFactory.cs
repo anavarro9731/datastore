@@ -1,9 +1,9 @@
 ﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System;
-    using global::Infrastructure.PureFunctions.Extensions;
-    using Infrastructure.Configuration.Settings;
+    using Infrastructure.PureFunctions.Extensions;
     using Microsoft.Azure.Documents.Client;
+    using Models.Config;
 
     public class DocumentDbClientFactory
     {

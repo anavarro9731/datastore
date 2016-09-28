@@ -1,8 +1,8 @@
 ﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System.Collections.Generic;
-    using Infrastructure.Configuration.Settings;
     using Microsoft.Azure.Documents.Client;
+    using Models.Config;
 
     public class SimplePartitionResolver : IPartitionResolver
     {

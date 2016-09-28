@@ -11,6 +11,7 @@
   "dependencies": {
     "DataStore.DataAccess.Interfaces": "1.0.0-*",
     "DataStore.DataAccess.Messages": "1.0.0-*",
+    "DataStore.DataAccess.Models": "1.0.0-*",
     "DataStore.Infrastructure.Configuration": "1.0.0-*",
     "DataStore.Infrastructure.PureFunctions": "1.0.0-*",
     "Serilog.Sinks.AzureDocumentDB": "1.5.7"

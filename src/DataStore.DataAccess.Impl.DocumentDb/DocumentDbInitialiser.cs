@@ -3,11 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Infrastructure.Configuration.Settings;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using System.Linq;
     using Microsoft.Azure.Documents.Linq;
+    using Models.Config;
 
     public interface IDocumentDbInitialiser
     {

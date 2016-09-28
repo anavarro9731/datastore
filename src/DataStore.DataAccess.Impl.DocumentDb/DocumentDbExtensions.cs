@@ -1,7 +1,7 @@
 ﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
-    using Infrastructure.Configuration.Settings;
     using Microsoft.Azure.Documents.Client;
+    using Models.Config;
 
     public static class DocumentDbExtensions
     {

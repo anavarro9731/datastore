@@ -4,12 +4,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Infrastructure.Configuration.Settings;
     using Interfaces;
     using Messages.Events;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
+    using Models.Config;
 
     public class DocumentRepository : IDocumentRepository
     {

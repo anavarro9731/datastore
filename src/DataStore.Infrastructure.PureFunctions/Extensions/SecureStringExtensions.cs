@@ -1,5 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
-namespace Infrastructure.PureFunctions.Extensions
+﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
 {
     using System.Security;
 
