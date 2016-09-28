@@ -18,7 +18,7 @@
     {
         public DataStoreConfiguration(
             DocumentDbSettings documentDbSettings,
-            FileStorageSettings fileStorageSettings)        
+            FileStorageSettings fileStorageSettings = null)        
         {
             this.DocumentDbSettings = documentDbSettings;
             this.FileStorageSettings = fileStorageSettings;
