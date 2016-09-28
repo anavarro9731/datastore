@@ -18,17 +18,13 @@
     {
         public DataStoreConfiguration(
             DocumentDbSettings documentDbSettings,
-            SerilogSettings serilogSettings,
             FileStorageSettings fileStorageSettings)        
         {
             this.DocumentDbSettings = documentDbSettings;
-            this.SerilogSettings = serilogSettings;
             this.FileStorageSettings = fileStorageSettings;
         }
 
         public DocumentDbSettings DocumentDbSettings { get; }
-
-        public SerilogSettings SerilogSettings { get; }
 
         public FileStorageSettings FileStorageSettings { get; set; }
 
