@@ -1,7 +1,5 @@
-﻿namespace DataStore.Infrastructure.Configuration
+﻿namespace DataStore.DataAccess.Models.Config
 {
-    using Settings;
-
     /* 
     Because what goes in this class is effectively global, it is important that it stays limited to 2 things:
     1. Data required to access other ley data sources whether for read or write (e.g. database connection strings, file paths, etc.
