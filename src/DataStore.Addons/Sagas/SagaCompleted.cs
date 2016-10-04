@@ -1,4 +1,4 @@
-﻿namespace DataStore.Infrastructure.Messages
+﻿namespace DataStore.Infrastructure.Impl.Sagas
 {
     using global::DataStore.Messages;
 

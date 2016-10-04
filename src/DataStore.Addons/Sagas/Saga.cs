@@ -1,11 +1,10 @@
-﻿namespace DataStore.Infrastructure.Objects
+﻿namespace DataStore.Infrastructure.Impl.Sagas
 {
     using System;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using DataAccess.Models;
-    using Messages;
+    using global::DataStore.DataAccess.Interfaces;
+    using global::DataStore.DataAccess.Interfaces.Addons;
+    using global::DataStore.DataAccess.Models;
 
     public class SagaState : Aggregate
     {

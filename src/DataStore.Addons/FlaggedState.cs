@@ -1,9 +1,9 @@
-﻿namespace DataStore.Infrastructure.Objects
+﻿namespace DataStore.Infrastructure.Impl
 {
     using System;
     using System.Collections.Generic;
-    using Newtonsoft.Json;
     using System.Linq;
+    using Newtonsoft.Json;
 
     public class FlaggedState
     {

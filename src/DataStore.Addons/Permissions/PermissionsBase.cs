@@ -1,10 +1,10 @@
-﻿namespace DataStore.Infrastructure.Objects.Permissions
+﻿namespace DataStore.Infrastructure.Impl.Permissions
 {
     using System;
     using System.Collections.Generic;
-    using System.Reflection;
     using System.Linq;
-    using DataAccess.Interfaces.Addons;
+    using System.Reflection;
+    using global::DataStore.DataAccess.Interfaces.Addons;
 
     public abstract class PermissionsBase : IPermissions
     {
