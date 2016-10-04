@@ -1,8 +1,7 @@
-﻿namespace DataStore.Infrastructure.Impl
+﻿namespace DataStore
 {
     using System.Collections.Generic;
     using DataAccess.Interfaces.Addons;
-    using global::DataStore.Messages;
     using Messages;
 
     public class EventAggregator : IEventAggregator

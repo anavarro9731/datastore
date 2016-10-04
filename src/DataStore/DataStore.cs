@@ -16,17 +16,15 @@
     /// </summary>
     public class DataStore : IDataStore
     {
-        private readonly IEventAggregator eventAggregator;
-
-        public DataStore(IDocumentRepository documentRepository, IEventAggregator eventAggregator)
+        public DataStore(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
         {
-            this.eventAggregator = eventAggregator;
+            eventAggregator = eventAggregator ?? new EventAggregator();
             DsConnection = documentRepository;
             QueryCapabilities = new DataStoreQueryCapabilities(DsConnection);
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, eventAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, eventAggregator);
             CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, eventAggregator);
-        }
+        }        
 
         public IDocumentRepository DsConnection { get; }
 
@@ -41,7 +39,7 @@
         public void CommitChanges()
         {
             // TODO: apply all events
-            // this requires a re-work to merge events in read queries made before committing
+            // this requires an update to merge events in read queries made before committing
         }
 
         public Task<T> Create<T>(T model, bool readOnly = false) where T : IAggregate, new()
