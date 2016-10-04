@@ -12,11 +12,11 @@
 
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
 
         public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
-            this.eventAggregator = eventAggregator;
+            this._eventAggregator = eventAggregator;
             DbConnection = dataStoreConnection;
         }
 
@@ -66,7 +66,7 @@
             foreach (var dataObject in dataObjects)
             {
                 action(dataObject);
-                await eventAggregator.Store(new AggregateUpdated<T>(dataObject)).ForwardToAsync(DbConnection.UpdateAsync);
+                await _eventAggregator.Store(new AggregateUpdated<T>(dataObject)).ForwardToAsync(DbConnection.UpdateAsync);
             }
 
             return dataObjects;

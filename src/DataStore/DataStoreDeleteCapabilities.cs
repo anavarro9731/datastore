@@ -12,11 +12,11 @@
 
     internal class DataStoreDeleteCapabilities : IDataStoreDeleteCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
 
         public DataStoreDeleteCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
-            this.eventAggregator = eventAggregator;
+            this._eventAggregator = eventAggregator;
             DbConnection = dataStoreConnection;
         }
 
@@ -25,7 +25,7 @@
         public async Task<T> DeleteHardById<T>(Guid id) where T : IAggregate
         {
             var result = await DbConnection.GetItemAsync<T>(id);
-            return await eventAggregator.Store(new AggregateHardDeleted<T>(result)).ForwardToAsync(DbConnection.DeleteHardAsync);
+            return await _eventAggregator.Store(new AggregateHardDeleted<T>(result)).ForwardToAsync(DbConnection.DeleteHardAsync);
         }
 
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
@@ -35,7 +35,7 @@
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
             {
-                await eventAggregator.Store(new AggregateHardDeleted<T>(dataObject)).ForwardToAsync(DbConnection.DeleteHardAsync);
+                await _eventAggregator.Store(new AggregateHardDeleted<T>(dataObject)).ForwardToAsync(DbConnection.DeleteHardAsync);
             }
 
             return dataObjects;
@@ -45,7 +45,7 @@
         {
             var result = await DbConnection.GetItemAsync<T>(id);
 
-            return await eventAggregator.Store(new AggregateSoftDeleted<T>(result)).ForwardToAsync(DbConnection.DeleteSoftAsync);
+            return await _eventAggregator.Store(new AggregateSoftDeleted<T>(result)).ForwardToAsync(DbConnection.DeleteSoftAsync);
             
         }
 
@@ -58,7 +58,7 @@
             foreach (var dataObject in dataObjects)
             {
                 dataObject.SoftDelete();
-                await eventAggregator.Store(new AggregateSoftDeleted<T>(dataObject)).ForwardToAsync(DbConnection.DeleteSoftAsync);
+                await _eventAggregator.Store(new AggregateSoftDeleted<T>(dataObject)).ForwardToAsync(DbConnection.DeleteSoftAsync);
             }
 
             return dataObjects;

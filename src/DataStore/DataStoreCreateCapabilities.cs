@@ -11,11 +11,11 @@
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
 
         public DataStoreCreateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
-            this.eventAggregator = eventAggregator;
+            this._eventAggregator = eventAggregator;
             DsConnection = dataStoreConnection;
         }
 
@@ -40,7 +40,7 @@
                     });
             enriched.WalkGraphAndUpdateEntityMeta();
 
-            return await eventAggregator.Store(new AggregateAdded<T>(enriched)).ForwardToAsync(DsConnection.AddAsync);
+            return await _eventAggregator.Store(new AggregateAdded<T>(enriched)).ForwardToAsync(DsConnection.AddAsync);
         }
     }
 }
