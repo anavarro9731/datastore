@@ -10,7 +10,6 @@
   "dependencies": {
     "DataStore": "1.0.0-*",
     "DataStore.Interfaces": "1.0.0-*",
-    "DataStore.Infrastructure": "1.0.0-*",
-    "Microsoft.Net.Http": "2.2.22"
+    "DataStore.Infrastructure": "1.0.0-*"
   }
 }
