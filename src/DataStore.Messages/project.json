@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0-*",
+  "description": "DataStore.Messages Class Library",
+  "authors": [ "Aaron Navarro" ],
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+      }
+    }
+  },
+  "dependencies": {
+
+  }
+}

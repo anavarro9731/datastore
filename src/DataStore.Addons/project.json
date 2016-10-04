@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0-*",
+  "description": "DataStore.Addons Class Library",
+  "authors": [ "Aaron Navarro" ],
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": { "System.Threading.Tasks": "4.0.0.0" }
+    }
+  },
+  "dependencies": {
+    "DataStore": "1.0.0-*",
+    "DataStore.Interfaces": "1.0.0-*",
+    "DataStore.Infrastructure": "1.0.0-*",
+    "Microsoft.Net.Http": "2.2.22"
+  }
+}

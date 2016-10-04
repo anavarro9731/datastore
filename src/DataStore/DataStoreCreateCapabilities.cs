@@ -5,9 +5,9 @@
     using System.Threading.Tasks;
 
     using DataAccess.Interfaces;
-    using DataAccess.Messages.Events;
-    using Infrastructure.Interfaces;
-    using Infrastructure.PureFunctions.Extensions;
+    using DataAccess.Interfaces.Addons;
+    using Messages.Events;
+    using Infrastructure.PureFunctions.PureFunctions.Extensions;
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
     {

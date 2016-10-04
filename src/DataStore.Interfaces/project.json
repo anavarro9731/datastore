@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0-*",
+  "description": "DataStore.Interfaces Class Library",
+  "authors": [ "Aaron Navarro" ],
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "Microsoft.Azure.DocumentDB": "1.5.2",
+        "Newtonsoft.Json": "8.0.2"
+      }
+    }
+  },
+  "dependencies": {
+    "DataStore.Messages": "1.0.0-*"
+  }
+}

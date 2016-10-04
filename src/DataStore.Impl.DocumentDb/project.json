@@ -1,0 +1,19 @@
+{
+  "authors": [ "flytzen", "Aaron Navarro" ],
+  "description": "DataStore.Impl.DocumentDb Class Library",
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": { "System.Runtime": "4.0.10.0" },
+      "Microsoft.Azure.DocumentDB": "1.5.2",
+      "Newtonsoft.Json": "8.0.2"
+    }
+  },
+  "dependencies": {
+    "DataStore.Interfaces": "1.0.0-*",
+    "DataStore.Messages": "1.0.0-*",
+    "DataStore.Models": "1.0.0-*",
+    "DataStore.Infrastructure": "1.0.0-*",
+    "Serilog.Sinks.AzureDocumentDB": "1.5.7"
+  },
+  "version": "1.0.0-*"
+}

@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore", "DataStore\DataStore.xproj", "{6368A73A-49AB-40AB-8847-724E8820566D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.PureFunctions", "DataStore.Infrastructure.PureFunctions\DataStore.Infrastructure.PureFunctions.xproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure", "DataStore.Infrastructure\DataStore.Infrastructure.xproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{648EBFE5-272F-46F6-A666-2EAFF3D62902}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,27 +14,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Interfaces", "DataStore.Infrastructure.Interfaces\DataStore.Infrastructure.Interfaces.xproj", "{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Addons", "DataStore.Addons\DataStore.Addons.xproj", "{624E340B-234C-482E-977E-C77D1457206B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Impl", "DataStore.Infrastructure.Impl\DataStore.Infrastructure.Impl.xproj", "{624E340B-234C-482E-977E-C77D1457206B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Impl.DocumentDb", "DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.xproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Impl.DocumentDb", "DataStore.DataAccess.Impl.DocumentDb\DataStore.DataAccess.Impl.DocumentDb.xproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Interfaces", "DataStore.Interfaces\DataStore.Interfaces.xproj", "{05013952-DE52-4EF3-8F76-4E1B076134B6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Interfaces", "DataStore.DataAccess.Interfaces\DataStore.DataAccess.Interfaces.xproj", "{05013952-DE52-4EF3-8F76-4E1B076134B6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Models", "DataStore.Models\DataStore.Models.xproj", "{50BDE363-B183-44DA-AACC-366D2F6ECA60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Models", "DataStore.DataAccess.Models\DataStore.DataAccess.Models.xproj", "{50BDE363-B183-44DA-AACC-366D2F6ECA60}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Messages", "DataStore.Messages\DataStore.Messages.xproj", "{23714A79-7B89-41B1-9B7F-F82FE137004D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Messages", "DataStore.Infrastructure.Messages\DataStore.Infrastructure.Messages.xproj", "{23714A79-7B89-41B1-9B7F-F82FE137004D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure.Objects", "DataStore.Infrastructure.Objects\DataStore.Infrastructure.Objects.xproj", "{24313DE5-AD63-4291-A618-FBD4410FF3CC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccess", "DataAccess", "{6789B011-EDC9-4822-85D1-26781DDE870E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{6789B011-EDC9-4822-85D1-26781DDE870E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{25C593D9-43AD-4678-9D4A-0DE0E749F5FD}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Addons", "Addons", "{3C3B6F76-B77E-4B92-B93D-CE0C3B5481D4}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.DataAccess.Messages", "DataStore.DataAccess.Messages\DataStore.DataAccess.Messages.xproj", "{873803F9-C13C-487E-AA1F-2D515E2A0E41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +42,6 @@ Global
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|Any CPU.Build.0 = Release|Any CPU
-		{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88DFF1C3-EB24-4E3B-AC23-931E70720ACB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{624E340B-234C-482E-977E-C77D1457206B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{624E340B-234C-482E-977E-C77D1457206B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{624E340B-234C-482E-977E-C77D1457206B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -74,27 +62,14 @@ Global
 		{23714A79-7B89-41B1-9B7F-F82FE137004D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23714A79-7B89-41B1-9B7F-F82FE137004D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23714A79-7B89-41B1-9B7F-F82FE137004D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{24313DE5-AD63-4291-A618-FBD4410FF3CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{24313DE5-AD63-4291-A618-FBD4410FF3CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{24313DE5-AD63-4291-A618-FBD4410FF3CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{24313DE5-AD63-4291-A618-FBD4410FF3CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{873803F9-C13C-487E-AA1F-2D515E2A0E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{873803F9-C13C-487E-AA1F-2D515E2A0E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{873803F9-C13C-487E-AA1F-2D515E2A0E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{873803F9-C13C-487E-AA1F-2D515E2A0E41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164} = {25C593D9-43AD-4678-9D4A-0DE0E749F5FD}
-		{88DFF1C3-EB24-4E3B-AC23-931E70720ACB} = {25C593D9-43AD-4678-9D4A-0DE0E749F5FD}
-		{624E340B-234C-482E-977E-C77D1457206B} = {25C593D9-43AD-4678-9D4A-0DE0E749F5FD}
 		{C855DC43-D88F-4800-8AEE-A451724B14F9} = {6789B011-EDC9-4822-85D1-26781DDE870E}
-		{05013952-DE52-4EF3-8F76-4E1B076134B6} = {6789B011-EDC9-4822-85D1-26781DDE870E}
-		{50BDE363-B183-44DA-AACC-366D2F6ECA60} = {6789B011-EDC9-4822-85D1-26781DDE870E}
+		{05013952-DE52-4EF3-8F76-4E1B076134B6} = {25C593D9-43AD-4678-9D4A-0DE0E749F5FD}
 		{23714A79-7B89-41B1-9B7F-F82FE137004D} = {25C593D9-43AD-4678-9D4A-0DE0E749F5FD}
-		{24313DE5-AD63-4291-A618-FBD4410FF3CC} = {25C593D9-43AD-4678-9D4A-0DE0E749F5FD}
-		{873803F9-C13C-487E-AA1F-2D515E2A0E41} = {6789B011-EDC9-4822-85D1-26781DDE870E}
 	EndGlobalSection
 EndGlobal

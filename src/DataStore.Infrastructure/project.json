@@ -1,0 +1,12 @@
+{
+  "authors": [ "Aaron Navarro" ],
+  "description": "DataStore.Infrastructure Class Library",
+  "dependencies": {
+    "FluentValidation": "6.2.1",
+    "PWDTK": "2.0.0.2"
+  },
+  "frameworks": {
+    "net451": { }
+  },
+  "version": "1.0.0-*"
+}

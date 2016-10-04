@@ -7,9 +7,8 @@
     using System.Threading.Tasks;
 
     using DataAccess.Interfaces;
-    using DataAccess.Messages.Events;
-
-    using Infrastructure.Interfaces;
+    using DataAccess.Interfaces.Addons;
+    using Messages.Events;
 
     internal class DataStoreDeleteCapabilities : IDataStoreDeleteCapabilities
     {

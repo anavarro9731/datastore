@@ -7,7 +7,7 @@
     using System.Threading.Tasks;
 
     using DataAccess.Interfaces;
-    using Infrastructure.Interfaces;
+    using DataAccess.Interfaces.Addons;
     using Microsoft.Azure.Documents;
 
     /// <summary>
