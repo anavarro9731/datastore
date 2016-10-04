@@ -1,7 +1,12 @@
 {
   "version": "1.0.0-*",
-  "description": "DataStore.Addons Class Library",
-  "authors": [ "Aaron Navarro" ],
+  "description": "DataStore Addons",
+  "copyright": "Copyright (c) 2016 Aaron Navarro",
+  "packOptions": {
+    "projectUrl": "https://github.com/anavarro9731/datastore",
+    "summary": "A collection of useful addons for the DataStore",
+    "tags": [ "DocumentDb", "Azure", "Data Access" ]
+  },
   "frameworks": {
     "net451": {
       "frameworkAssemblies": { "System.Threading.Tasks": "4.0.0.0" }
