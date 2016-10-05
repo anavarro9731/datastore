@@ -11,9 +11,11 @@
     {
         protected SecureStateManager(IDocumentRepository repository, IEventAggregator eventAggregator, IUserWithPermissions user)
         {
-            this.GlobalStore = new SecureDataStore(repository, eventAggregator, user);
-            this.TransactionId = Guid.NewGuid();
+            GlobalStore = new SecureDataStore(repository, eventAggregator, user);
+            TransactionId = Guid.NewGuid();
         }
+
+        #region ISecureStateManager Members
 
         public ISecureDataStore GlobalStore { get; }
 
@@ -21,12 +23,14 @@
 
         public virtual void Dispose()
         {
-            this.GlobalStore.Dispose();
+            GlobalStore.Dispose();
         }
 
         public virtual void SubmitChanges()
         {
-            this.GlobalStore.CommitChanges();
+            GlobalStore.CommitChanges();
         }
+
+        #endregion
     }
 }

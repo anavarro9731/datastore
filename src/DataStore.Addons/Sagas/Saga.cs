@@ -2,9 +2,9 @@
 {
     using System;
     using System.Threading.Tasks;
-    using global::DataStore.DataAccess.Interfaces;
-    using global::DataStore.DataAccess.Interfaces.Addons;
-    using global::DataStore.DataAccess.Models;
+    using DataAccess.Interfaces;
+    using DataAccess.Interfaces.Addons;
+    using DataAccess.Models;
 
     public class SagaState : Aggregate
     {
@@ -13,93 +13,92 @@
 
     public class Saga
     {
-        protected readonly IEventAggregator EventAggregator;
+        private readonly SagaState _sagaState;
 
         protected readonly IDataStore DataStore;
-
-        private readonly SagaState sagaState;
+        protected readonly IEventAggregator EventAggregator;
 
         public Saga(IEventAggregator eventAggregator, IDataStore dataStore, Guid? sagaId = null)
         {
-            this.EventAggregator = eventAggregator;
-            this.DataStore = dataStore;
+            EventAggregator = eventAggregator;
+            DataStore = dataStore;
 
             if (sagaId != null)
             {
-                if (this.DataStore.Exists(sagaId.Value).Result)
+                if (DataStore.Exists(sagaId.Value).Result)
                 {
-                    this.sagaState = this.DataStore.ReadActiveById<SagaState>(sagaId.Value).Result;
+                    _sagaState = DataStore.ReadActiveById<SagaState>(sagaId.Value).Result;
                 }
                 else
                 {
-                    this.sagaState = this.DataStore.Create(new SagaState()).Result;
+                    _sagaState = DataStore.Create(new SagaState()).Result;
                 }
             }
         }
 
-        protected Guid SagaId => this.sagaState.id;
+        protected Guid SagaId => _sagaState.id;
 
         protected async Task AddStatus(Enum additionalStatus)
         {
-            if (this.sagaState == null) throw new Exception("This saga is not stateful.");
-            if (this.sagaState.Flags != null)
+            if (_sagaState == null) throw new Exception("This saga is not stateful.");
+            if (_sagaState.Flags != null)
             {
-                this.sagaState.Flags.AddState(additionalStatus);
+                _sagaState.Flags.AddState(additionalStatus);
             }
             else
             {
-                this.sagaState.Flags = new FlaggedState(additionalStatus);
+                _sagaState.Flags = new FlaggedState(additionalStatus);
             }
 
-            await this.DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(this.sagaState);
+            await DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(_sagaState);
         }
 
         protected void CompleteSaga()
         {
-            this.EventAggregator.Store(new SagaCompleted());
+            EventAggregator.Store(new SagaCompleted());
         }
 
         protected T GetStatus<T>()
         {
-            if (this.sagaState == null) throw new Exception("This saga is not stateful.");
-            return this.sagaState.Flags.AsEnum<T>();
+            if (_sagaState == null) throw new Exception("This saga is not stateful.");
+            return _sagaState.Flags.AsEnum<T>();
         }
 
         protected async Task RemoveStatus(Enum statusToRemove)
         {
-            if (this.sagaState == null) throw new Exception("This saga is not stateful.");
-            if (this.sagaState.Flags != null)
+            if (_sagaState == null) throw new Exception("This saga is not stateful.");
+            if (_sagaState.Flags != null)
             {
-                this.sagaState.Flags.RemoveState(statusToRemove);
+                _sagaState.Flags.RemoveState(statusToRemove);
             }
             else
             {
                 throw new Exception("This saga's state has not been set.");
             }
 
-            await this.DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(this.sagaState);
+            await DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(_sagaState);
         }
 
         protected async Task UpdateStatus(Enum newStatus)
         {
-            if (this.sagaState == null) throw new Exception("This saga is not stateful.");
-            if (this.sagaState.Flags != null)
+            if (_sagaState == null) throw new Exception("This saga is not stateful.");
+            if (_sagaState.Flags != null)
             {
-                this.sagaState.Flags.ReplaceState(newStatus);
+                _sagaState.Flags.ReplaceState(newStatus);
             }
             else
             {
-                this.sagaState.Flags = new FlaggedState(newStatus);
+                _sagaState.Flags = new FlaggedState(newStatus);
             }
 
-            await this.DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(this.sagaState);
+            await DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(_sagaState);
         }
     }
 
     public class Saga<TReturnType> : Saga
         where TReturnType : class
     {
-        private TReturnType returnValue;
+        private TReturnType _returnValue;
 
         public Saga(IEventAggregator eventAggregator, IDataStore dataStore, Guid? sagaId = null)
             : base(eventAggregator, dataStore, sagaId)
@@ -110,25 +109,22 @@
         {
             get
             {
-                if (this.returnValue == null)
+                if (_returnValue == null)
                 {
                     throw new Exception("Saga not completed.");
                 }
 
-                return this.returnValue;
+                return _returnValue;
             }
 
-            private set
-            {
-                this.returnValue = value;
-            }
+            private set { _returnValue = value; }
         }
 
         protected void CompleteSaga<TCompleted>(TCompleted completedEvent) where TCompleted : SagaCompleted<TReturnType>
         {
-            this.EventAggregator.Store(completedEvent);
+            EventAggregator.Store(completedEvent);
 
-            this.ReturnValue = completedEvent.Model;
+            ReturnValue = completedEvent.Model;
         }
     }
 }

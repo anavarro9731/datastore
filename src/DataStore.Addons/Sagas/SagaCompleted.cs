@@ -1,6 +1,6 @@
 ﻿namespace DataStore.Infrastructure.Impl.Sagas
 {
-    using global::DataStore.Messages;
+    using Messages;
 
     public class SagaCompleted : Event
     {

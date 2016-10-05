@@ -13,17 +13,27 @@
     /// </summary>
     public class SecureDataStore : IDisposable, ISecureDataStore
     {
-        private readonly IDocumentRepository repository;
-
-        private readonly IEventAggregator eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IDocumentRepository _repository;
 
         public SecureDataStore(IDocumentRepository repository, IEventAggregator eventAggregator, IUserWithPermissions securedAgainst)
         {
-            this.repository = repository;
-            this.eventAggregator = eventAggregator;
+            _repository = repository;
+            _eventAggregator = eventAggregator;
             Unsecured = new DataStore(repository, eventAggregator);
             SecuredAgainst = securedAgainst;
         }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Unsecured.Dispose();
+        }
+
+        #endregion
+
+        #region ISecureDataStore Members
 
         public IUserWithPermissions SecuredAgainst { get; }
 
@@ -37,9 +47,9 @@
         public async Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false)
             where T : IAggregate, new()
         {
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new IAggregate[] { model });
+            AuthorizationHelper.Authorize(SecuredAgainst, permission, new IAggregate[] {model});
 
-            return await this.Unsecured.Create(model, readOnly);
+            return await Unsecured.Create(model, readOnly);
         }
 
         public Task<IEnumerable<Guid>> DeleteHardWhere<T>(IApplicationPermission permission, Expression<Func<T, bool>> predicate)
@@ -53,17 +63,12 @@
             throw new NotImplementedException();
         }
 
-        public void Dispose()
-        {
-            this.Unsecured.Dispose();
-        }
-
         public async Task<IEnumerable<T>> Read<T>(IApplicationPermission permission, Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
             where T : IAggregate
         {
-            var dataQueried = await this.Unsecured.Read(queryableExtension);
+            var dataQueried = await Unsecured.Read(queryableExtension);
 
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
+            AuthorizationHelper.Authorize(SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
 
             return dataQueried;
         }
@@ -72,18 +77,18 @@
             IApplicationPermission permission,
             Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
         {
-            var dataQueried = await this.Unsecured.ReadActive(queryableExtension);
+            var dataQueried = await Unsecured.ReadActive(queryableExtension);
 
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
+            AuthorizationHelper.Authorize(SecuredAgainst, permission, dataQueried.Cast<IAggregate>());
 
             return dataQueried;
         }
 
         public async Task<T> ReadActiveById<T>(IApplicationPermission permission, Guid modelId) where T : IAggregate
         {
-            var dataQueried = await this.Unsecured.ReadActiveById<T>(modelId);
+            var dataQueried = await Unsecured.ReadActiveById<T>(modelId);
 
-            AuthorizationHelper.Authorize(this.SecuredAgainst, permission, new IAggregate[] { dataQueried });
+            AuthorizationHelper.Authorize(SecuredAgainst, permission, new IAggregate[] {dataQueried});
 
             return dataQueried;
         }
@@ -114,7 +119,9 @@
 
         public ISecureDataStore UsingSecurityContext(IUserWithPermissions user)
         {
-            return new SecureDataStore(repository, eventAggregator, user);
+            return new SecureDataStore(_repository, _eventAggregator, user);
         }
+
+        #endregion
     }
 }
