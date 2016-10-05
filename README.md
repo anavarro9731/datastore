@@ -10,7 +10,6 @@ It supports basic CRUD operations on any C# object, with some additional feature
 
 * Strongly typed mapping between documents and C# class types with generics
 * Support for LINQ queries against objects and their children (where the DocumentDB client supports it)
-* BuiltIn tracing and profiling
 * In-memory database, and event history for testing
 * Id and timestamp management of object hierarchies
 * Automatic retries of queries when limits are exceeded
@@ -22,6 +21,7 @@ This is mainly because the DocumentDB Client Library does not support .NET Core 
 ##Roadmap
 
 * Better documentation of API features
+* Tracing and profiling
 * Limited cross-document transactional support
 * Partition support 
 * Workflows (i.e. long running transaction support)
@@ -74,3 +74,34 @@ or
 `var myToyota = d.ReadActiveById<Car>(car.Id);`
 
 See IDataStore.cs for the full list of supported methods.
+
+###Unit Test Example
+
+using Xunit;
+...
+
+   [Fact]
+    public async void CanUpdateUser()
+    {
+        var documentRepository = new InMemoryDocumentRepository();
+        var inMemoryDb = documentRepository.Aggregates;
+        var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true, AddQueryEventsToEvents = false };
+        var dataStore = new DataStore(documentRepository, EventAggregator);
+
+        var userId = Guid.NewGuid();
+        
+        //Given
+        inMemoryDb.Add(new User() {
+            id = userId,
+            Email = "roguetrader@therebellion.org"
+        });
+
+        //When
+        await dataStore.UpdateById<User>(userId, user => user.Email = "redarteugor@therebellion.org");
+
+        //Then the user is updated
+        var userUpdated = eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<User>);
+        Assert.NotNull(userUpdated);
+        Assert.Equal(userUpdated.As<AggregateUpdated<User>>().Model.Email, "redarteugor@therebellion.org");
+	}
+
