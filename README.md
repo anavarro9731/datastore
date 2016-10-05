@@ -10,18 +10,18 @@ It supports basic CRUD operations on any C# object, with some additional feature
 
 * Strongly typed mapping between documents and C# class types with generics
 * Support for LINQ queries against objects and their children (where the DocumentDB client supports it)
-* Logging
+* BuiltIn tracing and profiling
 * In-memory database, and event history for testing
-* Managing of Ids and timestamps of an object hierarchy for you
+* Id and timestamp management of object hierarchies
 * Automatic retries of queries when limits are exceeded
 
-			
 DataStore is built with .NET Core SDK v.1.0.0-preview2-003131 tools but requires TFM net451. 
 
 This is mainly because the DocumentDB Client Library does not support .NET Core yet.
 
 ##Roadmap
 
+* Better documentation of API features
 * Limited cross-document transactional support
 * Partition support 
 * Workflows (i.e. long running transaction support)
