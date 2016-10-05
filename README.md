@@ -58,7 +58,7 @@ Update it
 or
 ```
 car.Model = "Celica";
-d.UpdateUsingValuesFromAnotherInstanceWithTheSameId(car);
+d.Update(car);
 ```
 
 Delete It
