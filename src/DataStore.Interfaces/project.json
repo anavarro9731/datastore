@@ -5,12 +5,11 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "Microsoft.Azure.DocumentDB": "1.5.2"
+        "Microsoft.Azure.DocumentDB": "1.10.0"
       }
     }
   },
   "dependencies": {
-    "DataStore.Messages": "1.0.0-*",
-    "Microsoft.Azure.DocumentDB": "1.10.0"
+    "DataStore.Messages": "1.0.0-*"
   }
 }

@@ -5,14 +5,13 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "FluentValidation": "6.2.1",       
-        "Newtonsoft.Json": "8.0.3"
+        "FluentValidation": "6.2.1",
+        "Newtonsoft.Json": "9.0.1"
       }    
     }
   },
   "dependencies": {
     "DataStore.Interfaces": "1.0.0-*",
-    "DataStore.Infrastructure": "1.0.0-*",
-    "Newtonsoft.Json": "9.0.1"
+    "DataStore.Infrastructure": "1.0.0-*"
   }
 }
