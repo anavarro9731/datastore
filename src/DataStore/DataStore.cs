@@ -103,17 +103,11 @@
         {
             return await this.UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
         }
-
-        public async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
+      
+        public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
             where T : IAggregate
         {
-            return await this.UpdateCapabilities.UpdateByIdUsingValuesFromAnotherInstance(id, src, overwriteReadOnly);
-        }
-
-        public async Task<T> UpdateUsingValuesFromAnotherInstanceWithTheSameId<T>(T src, bool overwriteReadOnly = true)
-            where T : IAggregate
-        {
-            return await this.UpdateCapabilities.UpdateUsingValuesFromAnotherInstanceWithTheSameId(src, overwriteReadOnly);
+            return await this.UpdateCapabilities.Update(src, overwriteReadOnly);
         }
 
         public async Task<IEnumerable<T>> UpdateWhere<T>(

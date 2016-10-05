@@ -50,7 +50,7 @@
                 _sagaState.Flags = new FlaggedState(additionalStatus);
             }
 
-            await DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(_sagaState);
+            await DataStore.Update(_sagaState);
         }
 
         protected void CompleteSaga()
@@ -76,7 +76,7 @@
                 throw new Exception("This saga's state has not been set.");
             }
 
-            await DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(_sagaState);
+            await DataStore.Update(_sagaState);
         }
 
         protected async Task UpdateStatus(Enum newStatus)
@@ -91,7 +91,7 @@
                 _sagaState.Flags = new FlaggedState(newStatus);
             }
 
-            await DataStore.UpdateUsingValuesFromAnotherInstanceWithTheSameId(_sagaState);
+            await DataStore.Update(_sagaState);
         }
     }
 

@@ -30,7 +30,7 @@
         }
 
         // .. update by Id; get values from any instance
-        public async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
+        private async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
             where T : IAggregate
         {
             var results =
@@ -41,7 +41,7 @@
         }
 
         // .. update using Id; get values from another instance
-        public async Task<T> UpdateUsingValuesFromAnotherInstanceWithTheSameId<T>(T src, bool overwriteReadOnly = true)
+        public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
             where T : IAggregate
         {
             return await UpdateByIdUsingValuesFromAnotherInstance(src.id, src, overwriteReadOnly);
