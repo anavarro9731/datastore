@@ -3,7 +3,6 @@
   "description": "DataStore.Impl.DocumentDb Class Library",
   "frameworks": {
     "net451": {
-      "frameworkAssemblies": { "System.Runtime": "4.0.10.0" },
       "Microsoft.Azure.DocumentDB": "1.5.2",
       "Newtonsoft.Json": "8.0.2"
     }
