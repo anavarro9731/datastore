@@ -37,8 +37,7 @@
         {
             var client = new DocumentClient(
                 new Uri(this.config.EndpointUrl),
-                this.config.AuthorizationKey.ToSecureString(),
-                new ConnectionPolicy { ConnectionMode = ConnectionMode.Direct, ConnectionProtocol = Protocol.Tcp });
+                this.config.AuthorizationKey.ToSecureString());
             client.PartitionResolvers[this.config.DatabaseSelfLink()] = this.partitionResolver;
             return client;
         }
