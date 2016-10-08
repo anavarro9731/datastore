@@ -5,7 +5,6 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
     using Messages.Events;
@@ -16,21 +15,26 @@
 
         public DataStoreDeleteCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
-            this._eventAggregator = eventAggregator;
+            _eventAggregator = eventAggregator;
             DbConnection = dataStoreConnection;
         }
 
         private IDocumentRepository DbConnection { get; }
 
+        #region IDataStoreDeleteCapabilities Members
+
         public async Task<T> DeleteHardById<T>(Guid id) where T : IAggregate
         {
-            var result = await DbConnection.GetItemAsync<T>(id);
+            var result = await _eventAggregator.Store(new AggregateQueriedById(nameof(DeleteHardById), id, typeof(T)))
+                .ForwardToAsync(DbConnection.GetItemAsync<T>);
+
             return await _eventAggregator.Store(new AggregateHardDeleted<T>(result)).ForwardToAsync(DbConnection.DeleteHardAsync);
         }
 
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
         {
-            var objects = await DbConnection.ExecuteQuery(DbConnection.CreateDocumentQuery<T>().Where(predicate));
+            var objects = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(DeleteHardWhere), DbConnection.CreateDocumentQuery<T>().Where(predicate)))
+                .ForwardToAsync(DbConnection.ExecuteQuery);
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
@@ -41,18 +45,19 @@
             return dataObjects;
         }
 
-        public async Task<T> DeleteSoftById<T>(Guid id) where T: IAggregate
+        public async Task<T> DeleteSoftById<T>(Guid id) where T : IAggregate
         {
-            var result = await DbConnection.GetItemAsync<T>(id);
+            var result = await _eventAggregator.Store(new AggregateQueriedById(nameof(DeleteSoftById), id, typeof(T)))
+                .ForwardToAsync(DbConnection.GetItemAsync<T>);
 
             return await _eventAggregator.Store(new AggregateSoftDeleted<T>(result)).ForwardToAsync(DbConnection.DeleteSoftAsync);
-            
         }
 
         // .. soft delete one or more DataObjects 
         public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
         {
-            var objects = await DbConnection.ExecuteQuery(DbConnection.CreateDocumentQuery<T>().Where(predicate));
+            var objects = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(DeleteSoftWhere), DbConnection.CreateDocumentQuery<T>().Where(predicate)))
+                .ForwardToAsync(DbConnection.ExecuteQuery);
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
@@ -63,5 +68,7 @@
 
             return dataObjects;
         }
+
+        #endregion
     }
 }

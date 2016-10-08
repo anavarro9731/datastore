@@ -6,11 +6,22 @@
     using System.Linq;
     using System.Linq.Expressions;
 
+
+
+
     /// <summary>
     /// Enables the efficient, dynamic composition of query predicates.
     /// </summary>
     public static class PredicateBuilder
     {
+        public static string PredicateToString(Expression expression)
+        {
+            var expBody = ((LambdaExpression)expression).Body.ToString();
+            // Gives: ((x.Id > 5) AndAlso (x.Warranty != False))
+
+            return expBody;
+        }
+
         /// <summary>
         /// Combines the first predicate with the second using the logical "and".
         /// </summary>

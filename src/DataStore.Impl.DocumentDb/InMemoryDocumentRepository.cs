@@ -1,6 +1,5 @@
 ﻿namespace DataStore.DataAccess.Impl.DocumentDb
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -14,6 +13,8 @@
     public class InMemoryDocumentRepository : IDocumentRepository
     {
         public List<IHaveAUniqueId> Aggregates { get; set; } = new List<IHaveAUniqueId>();
+
+        #region IDocumentRepository Members
 
         public Task<T> AddAsync<T>(AggregateAdded<T> aggregateAdded) where T : IHaveAUniqueId
         {
@@ -33,14 +34,14 @@
 
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
-            return Task.FromResult((T)aggregate);
+            return Task.FromResult((T) aggregate);
         }
 
         public Task<T> DeleteSoftAsync<T>(AggregateSoftDeleted<T> aggregateSoftDeleted) where T : IHaveAUniqueId
         {
             var aggregate = Aggregates.Single(a => a.id == aggregateSoftDeleted.Model.id);
 
-            return Task.FromResult((T)aggregate);
+            return Task.FromResult((T) aggregate);
         }
 
         public void Dispose()
@@ -48,24 +49,24 @@
             Aggregates.Clear();
         }
 
-        public Task<IEnumerable<T>> ExecuteQuery<T>(IQueryable<T> query) where T : IHaveAUniqueId
+        public Task<IEnumerable<T>> ExecuteQuery<T>(AggregatesQueried<T> aggregatesQueried) where T : IHaveAUniqueId
         {
-            return Task.FromResult(query.ToList().AsEnumerable());
+            return Task.FromResult(aggregatesQueried.Query.ToList().AsEnumerable());
         }
 
-        public Task<bool> Exists(Guid id)
+        public Task<bool> Exists(AggregateQueriedById aggregateQueriedById)
         {
-            return Task.FromResult(Aggregates.Exists(a => a.id == id));
+            return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedById.Id));
         }
 
-        public Task<T> GetItemAsync<T>(Guid id) where T : IHaveAUniqueId
+        public Task<T> GetItemAsync<T>(AggregateQueriedById aggregateQueriedById) where T : IHaveAUniqueId
         {
-            return Task.FromResult(Aggregates.Cast<T>().Single(a => a.id == id));
+            return Task.FromResult(Aggregates.Cast<T>().Single(a => a.id == aggregateQueriedById.Id));
         }
 
-        public Task<Document> GetItemAsync(Guid id)
+        public Task<Document> GetItemAsync(AggregateQueriedById aggregateQueriedById)
         {
-            var queryable = Aggregates.AsQueryable().Where(x => x.id == id);
+            var queryable = Aggregates.AsQueryable().Where(x => x.id == aggregateQueriedById.Id);
 
             var d = new Document();
 
@@ -81,13 +82,15 @@
             return UpdateAsync(aggregateUpdated.Model);
         }
 
+        #endregion
+
         private Task<T> UpdateAsync<T>(T item) where T : IHaveAUniqueId
         {
             var toUpdate = Aggregates.Single(x => x.id == item.id);
 
             item.CopyProperties(toUpdate);
 
-            return Task.FromResult((T)toUpdate);
+            return Task.FromResult((T) toUpdate);
         }
     }
 }

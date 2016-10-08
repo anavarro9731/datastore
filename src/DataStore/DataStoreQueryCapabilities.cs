@@ -6,12 +6,17 @@
     using System.Threading.Tasks;
 
     using DataAccess.Interfaces;
+    using DataAccess.Interfaces.Addons;
+    using Messages.Events;
     using Microsoft.Azure.Documents;
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
     {
-        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection)
+        private readonly IEventAggregator _eventAggregator;
+
+        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             this.DbConnection = dataStoreConnection;
         }
 
@@ -20,7 +25,7 @@
         public async Task<bool> Exists(Guid id)
         {
             if (id == Guid.Empty) return false;
-            return await this.DbConnection.Exists(id);
+            return await _eventAggregator.Store(new AggregateQueriedById(nameof(Exists), id)).ForwardToAsync(DbConnection.Exists);
         }
 
         // get a filtered list of the models from set of DataObjects
@@ -33,7 +38,7 @@
                 queryable = queryableExtension(queryable);
             }
 
-            var results = await this.DbConnection.ExecuteQuery(queryable);
+            var results = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(Read), queryable)).ForwardToAsync(DbConnection.ExecuteQuery);
             return results;
         }
 
@@ -66,7 +71,7 @@
         // get a filtered list of the models from  a set of DataObjects
         public async Task<Document> ReadById(Guid modelId)
         {
-            var result = await this.DbConnection.GetItemAsync(modelId);
+            var result = await _eventAggregator.Store(new AggregateQueriedById(nameof(ReadById), modelId)).ForwardToAsync(DbConnection.GetItemAsync);
             return result;
         }
     }

@@ -21,7 +21,7 @@
         {
             _eventAggregator = eventAggregator ?? new EventAggregator();
             DsConnection = documentRepository;
-            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection);
+            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, _eventAggregator);
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, _eventAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, _eventAggregator);
             CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, _eventAggregator);

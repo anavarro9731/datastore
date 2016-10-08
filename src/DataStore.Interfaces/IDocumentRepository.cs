@@ -13,13 +13,13 @@ namespace DataStore.DataAccess.Interfaces
 
         IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema;
         
-        Task<IEnumerable<T>> ExecuteQuery<T>(IQueryable<T> query) where T : IHaveAUniqueId;
+        Task<IEnumerable<T>> ExecuteQuery<T>(AggregatesQueried<T> aggregatesQueried) where T : IHaveAUniqueId;
 
-        Task<bool> Exists(Guid id);
+        Task<bool> Exists(AggregateQueriedById aggregateQueriedById);
 
-        Task<T> GetItemAsync<T>(Guid id) where T : IHaveAUniqueId;
+        Task<T> GetItemAsync<T>(AggregateQueriedById aggregateQueriedById) where T : IHaveAUniqueId;
 
-        Task<Document> GetItemAsync(Guid id);
+        Task<Document> GetItemAsync(AggregateQueriedById aggregateQueriedById);
 
         Task<T> UpdateAsync<T>(AggregateUpdated<T> aggregateUpdated) where T : IHaveAUniqueId;
     

@@ -2,9 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using Interfaces;
+    using Interfaces.Addons;
     using Messages.Events;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
@@ -20,7 +22,7 @@
         public DocumentRepository(DocumentDbSettings config)
         {
             _documentClient = new DocumentDbClientFactory(config).GetDocumentClient();
-            this._config = config;
+            _config = config;
         }
 
         #region IDocumentRepository Members
@@ -34,6 +36,7 @@
 
             var disableAutoIdGeneration = aggregateAdded.Model.id != Guid.Empty;
 
+            var stopWatch = Stopwatch.StartNew();            
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
@@ -42,6 +45,9 @@
                                 _config.DatabaseSelfLink(),
                                 aggregateAdded.Model,
                                 disableAutomaticIdGeneration: disableAutoIdGeneration));
+            stopWatch.Stop();
+            aggregateAdded.QueryDuration = stopWatch.Elapsed;
+            aggregateAdded.QueryCost = result.RequestCharge;
 
             return (T) (dynamic) result.Resource;
         }
@@ -56,14 +62,32 @@
         public async Task<T> DeleteHardAsync<T>(AggregateHardDeleted<T> aggregateHardDeleted) where T : IHaveAUniqueId
         {
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
-            return (T) (dynamic) (await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.DeleteDocumentAsync(docLink))).Resource;
+
+            var stopWatch = Stopwatch.StartNew();
+            var result = await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.DeleteDocumentAsync(docLink));
+            stopWatch.Stop();
+            aggregateHardDeleted.QueryCost = result.RequestCharge;
+            aggregateHardDeleted.QueryDuration = stopWatch.Elapsed;
+
+            return (T) (dynamic) result.Resource;
         }
 
         public async Task<T> DeleteSoftAsync<T>(AggregateSoftDeleted<T> aggregateSoftDeleted) where T : IHaveAUniqueId
         {
-            var document = await GetItemAsync(aggregateSoftDeleted.Model.id);
+            //HACK: this call inside the doc repository is effectively duplicate [see callers] 
+            //and causes us to miss this query when profiling, arguably its cheap, but still
+            //if I can determine how to create an Azure Document from T we can ditch it.
+            var document = await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
+
             document.SetPropertyValue(nameof(IAggregate.Active), false);
-            return (T) (dynamic) (await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.ReplaceDocumentAsync(document.SelfLink, document))).Resource;
+
+            var stopWatch = Stopwatch.StartNew();
+            var result = await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.ReplaceDocumentAsync(document.SelfLink, document));
+            stopWatch.Stop();
+            aggregateSoftDeleted.QueryDuration = stopWatch.Elapsed;
+            aggregateSoftDeleted.QueryCost = result.RequestCharge;
+
+            return (T) (dynamic) result.Resource;
         }
 
         public void Dispose()
@@ -71,60 +95,81 @@
             _documentClient.Dispose();
         }
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(IQueryable<T> query) where T : IHaveAUniqueId
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(AggregatesQueried<T> aggregatesQueried) where T : IHaveAUniqueId
         {
             var results = new List<T>();
 
-            var documentQuery = query.AsDocumentQuery();
+            var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
+            var stopWatch = Stopwatch.StartNew();
             while (documentQuery.HasMoreResults)
             {
-                results.AddRange(
-                    await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>()).ConfigureAwait(false));
-            }
+                var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>()).ConfigureAwait(false);
 
+                aggregatesQueried.QueryCost += result.RequestCharge;
+
+                results.AddRange(result);
+            }
+            stopWatch.Stop();
+            aggregatesQueried.QueryDuration = stopWatch.Elapsed;
             return results;
         }
 
-        public async Task<bool> Exists(Guid id)
+        public async Task<T> GetItemAsync<T>(AggregateQueriedById aggregateQueriedById) where T : IHaveAUniqueId
         {
-            var query = _documentClient.CreateDocumentQuery(_config.DatabaseSelfLink()).Where(item => item.Id == id.ToString()).AsDocumentQuery();
-            var results = await query.ExecuteNextAsync();
-            return results.Count > 0;
-        }
-
-        public async Task<T> GetItemAsync<T>(Guid id) where T : IHaveAUniqueId
-        {
-            var result = await GetItemAsync(id);
+            var result = await GetItemAsync(aggregateQueriedById);
             return (T) (dynamic) result;
         }
 
-        public async Task<Document> GetItemAsync(Guid id)
+        public async Task<Document> GetItemAsync(AggregateQueriedById aggregateQueriedById)
         {
             try
             {
-                var result = await _documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(id));
+                var stopWatch = Stopwatch.StartNew();
+                var result = await _documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id));
                 if (result == null)
                 {
-                    throw new DatabaseRecordNotFoundException(id.ToString());
-                }
+                    throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
+                }                
+                stopWatch.Stop();
+                aggregateQueriedById.QueryDuration = stopWatch.Elapsed;
+                aggregateQueriedById.QueryCost = result.RequestCharge;
 
                 return result.Resource;
             }
             catch (Exception e)
             {
-                throw new DatabaseException($"Failed to retrieve record with id {id}: {e.Message}", e);
+                throw new DatabaseException($"Failed to retrieve record with id {aggregateQueriedById.Id}: {e.Message}", e);
             }
         }
 
         public async Task<T> UpdateAsync<T>(AggregateUpdated<T> aggregateUpdated) where T : IHaveAUniqueId
         {
-            return
-                (T) (dynamic) (await
+            var stopWatch = Stopwatch.StartNew();
+            var result =
+                await
                     DocumentDbUtils.ExecuteWithRetries(
-                        () =>
-                            _documentClient.ReplaceDocumentAsync(
-                                CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
-                                aggregateUpdated.Model))).Resource;
+                        () => _documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model));
+
+            stopWatch.Stop();
+            aggregateUpdated.QueryDuration = stopWatch.Elapsed;
+            aggregateUpdated.QueryCost = result.RequestCharge;
+
+            return (T) (dynamic) result.Resource;
+        }
+
+        public async Task<bool> Exists(AggregateQueriedById aggregateQueriedById)
+        {
+            var stopWatch = Stopwatch.StartNew();
+            var query =
+                _documentClient.CreateDocumentQuery(_config.DatabaseSelfLink()).Where(item => item.Id == aggregateQueriedById.Id.ToString()).AsDocumentQuery();
+
+            var results = await query.ExecuteNextAsync();
+
+            stopWatch.Stop();
+            aggregateQueriedById.QueryDuration = stopWatch.Elapsed;
+            aggregateQueriedById.QueryCost = results.RequestCharge;
+
+            return results.Count > 0;
         }
 
         #endregion
