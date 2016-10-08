@@ -2,5 +2,6 @@
 {
     public interface IDataStoreEvent
     {
+        double QueryCost { get; set; }
     }
 }

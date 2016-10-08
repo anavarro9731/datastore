@@ -8,5 +8,7 @@ namespace DataStore.DataAccess.Interfaces
                                   IDataStoreDeleteCapabilities, 
                                   IDataStoreUpdateCapabilities
     {
+        IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new();
+        IDataStoreQueryCapabilities AsReadOnly();
     }
 }
