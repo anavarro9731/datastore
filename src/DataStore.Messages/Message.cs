@@ -14,7 +14,7 @@
 
         public Guid MessageId { get; }
 
-        public Guid TransactionId { get; set; }
+        public Guid? TransactionId { get; set; }
 
     }
 }
