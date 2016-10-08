@@ -7,28 +7,28 @@
     /// <summary>
     ///     a state manager which uses secure datastores
     /// </summary>
-    public class SecureStateManager : ISecureStateManager
+    public class StateManagerWithAuthorization : IStateManagerWithAuthorization
     {
-        protected SecureStateManager(IDocumentRepository repository, IEventAggregator eventAggregator, IUserWithPermissions user)
+        protected StateManagerWithAuthorization(IDocumentRepository repository, IEventAggregator eventAggregator, IUserWithPermissions user)
         {
-            GlobalStore = new SecureDataStore(repository, eventAggregator, user);
+            DocumentDbPrimary = new SecureDataStore(repository, eventAggregator, user);
             TransactionId = Guid.NewGuid();
         }
 
         #region ISecureStateManager Members
 
-        public ISecureDataStore GlobalStore { get; }
+        public ISecureDataStore DocumentDbPrimary { get; }
 
         public Guid TransactionId { get; set; }
 
         public virtual void Dispose()
         {
-            GlobalStore.Dispose();
+            DocumentDbPrimary.Dispose();
         }
 
         public virtual void SubmitChanges()
         {
-            GlobalStore.CommitChanges();
+            DocumentDbPrimary.CommitChanges();
         }
 
         #endregion

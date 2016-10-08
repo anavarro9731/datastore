@@ -4,9 +4,9 @@
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
 
-    public class StateManagerWithoutAuthorization : IStateManagerWithoutAuthorization
+    public class StateManager : IStateManagerWithoutAuthorization
     {
-        public StateManagerWithoutAuthorization(IDocumentRepository repository, IEventAggregator eventAggregator)
+        public StateManager(IDocumentRepository repository, IEventAggregator eventAggregator)
         {
             DocumentDbPrimary = new DataStore(repository, eventAggregator);
             TransactionId = Guid.NewGuid();
@@ -25,6 +25,7 @@
 
         public virtual void SubmitChanges()
         {
+            
         }
 
         #endregion
