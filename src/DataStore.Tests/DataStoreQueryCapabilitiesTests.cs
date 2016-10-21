@@ -257,7 +257,7 @@ namespace DataStore.Tests
             await testHarness.AddToDatabase(existingCar);
 
             // When
-            var transformedCar = (await testHarness.DataStore.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId).Select(c => new { c.id, c.Make }))).Single();
+            var transformedCar = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId).Select(c => new { c.id, c.Make }))).Single();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e.TypeName == transformedCar.GetType().FullName));
@@ -280,7 +280,7 @@ namespace DataStore.Tests
             await testHarness.AddToDatabase(existingCar);
 
             // When
-            var carFromDatabase = (await testHarness.DataStore.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
+            var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is TransformationQueried<Car>));

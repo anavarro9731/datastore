@@ -9,9 +9,11 @@ namespace DataStore.DataAccess.Interfaces
                                   IDataStoreQueryCapabilities, 
                                   IDataStoreDeleteCapabilities, 
                                   IDataStoreUpdateCapabilities
+                                  
     {
         IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new();
         IDataStoreQueryCapabilities AsReadOnly();
         Task CommitChanges();
+        IAdvancedCapabilities Advanced { get; }
     }
 }

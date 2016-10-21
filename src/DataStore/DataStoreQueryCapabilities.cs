@@ -1,6 +1,5 @@
 ﻿using DataStore.DataAccess.Interfaces.Events;
 using DataStore.DataAccess.Models.Messages.Events;
-using DataStore.Infrastructure.PureFunctions.PureFunctions;
 using DataStore.Infrastructure.PureFunctions.PureFunctions.Extensions;
 using FluentValidation.TestHelper;
 
@@ -41,33 +40,7 @@ namespace DataStore
 
             return ApplyAggregateEvents(results, false);
         }
-        
-        public async Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
-        {
-            Guard.Against(() => queryableExtension == null, "Queryable cannot be null when asking for a different return type to the type being queried");
-
-            var results = await ReadCommittedInternal(queryableExtension);
-
-            return results;
-        }
-
-        // get a filtered list of the models from a set of active DataObjects
-        public async Task<IEnumerable<T2>> ReadActiveCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
-        {
-            Guard.Against(() => queryableExtension == null, "Queryable cannot be null when asking for a different return type to the type being queried");
-
-            Func<IQueryable<T>, IQueryable<T2>> activeOnlyQueryableExtension = (q) =>
-            {
-                q = q.Where(a => a.Active);
-
-                return queryableExtension(q);
-            };
-
-            var results = await this.ReadCommittedInternal(activeOnlyQueryableExtension);
-
-            return results;
-        }
-
+                
         // get a filtered list of the models from a set of active DataObjects
         public async Task<IEnumerable<T>> ReadActive<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
         {
@@ -114,14 +87,7 @@ namespace DataStore
 
             var results = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(ReadInternal), queryable)).ForwardToAsync(DbConnection.ExecuteQuery);
             return results;
-        }
-
-        private async Task<IEnumerable<T2>> ReadCommittedInternal<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
-        {
-                var transformedQueryable = queryableExtension(this.DbConnection.CreateDocumentQuery<T>());
-                var results = await _eventAggregator.Store(new TransformationQueried<T2>(nameof(ReadCommittedInternal), transformedQueryable)).ForwardToAsync(DbConnection.ExecuteQuery);
-                return results;            
-        }
+        }        
 
         private List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : IAggregate
         {
@@ -164,7 +130,5 @@ namespace DataStore
                 results.Remove(itemToRemove);
             }
         }
-
-
     }
 }

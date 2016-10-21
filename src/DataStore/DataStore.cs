@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
@@ -61,7 +62,6 @@
             return await DeleteCapabilities.DeleteHardById<T>(id);
         }
 
-
         public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
         {
             return await DeleteCapabilities.DeleteSoftWhere(predicate);
@@ -87,17 +87,7 @@
         {
             return await QueryCapabilities.ReadActive(queryableExtension);
         }
-
-        public async Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
-        {
-            return await QueryCapabilities.ReadCommitted(queryableExtension);
-        }
-
-        public async Task<IEnumerable<T2>> ReadActiveCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
-        {
-            return await QueryCapabilities.ReadActiveCommitted(queryableExtension);
-        }
-
+        
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate
         {
             return await QueryCapabilities.ReadActiveById<T>(modelId);
@@ -148,5 +138,7 @@
                 await dataStoreWriteEvent.CommitClosure();
             }
         }
+
+        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, _eventAggregator);
     }
 }
