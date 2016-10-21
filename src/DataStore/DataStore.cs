@@ -146,7 +146,6 @@
             foreach (var dataStoreWriteEvent in dataStoreEvents)
             {
                 await dataStoreWriteEvent.CommitClosure();
-
             }
         }
     }
