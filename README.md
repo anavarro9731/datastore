@@ -88,7 +88,7 @@ Calling DataStore.CommitChanges() will persist pending events to the database, a
 Using a DataStore instance across several consecutive sessions (sets of changes followed by a call to CommitChanges()) 
 is perfectly acceptable. Just note, that if you query the EventAggregator.Events collection you will see the IDataStoreEvents
 from all sessions, but those already committed will be marked as Committed. The reason we do not remove events afer CommitChanges()
-is called is to allow you to query their performance metrics.
+is called is to allow you to query their performance metrics later on.
 
 
 See the following XUnit examples for how this is used.
