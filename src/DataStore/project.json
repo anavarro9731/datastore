@@ -6,7 +6,7 @@
   "packOptions": {
     "projectUrl": "https://github.com/anavarro9731/datastore",
     "summary": "A Document-Centric Data Access Framework for Azure DocumentDb",
-    "tags": [ "DocumentDb", "Azure", "Data Access" ]
+    "tags": [ "DocumentDb", "Azure", "Data Access", "Transactions", "Profiling", "LINQ"]
   },
   "frameworks": {
     "net451": {}

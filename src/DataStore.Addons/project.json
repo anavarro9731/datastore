@@ -5,7 +5,7 @@
   "packOptions": {
     "projectUrl": "https://github.com/anavarro9731/datastore",
     "summary": "A collection of useful addons for the DataStore",
-    "tags": [ "DocumentDb", "Azure", "Data Access" ]
+    "tags": [ "DocumentDb", "Azure", "Data Access", "DataStore" ]
   },
   "frameworks": {
     "net451": {
