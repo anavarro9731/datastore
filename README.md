@@ -10,9 +10,9 @@ It supports basic CRUD operations on any C# object, with some additional feature
 
 * Strongly typed mapping between documents and C# class types with generics
 * Support for LINQ queries against objects and their children (where the DocumentDB client supports it)
-* Limited cross-document transactional support
+* Limited cross-document transactional support (see transactions examples below)
 * In-memory database, and event history for testing (see transactions examples below)
-* Tracing and profiling (e.g. Duration and Query Cost in Request Units)
+* Profiling (e.g. Duration and Query Cost in Request Units)
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
@@ -77,8 +77,19 @@ See IDataStore.cs for the full list of supported methods.
 
 ### Transactions
 
-Pending changes to the database are not cimmitted by default.
-Call DataStore.CommitChanges() to persist pending events to the database. 
+Pending changes to the database are not committed by default, 
+they are queued in the order received and stored as events in the EventAggregator.
+
+However, Read Queries performed during a session will be intelligently merged with any uncommitted events in the session 
+so the resultset will include any changes already requested (but not yet committed).
+
+Calling DataStore.CommitChanges() will persist pending events to the database, and mark them as Committed. 
+
+Using a DataStore instance across several consecutive sessions (sets of changes followed by a call to CommitChanges()) 
+is perfectly acceptable. Just note, that if you query the EventAggregator.Events collection you will see the IDataStoreEvents
+from all sessions, but those already committed will be marked as Committed. The reason we do not remove events afer CommitChanges()
+is called is to allow you to query their performance metrics.
+
 
 See the following XUnit examples for how this is used.
 
