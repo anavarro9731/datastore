@@ -1,4 +1,6 @@
-﻿namespace DataStore.DataAccess.Impl.DocumentDb
+﻿using DataStore.DataAccess.Models.Messages.Events;
+
+namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +8,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Interfaces;
-    using Interfaces.Addons;
-    using Messages.Events;
+    using Interfaces.Events;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
@@ -27,29 +28,24 @@
 
         #region IDocumentRepository Members
 
-        public async Task<T> AddAsync<T>(AggregateAdded<T> aggregateAdded) where T : IHaveAUniqueId
+        public async Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate
         {
             if (aggregateAdded == null || aggregateAdded.Model == null)
             {
                 throw new ArgumentNullException(nameof(aggregateAdded));
             }
 
-            var disableAutoIdGeneration = aggregateAdded.Model.id != Guid.Empty;
-
-            var stopWatch = Stopwatch.StartNew();            
+            var stopWatch = Stopwatch.StartNew();
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
                         () =>
                             _documentClient.CreateDocumentAsync(
                                 _config.DatabaseSelfLink(),
-                                aggregateAdded.Model,
-                                disableAutomaticIdGeneration: disableAutoIdGeneration));
+                                aggregateAdded.Model));
             stopWatch.Stop();
             aggregateAdded.QueryDuration = stopWatch.Elapsed;
             aggregateAdded.QueryCost = result.RequestCharge;
-
-            return (T) (dynamic) result.Resource;
         }
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
@@ -59,7 +55,7 @@
             return query;
         }
 
-        public async Task<T> DeleteHardAsync<T>(AggregateHardDeleted<T> aggregateHardDeleted) where T : IHaveAUniqueId
+        public async Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
         {
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
@@ -68,11 +64,9 @@
             stopWatch.Stop();
             aggregateHardDeleted.QueryCost = result.RequestCharge;
             aggregateHardDeleted.QueryDuration = stopWatch.Elapsed;
-
-            return (T) (dynamic) result.Resource;
         }
 
-        public async Task<T> DeleteSoftAsync<T>(AggregateSoftDeleted<T> aggregateSoftDeleted) where T : IHaveAUniqueId
+        public async Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
         {
             //HACK: this call inside the doc repository is effectively duplicate [see callers] 
             //and causes us to miss this query when profiling, arguably its cheap, but still
@@ -80,14 +74,13 @@
             var document = await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
 
             document.SetPropertyValue(nameof(IAggregate.Active), false);
+            document.SetPropertyValue(nameof(IAggregate.Modified), DateTime.UtcNow);
 
             var stopWatch = Stopwatch.StartNew();
             var result = await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.ReplaceDocumentAsync(document.SelfLink, document));
             stopWatch.Stop();
             aggregateSoftDeleted.QueryDuration = stopWatch.Elapsed;
             aggregateSoftDeleted.QueryCost = result.RequestCharge;
-
-            return (T) (dynamic) result.Resource;
         }
 
         public void Dispose()
@@ -95,7 +88,7 @@
             _documentClient.Dispose();
         }
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(AggregatesQueried<T> aggregatesQueried) where T : IHaveAUniqueId
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) 
         {
             var results = new List<T>();
 
@@ -114,13 +107,13 @@
             return results;
         }
 
-        public async Task<T> GetItemAsync<T>(AggregateQueriedById aggregateQueriedById) where T : IHaveAUniqueId
+        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
             var result = await GetItemAsync(aggregateQueriedById);
             return (T) (dynamic) result;
         }
 
-        public async Task<Document> GetItemAsync(AggregateQueriedById aggregateQueriedById)
+        public async Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById)
         {
             try
             {
@@ -129,7 +122,7 @@
                 if (result == null)
                 {
                     throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
-                }                
+                }
                 stopWatch.Stop();
                 aggregateQueriedById.QueryDuration = stopWatch.Elapsed;
                 aggregateQueriedById.QueryCost = result.RequestCharge;
@@ -142,7 +135,7 @@
             }
         }
 
-        public async Task<T> UpdateAsync<T>(AggregateUpdated<T> aggregateUpdated) where T : IHaveAUniqueId
+        public async Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
         {
             var stopWatch = Stopwatch.StartNew();
             var result =
@@ -153,11 +146,9 @@
             stopWatch.Stop();
             aggregateUpdated.QueryDuration = stopWatch.Elapsed;
             aggregateUpdated.QueryCost = result.RequestCharge;
-
-            return (T) (dynamic) result.Resource;
         }
 
-        public async Task<bool> Exists(AggregateQueriedById aggregateQueriedById)
+        public async Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
             var stopWatch = Stopwatch.StartNew();
             var query =

@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace DataStore.DataAccess.Interfaces
 {
     using System;
@@ -10,5 +12,6 @@ namespace DataStore.DataAccess.Interfaces
     {
         IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new();
         IDataStoreQueryCapabilities AsReadOnly();
+        Task CommitChanges();
     }
 }

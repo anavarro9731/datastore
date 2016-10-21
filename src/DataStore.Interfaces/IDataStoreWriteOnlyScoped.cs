@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace DataStore.DataAccess.Interfaces
 {
     using System;
@@ -9,5 +11,6 @@ namespace DataStore.DataAccess.Interfaces
         IDisposable where T : IAggregate, new()
 
     {
+        Task CommitChanges();
     }
 }

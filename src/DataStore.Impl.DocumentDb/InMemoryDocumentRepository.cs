@@ -1,22 +1,26 @@
-﻿namespace DataStore.DataAccess.Impl.DocumentDb
+﻿using System;
+
+namespace DataStore.DataAccess.Impl.DocumentDb
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using DataStore.DataAccess.Interfaces.Events;
+
     using Infrastructure.PureFunctions.PureFunctions.Extensions;
     using Interfaces;
-    using Messages.Events;
     using Microsoft.Azure.Documents;
     using Newtonsoft.Json;
 
     public class InMemoryDocumentRepository : IDocumentRepository
     {
-        public List<IHaveAUniqueId> Aggregates { get; set; } = new List<IHaveAUniqueId>();
+        public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
 
         #region IDocumentRepository Members
 
-        public Task<T> AddAsync<T>(AggregateAdded<T> aggregateAdded) where T : IHaveAUniqueId
+        public Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate
         {
             Aggregates.Add(aggregateAdded.Model);
 
@@ -25,10 +29,10 @@
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
-            return Aggregates.Where(x => x is T).Cast<T>().AsQueryable();
+            return Clone(Aggregates.Where(x => x is T).Cast<T>()).AsQueryable();
         }
 
-        public Task<T> DeleteHardAsync<T>(AggregateHardDeleted<T> aggregateHardDeleted) where T : IHaveAUniqueId
+        public Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
         {
             var aggregate = Aggregates.Single(a => a.id == aggregateHardDeleted.Model.id);
 
@@ -37,9 +41,10 @@
             return Task.FromResult((T) aggregate);
         }
 
-        public Task<T> DeleteSoftAsync<T>(AggregateSoftDeleted<T> aggregateSoftDeleted) where T : IHaveAUniqueId
+        public Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
         {
             var aggregate = Aggregates.Single(a => a.id == aggregateSoftDeleted.Model.id);
+            (aggregate as dynamic).Active = false;
 
             return Task.FromResult((T) aggregate);
         }
@@ -49,22 +54,24 @@
             Aggregates.Clear();
         }
 
-        public Task<IEnumerable<T>> ExecuteQuery<T>(AggregatesQueried<T> aggregatesQueried) where T : IHaveAUniqueId
+        public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
-            return Task.FromResult(aggregatesQueried.Query.ToList().AsEnumerable());
+            var cloned = aggregatesQueried.Query.ToList().AsEnumerable();
+
+            return Task.FromResult(cloned);
         }
 
-        public Task<bool> Exists(AggregateQueriedById aggregateQueriedById)
+        public Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
             return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedById.Id));
         }
 
-        public Task<T> GetItemAsync<T>(AggregateQueriedById aggregateQueriedById) where T : IHaveAUniqueId
+        public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
             return Task.FromResult(Aggregates.Cast<T>().Single(a => a.id == aggregateQueriedById.Id));
         }
 
-        public Task<Document> GetItemAsync(AggregateQueriedById aggregateQueriedById)
+        public Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById)
         {
             var queryable = Aggregates.AsQueryable().Where(x => x.id == aggregateQueriedById.Id);
 
@@ -77,7 +84,7 @@
             return Task.FromResult(d);
         }
 
-        public Task<T> UpdateAsync<T>(AggregateUpdated<T> aggregateUpdated) where T : IHaveAUniqueId
+        public Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
         {
             return UpdateAsync(aggregateUpdated.Model);
         }
@@ -92,5 +99,13 @@
 
             return Task.FromResult((T) toUpdate);
         }
+
+        private IEnumerable<T> Clone<T>(IEnumerable<T> toClone) where T: IHaveAUniqueId
+        {
+            var asJson = JsonConvert.SerializeObject(toClone);
+            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson);
+            return cloned;
+        }
     }
+
 }

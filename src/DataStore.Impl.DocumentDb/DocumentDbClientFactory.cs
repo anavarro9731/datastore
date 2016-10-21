@@ -1,34 +1,26 @@
-﻿namespace DataStore.DataAccess.Impl.DocumentDb
-{
-    using System;
-    using Infrastructure.PureFunctions.PureFunctions.Extensions;
-    using Microsoft.Azure.Documents.Client;
-    using Models.Config;
+﻿using System;
+using DataStore.DataAccess.Models.Config;
+using DataStore.Infrastructure.PureFunctions.PureFunctions.Extensions;
+using Microsoft.Azure.Documents.Client;
 
+namespace DataStore.DataAccess.Impl.DocumentDb
+{
     public class DocumentDbClientFactory
     {
-        private static readonly object Locker = new object();
-
-        private static volatile bool initialised;
-
         private readonly DocumentDbSettings config;
-
-        private readonly IDocumentDbInitialiser initialiser;
 
         private readonly SimplePartitionResolver partitionResolver;
 
         public DocumentDbClientFactory(DocumentDbSettings config)
         {
-            this.initialiser = new DocumentDbInitialiser(config);
-            this.partitionResolver = new SimplePartitionResolver(config);
+            partitionResolver = new SimplePartitionResolver(config);
             this.config = config;
+            new DocumentDbInitialiser(config).Initialise();
         }
 
         public DocumentClient GetDocumentClient()
         {
-            this.InitialiseIfRequired();
-
-            var client = this.CreateDocumentClient();
+            var client = CreateDocumentClient();
 
             return client;
         }
@@ -36,28 +28,10 @@
         private DocumentClient CreateDocumentClient()
         {
             var client = new DocumentClient(
-                new Uri(this.config.EndpointUrl),
-                this.config.AuthorizationKey.ToSecureString());
-            client.PartitionResolvers[this.config.DatabaseSelfLink()] = this.partitionResolver;
+                new Uri(config.EndpointUrl),
+                config.AuthorizationKey.ToSecureString());
+            client.PartitionResolvers[config.DatabaseSelfLink()] = partitionResolver;
             return client;
-        }
-
-        private void InitialiseIfRequired()
-        {
-            if (!initialised)
-            {
-                lock (Locker)
-                {
-                    if (!initialised)
-                    {
-                        this.CreateDocumentClient();
-
-                        this.initialiser.Initialise();
-
-                        initialised = true;
-                    }
-                }
-            }
         }
     }
 }

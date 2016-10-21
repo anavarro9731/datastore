@@ -2,7 +2,7 @@
 
 A Document-Centric Data Access Framework for Azure DocumentDB
 
-##Overview
+## Overview
 
 DataStore is an easy-to-use, data-access framework, which maps POCO C# classes to documents.
 
@@ -10,24 +10,24 @@ It supports basic CRUD operations on any C# object, with some additional feature
 
 * Strongly typed mapping between documents and C# class types with generics
 * Support for LINQ queries against objects and their children (where the DocumentDB client supports it)
-* In-memory database, and event history for testing
-* Id and timestamp management of object hierarchies
+* Limited cross-document transactional support
+* In-memory database, and event history for testing (see transactions examples below)
+* Tracing and profiling (e.g. Duration and Query Cost in Request Units)
+* Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
 DataStore is built with .NET Core SDK v.1.0.0-preview2-003131 tools but requires TFM net451. 
 
 This is mainly because the DocumentDB Client Library does not support .NET Core yet.
 
-##Roadmap
+## Roadmap
 
 * Better documentation of API features
-* Tracing and profiling
-* Limited cross-document transactional support
-* Partition support 
+* Partitioned Collection support 
 * Workflows (i.e. long running transaction support)
 * Document-level Security
 
-##Usage
+## Usage
 
 Import the Nuget Package "DataStore".
 
@@ -63,7 +63,7 @@ d.Update(car);
 
 Delete It
 
-`d.SoftDeleteById<Car>(car.Id);`
+`d.DeleteSoftById<Car>(car.Id);`
 
 Find It
 
@@ -75,33 +75,72 @@ or
 
 See IDataStore.cs for the full list of supported methods.
 
-###Unit Test Example
+### Transactions
 
-using Xunit;
-...
+Pending changes to the database are not cimmitted by default.
+Call DataStore.CommitChanges() to persist pending events to the database. 
 
-   [Fact]
-    public async void CanUpdateUser()
-    {
-        var documentRepository = new InMemoryDocumentRepository();
-        var inMemoryDb = documentRepository.Aggregates;
-        var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true, AddQueryEventsToEvents = false };
-        var dataStore = new DataStore(documentRepository, EventAggregator);
+See the following XUnit examples for how this is used.
 
-        var userId = Guid.NewGuid();
+```    
+public async void DoesNotUpdateCarInDatabase()
+{
+    var documentRepository = new InMemoryDocumentRepository();
+    var inMemoryDb = documentRepository.Aggregates;
+    var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true };
+    var dataStore = new DataStore(documentRepository, eventAggregator);
+
+    var carId = Guid.NewGuid();
         
-        //Given
-        inMemoryDb.Add(new User() {
-            id = userId,
-            Email = "roguetrader@therebellion.org"
-        });
+    //Given
+    inMemoryDb.Add(new Car() {
+        id = userId,
+        Make = "Toyota"
+    });
 
-        //When
-        await dataStore.UpdateById<User>(userId, user => user.Email = "redarteugor@therebellion.org");
+    //When
+    await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
 
-        //Then the user is updated
-        var userUpdated = eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<User>);
-        Assert.NotNull(userUpdated);
-        Assert.Equal(userUpdated.As<AggregateUpdated<User>>().Model.Email, "redarteugor@therebellion.org");
-	}
+    //Then 
+        
+    //We have a AggregateUpdated event
+    Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+        
+    //The underlying database has not changed
+    Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == Guid.NewGuid()).Make);
+        
+    //The dataStore has applied pending changes to its collection
+    Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+}
 
+public async void CanUpdateCarInDatabase()
+{
+    var documentRepository = new InMemoryDocumentRepository();
+    var inMemoryDb = documentRepository.Aggregates;
+    var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true };
+    var dataStore = new DataStore(documentRepository, eventAggregator);
+
+    var carId = Guid.NewGuid();
+        
+    //Given
+    inMemoryDb.Add(new Car() {
+        id = userId,
+        Make = "Toyota"
+    });
+
+    //When
+    await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+    await dataStore.CommitChanges();
+
+    //Then 
+        
+    //We have a AggregateUpdated event
+    Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+        
+    //The underlying database has not changed
+    Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == Guid.NewGuid()).Make);
+        
+    //The dataStore has applied pending changes to its collection
+    Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+}
+```

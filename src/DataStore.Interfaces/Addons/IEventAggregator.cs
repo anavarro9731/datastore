@@ -1,16 +1,17 @@
-﻿namespace DataStore.DataAccess.Interfaces.Addons
+﻿using DataStore.DataAccess.Interfaces.Events;
+
+namespace DataStore.DataAccess.Interfaces.Addons
 {
     using System.Collections.Generic;
-    using Messages;
 
     public interface IEventAggregator
     {
-        List<Event> Events { get; }
+        List<IEvent> Events { get; }
 
         bool PropogateDomainEvents { get; set; }
 
-        IPropogateEvents<TEvent> Store<TEvent>(TEvent @event) where TEvent : Event;
+        IPropogateEvents<TEvent> Store<TEvent>(TEvent @event) where TEvent : IEvent;
 
-        IValueReturner When<TEvent>() where TEvent : Event;
+        IValueReturner When<TEvent>() where TEvent : IEvent;
     }
 }

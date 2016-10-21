@@ -15,6 +15,12 @@
         Task<IEnumerable<T>> ReadActive<T>(
             Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate;
 
+        Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate;
+
+        Task<IEnumerable<T2>> ReadActiveCommitted<T,T2>(
+            Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate;
+
+
         Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate;
 
         Task<Document> ReadById(Guid modelId);

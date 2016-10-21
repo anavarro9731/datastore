@@ -1,7 +1,7 @@
-﻿namespace DataStore.Infrastructure.Impl.Sagas
-{
-    using Messages;
+﻿using DataStore.DataAccess.Models.Messages;
 
+namespace DataStore.Infrastructure.Impl.Sagas
+{
     public class SagaCompleted : Event
     {
     }

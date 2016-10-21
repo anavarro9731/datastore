@@ -1,11 +1,12 @@
-﻿namespace DataStore.DataAccess.Interfaces.Addons
+﻿using DataStore.DataAccess.Interfaces.Events;
+
+namespace DataStore.DataAccess.Interfaces.Addons
 {
     using System;
     using System.Threading.Tasks;
-    using Messages;
 
     public interface IPropogateEvents<out T> 
-        where T : Event
+        where T : IEvent
     {
         void ForwardTo(Action<T> passTo);
 

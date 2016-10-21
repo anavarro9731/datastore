@@ -1,4 +1,4 @@
-﻿namespace DataStore.Messages
+﻿namespace DataStore.DataAccess.Models.Messages
 {
     public class CRUDCommand<TCommand> : Command
     {

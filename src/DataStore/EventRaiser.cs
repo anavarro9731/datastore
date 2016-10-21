@@ -1,12 +1,14 @@
 namespace DataStore
 {
     using System;
+    using System.Collections;
     using System.Threading.Tasks;
     using DataAccess.Interfaces.Addons;
-    using Messages;
+
+    using global::DataStore.DataAccess.Interfaces.Events;
 
     public class EventPropogator<TEvent> : IPropogateEvents<TEvent>
-        where TEvent : Event
+        where TEvent : IEvent
     {
         private readonly TEvent _event;
 
@@ -23,7 +25,7 @@ namespace DataStore
             this._propogateDataStoreEvents = propogateDataStoreEvents;
             this._toReturn = toReturn;
         }
-
+       
         public async Task<TOut> ForwardToAsync<TOut>(Func<TEvent, Task<TOut>> forwardTo)
         {
             if ((_propogateDomainEvents && !(_event is IDataStoreEvent)) || (_propogateDataStoreEvents && _event is IDataStoreEvent))

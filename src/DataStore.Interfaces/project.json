@@ -10,6 +10,5 @@
     }
   },
   "dependencies": {
-    "DataStore.Messages": "1.0.0-*"
   }
 }

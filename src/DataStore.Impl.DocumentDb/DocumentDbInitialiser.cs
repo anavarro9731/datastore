@@ -30,9 +30,7 @@
         {
             var db = this.RetrieveOrCreateDatabaseAsync(this.documentClient).Result;
 
-            var collections =
-                this.RetrieveOrCreateCollectionsAsync(new List<string>() { this.settings.DefaultCollectionName }, db)
-                    .Result;
+            var collections =this.RetrieveOrCreateCollectionsAsync(new List<string>() { this.settings.DefaultCollectionName }, db).Result;
 
             return new Tuple<string, List<string>>(db.SelfLink, collections.Select(c => c.SelfLink).ToList());
         }

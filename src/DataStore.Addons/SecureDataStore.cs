@@ -39,7 +39,7 @@
 
         public IDataStore Unsecured { get; set; }
 
-        public void CommitChanges()
+        public virtual async Task CommitChanges()
         {
             //this.Unsecured.CommitChanges();
         }

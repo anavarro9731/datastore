@@ -1,11 +1,12 @@
 ﻿namespace DataStore.DataAccess.Interfaces.Addons
 {
     using System;
+    using System.Threading.Tasks;
 
-    public interface IStateManager : IDisposable
+    public interface IStateManager
     {
         Guid TransactionId { get; set; }
 
-        void SubmitChanges();
+        Task CommitChanges();
     }
 }

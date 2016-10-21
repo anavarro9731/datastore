@@ -1,4 +1,6 @@
-﻿namespace DataStore
+﻿using DataStore.DataAccess.Models.Messages.Events;
+
+namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -7,7 +9,6 @@
     using System.Threading.Tasks;
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
-    using Messages.Events;
 
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
@@ -16,10 +17,10 @@
         public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            DbConnection = dataStoreConnection;
+            DsConnection = dataStoreConnection;
         }
 
-        private IDocumentRepository DbConnection { get; }
+        private IDocumentRepository DsConnection { get; }
 
         #region IDataStoreUpdateCapabilities Members
 
@@ -44,8 +45,8 @@
             Action<T> action,
             bool overwriteReadOnly = false) where T : IAggregate
         {
-            var objects = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(UpdateWhere), DbConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .ForwardToAsync(DbConnection.ExecuteQuery);
+            var objects = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                .ForwardToAsync(DsConnection.ExecuteQuery);
             
             var dataObjects = objects.AsEnumerable();
             if (dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly))
@@ -56,7 +57,7 @@
             foreach (var dataObject in dataObjects)
             {
                 action(dataObject);
-                await _eventAggregator.Store(new AggregateUpdated<T>(dataObject)).ForwardToAsync(DbConnection.UpdateAsync);
+                _eventAggregator.Store(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
             }
 
             return dataObjects;

@@ -1,6 +1,7 @@
 ﻿namespace DataStore.Infrastructure.Impl.StateManagers
 {
     using System;
+    using System.Threading.Tasks;
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
 
@@ -17,15 +18,10 @@
         public IDataStore DocumentDbPrimary { get; }
 
         public Guid TransactionId { get; set; }
-
-        public virtual void Dispose()
+        
+        public virtual async Task CommitChanges()
         {
-            DocumentDbPrimary.Dispose();
-        }
-
-        public virtual void SubmitChanges()
-        {
-            
+            await DocumentDbPrimary.CommitChanges();
         }
 
         #endregion

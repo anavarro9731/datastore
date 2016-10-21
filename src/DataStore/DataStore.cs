@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
+    using DataAccess.Interfaces.Events;
     using Microsoft.Azure.Documents;
 
     /// <summary>
@@ -87,6 +88,16 @@
             return await QueryCapabilities.ReadActive(queryableExtension);
         }
 
+        public async Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
+        {
+            return await QueryCapabilities.ReadCommitted(queryableExtension);
+        }
+
+        public async Task<IEnumerable<T2>> ReadActiveCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
+        {
+            return await QueryCapabilities.ReadActiveCommitted(queryableExtension);
+        }
+
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate
         {
             return await QueryCapabilities.ReadActiveById<T>(modelId);
@@ -128,10 +139,15 @@
 
         #endregion
 
-        public void CommitChanges()
+        public async Task CommitChanges()
         {
-            // TODO: apply all events
-            // this requires an update to merge events in read queries made before committing
+            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+
+            foreach (var dataStoreWriteEvent in dataStoreEvents)
+            {
+                await dataStoreWriteEvent.CommitClosure();
+
+            }
         }
     }
 }

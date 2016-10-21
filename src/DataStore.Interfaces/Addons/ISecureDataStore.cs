@@ -13,7 +13,7 @@ namespace DataStore.DataAccess.Interfaces.Addons
 
         IDataStore Unsecured { get; set; }
 
-        void CommitChanges();
+        Task CommitChanges();
 
         Task<T> Create<T>(IApplicationPermission permission, T model, bool readOnly = false)
             where T : IAggregate, new();

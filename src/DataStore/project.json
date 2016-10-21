@@ -12,7 +12,6 @@
     "net451": {}
   },
   "dependencies": {
-    "DataStore.Messages": "1.0.0-*",
     "DataStore.Models": "1.0.0-*",
     "DataStore.Impl.DocumentDb": "1.0.0-*",
     "DataStore.Interfaces": "1.0.0-*",

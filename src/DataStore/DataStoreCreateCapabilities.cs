@@ -1,4 +1,6 @@
-﻿namespace DataStore
+﻿using DataStore.DataAccess.Models.Messages.Events;
+
+namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +8,6 @@
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
     using Infrastructure.PureFunctions.PureFunctions.Extensions;
-    using Messages.Events;
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
     {
@@ -22,7 +23,7 @@
 
         #region IDataStoreCreateCapabilities Members
 
-        public async Task<T> Create<T>(T model, bool readOnly = false) where T : IAggregate, new()
+        public Task<T> Create<T>(T model, bool readOnly = false) where T : IAggregate, new()
         {
             var enriched = new T();
             enriched.UpdateFromAnotherObject(model);
@@ -41,7 +42,9 @@
                 });
             enriched.WalkGraphAndUpdateEntityMeta();
 
-            return await _eventAggregator.Store(new AggregateAdded<T>(enriched)).ForwardToAsync(DsConnection.AddAsync);
+            _eventAggregator.Store(new AggregateAdded<T>(nameof(Create), enriched, DsConnection));
+
+            return Task.FromResult(model);
         }
 
         #endregion

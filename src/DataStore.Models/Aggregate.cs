@@ -25,13 +25,6 @@
             this.ScopeObjectIdCount = scopeObjectIds.Length;
         }
 
-        // .. self affectors
-        public void SoftDelete()
-        {
-            this.Active = false;
-            this.Modified = DateTime.Now;
-        }
-
         public void WalkGraphAndUpdateEntityMeta()
         {
             this.WalkGraphAndUpdateEntityMeta(this);

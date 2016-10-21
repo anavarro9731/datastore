@@ -1,9 +1,11 @@
 ﻿namespace DataStore
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
+    using DataAccess.Interfaces.Events;
     using DataAccess.Interfaces;
     using DataAccess.Interfaces.Addons;
 
@@ -13,9 +15,11 @@
     /// </summary>
     public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : IAggregate, new()
     {
+        private readonly IEventAggregator _eventAggregator;
+
         public DataStoreWriteOnly(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
         {
-            eventAggregator = eventAggregator ?? new EventAggregator();
+            _eventAggregator = eventAggregator ?? new EventAggregator();
             DsConnection = documentRepository;
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, eventAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, eventAggregator);
@@ -83,10 +87,15 @@
 
         #endregion
 
-        public void CommitChanges()
+        public async Task CommitChanges()
         {
-            // TODO: apply all events
-            // this requires an update to merge events in read queries made before committing
+            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+
+            foreach (var dataStoreWriteEvent in dataStoreEvents)
+            {
+                await dataStoreWriteEvent.CommitClosure();
+
+            }
         }
     }
 }

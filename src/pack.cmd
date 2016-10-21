@@ -16,12 +16,6 @@ dotnet pack -c RELEASE --version-suffix %1
 copy bin\RELEASE\*.nupkg c:\Nuget.Local
 
 cd ..
-cd DataStore.Messages
-del bin\RELEASE\*.nupkg
-dotnet pack -c RELEASE --version-suffix %1
-copy bin\RELEASE\*.nupkg c:\Nuget.Local
-
-cd ..
 cd DataStore.Impl.DocumentDb
 del bin\RELEASE\*.nupkg
 dotnet pack -c RELEASE --version-suffix %1

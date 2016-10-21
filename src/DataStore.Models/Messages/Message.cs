@@ -1,7 +1,7 @@
-﻿namespace DataStore.Messages
-{
-    using System;
+﻿using System;
 
+namespace DataStore.DataAccess.Models.Messages
+{
     public abstract class Message
     {
         protected Message()

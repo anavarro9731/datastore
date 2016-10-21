@@ -8,8 +8,6 @@ namespace DataStore.DataAccess.Interfaces
 
         int ScopeObjectIdCount { get; }
 
-        void SoftDelete();
-
         void WalkGraphAndUpdateEntityMeta();
     }
 }
