@@ -9,14 +9,15 @@ DataStore is an easy-to-use, data-access framework, which maps POCO C# classes t
 It supports basic CRUD operations on any C# object, with some additional features such as:
 
 * Strongly typed mapping between documents and C# class types with generics
-* Support for LINQ queries against objects and their children (where the DocumentDB client supports it)
+* Generic Repository with support for LINQ queries against objects and their children (where the DocumentDB client supports it)
 * Limited cross-document transactional support (see transactions examples below)
 * In-memory database, and event history for testing (see transactions examples below)
 * Profiling (e.g. Duration and Query Cost in Request Units)
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
-DataStore is built with .NET Core SDK v.1.0.0-preview2-003131 tools but requires TFM net451. 
+DataStore is built with .NET Core SDK v.1.0.0-preview2-003131 tools but requires TFM net451.
+It is completely backwards compatible with the .NET Framework 4.5.1 platform and does not require .NET Core.
 
 This is mainly because the DocumentDB Client Library does not support .NET Core yet.
 
@@ -24,21 +25,21 @@ This is mainly because the DocumentDB Client Library does not support .NET Core 
 
 * Better documentation of API features
 * Partitioned Collection support 
-* Workflows (i.e. long running transaction support)
-* Document-level Security
+* Optimistic Concurrency Support
+* Support for document-level permissions
 
 ## Usage
 
-Import the Nuget Package "DataStore".
+Import the Nuget Package *DataStore*.
 
-Create a C# class which inherits DataStore.DataAccess.Models.Aggregate.
+Create a C# class which inherits `DataStore.DataAccess.Models.Aggregate`.
 ```
 class Car : Aggregate {
 	public string Make { get; set; }
 	public string Model { get; set; }
 }
 ```
-Create a new DataStore object.
+Create a new `DataStore` object.
 ```
 var d = new DataStore(new DocumentRepository(new DocumentDbSettings(
             string authorizationKey, 
@@ -47,11 +48,11 @@ var d = new DataStore(new DocumentRepository(new DocumentDbSettings(
             string endpointUrl)
 			));
 ```
-Save it to the database.
+##### Save it to DocumentDb
 
 `var car = d.Create(new Car() { Make = "Toyota", Model = "Corolla"});`
 
-Update it 
+##### Update it 
 
 `d.UpdateById<Car>(car.id, (car) => car.Model = "Celica");`
 
@@ -60,12 +61,21 @@ or
 car.Model = "Celica";
 d.Update(car);
 ```
+> The Update() method does not persist the object you pass it directly, 
+> instead it copies matching properties from the object you pass it to the object 
+> stored in the database. This approach excludes reserved properties and those 
+> which may not be present on the persisted object.
 
-Delete It
+##### Delete It
 
 `d.DeleteSoftById<Car>(car.Id);`
 
-Find It
+> There are 2 delete approaches; Hard and Soft. Hard deletes will remove the document entirely.
+> Soft deletes will only toggle the document's *Active* flag.
+> Document's can then be queried using various Read methods which filter on this
+> flag. (e.g. ReadActive<T> vs. Read<T>)
+
+##### Retrieve It
 
 `var toyotaCars = d.Read<Car>(query => query.Where(c => c.Model = "Toyota"));`
 
@@ -73,9 +83,9 @@ or
 
 `var myToyota = d.ReadActiveById<Car>(car.Id);`
 
-See IDataStore.cs for the full list of supported methods.
+See IDataStoreQueryCapabilities.cs for the full list of supported methods.
 
-### Transactions
+#### Transactions
 
 Pending changes to the database are not committed by default, 
 they are queued in the order received and stored as events in the EventAggregator.
