@@ -30,7 +30,7 @@ namespace DataStore
             return modifiedResults;
         }
 
-        private static void ApplyEvent<T>(IList<T> results, IDataStoreWriteEvent<T> eventAggregatorEvent, bool requestingOnlyReadActive) where T : IAggregate
+        private static void ApplyEvent<T>(List<T> results, IDataStoreWriteEvent<T> eventAggregatorEvent, bool requestingOnlyReadActive) where T : IAggregate
         {
             if (eventAggregatorEvent is AggregateAdded<T>)
             {
@@ -40,35 +40,41 @@ namespace DataStore
                     results.Add(eventAggregatorEvent.Model);
                 }
             }
-
-            if (eventAggregatorEvent is AggregateUpdated<T>)
+            else if (results.Exists(i => i.id == eventAggregatorEvent.Model.id))
             {
-                if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active)
+                if (eventAggregatorEvent is AggregateUpdated<T>)
+                {
+                    if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active)
+                    {
+                        var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        results.Remove(itemToRemove);
+                    }
+                    else
+                    {
+                        var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
+                    }
+                }
+
+                if (eventAggregatorEvent is AggregateSoftDeleted<T>)
+                {
+                    if (requestingOnlyReadActive)
+                    {
+                        var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        results.Remove(itemToRemove);
+                    }
+                }
+
+                if (eventAggregatorEvent is AggregateHardDeleted<T>)
                 {
                     var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
                     results.Remove(itemToRemove);
                 }
-                else
-                {
-                    var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                    eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
-                }
             }
 
-            if (eventAggregatorEvent is AggregateSoftDeleted<T>)
-            {
-                if (requestingOnlyReadActive)
-                {
-                    var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                    results.Remove(itemToRemove);
-                }
-            }
 
-            if (eventAggregatorEvent is AggregateHardDeleted<T>)
-            {
-                var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                results.Remove(itemToRemove);
-            }
+
+
         }
     }
 }
