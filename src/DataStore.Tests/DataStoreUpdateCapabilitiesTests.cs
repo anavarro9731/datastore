@@ -1,127 +1,27 @@
-﻿using System;
-using System.Linq;
-using DataStore.DataAccess.Models.Messages.Events;
-using DataStore.Tests.Constants;
-using DataStore.Tests.Models;
-using Xunit;
-using static DataStore.Tests.TestFunctions;
+﻿using static DataStore.Tests.TestFunctions;
 
 namespace DataStore.Tests
 {
+    using System;
+    using System.Linq;
+    using Constants;
+    using DataAccess.Models.Messages.Events;
+    using Models;
+    using Xunit;
+
     [Collection(TestCollection.DataStoreTestCollection)]
     public class DataStoreUpdateCapabilitiesTests
     {
         [Fact]
-        public async void CanUpdateWithoutCommit()
+        public async void WhenCallingCanUpdateWhereWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanUpdateWithoutCommit));
-
-            var carId = Guid.NewGuid();
-            var existingCar = new Car
-            {
-                id = carId,
-                Active = true,
-                Make = "Volvo"
-            };
-            await testHarness.AddToDatabase(existingCar);
-
-            //When
-            var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
-            existingCarFromDb.Make = "Ford";
-            await testHarness.DataStore.Update(existingCarFromDb);
-
-            //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
-        }
-
-        [Fact]
-        public async void CanUpdateWithCommit()
-        {
-            // Given
-            var testHarness = GetTestHarness(nameof(CanUpdateWithCommit));
-
-            var carId = Guid.NewGuid();
-            var existingCar = new Car
-            {
-                id = carId,
-                Active = true,
-                Make = "Volvo"
-            };
-            await testHarness.AddToDatabase(existingCar);
-
-            //When
-            var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
-            existingCarFromDb.Make = "Ford";
-            await testHarness.DataStore.Update(existingCarFromDb);
-            await testHarness.DataStore.CommitChanges();
-
-            //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
-        }
-
-        [Fact]
-        public async void CanUpdateByIdWithoutCommit()
-        {
-            // Given
-            var testHarness = GetTestHarness(nameof(CanUpdateByIdWithoutCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingCanUpdateWhereWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
-                Make = "Volvo"
-            });
-
-            //When
-            await testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-
-            //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
-        }
-
-        [Fact]
-        public async void CanUpdateByIdWithCommit()
-        {
-            // Given
-            var testHarness = GetTestHarness(nameof(CanUpdateByIdWithCommit));
-
-            var carId = Guid.NewGuid();
-            await testHarness.AddToDatabase(new Car
-            {
-                id = carId,
-                Active = true,
-                Make = "Volvo"
-            });
-
-            //When
-            await testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-            await testHarness.DataStore.CommitChanges();
-
-            //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
-        }
-
-        [Fact]
-        public async void CanUpdateWhereWithoutCommit()
-        {
-            // Given
-            var testHarness = GetTestHarness(nameof(CanUpdateWhereWithoutCommit));
-
-            var carId = Guid.NewGuid();
-            await testHarness.AddToDatabase(new Car
-            {
-                id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -134,18 +34,110 @@ namespace DataStore.Tests
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
-
         [Fact]
-        public async void UpdateWhereWithoutCommitConsidersPreviousChanges()
+        public async void WhenCallingCommitAfterUpdate_ItShouldPersistChangesToTheDatabase()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(UpdateWhereWithoutCommitConsidersPreviousChanges));
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterUpdate_ItShouldPersistChangesToTheDatabase));
+
+            var carId = Guid.NewGuid();
+            var existingCar = new Car
+            {
+                id = carId,
+                Make = "Volvo"
+            };
+            await testHarness.AddToDatabase(existingCar);
+
+            //When
+            var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
+            existingCarFromDb.Make = "Ford";
+            await testHarness.DataStore.Update(existingCarFromDb);
+            await testHarness.DataStore.CommitChanges();
+
+            //Then
+            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
+
+        [Fact]
+        public async void WhenCallingCommitAfterUpdateById_ItShouldPersistTheChangesToTheDatabase()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterUpdateById_ItShouldPersistTheChangesToTheDatabase));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
+                Make = "Volvo"
+            });
+
+            //When
+            await testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+            await testHarness.DataStore.CommitChanges();
+
+            //Then
+            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
+
+        [Fact]
+        public async void WhenCallingCommitAfterUpdateWhere_ItShouldPersistTheChangesToTheDatabase()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterUpdateWhere_ItShouldPersistTheChangesToTheDatabase));
+
+            var carId = Guid.NewGuid();
+            await testHarness.AddToDatabase(new Car
+            {
+                id = carId,
+                Make = "Volvo"
+            });
+
+            //When
+            await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
+            await testHarness.DataStore.CommitChanges();
+
+            //Then
+            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
+
+        [Fact]
+        public async void WhenCallingUpdateByIdWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingUpdateByIdWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
+
+            var carId = Guid.NewGuid();
+            await testHarness.AddToDatabase(new Car
+            {
+                id = carId,
+                Make = "Volvo"
+            });
+
+            //When
+            await testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+
+            //Then
+            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
+
+        [Fact]
+        public async void WhenCallingUpdateWhereWithoutCommitting_ItShouldConsiderPreviousChanges()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingUpdateWhereWithoutCommitting_ItShouldConsiderPreviousChanges));
+
+            var carId = Guid.NewGuid();
+            await testHarness.AddToDatabase(new Car
+            {
+                id = carId,
                 Make = "Volvo"
             });
             await testHarness.DataStore.DeleteHardById<Car>(carId);
@@ -156,30 +148,30 @@ namespace DataStore.Tests
             //Then
             Assert.Equal(results.Count(), 0); //there nothing should have been updated because it was already deleted.
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
-            
         }
 
         [Fact]
-        public async void CanUpdateWhereWithCommit()
+        public async void WhenCallingUpdateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanUpdateWhereWithCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingUpdateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
 
             var carId = Guid.NewGuid();
-            await testHarness.AddToDatabase(new Car
+            var existingCar = new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
-            });
+            };
+            await testHarness.AddToDatabase(existingCar);
 
             //When
-            await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
-            await testHarness.DataStore.CommitChanges();
+            var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
+            existingCarFromDb.Make = "Ford";
+            await testHarness.DataStore.Update(existingCarFromDb);
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
     }

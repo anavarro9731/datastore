@@ -8,6 +8,7 @@ namespace DataStore
     using DataAccess.Interfaces.Addons;
     using DataAccess.Models.Messages.Events;
     using Infrastructure.PureFunctions.PureFunctions;
+    using Microsoft.Azure.Documents;
 
     public class AdvancedCapabilities : IAdvancedCapabilities
     {
@@ -51,6 +52,13 @@ namespace DataStore
             var transformedQueryable = queryableExtension(_dataStoreConnection.CreateDocumentQuery<T>());
             var results = await _eventAggregator.Store(new TransformationQueried<T2>(nameof(ReadCommittedInternal), transformedQueryable)).ForwardToAsync<IEnumerable<T2>>(_dataStoreConnection.ExecuteQuery);
             return results;
+        }
+
+        // get a filtered list of the models from  a set of DataObjects
+        public async Task<Document> ReadCommittedById(Guid modelId)
+        {
+            var result = await _eventAggregator.Store(new AggregateQueriedById(nameof(ReadCommittedById), modelId)).ForwardToAsync(_dataStoreConnection.GetItemAsync);
+            return result;
         }
     }
 }

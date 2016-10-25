@@ -31,6 +31,12 @@ namespace DataStore
         public async Task<bool> Exists(Guid id)
         {
             if (id == Guid.Empty) return false;
+
+            if (_eventAggregator.Events.OfType<IDataStoreWriteEvent>().ToList().Exists(e => e.AggregateId == id && e.GetType() == typeof(AggregateHardDeleted<>)))
+            {
+                return false;
+            }
+
             return await _eventAggregator.Store(new AggregateQueriedById(nameof(Exists), id)).ForwardToAsync(DbConnection.Exists);
         }
 
@@ -70,13 +76,6 @@ namespace DataStore
             var results = await ReadInternal(queryableExtension);
 
             return _eventReplay.ApplyAggregateEvents(results, true).Single();
-        }
-
-        // get a filtered list of the models from  a set of DataObjects
-        public async Task<Document> ReadById(Guid modelId)
-        {
-            var result = await _eventAggregator.Store(new AggregateQueriedById(nameof(ReadById), modelId)).ForwardToAsync(DbConnection.GetItemAsync);
-            return result;
         }
 
         private async Task<IEnumerable<T>> ReadInternal<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension) where T : IAggregate

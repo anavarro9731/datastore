@@ -10,9 +10,9 @@
     public abstract class Aggregate : Entity, IAggregate
     {
         // .. high level filters
-        public bool Active { get; set; }
+        public bool Active { get; set; } = true;
 
-        public bool ReadOnly { get; set; }
+        public bool ReadOnly { get; set; } = false;
 
         // .. relationships
         public int ScopeObjectIdCount { get; private set; }

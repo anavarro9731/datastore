@@ -16,7 +16,5 @@
             Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate;
 
         Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate;
-
-        Task<Document> ReadById(Guid modelId);
     }
 }

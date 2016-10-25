@@ -12,16 +12,15 @@ namespace DataStore.Tests
     public class DataStoreDeleteCapabilitiesTests
     {
         [Fact]
-        public async void CanDeleteHardByIdWithoutCommit()
+        public async void WhenCallingTheDeleteHardByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteHardByIdWithoutCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingTheDeleteHardByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally));
             
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -35,16 +34,15 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteHardByIdWithCommit()
+        public async void WhenCallingCommitAfterDeleteHardById_ItShouldPersistChangesToTheDatabase()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteHardByIdWithCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterDeleteHardById_ItShouldPersistChangesToTheDatabase));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -59,16 +57,15 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteHardWhereWithoutCommit()
+        public async void WhenCallingTheDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteHardWhereWithoutCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingTheDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesLocally));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -82,17 +79,16 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteHardWhereWithCommit()
+        public async void WhenCallingCommitAfterDeleteHardWhere_ItShouldPersistChangesToTheDatabase()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteHardWhereWithCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterDeleteHardWhere_ItShouldPersistChangesToTheDatabase));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
-                Make = "Volvo"
+               Make = "Volvo"
             });
 
             //When
@@ -106,16 +102,15 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteSoftByIdWithoutCommit()
+        public async void WhenCallingDeleteSoftByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteSoftByIdWithoutCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingDeleteSoftByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -130,16 +125,15 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteSoftByIdWithCommit()
+        public async void WhenCallingCommitAfterDeleteSoftById_ItShouldPersistChangesToTheDatabase()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteSoftByIdWithCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterDeleteSoftById_ItShouldPersistChangesToTheDatabase));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -155,16 +149,15 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteSoftWhereWithoutCommit()
+        public async void WhenCallingDeleteSoftWhereWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteSoftWhereWithoutCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingDeleteSoftWhereWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 
@@ -179,16 +172,15 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanDeleteSoftWhereWithCommit()
+        public async void WhenCallingCommitAfterDeleteSoftWhere_ItShouldPersistTheChangesToTheDatabase()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanDeleteSoftWhereWithCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterDeleteSoftWhere_ItShouldPersistTheChangesToTheDatabase));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
                 id = carId,
-                Active = true,
                 Make = "Volvo"
             });
 

@@ -5,7 +5,7 @@
 
     public interface IDataStoreWriteEvent<T> : IDataStoreWriteEvent, IDataStoreEvent where T : IAggregate
     {
-        T Model { get; }       
+        T Model { get; }
     }
 
     public interface IDataStoreWriteEvent
@@ -13,5 +13,7 @@
         Func<Task> CommitClosure { get; set; }
 
         bool Committed { get; set; }
+
+        Guid AggregateId { get; }
     }
 }

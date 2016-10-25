@@ -10,7 +10,7 @@ namespace DataStore
 
     public class EventReplay
     {
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
 
         public EventReplay(IEventAggregator eventAggregator)
         {
@@ -30,22 +30,34 @@ namespace DataStore
             return modifiedResults;
         }
 
-        private static void ApplyEvent<T>(IList<T> results, IDataStoreWriteEvent<T> eventAggregatorEvent, bool isReadActive) where T : IAggregate
+        private static void ApplyEvent<T>(IList<T> results, IDataStoreWriteEvent<T> eventAggregatorEvent, bool requestingOnlyReadActive) where T : IAggregate
         {
             if (eventAggregatorEvent is AggregateAdded<T>)
             {
-                results.Add(eventAggregatorEvent.Model);
+                if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active) { }
+                else
+                {
+                    results.Add(eventAggregatorEvent.Model);
+                }
             }
 
             if (eventAggregatorEvent is AggregateUpdated<T>)
             {
-                var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
+                if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active)
+                {
+                    var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                    results.Remove(itemToRemove);
+                }
+                else
+                {
+                    var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                    eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
+                }
             }
 
             if (eventAggregatorEvent is AggregateSoftDeleted<T>)
             {
-                if (isReadActive)
+                if (requestingOnlyReadActive)
                 {
                     var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
                     results.Remove(itemToRemove);

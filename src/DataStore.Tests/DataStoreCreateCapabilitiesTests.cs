@@ -12,37 +12,36 @@ namespace DataStore.Tests
     public class DataStoreCreateCapabilitiesTests
     {
         [Fact]
-        public async void CanCreateWithoutCommit()
+        public async void WhenCallingTheCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanCreateWithoutCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingTheCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
 
             var newCar = new Car()
             {
                 id = Guid.NewGuid(),
-                Active = true,
                 Make = "Volvo"
             };
 
             //When
-            await testHarness.DataStore.Create(newCar);
+            var result = await testHarness.DataStore.Create(newCar);
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateAdded<Car>));
             Assert.Equal(0, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
+            Assert.True(result.Active); 
         }
 
         [Fact]
-        public async void CanCreateWithCommit()
+        public async void WhenCallingCommitAfterCreate_ItShouldPersistChangesToTheDatabase()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanCreateWithCommit));
+            var testHarness = GetTestHarness(nameof(WhenCallingCommitAfterCreate_ItShouldPersistChangesToTheDatabase));
 
             var newCar = new Car()
             {
                 id = Guid.NewGuid(),
-                Active = true,
                 Make = "Volvo"
             };
 
@@ -53,6 +52,7 @@ namespace DataStore.Tests
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateAdded<Car>));
             Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
+            Assert.True(testHarness.QueryDatabase<Car>().Result.Single().Active);
             Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
         }
     }

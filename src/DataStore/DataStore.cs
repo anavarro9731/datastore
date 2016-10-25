@@ -93,9 +93,9 @@
             return await QueryCapabilities.ReadActiveById<T>(modelId);
         }
 
-        public async Task<Document> ReadById(Guid modelId)
+        public async Task<Document> ReadCommittedById(Guid modelId)
         {
-            return await QueryCapabilities.ReadById(modelId);
+            return await Advanced.ReadCommittedById(modelId);
         }
 
         public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : IAggregate

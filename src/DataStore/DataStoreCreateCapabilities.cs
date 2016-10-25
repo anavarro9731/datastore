@@ -44,7 +44,7 @@ namespace DataStore
 
             _eventAggregator.Store(new AggregateAdded<T>(nameof(Create), enriched, DsConnection));
 
-            return Task.FromResult(model);
+            return Task.FromResult(enriched);
         }
 
         #endregion

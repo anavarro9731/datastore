@@ -17,12 +17,14 @@ namespace DataStore.DataAccess.Models.Messages.Events
             };
             TypeName = typeof(T).FullName;
             MethodCalled = methodCalled;
+            AggregateId = model.id;
         }
 
         #region IDataStoreWriteEvent<T> Members
 
         public Func<Task> CommitClosure { get; set; }
         public bool Committed { get; set; }
+        public Guid AggregateId { get; }
 
         public string TypeName { get; set; }
         public string MethodCalled { get; set; }

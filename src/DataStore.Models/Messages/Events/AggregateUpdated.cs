@@ -18,6 +18,7 @@ namespace DataStore.DataAccess.Models.Messages.Events
 
             this.MethodCalled = methodCalled;
             this.TypeName = typeof(T).FullName;
+            AggregateId = model.id;
         }
 
         #region IDataStoreWriteEvent<T> Members
@@ -28,6 +29,7 @@ namespace DataStore.DataAccess.Models.Messages.Events
         public TimeSpan QueryDuration { get; set; }
         public Func<Task> CommitClosure { get; set; }
         public bool Committed { get; set; }
+        public Guid AggregateId { get; }
 
         #endregion
     }

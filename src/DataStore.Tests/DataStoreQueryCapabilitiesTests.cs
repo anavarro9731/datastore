@@ -12,39 +12,46 @@ namespace DataStore.Tests
     public class DataStoreQueryCapabilitiesTests
     {
         [Fact]
-        public async void CanRead()
+        public async void WhenCallingRead_ItShouldReturnAllItemsRegardlessOfActiveFlag()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanRead));
-
-            var carId = Guid.NewGuid();
-            var existingCar = new Car
-            {
-                id = carId,
-                Active = false,
-                Make = "Volvo"
-            };
-            await testHarness.AddToDatabase(existingCar);
-
-            // When
-            var carFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).Single();
-
-            //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregatesQueried<Car>));
-            Assert.Equal("Volvo", carFromDatabase.Make);
-        }
-
-        [Fact]
-        public async void CanReadActive()
-        {
-            // Given
-            var testHarness = GetTestHarness(nameof(CanReadActive));
+            var testHarness = GetTestHarness(nameof(WhenCallingRead_ItShouldReturnAllItemsRegardlessOfActiveFlag));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
                 id = activeCarId,
-                Active = true,
+                Make = "Volvo"
+            };
+
+            var inactiveCarId = Guid.NewGuid();
+            var inactiveExistingCar = new Car
+            {
+                id = inactiveCarId,
+                Active = false,
+                Make = "Volvo"
+            };
+            await testHarness.AddToDatabase(activeExistingCar);
+            await testHarness.AddToDatabase(inactiveExistingCar);
+
+            // When
+            var carsFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Make == "Volvo")));
+
+            //Then
+            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregatesQueried<Car>));
+            Assert.Equal(2, carsFromDatabase.Count());
+        }
+
+        [Fact]
+        public async void WhenCallingReadActive_ItShouldOnlyReturnActiveItems()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingReadActive_ItShouldOnlyReturnActiveItems));
+
+            var activeCarId = Guid.NewGuid();
+            var activeExistingCar = new Car
+            {
+                id = activeCarId,
                 Make = "Volvo"
             };
 
@@ -69,10 +76,65 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanReadById()
+        public async void WhenCallingExists_ItShouldReturnTheItemIfItExistsWhileConsideringChangesAlreadyMadeInTheSession()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadById));
+            var testHarness = GetTestHarness(nameof(WhenCallingReadActive_ItShouldOnlyReturnActiveItems));
+
+            var activeCarId = Guid.NewGuid();
+            var activeExistingCar = new Car
+            {
+                id = activeCarId,
+                Make = "Volvo"
+            };
+            await testHarness.AddToDatabase(activeExistingCar);
+            await testHarness.DataStore.DeleteHardById<Car>(activeCarId);
+
+            // When
+            var activeCarFromDataStore = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == activeCarId))).SingleOrDefault();
+
+            //Then
+            Assert.Null(activeCarFromDataStore);
+        }
+
+        [Fact]
+        public async void WhenCallingExists_ItShouldReturnTheItemIfItExistsRegardlessOfStatus()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingReadActive_ItShouldOnlyReturnActiveItems));
+
+            var activeCarId = Guid.NewGuid();
+            var activeExistingCar = new Car
+            {
+                id = activeCarId,
+                Make = "Volvo"
+            };
+
+            var inactiveCarId = Guid.NewGuid();
+            var inactiveExistingCar = new Car
+            {
+                id = inactiveCarId,
+                Active = false,
+                Make = "Jeep"
+            };
+            await testHarness.AddToDatabase(activeExistingCar);
+            await testHarness.AddToDatabase(inactiveExistingCar);
+
+            // When
+            var activeCarExists = await testHarness.DataStore.Exists(activeCarId);
+            var inactiveCarExists = await testHarness.DataStore.Exists(inactiveCarId);
+
+            //Then
+            Assert.True(inactiveCarExists);
+            Assert.True(activeCarExists);
+            
+        }
+
+        [Fact]
+        public async void WhenCallingCanReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenCallingCanReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -82,21 +144,23 @@ namespace DataStore.Tests
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(existingCar);
+            await testHarness.DataStore.DeleteHardById<Car>(carId);
 
             // When
-            var document = await testHarness.DataStore.ReadById(carId);
+            var document = await testHarness.DataStore.Advanced.ReadCommittedById(carId);
             var carFromDatabase = (Car)(dynamic)document;
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateQueriedById));
+            Assert.NotNull(testHarness.Events.Exists(e => e is AggregateQueriedById));
             Assert.Equal("Volvo", carFromDatabase.Make);
+            Assert.Equal(carId, carFromDatabase.id);
         }
 
         [Fact]
-        public async void CanReadActiveById()
+        public async void WhenCallingReadActiveById_ItShouldReturnTheItemWithThatIdOnlyIfItIsActive()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadActiveById));
+            var testHarness = GetTestHarness(nameof(WhenCallingReadActiveById_ItShouldReturnTheItemWithThatIdOnlyIfItIsActive));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -122,16 +186,15 @@ namespace DataStore.Tests
 
             //Then
             Assert.Equal(2, testHarness.Events.Count(e => e is AggregatesQueried<Car>));
-            Assert.Equal("Volvo", activeCarFromDatabase.Make);
+            Assert.Equal(activeCarId, activeCarFromDatabase.id);
             Assert.NotNull(exception);
-
         }
 
         [Fact]
-        public async void CanReadAndApplyUncommittedUpdateChanges()
+        public async void WhenQueryingItemsAfterOtherHaveBeenUpdatedInTheCurrentSession_ItShouldApplyThoseUpdatesToTheResultSet()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadAndApplyUncommittedUpdateChanges));
+            var testHarness = GetTestHarness(nameof(WhenQueryingItemsAfterOtherHaveBeenUpdatedInTheCurrentSession_ItShouldApplyThoseUpdatesToTheResultSet));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -154,10 +217,10 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanReadAndApplyUncommittedHardDeleteChanges()
+        public async void WhenQueryingItemsAfterOthersHaveBeenHardDeletedInTheCurrentSession_ItShouldApplyThoseDeletesToTheResultSet()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadAndApplyUncommittedHardDeleteChanges));
+            var testHarness = GetTestHarness(nameof(WhenQueryingItemsAfterOthersHaveBeenHardDeletedInTheCurrentSession_ItShouldApplyThoseDeletesToTheResultSet));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -180,10 +243,10 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanReadAndApplyUncommittedSoftDeleteChanges()
+        public async void WhenQueryingItemsAfterOthersHaveBeenSoftDeletedInTheCurrentSession_ItShouldApplyThoseDeletesToTheResultSet()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadAndApplyUncommittedSoftDeleteChanges));
+            var testHarness = GetTestHarness(nameof(WhenQueryingItemsAfterOthersHaveBeenSoftDeletedInTheCurrentSession_ItShouldApplyThoseDeletesToTheResultSet));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -206,10 +269,10 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanReadAndApplyUncommittedCreateChanges()
+        public async void WhenQueryingItemsAfterNewItemsHaveBeenAddedInTheCurrentSession_ItShouldAddThoseItemsToTheResultSet()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadAndApplyUncommittedCreateChanges));
+            var testHarness = GetTestHarness(nameof(WhenQueryingItemsAfterNewItemsHaveBeenAddedInTheCurrentSession_ItShouldAddThoseItemsToTheResultSet));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -239,13 +302,11 @@ namespace DataStore.Tests
             Assert.Equal(2, readActiveCarFromDatabase);
         }
 
-
-
         [Fact]
-        public async void CanReadCommittedOfDifferentType()
+        public async void WhenUsingCanReadCommitted_ItShouldReturnResultsWithoutConsiderationForChangesMadeInThisSession()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadCommittedOfDifferentType));
+            var testHarness = GetTestHarness(nameof(WhenUsingCanReadCommitted_YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -255,6 +316,30 @@ namespace DataStore.Tests
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(existingCar);
+            await testHarness.DataStore.DeleteHardById<Car>(carId);
+            // When
+            var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
+
+            //Then
+            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is TransformationQueried<Car>));
+            Assert.Equal("Volvo", carFromDatabase.Make);
+        }
+
+        [Fact]
+        public async void WhenUsingReadCommitted_YouCanReturnResultsOfATypeDifferentToTheOneYouQueriedByUsingATransformation()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(WhenUsingReadCommitted_YouCanReturnResultsOfATypeDifferentToTheOneYouQueriedByUsingATransformation));
+
+            var carId = Guid.NewGuid();
+            var existingCar = new Car
+            {
+                id = carId,
+                Active = false,
+                Make = "Volvo"
+            };
+            await testHarness.AddToDatabase(existingCar);
+            testHarness.DataStore.DeleteHardById<Car>(carId);
 
             // When
             var transformedCar = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId).Select(c => new { c.id, c.Make }))).Single();
@@ -265,10 +350,10 @@ namespace DataStore.Tests
         }
 
         [Fact]
-        public async void CanReadCommittedOfSameType()
+        public async void WhenUsingCanReadCommitted_YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried()
         {
             // Given
-            var testHarness = GetTestHarness(nameof(CanReadCommittedOfSameType));
+            var testHarness = GetTestHarness(nameof(WhenUsingCanReadCommitted_YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
