@@ -17,11 +17,13 @@ namespace DataStore
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
     {
         private readonly IEventAggregator _eventAggregator;
+        private readonly EventReplay _eventReplay;
 
         public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            this.DbConnection = dataStoreConnection;
+            _eventReplay = new EventReplay(eventAggregator);
+            this.DbConnection = dataStoreConnection;            
         }
 
         private IDocumentRepository DbConnection { get; }
@@ -38,7 +40,7 @@ namespace DataStore
         {
             var results = await ReadInternal(queryableExtension);
 
-            return ApplyAggregateEvents(results, false);
+            return _eventReplay.ApplyAggregateEvents(results, false);
         }
                 
         // get a filtered list of the models from a set of active DataObjects
@@ -58,7 +60,7 @@ namespace DataStore
 
             var results = await ReadInternal(activeOnlyQueryableExtension);
 
-            return ApplyAggregateEvents(results, true);
+            return _eventReplay.ApplyAggregateEvents(results, true);
         }
 
         // get a filtered list of the models from  a set of DataObjects
@@ -67,7 +69,7 @@ namespace DataStore
             Func<IQueryable<T>, IQueryable<T>> queryableExtension = (q) => q.Where(a => a.id == modelId && a.Active);
             var results = await ReadInternal(queryableExtension);
 
-            return ApplyAggregateEvents(results, true).Single();
+            return _eventReplay.ApplyAggregateEvents(results, true).Single();
         }
 
         // get a filtered list of the models from  a set of DataObjects
@@ -87,48 +89,6 @@ namespace DataStore
 
             var results = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(ReadInternal), queryable)).ForwardToAsync(DbConnection.ExecuteQuery);
             return results;
-        }        
-
-        private List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : IAggregate
-        {
-            var modifiedResults = results.ToList();
-            var uncommittedEvents = _eventAggregator.Events.OrderBy(e => e.OccurredAt).OfType<IDataStoreWriteEvent<T>>().Where(e => !e.Committed);
-
-            foreach (var eventAggregatorEvent in uncommittedEvents)
-            {
-                ApplyEvent(modifiedResults, eventAggregatorEvent, isReadActive);
-            }
-
-            return modifiedResults;
-        }
-
-        private static void ApplyEvent<T>(IList<T> results, IDataStoreWriteEvent<T> eventAggregatorEvent, bool isReadActive) where T : IAggregate
-        {
-            if (eventAggregatorEvent is AggregateAdded<T>)
-            {
-                results.Add(eventAggregatorEvent.Model);
-            }
-
-            if (eventAggregatorEvent is AggregateUpdated<T>)
-            {
-                var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
-            }
-
-            if (eventAggregatorEvent is AggregateSoftDeleted<T>)
-            {
-                if (isReadActive)
-                {
-                    var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                    results.Remove(itemToRemove);
-                }
-            }
-
-            if (eventAggregatorEvent is AggregateHardDeleted<T>)
-            {
-                var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                results.Remove(itemToRemove);
-            }
         }
     }
 }

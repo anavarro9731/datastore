@@ -13,10 +13,12 @@ namespace DataStore
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
         private readonly IEventAggregator _eventAggregator;
+        private readonly EventReplay _eventReplay;
 
         public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+            _eventReplay = new EventReplay(eventAggregator);
             DsConnection = dataStoreConnection;
         }
 
@@ -47,8 +49,11 @@ namespace DataStore
         {
             var objects = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .ForwardToAsync(DsConnection.ExecuteQuery);
-            
+
+            objects = _eventReplay.ApplyAggregateEvents(objects, false);
+
             var dataObjects = objects.AsEnumerable();
+
             if (dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly))
             {
                 throw new ApplicationException("Cannot update read-only items");

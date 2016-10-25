@@ -134,6 +134,31 @@ namespace DataStore.Tests
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
+
+        [Fact]
+        public async void UpdateWhereWithoutCommitConsidersPreviousChanges()
+        {
+            // Given
+            var testHarness = GetTestHarness(nameof(UpdateWhereWithoutCommitConsidersPreviousChanges));
+
+            var carId = Guid.NewGuid();
+            await testHarness.AddToDatabase(new Car
+            {
+                id = carId,
+                Active = true,
+                Make = "Volvo"
+            });
+            await testHarness.DataStore.DeleteHardById<Car>(carId);
+
+            //When
+            var results = await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
+
+            //Then
+            Assert.Equal(results.Count(), 0); //there nothing should have been updated because it was already deleted.
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            
+        }
+
         [Fact]
         public async void CanUpdateWhereWithCommit()
         {
