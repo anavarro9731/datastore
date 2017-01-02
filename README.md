@@ -38,7 +38,7 @@ class Car : Aggregate {
 ```
 Create a new `DataStore` object.
 ```
-var d = new DataStore(new DocumentRepository(new DocumentDbSettings(
+var d = new DataStore.DataStore(new DocumentRepository(new DocumentDbSettings(
             string authorizationKey, 
             string databaseName, 
             string defaultCollectionName, 
@@ -106,7 +106,7 @@ public async void DoesNotUpdateCarInDatabase()
     var documentRepository = new InMemoryDocumentRepository();
     var inMemoryDb = documentRepository.Aggregates;
     var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true };
-    var dataStore = new DataStore(documentRepository, eventAggregator);
+    var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
 
     var carId = Guid.NewGuid();
         
@@ -136,7 +136,7 @@ public async void CanUpdateCarInDatabase()
     var documentRepository = new InMemoryDocumentRepository();
     var inMemoryDb = documentRepository.Aggregates;
     var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true };
-    var dataStore = new DataStore(documentRepository, eventAggregator);
+    var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
 
     var carId = Guid.NewGuid();
         
