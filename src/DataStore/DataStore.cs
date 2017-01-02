@@ -94,7 +94,7 @@ namespace DataStore
         }
 
         public async Task<IEnumerable<T>> ReadActive<T>(
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension) where T : IAggregate
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
         {
             return await QueryCapabilities.ReadActive(queryableExtension);
         }
