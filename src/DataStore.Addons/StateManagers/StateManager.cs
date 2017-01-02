@@ -1,9 +1,9 @@
-﻿namespace DataStore.Infrastructure.Impl.StateManagers
+﻿namespace DataStore.Addons.StateManagers
 {
     using System;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
+    using global::DataStore.Interfaces;
+    using Interfaces;
 
     public class StateManager : IStateManagerWithoutAuthorization
     {

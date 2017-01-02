@@ -1,4 +1,4 @@
-﻿namespace DataStore.Infrastructure.PureFunctions.PureFunctions.Extensions
+﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
 {
     using System;
     using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace DataStore.Infrastructure.PureFunctions.PureFunctions
+﻿namespace DataStore.Infrastructure.PureFunctions
 {
     using System;
 
@@ -8,12 +8,6 @@
         public static void Against(Func<bool> test, string errorMessage)
         {
             if (test()) throw new ApplicationException(errorMessage);
-        }
-
-
-        public static bool Fails(Func<bool> test)
-        {
-            return test();
         }
     }
 }

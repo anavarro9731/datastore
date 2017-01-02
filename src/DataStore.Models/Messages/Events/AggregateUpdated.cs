@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using DataStore.DataAccess.Interfaces;
-using DataStore.DataAccess.Interfaces.Events;
-
-namespace DataStore.DataAccess.Models.Messages.Events
+﻿namespace DataStore.Models.Messages.Events
 {
+    using System;
+    using System.Threading.Tasks;
+    using Interfaces;
+    using Interfaces.Events;
+
     public class AggregateUpdated<T> : Event<T>, IDataStoreWriteEvent<T> where T : IAggregate
     {
         public AggregateUpdated(string methodCalled, T model, IDocumentRepository repository)

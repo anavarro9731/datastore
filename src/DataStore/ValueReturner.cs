@@ -1,7 +1,8 @@
 ﻿namespace DataStore
 {
     using System.Collections.Generic;
-    using DataAccess.Interfaces.Addons;
+    using Interfaces;
+    using Interfaces.Addons;
 
     public class ValueReturner : IValueReturner
     {

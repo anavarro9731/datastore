@@ -1,14 +1,13 @@
-﻿using DataStore.DataAccess.Models.Messages.Events;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Models.Messages.Events;
 
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
@@ -23,6 +22,17 @@ namespace DataStore
         }
 
         private IDocumentRepository DsConnection { get; }
+
+        // .. update by Id; get values from any instance
+        private async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
+            where T : IAggregate
+        {
+            var results =
+                await
+                    UpdateWhere<T>(o => o.id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.id)); }, overwriteReadOnly);
+
+            return results.Single();
+        }
 
         #region IDataStoreUpdateCapabilities Members
 
@@ -55,9 +65,7 @@ namespace DataStore
             var dataObjects = objects.AsEnumerable();
 
             if (dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly))
-            {
                 throw new ApplicationException("Cannot update read-only items");
-            }
 
             foreach (var dataObject in dataObjects)
             {
@@ -69,16 +77,5 @@ namespace DataStore
         }
 
         #endregion
-
-        // .. update by Id; get values from any instance
-        private async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
-            where T : IAggregate
-        {
-            var results =
-                await
-                    UpdateWhere<T>(o => o.id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.id)); }, overwriteReadOnly);
-
-            return results.Single();
-        }
     }
 }

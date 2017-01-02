@@ -1,12 +1,9 @@
-﻿namespace DataStore.DataAccess.Interfaces
+﻿namespace DataStore.Interfaces
 {
-    using System;
     using System.Collections.Generic;
 
     public interface IHaveScope
     {
-        List<Guid> ScopeObjectIds { get; }
-
-        void SetScope(params Guid[] scopeObjectIds);
+        List<IScopeReference> ScopeReferences { get; set; }
     }
 }

@@ -1,21 +1,19 @@
-﻿namespace DataStore.Infrastructure.Impl.Permissions
+﻿namespace DataStore.Addons.Permissions
 {
     using System;
 
-    public class Permission
+    public class Permission : IEquatable<Permission>
     {
         public Permission(
-            Guid id, 
-            string permissionName, 
-            Type[] permissionScopeObjectType, 
-            Guid permissionRequiredToAdministerThisPermission, 
+            Guid id,
+            string permissionName,
+            Guid permissionRequiredToAdministerThisPermission,
             int displayOrder = 99)
         {
-            this.Id = id;
-            this.PermissionName = permissionName;
-            this.PermissionScopeObjectType = permissionScopeObjectType;
-            this.PermissionRequiredToAdministerThisPermission = permissionRequiredToAdministerThisPermission;
-            this.DisplayOrder = displayOrder;
+            Id = id;
+            PermissionName = permissionName;
+            PermissionRequiredToAdministerThisPermission = permissionRequiredToAdministerThisPermission;
+            DisplayOrder = displayOrder;
         }
 
         public int DisplayOrder { get; set; }
@@ -26,25 +24,22 @@
 
         public Guid PermissionRequiredToAdministerThisPermission { get; set; }
 
-        public Type[] PermissionScopeObjectType { get; set; }
+        #region "Equality"
 
-        // add this code to class ThreeDPoint as defined previously
+        bool IEquatable<Permission>.Equals(Permission other) => Equals(other);
+
         public static bool operator ==(Permission a, Permission b)
         {
             // If both are null, or both are same instance, return true.
             if (ReferenceEquals(a, b))
-            {
                 return true;
-            }
 
             // If one is null, but not both, return false.
-            if (((object)a == null) || ((object)b == null))
-            {
+            if ((object) a == null || (object) b == null)
                 return false;
-            }
 
             // Return true if the fields match:
-            return a.Equals(b);
+            return a.PropertiesAreEqual(b);
         }
 
         public static bool operator !=(Permission a, Permission b)
@@ -54,32 +49,26 @@
 
         public override bool Equals(object obj)
         {
+            //if the object passed is null return false;
             if (ReferenceEquals(null, obj))
-            {
                 return false;
-            }
 
+            //if the objects are the same instance return true
             if (ReferenceEquals(this, obj))
-            {
                 return true;
-            }
 
-            if (obj.GetType() != this.GetType())
-            {
+            //if the objects are of different types return false
+            if (obj.GetType() != GetType())
                 return false;
-            }
 
-            return this.Equals((Permission)obj);
+            //check on property equality
+            return PropertiesAreEqual((Permission) obj);
         }
 
-        public override int GetHashCode()
-        {
-            return this.Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        protected bool Equals(Permission other)
-        {
-            return this.Id.Equals(other.Id);
-        }
+        protected bool PropertiesAreEqual(Permission other) => Id.Equals(other.Id);
+
+        #endregion
     }
 }

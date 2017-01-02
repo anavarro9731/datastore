@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
-
-namespace DataStore.DataAccess.Interfaces.Events
+﻿namespace DataStore.Interfaces.Events
 {
+    using System;
+    using System.Linq;
+
     public interface IDataStoreReadEvent : IDataStoreEvent
     {
 

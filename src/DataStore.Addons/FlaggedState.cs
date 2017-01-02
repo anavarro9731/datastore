@@ -1,4 +1,4 @@
-﻿namespace DataStore.Infrastructure.Impl
+﻿namespace DataStore.Addons
 {
     using System;
     using System.Collections.Generic;

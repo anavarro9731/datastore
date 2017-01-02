@@ -1,13 +1,11 @@
-﻿using DataStore.DataAccess.Models.Messages.Events;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using Infrastructure.PureFunctions.PureFunctions.Extensions;
+    using Infrastructure.PureFunctions.Extensions;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Models.Messages.Events;
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
     {
@@ -38,8 +36,9 @@ namespace DataStore
 
                     e.id = model.id == default(Guid) ? Guid.NewGuid() : model.id;
 
-                    e.SetScope((model.ScopeObjectIds ?? new List<Guid>()).ToArray());
+                    e.ScopeReferences = model.ScopeReferences;
                 });
+
             enriched.WalkGraphAndUpdateEntityMeta();
 
             _eventAggregator.Store(new AggregateAdded<T>(nameof(Create), enriched, DsConnection));

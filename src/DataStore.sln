@@ -1,12 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore", "DataStore\DataStore.xproj", "{6368A73A-49AB-40AB-8847-724E8820566D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Infrastructure", "DataStore.Infrastructure\DataStore.Infrastructure.xproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{648EBFE5-272F-46F6-A666-2EAFF3D62902}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
@@ -15,54 +11,118 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Addons", "DataStore.Addons\DataStore.Addons.xproj", "{624E340B-234C-482E-977E-C77D1457206B}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Impl.DocumentDb", "DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.xproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Interfaces", "DataStore.Interfaces\DataStore.Interfaces.xproj", "{05013952-DE52-4EF3-8F76-4E1B076134B6}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Models", "DataStore.Models\DataStore.Models.xproj", "{50BDE363-B183-44DA-AACC-366D2F6ECA60}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{6789B011-EDC9-4822-85D1-26781DDE870E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{25C593D9-43AD-4678-9D4A-0DE0E749F5FD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DataStore.Tests", "DataStore.Tests\DataStore.Tests.xproj", "{A1F11311-222A-4B33-B8CA-DB68605BFA1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore", "DataStore\DataStore.csproj", "{6368A73A-49AB-40AB-8847-724E8820566D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Infrastructure", "DataStore.Infrastructure\DataStore.Infrastructure.csproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Addons", "DataStore.Addons\DataStore.Addons.csproj", "{624E340B-234C-482E-977E-C77D1457206B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Impl.DocumentDb", "DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Interfaces", "DataStore.Interfaces\DataStore.Interfaces.csproj", "{05013952-DE52-4EF3-8F76-4E1B076134B6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Models", "DataStore.Models\DataStore.Models.csproj", "{50BDE363-B183-44DA-AACC-366D2F6ECA60}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Tests", "DataStore.Tests\DataStore.Tests.csproj", "{A1F11311-222A-4B33-B8CA-DB68605BFA1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6368A73A-49AB-40AB-8847-724E8820566D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6368A73A-49AB-40AB-8847-724E8820566D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Debug|x64.ActiveCfg = Debug|x64
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Debug|x64.Build.0 = Debug|x64
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Debug|x86.ActiveCfg = Debug|x86
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Debug|x86.Build.0 = Debug|x86
 		{6368A73A-49AB-40AB-8847-724E8820566D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6368A73A-49AB-40AB-8847-724E8820566D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Release|x64.ActiveCfg = Release|x64
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Release|x64.Build.0 = Release|x64
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Release|x86.ActiveCfg = Release|x86
+		{6368A73A-49AB-40AB-8847-724E8820566D}.Release|x86.Build.0 = Release|x86
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|x64.ActiveCfg = Debug|x64
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|x64.Build.0 = Debug|x64
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|x86.ActiveCfg = Debug|x86
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Debug|x86.Build.0 = Debug|x86
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|x64.ActiveCfg = Release|x64
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|x64.Build.0 = Release|x64
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|x86.ActiveCfg = Release|x86
+		{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}.Release|x86.Build.0 = Release|x86
 		{624E340B-234C-482E-977E-C77D1457206B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{624E340B-234C-482E-977E-C77D1457206B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{624E340B-234C-482E-977E-C77D1457206B}.Debug|x64.ActiveCfg = Debug|x64
+		{624E340B-234C-482E-977E-C77D1457206B}.Debug|x64.Build.0 = Debug|x64
+		{624E340B-234C-482E-977E-C77D1457206B}.Debug|x86.ActiveCfg = Debug|x86
+		{624E340B-234C-482E-977E-C77D1457206B}.Debug|x86.Build.0 = Debug|x86
 		{624E340B-234C-482E-977E-C77D1457206B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{624E340B-234C-482E-977E-C77D1457206B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{624E340B-234C-482E-977E-C77D1457206B}.Release|x64.ActiveCfg = Release|x64
+		{624E340B-234C-482E-977E-C77D1457206B}.Release|x64.Build.0 = Release|x64
+		{624E340B-234C-482E-977E-C77D1457206B}.Release|x86.ActiveCfg = Release|x86
+		{624E340B-234C-482E-977E-C77D1457206B}.Release|x86.Build.0 = Release|x86
 		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Debug|x64.ActiveCfg = Debug|x64
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Debug|x64.Build.0 = Debug|x64
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Debug|x86.ActiveCfg = Debug|x86
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Debug|x86.Build.0 = Debug|x86
 		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Release|x64.ActiveCfg = Release|x64
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Release|x64.Build.0 = Release|x64
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Release|x86.ActiveCfg = Release|x86
+		{C855DC43-D88F-4800-8AEE-A451724B14F9}.Release|x86.Build.0 = Release|x86
 		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Debug|x64.ActiveCfg = Debug|x64
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Debug|x64.Build.0 = Debug|x64
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Debug|x86.ActiveCfg = Debug|x86
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Debug|x86.Build.0 = Debug|x86
 		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Release|x64.ActiveCfg = Release|x64
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Release|x64.Build.0 = Release|x64
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Release|x86.ActiveCfg = Release|x86
+		{05013952-DE52-4EF3-8F76-4E1B076134B6}.Release|x86.Build.0 = Release|x86
 		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Debug|x64.ActiveCfg = Debug|x64
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Debug|x64.Build.0 = Debug|x64
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Debug|x86.ActiveCfg = Debug|x86
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Debug|x86.Build.0 = Debug|x86
 		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Release|x64.ActiveCfg = Release|x64
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Release|x64.Build.0 = Release|x64
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Release|x86.ActiveCfg = Release|x86
+		{50BDE363-B183-44DA-AACC-366D2F6ECA60}.Release|x86.Build.0 = Release|x86
 		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Debug|x64.ActiveCfg = Debug|x64
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Debug|x64.Build.0 = Debug|x64
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Debug|x86.ActiveCfg = Debug|x86
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Debug|x86.Build.0 = Debug|x86
 		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Release|x64.ActiveCfg = Release|x64
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Release|x64.Build.0 = Release|x64
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Release|x86.ActiveCfg = Release|x86
+		{A1F11311-222A-4B33-B8CA-DB68605BFA1A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

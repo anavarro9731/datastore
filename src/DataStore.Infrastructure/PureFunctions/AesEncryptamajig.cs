@@ -1,4 +1,4 @@
-namespace DataStore.Infrastructure.PureFunctions.PureFunctions
+namespace DataStore.Infrastructure.PureFunctions
 {
     using System;
     using System.IO;

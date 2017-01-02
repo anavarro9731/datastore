@@ -1,16 +1,12 @@
-﻿using System;
-
-namespace DataStore.DataAccess.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using DataStore.DataAccess.Interfaces.Events;
-
-    using Infrastructure.PureFunctions.PureFunctions.Extensions;
+    using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
+    using Interfaces.Events;
     using Microsoft.Azure.Documents;
     using Newtonsoft.Json;
 

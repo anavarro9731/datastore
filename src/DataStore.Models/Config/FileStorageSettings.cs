@@ -1,4 +1,4 @@
-﻿namespace DataStore.DataAccess.Models.Config
+﻿namespace DataStore.Models.Config
 {
     public class FileStorageSettings
     {

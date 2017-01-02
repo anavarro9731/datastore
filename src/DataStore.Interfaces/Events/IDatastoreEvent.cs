@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace DataStore.DataAccess.Interfaces.Events
+﻿namespace DataStore.Interfaces.Events
 {
+    using System;
+
     public interface IDataStoreEvent
     {
         string TypeName { get; set; }

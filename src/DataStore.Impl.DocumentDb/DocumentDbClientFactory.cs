@@ -1,20 +1,17 @@
-﻿using System;
-using DataStore.DataAccess.Models.Config;
-using DataStore.Infrastructure.PureFunctions.PureFunctions.Extensions;
-using Microsoft.Azure.Documents.Client;
-
-namespace DataStore.DataAccess.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
+    using System;
+    using Infrastructure.PureFunctions.Extensions;
+    using Microsoft.Azure.Documents.Client;
+    using Models.Config;
+
     public class DocumentDbClientFactory
     {
-        private readonly DocumentDbSettings config;
-
-        private readonly SimplePartitionResolver partitionResolver;
+        private readonly DocumentDbSettings _config;
 
         public DocumentDbClientFactory(DocumentDbSettings config)
         {
-            partitionResolver = new SimplePartitionResolver(config);
-            this.config = config;
+            this._config = config;
             new DocumentDbInitialiser(config).Initialise();
         }
 
@@ -28,9 +25,9 @@ namespace DataStore.DataAccess.Impl.DocumentDb
         private DocumentClient CreateDocumentClient()
         {
             var client = new DocumentClient(
-                new Uri(config.EndpointUrl),
-                config.AuthorizationKey.ToSecureString());
-            client.PartitionResolvers[config.DatabaseSelfLink()] = partitionResolver;
+                new Uri(_config.EndpointUrl),
+                _config.AuthorizationKey.ToSecureString());
+            
             return client;
         }
     }

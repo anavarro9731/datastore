@@ -1,15 +1,15 @@
-﻿namespace DataStore
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Microsoft.Azure.Documents;
+
+namespace DataStore
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using DataAccess.Interfaces.Events;
-    using Microsoft.Azure.Documents;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Interfaces.Events;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -21,8 +21,9 @@
 
         public DataStore(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
         {
-            _eventAggregator = eventAggregator ?? new EventAggregator();
+            _eventAggregator = eventAggregator ?? EventAggregator.Create();
             DsConnection = documentRepository;
+            
             QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, _eventAggregator);
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, _eventAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, _eventAggregator);
@@ -39,6 +40,16 @@
         private DataStoreQueryCapabilities QueryCapabilities { get; }
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
+
+        public async Task CommitChanges()
+        {
+            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+
+            foreach (var dataStoreWriteEvent in dataStoreEvents)
+                await dataStoreWriteEvent.CommitClosure();
+        }
+
+        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, _eventAggregator);
 
         #region IDataStore Members
 
@@ -87,7 +98,7 @@
         {
             return await QueryCapabilities.ReadActive(queryableExtension);
         }
-        
+
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate
         {
             return await QueryCapabilities.ReadActiveById<T>(modelId);
@@ -128,17 +139,5 @@
         }
 
         #endregion
-
-        public async Task CommitChanges()
-        {
-            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
-
-            foreach (var dataStoreWriteEvent in dataStoreEvents)
-            {
-                await dataStoreWriteEvent.CommitClosure();
-            }
-        }
-
-        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, _eventAggregator);
     }
 }

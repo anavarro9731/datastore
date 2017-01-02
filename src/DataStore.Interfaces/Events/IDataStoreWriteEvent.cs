@@ -1,4 +1,4 @@
-﻿namespace DataStore.DataAccess.Interfaces.Events
+﻿namespace DataStore.Interfaces.Events
 {
     using System;
     using System.Threading.Tasks;

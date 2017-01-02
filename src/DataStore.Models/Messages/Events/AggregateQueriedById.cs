@@ -1,8 +1,8 @@
-﻿using System;
-using DataStore.DataAccess.Interfaces.Events;
-
-namespace DataStore.DataAccess.Models.Messages.Events
+﻿namespace DataStore.Models.Messages.Events
 {
+    using System;
+    using Interfaces.Events;
+
     public class AggregateQueriedById : Event, IDataStoreReadById
     {
         public AggregateQueriedById(string methodCalled, Guid id, Type type = null)
