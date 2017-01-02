@@ -1,10 +1,10 @@
-﻿namespace DataStore.Infrastructure.Impl.Sagas
+﻿namespace DataStore.Addons.Sagas
 {
     using System;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using DataAccess.Models;
+    using global::DataStore.Interfaces;
+    using Interfaces;
+    using Models;
 
     public class SagaState : Aggregate
     {
@@ -24,16 +24,10 @@
             DataStore = dataStore;
 
             if (sagaId != null)
-            {
                 if (DataStore.Exists(sagaId.Value).Result)
-                {
                     _sagaState = DataStore.ReadActiveById<SagaState>(sagaId.Value).Result;
-                }
                 else
-                {
                     _sagaState = DataStore.Create(new SagaState()).Result;
-                }
-            }
         }
 
         protected Guid SagaId => _sagaState.id;
@@ -42,13 +36,9 @@
         {
             if (_sagaState == null) throw new Exception("This saga is not stateful.");
             if (_sagaState.Flags != null)
-            {
                 _sagaState.Flags.AddState(additionalStatus);
-            }
             else
-            {
                 _sagaState.Flags = new FlaggedState(additionalStatus);
-            }
 
             await DataStore.Update(_sagaState);
         }
@@ -68,13 +58,9 @@
         {
             if (_sagaState == null) throw new Exception("This saga is not stateful.");
             if (_sagaState.Flags != null)
-            {
                 _sagaState.Flags.RemoveState(statusToRemove);
-            }
             else
-            {
                 throw new Exception("This saga's state has not been set.");
-            }
 
             await DataStore.Update(_sagaState);
         }
@@ -83,13 +69,9 @@
         {
             if (_sagaState == null) throw new Exception("This saga is not stateful.");
             if (_sagaState.Flags != null)
-            {
                 _sagaState.Flags.ReplaceState(newStatus);
-            }
             else
-            {
                 _sagaState.Flags = new FlaggedState(newStatus);
-            }
 
             await DataStore.Update(_sagaState);
         }
@@ -110,9 +92,7 @@
             get
             {
                 if (_returnValue == null)
-                {
                     throw new Exception("Saga not completed.");
-                }
 
                 return _returnValue;
             }
@@ -120,11 +100,11 @@
             private set { _returnValue = value; }
         }
 
-        protected void CompleteSaga<TCompleted>(TCompleted completedEvent) where TCompleted : SagaCompleted<TReturnType>
+        protected void CompleteSaga(TReturnType returnValue)
         {
-            EventAggregator.Store(completedEvent);
+            EventAggregator.Store(new SagaCompleted<TReturnType>(returnValue));
 
-            ReturnValue = completedEvent.Model;
+            ReturnValue = returnValue;
         }
     }
 }

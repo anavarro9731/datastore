@@ -2,11 +2,11 @@ namespace DataStore
 {
     using System.Collections.Generic;
     using System.Linq;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using DataAccess.Interfaces.Events;
-    using DataAccess.Models.Messages.Events;
-    using Infrastructure.PureFunctions.PureFunctions.Extensions;
+    using Infrastructure.PureFunctions.Extensions;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Interfaces.Events;
+    using Models.Messages.Events;
 
     public class EventReplay
     {

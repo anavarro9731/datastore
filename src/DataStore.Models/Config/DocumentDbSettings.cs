@@ -1,25 +1,26 @@
-﻿namespace DataStore.DataAccess.Models.Config
+﻿namespace DataStore.Models.Config
 {
     public class DocumentDbSettings
     {
         public DocumentDbSettings(
-            string authorizationKey, 
-            string databaseName, 
-            string defaultCollectionName, 
+            string authorizationKey,
+            string databaseName,
+            DocDbCollectionSettings collectionSettings,
             string endpointUrl)
         {
-            this.AuthorizationKey = authorizationKey;
-            this.DatabaseName = databaseName;
-            this.DefaultCollectionName = defaultCollectionName;
-            this.EndpointUrl = endpointUrl;
+            AuthorizationKey = authorizationKey;
+            DatabaseName = databaseName;
+            CollectionSettings = collectionSettings;
+            EndpointUrl = endpointUrl;
         }
 
         public string AuthorizationKey { get; }
 
         public string DatabaseName { get; }
 
-        public string DefaultCollectionName { get; }
+        public DocDbCollectionSettings CollectionSettings { get; set; }
 
         public string EndpointUrl { get; }
+
     }
 }

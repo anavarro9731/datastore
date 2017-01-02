@@ -1,15 +1,16 @@
-﻿namespace DataStore.Infrastructure.Impl.Permissions
+﻿namespace DataStore.Addons.Permissions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using DataAccess.Interfaces.Addons;
+    using Interfaces;
 
     public abstract class PermissionsBase : IPermissions
     {
         #region IPermissions Members
 
+        //get the list of permissions in a derived class using this base method
         public List<IApplicationPermission> ToList
         {
             get

@@ -1,14 +1,13 @@
-﻿using DataStore.DataAccess.Models.Messages.Events;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Models.Messages.Events;
 
     internal class DataStoreDeleteCapabilities : IDataStoreDeleteCapabilities
     {
@@ -41,9 +40,7 @@ namespace DataStore
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
-            {
                 _eventAggregator.Store(new AggregateHardDeleted<T>(nameof(DeleteHardWhere), dataObject, DsConnection));
-            }
 
             return dataObjects;
         }
@@ -66,9 +63,7 @@ namespace DataStore
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
-            {
                 _eventAggregator.Store(new AggregateSoftDeleted<T>(nameof(DeleteSoftWhere), dataObject, DsConnection));
-            }
 
             return dataObjects;
         }

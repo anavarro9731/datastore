@@ -1,4 +1,4 @@
-namespace DataStore.DataAccess.Models
+namespace DataStore.Models
 {
     using FluentValidation;
 

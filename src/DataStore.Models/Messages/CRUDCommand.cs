@@ -1,8 +1,8 @@
-﻿namespace DataStore.DataAccess.Models.Messages
+﻿namespace DataStore.Models.Messages
 {
-    public class CRUDCommand<TCommand> : Command
+    public class CrudCommand<TCommand> : Command
     {
-        public CRUDCommand(TCommand model)
+        public CrudCommand(TCommand model)
         {
             this.Model = model;
         }

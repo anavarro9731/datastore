@@ -1,11 +1,10 @@
-﻿namespace DataStore.DataAccess.Models
+﻿namespace DataStore.Models
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
-    using System.Linq;
-    using Infrastructure.PureFunctions.PureFunctions.Extensions;
 
     public abstract class Aggregate : Entity, IAggregate
     {
@@ -15,19 +14,11 @@
         public bool ReadOnly { get; set; } = false;
 
         // .. relationships
-        public int ScopeObjectIdCount { get; private set; }
-
-        public List<Guid> ScopeObjectIds { get; private set; }
-
-        public void SetScope(params Guid[] scopeObjectIds)
-        {
-            this.ScopeObjectIds = scopeObjectIds.ToList();
-            this.ScopeObjectIdCount = scopeObjectIds.Length;
-        }
+        public List<IScopeReference> ScopeReferences { get; set; } = new List<IScopeReference>();
 
         public void WalkGraphAndUpdateEntityMeta()
         {
-            this.WalkGraphAndUpdateEntityMeta(this);
+            WalkGraphAndUpdateEntityMeta(this);
         }
 
         private void WalkGraphAndUpdateEntityMeta(object current)
@@ -58,6 +49,7 @@
                     }
                     else if (p.Name == nameof(Entity.CreatedNumber))
                     {
+                        //set created datetime if this is the aggregate and it's null
                         if (p.GetValue(current, null) == null)
                         {
                             p.SetValue(current, DateTime.Now.ConvertToSecondsEpochTime(), null);
@@ -87,6 +79,7 @@
                 }
             }
         }
+
 
     }
 }

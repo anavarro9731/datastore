@@ -3,9 +3,8 @@ namespace DataStore
     using System;
     using System.Collections;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces.Addons;
-
-    using global::DataStore.DataAccess.Interfaces.Events;
+    using Interfaces.Addons;
+    using Interfaces.Events;
 
     public class EventPropogator<TEvent> : IPropogateEvents<TEvent>
         where TEvent : IEvent

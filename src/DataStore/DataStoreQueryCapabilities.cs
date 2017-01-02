@@ -1,18 +1,13 @@
-﻿using DataStore.DataAccess.Interfaces.Events;
-using DataStore.DataAccess.Models.Messages.Events;
-using DataStore.Infrastructure.PureFunctions.PureFunctions.Extensions;
-using FluentValidation.TestHelper;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using Microsoft.Azure.Documents;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Interfaces.Events;
+    using Models.Messages.Events;
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
     {
@@ -23,7 +18,7 @@ namespace DataStore
         {
             _eventAggregator = eventAggregator;
             _eventReplay = new EventReplay(eventAggregator);
-            this.DbConnection = dataStoreConnection;            
+            DbConnection = dataStoreConnection;
         }
 
         private IDocumentRepository DbConnection { get; }
@@ -32,10 +27,10 @@ namespace DataStore
         {
             if (id == Guid.Empty) return false;
 
-            if (_eventAggregator.Events.OfType<IDataStoreWriteEvent>().ToList().Exists(e => e.AggregateId == id && e.GetType() == typeof(AggregateHardDeleted<>)))
-            {
+            if (_eventAggregator.Events.OfType<IDataStoreWriteEvent>()
+                .ToList()
+                .Exists(e => e.AggregateId == id && e.GetType() == typeof(AggregateHardDeleted<>)))
                 return false;
-            }
 
             return await _eventAggregator.Store(new AggregateQueriedById(nameof(Exists), id)).ForwardToAsync(DbConnection.Exists);
         }
@@ -48,21 +43,19 @@ namespace DataStore
 
             return _eventReplay.ApplyAggregateEvents(results, false);
         }
-                
+
         // get a filtered list of the models from a set of active DataObjects
         public async Task<IEnumerable<T>> ReadActive<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
         {
-            Func<IQueryable<T>, IQueryable<T>> activeOnlyQueryableExtension = (q) =>
-                {
-                    if (queryableExtension != null)
-                    {
-                        q = queryableExtension(q);
-                    }
+            Func<IQueryable<T>, IQueryable<T>> activeOnlyQueryableExtension = q =>
+            {
+                if (queryableExtension != null)
+                    q = queryableExtension(q);
 
-                    q = q.Where(a => a.Active);
+                q = q.Where(a => a.Active);
 
-                    return q;
-                };
+                return q;
+            };
 
             var results = await ReadInternal(activeOnlyQueryableExtension);
 
@@ -72,7 +65,7 @@ namespace DataStore
         // get a filtered list of the models from  a set of DataObjects
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate
         {
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = (q) => q.Where(a => a.id == modelId && a.Active);
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = q => q.Where(a => a.id == modelId && a.Active);
             var results = await ReadInternal(queryableExtension);
 
             return _eventReplay.ApplyAggregateEvents(results, true).Single();
@@ -80,13 +73,12 @@ namespace DataStore
 
         private async Task<IEnumerable<T>> ReadInternal<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension) where T : IAggregate
         {
-            var queryable = this.DbConnection.CreateDocumentQuery<T>();
+            var queryable = DbConnection.CreateDocumentQuery<T>();
             if (queryableExtension != null)
-            {
                 queryable = queryableExtension(queryable);
-            }
 
             var results = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(ReadInternal), queryable)).ForwardToAsync(DbConnection.ExecuteQuery);
+
             return results;
         }
     }

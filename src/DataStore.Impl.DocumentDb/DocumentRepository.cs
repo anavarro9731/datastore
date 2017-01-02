@@ -1,6 +1,4 @@
-﻿using DataStore.DataAccess.Models.Messages.Events;
-
-namespace DataStore.DataAccess.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
@@ -13,6 +11,7 @@ namespace DataStore.DataAccess.Impl.DocumentDb
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
     using Models.Config;
+    using Models.Messages.Events;
 
     public class DocumentRepository : IDocumentRepository
     {
@@ -41,7 +40,7 @@ namespace DataStore.DataAccess.Impl.DocumentDb
                     DocumentDbUtils.ExecuteWithRetries(
                         () =>
                             _documentClient.CreateDocumentAsync(
-                                _config.DatabaseSelfLink(),
+                                _config.CollectionSelfLink(),
                                 aggregateAdded.Model));
             stopWatch.Stop();
             aggregateAdded.QueryDuration = stopWatch.Elapsed;
@@ -50,8 +49,10 @@ namespace DataStore.DataAccess.Impl.DocumentDb
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
-            var name = typeof(T).Name;
-            var query = _documentClient.CreateDocumentQuery<T>(_config.DatabaseSelfLink()).Where(item => item.Schema == name);
+            var name = typeof(T).Name;            
+            var query = _documentClient.CreateDocumentQuery<T>(_config.CollectionSelfLink(),
+                new FeedOptions { EnableCrossPartitionQuery = _config.CollectionSettings.EnableCrossParitionQueries, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1 })
+                .Where(item => item.Schema == name);
             return query;
         }
 
@@ -152,7 +153,7 @@ namespace DataStore.DataAccess.Impl.DocumentDb
         {
             var stopWatch = Stopwatch.StartNew();
             var query =
-                _documentClient.CreateDocumentQuery(_config.DatabaseSelfLink()).Where(item => item.Id == aggregateQueriedById.Id.ToString()).AsDocumentQuery();
+                _documentClient.CreateDocumentQuery(_config.CollectionSelfLink()).Where(item => item.Id == aggregateQueriedById.Id.ToString()).AsDocumentQuery();
 
             var results = await query.ExecuteNextAsync();
 
@@ -172,7 +173,7 @@ namespace DataStore.DataAccess.Impl.DocumentDb
                 throw new ArgumentException("Id is required for update/delete/read operation");
             }
 
-            var docLink = UriFactory.CreateDocumentUri(_config.DatabaseName, _config.DefaultCollectionName, id.ToString());
+            var docLink = UriFactory.CreateDocumentUri(_config.DatabaseName, _config.CollectionSettings.CollectionName, id.ToString());
             return docLink;
         }
     }

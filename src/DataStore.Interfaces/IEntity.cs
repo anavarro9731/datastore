@@ -1,4 +1,4 @@
-namespace DataStore.DataAccess.Interfaces
+namespace DataStore.Interfaces
 {
     public interface IEntity : IHaveAUniqueId, IRememberWhenIWasChanged, IHaveSchema
     {

@@ -1,9 +1,9 @@
-﻿using DataStore.DataAccess.Models;
-
-namespace DataStore.Tests.Models
+﻿namespace DataStore.Tests.Models
 {
+    using global::DataStore.Models;
+
     public class Car : Aggregate
     {
-        public string Make { get; set; }
+        public string Make { get; set; }        
     }
 }

@@ -1,79 +1,85 @@
-﻿namespace DataStore.DataAccess.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
-    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
-    using System.Linq;
-    using Microsoft.Azure.Documents.Linq;
     using Models.Config;
 
     public interface IDocumentDbInitialiser
     {
-        Tuple<string, List<string>> Initialise();
+        Tuple<string, string> Initialise();
     }
 
     public class DocumentDbInitialiser : IDocumentDbInitialiser
     {
-        private readonly DocumentClient documentClient;
+        private readonly DocumentClient _documentClient;
 
-        private readonly DocumentDbSettings settings;
+        private readonly DocumentDbSettings _settings;
 
         public DocumentDbInitialiser(DocumentDbSettings settings)
         {
-            this.settings = settings;
-            this.documentClient = new DocumentClient(new Uri(settings.EndpointUrl), settings.AuthorizationKey);
+            _settings = settings;
+            _documentClient = new DocumentClient(new Uri(settings.EndpointUrl), settings.AuthorizationKey);
         }
 
-        public Tuple<string, List<string>> Initialise()
+        public Tuple<string, string> Initialise()
         {
-            var db = this.RetrieveOrCreateDatabaseAsync(this.documentClient).Result;
+            var db = RetrieveOrCreateDatabaseAsync(_documentClient).Result;
 
-            var collections =this.RetrieveOrCreateCollectionsAsync(new List<string>() { this.settings.DefaultCollectionName }, db).Result;
+            var collection = RetrieveOrCreateCollectionAsync(_settings.CollectionSettings, db).Result;
 
-            return new Tuple<string, List<string>>(db.SelfLink, collections.Select(c => c.SelfLink).ToList());
+            return new Tuple<string, string>(db.SelfLink, collection.SelfLink);
         }
 
-        private async Task<IEnumerable<DocumentCollection>> RetrieveOrCreateCollectionsAsync(
-            List<string> collectionNames, 
+        private async Task<DocumentCollection> RetrieveOrCreateCollectionAsync(
+            DocDbCollectionSettings collectionSettings,
             Database db)
         {
-            var collections = new List<DocumentCollection>();
+            var collection = _documentClient.CreateDocumentCollectionQuery(db.SelfLink)
+                .Where(d => d.Id == collectionSettings.CollectionName)
+                .AsEnumerable()
+                .FirstOrDefault();
 
-            foreach (var collectionName in collectionNames)
+            if (collection == null)
             {
-                var coll =
-                    this.documentClient.CreateDocumentCollectionQuery(db.SelfLink)
-                        .Where(d => d.Id == collectionName)
-                        .AsEnumerable()
-                        .FirstOrDefault()
-                    ?? await
-                       this.documentClient.CreateDocumentCollectionAsync(
-                           db.SelfLink, 
-                           new DocumentCollection { Id = collectionName }).ConfigureAwait(false);
+                var documentCollection = collectionSettings.ToDocumentCollection();
 
-                collections.Add(coll);
+                //required to use partitioned collections
+                var requestOptions = new RequestOptions();
+
+                //do not check documentCollection.PartitionKey property because
+                //the partitionKey property creates a default value on calls to the getter and default values will fail
+                //so make sure not to call it. Bad MS!
+                if (collectionSettings.PartitionKeyType != DocDbCollectionSettings.PartitionKeyTypeEnum.None)
+                {
+                    //set this over 10000 to cause docdb to create a partitioned collection
+                    requestOptions.OfferThroughput = 10100;
+                }
+
+                collection = await _documentClient.CreateDocumentCollectionAsync(
+                    db.SelfLink,
+                    documentCollection, requestOptions).ConfigureAwait(false);
             }
 
-            return collections;
+
+            return collection;
         }
 
         private async Task<Database> RetrieveOrCreateDatabaseAsync(DocumentClient client)
         {
             var existingDatabase =
                 client.CreateDatabaseQuery()
-                    .Where(d => d.Id == this.settings.DatabaseName)
+                    .Where(d => d.Id == _settings.DatabaseName)
                     .AsEnumerable()
                     .SingleOrDefault();
 
             if (existingDatabase != null)
-            {
                 return existingDatabase;
-            }
 
             return
-                await client.CreateDatabaseAsync(new Database { Id = this.settings.DatabaseName }).ConfigureAwait(false);
+                await client.CreateDatabaseAsync(new Database { Id = _settings.DatabaseName }).ConfigureAwait(false);
         }
     }
 }

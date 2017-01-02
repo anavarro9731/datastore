@@ -1,13 +1,13 @@
 ﻿namespace DataStore
 {
     using System;
-    using System.Linq;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces.Events;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
+    using Interfaces;
+    using Interfaces.Addons;
+    using Interfaces.Events;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -19,7 +19,7 @@
 
         public DataStoreWriteOnly(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
         {
-            _eventAggregator = eventAggregator ?? new EventAggregator();
+            _eventAggregator = eventAggregator ?? EventAggregator.Create();
             DsConnection = documentRepository;
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, eventAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, eventAggregator);
@@ -33,6 +33,14 @@
         private DataStoreDeleteCapabilities DeleteCapabilities { get; }
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
+
+        public async Task CommitChanges()
+        {
+            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+
+            foreach (var dataStoreWriteEvent in dataStoreEvents)
+                await dataStoreWriteEvent.CommitClosure();
+        }
 
         #region IDataStoreWriteOnlyScoped<T> Members
 
@@ -86,16 +94,5 @@
         }
 
         #endregion
-
-        public async Task CommitChanges()
-        {
-            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
-
-            foreach (var dataStoreWriteEvent in dataStoreEvents)
-            {
-                await dataStoreWriteEvent.CommitClosure();
-
-            }
-        }
     }
 }

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using DataStore.DataAccess.Interfaces.Events;
-
-namespace DataStore.DataAccess.Models.Messages.Events
+﻿namespace DataStore.Models.Messages.Events
 {
+    using System;
+    using System.Linq;
+    using Interfaces.Events;
+
     public class AggregatesQueried<T> : Event, IDataStoreReadFromQueryable<T>
     {
         public AggregatesQueried(string methodCalled, IQueryable<T> query)

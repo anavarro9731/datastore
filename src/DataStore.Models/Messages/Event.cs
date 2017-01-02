@@ -1,9 +1,9 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using DataStore.DataAccess.Interfaces.Events;
-
-namespace DataStore.DataAccess.Models.Messages
+﻿namespace DataStore.Models.Messages
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using Interfaces.Events;
+
     public class Event<TModel> : Event
     {
         public Event(TModel model)

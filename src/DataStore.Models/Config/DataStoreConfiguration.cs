@@ -1,4 +1,4 @@
-﻿namespace DataStore.DataAccess.Models.Config
+﻿namespace DataStore.Models.Config
 {
     /* 
     Because what goes in this class is effectively global, it is important that it stays limited to 2 things:

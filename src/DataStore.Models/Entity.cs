@@ -1,11 +1,11 @@
-﻿namespace DataStore.DataAccess.Models
+﻿namespace DataStore.Models
 {
     using System;
     using System.Dynamic;
+    using System.Linq;
+    using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
     using Newtonsoft.Json;
-    using System.Linq;
-    using Infrastructure.PureFunctions.PureFunctions.Extensions;
 
     /// <summary>
     ///     represents an objects with a unique id
@@ -14,15 +14,16 @@
     {
         /* Magic More Property is there to allow you add extra data to model's object 
          * for read purposes before passing it to API clients and on API calls inwards. */
-        private dynamic more;
+        private dynamic _more;
 
-        private string schema;
+        private string _schema;
 
-        private string type;
+        private string _type;
 
         // apart from keeping an audit trail this is used for sorting 
         public DateTime? Created { get; set; }
 
+        //here for easier comparison in some systems such as docdb
         public double? CreatedNumber { get; set; }
 
         // this is here to give references which are stored in a models json a unique Id which is necessary during updates to determines 
@@ -37,13 +38,13 @@
         {
             get
             {
-                this.more = this.more ?? new ExpandoObject();
-                return this.more;
+                this._more = this._more ?? new ExpandoObject();
+                return this._more;
             }
 
             set
             {
-                this.more = value;
+                this._more = value;
             }
         }
 
@@ -52,13 +53,13 @@
         {
             get
             {
-                this.schema = this.schema ?? this.GetType().Name;
-                return this.schema;
+                this._schema = this._schema ?? this.GetType().Name;
+                return this._schema;
             }
 
             set
             {
-                this.schema = value;
+                this._schema = value;
             }
         }
 
@@ -67,13 +68,13 @@
         {
             get
             {
-                this.type = this.type ?? this.GetType().FullName;
-                return this.type;
+                this._type = this._type ?? this.GetType().FullName;
+                return this._type;
             }
 
             set
             {
-                this.type = value;
+                this._type = value;
             }
         }
 

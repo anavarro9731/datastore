@@ -1,8 +1,7 @@
-using System.Threading.Tasks;
-
-namespace DataStore.DataAccess.Interfaces
+namespace DataStore.Interfaces
 {
     using System;
+    using System.Threading.Tasks;
 
     public interface IDataStore : IDisposable, 
                                   IDataStoreCreateCapabilities, 

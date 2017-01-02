@@ -1,4 +1,4 @@
-﻿namespace DataStore.DataAccess.Interfaces
+﻿namespace DataStore.Interfaces
 {
     using Newtonsoft.Json;
 

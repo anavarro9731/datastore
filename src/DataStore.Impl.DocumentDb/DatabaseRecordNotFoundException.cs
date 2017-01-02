@@ -1,4 +1,4 @@
-﻿namespace DataStore.DataAccess.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     public class DatabaseRecordNotFoundException : DatabaseException
     {

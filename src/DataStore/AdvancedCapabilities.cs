@@ -4,11 +4,11 @@ namespace DataStore
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using DataAccess.Interfaces;
-    using DataAccess.Interfaces.Addons;
-    using DataAccess.Models.Messages.Events;
-    using Infrastructure.PureFunctions.PureFunctions;
+    using Infrastructure.PureFunctions;
+    using Interfaces;
+    using Interfaces.Addons;
     using Microsoft.Azure.Documents;
+    using Models.Messages.Events;
 
     public class AdvancedCapabilities : IAdvancedCapabilities
     {
