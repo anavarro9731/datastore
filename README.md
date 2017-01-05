@@ -89,8 +89,6 @@ Operations are not committed by default.
 They are queued in the order received, stored as events in the EventAggregator object.
 Calling DataStore.CommitChanges() will commit these events to the database.
 
-```
-
 ```    
         [Fact]
         public async void CanUpdateCar()
