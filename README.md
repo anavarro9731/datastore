@@ -24,6 +24,7 @@ It is completely backwards compatible with the .NETFramework 4.5.2 platform and 
 
 * Better documentation of API features (paritions, profiling, advanced queries)
 * Optimistic Concurrency Support
+* Document-level security
 
 ## Usage
 
@@ -58,19 +59,19 @@ or
 car.Model = "Celica";
 d.Update(car);
 ```
-> The Update() method does not persist the object you pass it directly, 
-> instead it copies matching properties from the object you pass it to the object 
-> stored in the database. This approach excludes reserved properties and those 
-> which may not be present on the persisted object.
+> NOTE: The Update() method does not persist the object you pass it directly.
+> Instead it copies matching properties from the instance you pass it to an instance 
+> it de-serializes from the database. In this way reserved properties are excluded along
+> with any properties which may not be present on the current class definition (e.g. if you
+> pass a derived class with additional properties)
 
 ##### Delete It
 
 `d.DeleteSoftById<Car>(car.Id);`
 
 > There are 2 delete approaches; Hard and Soft. Hard deletes will remove the document entirely.
-> Soft deletes will only toggle the document's *Active* flag.
-> Document's can then be queried using various Read methods which filter on this
-> flag. (e.g. ReadActive<T> vs. Read<T>)
+> Soft deletes will only toggle the document's *Active* flag. The Active flag is filtered on
+> by various Read methods (e.g. ReadActive(), ReadActiveById())
 
 ##### Retrieve It
 
@@ -84,81 +85,87 @@ See IDataStoreQueryCapabilities.cs for the full list of supported methods.
 
 #### Transactions
 
-Pending changes to the database are not committed by default, 
-they are queued in the order received and stored as events in the EventAggregator.
+Operations are not committed by default.
+They are queued in the order received, stored as events in the EventAggregator object.
+Calling DataStore.CommitChanges() will commit these events to the database.
 
-However, Read Queries performed during a session will be intelligently merged with any uncommitted events in the session 
-so the resultset will include any changes already requested (but not yet committed).
-
-Calling DataStore.CommitChanges() will persist pending events to the database, and mark them as Committed. 
-
-Using a DataStore instance across several consecutive sessions (sets of changes followed by a call to CommitChanges()) 
-is perfectly acceptable. Just note, that if you query the EventAggregator.Events collection you will see the IDataStoreEvents
-from all sessions, but those already committed will be marked as Committed. The reason we do not remove events afer CommitChanges()
-is called is to allow you to query their performance metrics later on.
-
-
-See the following XUnit examples for how this is used.
+```
 
 ```    
-public async void DoesNotUpdateCarInDatabase()
-{
-    var documentRepository = new InMemoryDocumentRepository();
-    var inMemoryDb = documentRepository.Aggregates;
-    var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true };
-    var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
+        [Fact]
+        public async void CanUpdateCar()
+        {
+            var documentRepository = new InMemoryDocumentRepository();
+            var inMemoryDb = documentRepository.Aggregates;
+            var eventAggregator = EventAggregator.Create();
+            var dataStore = new DataStore(documentRepository, eventAggregator);
 
-    var carId = Guid.NewGuid();
-        
-    //Given
-    inMemoryDb.Add(new Car() {
-        id = userId,
-        Make = "Toyota"
-    });
+            var carId = Guid.NewGuid();
 
-    //When
-    await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+            //Given
+            inMemoryDb.Add(new Car()
+            {
+                id = carId,
+                Make = "Toyota"
+            });
 
-    //Then 
-        
-    //We have a AggregateUpdated event
-    Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-        
-    //The underlying database has not changed
-    Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == Guid.NewGuid()).Make);
-        
-    //The dataStore has applied pending changes to its collection
-    Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
-}
+            //When
+            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+            await dataStore.CommitChanges();
 
-public async void CanUpdateCarInDatabase()
-{
-    var documentRepository = new InMemoryDocumentRepository();
-    var inMemoryDb = documentRepository.Aggregates;
-    var eventAggregator = new EventAggregator { PropogateDomainEvents = false, PropogateDataStoreEvents = true };
-    var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
+            //Then 
 
-    var carId = Guid.NewGuid();
-        
-    //Given
-    inMemoryDb.Add(new Car() {
-        id = userId,
-        Make = "Toyota"
-    });
+            //We have a AggregateUpdated event
+            Assert.NotNull(eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
-    //When
-    await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-    await dataStore.CommitChanges();
+            //The underlying database has changed
+            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
-    //Then 
-        
-    //We have a AggregateUpdated event
-    Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-        
-    //The underlying database has not changed
-    Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == Guid.NewGuid()).Make);
-        
-    //The dataStore has applied pending changes to its collection
-    Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
-}
+            //The dataStore reads the changes correctly
+            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);            
+        }
 ```
+> Note: Read Queries performed during a session will be take into account any uncommitted operations in that session.
+> So the resultset will include any changes already requested (but not yet committed).
+
+```
+        [Fact]
+        public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
+        {
+            var documentRepository = new InMemoryDocumentRepository();
+            var inMemoryDb = documentRepository.Aggregates;
+            var eventAggregator = EventAggregator.Create();
+            var dataStore = new DataStore(documentRepository, eventAggregator);
+
+            var carId = Guid.NewGuid();
+
+            //Given
+            inMemoryDb.Add(new Car()
+            {
+                id = carId,
+                Make = "Toyota"
+            });
+
+            //When
+            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+            //await dataStore.CommitChanges(); don't commit
+
+            //Then 
+
+            //We have a AggregateUpdated event
+            Assert.NotNull(eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+
+            //The underlying database has NOT changed
+            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+
+            //The DataStore instance picks up the change, because it has applied
+            //all changes made during this session.
+            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
+```
+
+> Using a DataStore instance across several consecutive sessions (sets of changes followed by a call to CommitChanges()) 
+> is perfectly acceptable. Just note, that if you query the EventAggregator.Events collection you will see the IDataStoreEvents
+> from all sessions, but those already committed will be marked as Committed. The reason we do not remove events afer CommitChanges()
+> is called is to allow you to query their performance metrics later on.
+
