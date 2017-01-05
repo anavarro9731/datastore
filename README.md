@@ -86,7 +86,7 @@ See IDataStoreQueryCapabilities.cs for the full list of supported methods.
 #### Transactions
 
 Operations are not committed by default.
-They are queued in the order received, stored as events in the EventAggregator object.
+They are queued as events in the EventAggregator object.
 Calling DataStore.CommitChanges() will commit these events to the database.
 
 ```    
