@@ -25,12 +25,12 @@
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
-            return Clone(Aggregates.Where(x => x is T).Cast<T>()).AsQueryable();
+            return Clone(Aggregates.OfType<T>()).AsQueryable();
         }
 
         public Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
         {
-            var aggregate = Aggregates.Single(a => a.id == aggregateHardDeleted.Model.id);
+            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateHardDeleted.Model.id);
 
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
@@ -39,7 +39,8 @@
 
         public Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
         {
-            var aggregate = Aggregates.Single(a => a.id == aggregateSoftDeleted.Model.id);
+            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
+
             (aggregate as dynamic).Active = false;
 
             return Task.FromResult((T) aggregate);
@@ -64,7 +65,9 @@
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
-            return Task.FromResult(Aggregates.Cast<T>().Single(a => a.id == aggregateQueriedById.Id));
+            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateQueriedById.Id);
+
+            return Task.FromResult(aggregate);
         }
 
         public Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById)
@@ -82,20 +85,15 @@
 
         public Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
         {
-            return UpdateAsync(aggregateUpdated.Model);
+            var toUpdate = Aggregates.Single(x => x.id == aggregateUpdated.Model.id);
+
+            aggregateUpdated.Model.CopyProperties(toUpdate);
+
+            return Task.FromResult((T)toUpdate);
         }
 
         #endregion
-
-        private Task<T> UpdateAsync<T>(T item) where T : IHaveAUniqueId
-        {
-            var toUpdate = Aggregates.Single(x => x.id == item.id);
-
-            item.CopyProperties(toUpdate);
-
-            return Task.FromResult((T) toUpdate);
-        }
-
+        
         private IEnumerable<T> Clone<T>(IEnumerable<T> toClone) where T: IHaveAUniqueId
         {
             var asJson = JsonConvert.SerializeObject(toClone);
