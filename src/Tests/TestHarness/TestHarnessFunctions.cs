@@ -1,10 +1,10 @@
-﻿namespace DataStore.Tests.TestHarness
-{
-    using System;
-    using System.IO;
-    using global::DataStore.Models.Config;
-    using Newtonsoft.Json;
+﻿using System;
+using System.IO;
+using DataStore.Models.Config;
+using Newtonsoft.Json;
 
+namespace Tests.TestHarness
+{
     public static class TestHarnessFunctions
     {
         public static ITestHarness GetTestHarness(string testName)

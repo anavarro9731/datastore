@@ -1,31 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DataStore;
 using DataStore.Impl.DocumentDb;
 using DataStore.Models.Messages.Events;
-using DataStore.Tests.Constants;
-using DataStore.Tests.Models;
+using Tests.Constants;
+using Tests.Models;
 using Xunit;
 
-namespace DataStore.Tests.Tests
+namespace Tests.Tests
 {
     [Collection(TestCollections.DocumentationTests)]
     public class DocumentationTests
-    {        
+    {
         [Fact]
         public async void CanUpdateCar()
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
             var eventAggregator = EventAggregator.Create();
-            var dataStore = new DataStore(documentRepository, eventAggregator);
+            var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
 
             var carId = Guid.NewGuid();
 
             //Given
-            inMemoryDb.Add(new Car()
+            inMemoryDb.Add(new Car
             {
                 id = carId,
                 Make = "Toyota"
@@ -44,7 +42,7 @@ namespace DataStore.Tests.Tests
             Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
             //The dataStore reads the changes correctly
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);            
+            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
         [Fact]
@@ -52,13 +50,13 @@ namespace DataStore.Tests.Tests
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var eventAggregator = EventAggregator.Create();            
-            var dataStore = new DataStore(documentRepository, eventAggregator);
-            
+            var eventAggregator = EventAggregator.Create();
+            var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
+
             var carId = Guid.NewGuid();
 
             //Given
-            inMemoryDb.Add(new Car()
+            inMemoryDb.Add(new Car
             {
                 id = carId,
                 Make = "Toyota"
@@ -80,7 +78,5 @@ namespace DataStore.Tests.Tests
             //all changes made during this session.
             Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
         }
-
-
     }
 }

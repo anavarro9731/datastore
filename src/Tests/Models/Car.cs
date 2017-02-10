@@ -1,7 +1,7 @@
-﻿namespace DataStore.Tests.Models
-{
-    using global::DataStore.Models;
+﻿using DataStore.Models;
 
+namespace Tests.Models
+{
     public class Car : Aggregate
     {
         public string Make { get; set; }        

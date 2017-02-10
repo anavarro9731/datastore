@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataStore;
+using DataStore.Impl.DocumentDb;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
+using DataStore.Models.Config;
+using DataStore.Models.Messages.Events;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 
-namespace DataStore.Tests.TestHarness
+namespace Tests.TestHarness
 {
-    using global::DataStore.Models.Config;
-    using global::DataStore.Models.Messages.Events;
-    using Impl.DocumentDb;
-    using Interfaces;
-    using Interfaces.Addons;
-    using Interfaces.Events;
-
     public class RemoteTestHarness : ITestHarness
     {
         private readonly DocumentRepository _documentRepository;
@@ -22,10 +21,10 @@ namespace DataStore.Tests.TestHarness
         private RemoteTestHarness(DocumentRepository documentRepository)
         {
             _documentRepository = documentRepository;
-            DataStore = new DataStore(_documentRepository, _eventAggregator);
+            DataStore = new DataStore.DataStore(_documentRepository, _eventAggregator);
         }
 
-        public DataStore DataStore { get; }
+        public DataStore.DataStore DataStore { get; }
         public List<IDataStoreEvent> Events => _eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
 
         public async Task AddToDatabase<T>(T aggregate) where T : IAggregate
