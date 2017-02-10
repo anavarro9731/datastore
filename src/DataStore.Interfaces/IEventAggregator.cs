@@ -1,7 +1,6 @@
 ﻿namespace DataStore.Interfaces
 {
     using System.Collections.Generic;
-    using Addons;
     using Events;
 
     public interface IEventAggregator
