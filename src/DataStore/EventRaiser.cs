@@ -1,9 +1,10 @@
+using DataStore.Interfaces;
+
 namespace DataStore
 {
     using System;
     using System.Collections;
     using System.Threading.Tasks;
-    using Interfaces.Addons;
     using Interfaces.Events;
 
     public class EventPropogator<TEvent> : IPropogateEvents<TEvent>

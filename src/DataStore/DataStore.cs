@@ -8,7 +8,6 @@ using Microsoft.Azure.Documents;
 namespace DataStore
 {
     using Interfaces;
-    using Interfaces.Addons;
     using Interfaces.Events;
 
     /// <summary>

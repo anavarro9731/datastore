@@ -3,7 +3,6 @@
 namespace DataStore
 {
     using Interfaces;
-    using Interfaces.Addons;
     using Interfaces.Events;
 
     public class EventAggregator : IEventAggregator
