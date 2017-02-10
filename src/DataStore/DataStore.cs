@@ -3,32 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
 using Microsoft.Azure.Documents;
 
 namespace DataStore
 {
-    using Interfaces;
-    using Interfaces.Events;
-
     /// <summary>
     ///     Facade over querying and unit of work capabilities
     ///     Derived non-generic shorthand when a single or primary store exists
     /// </summary>
     public class DataStore : IDataStore
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventAggregator eventAggregator;
 
         public DataStore(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
         {
-            _eventAggregator = eventAggregator ?? EventAggregator.Create();
+            this.eventAggregator = eventAggregator ?? EventAggregator.Create();
             DsConnection = documentRepository;
-            
-            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, _eventAggregator);
-            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, _eventAggregator);
-            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, _eventAggregator);
-            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, _eventAggregator);
-        }
 
+            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.eventAggregator);
+            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.eventAggregator);
+            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, this.eventAggregator);
+            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.eventAggregator);
+        }
 
         public IDocumentRepository DsConnection { get; }
 
@@ -40,15 +38,17 @@ namespace DataStore
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
+        public IReadOnlyList<IDataStoreEvent> Events => eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
+
         public async Task CommitChanges()
         {
-            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+            var dataStoreEvents = eventAggregator.Events.OfType<IDataStoreWriteEvent>();
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
                 await dataStoreWriteEvent.CommitClosure();
         }
 
-        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, _eventAggregator);
+        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, eventAggregator);
 
         #region IDataStore Members
 
@@ -87,7 +87,8 @@ namespace DataStore
             return await QueryCapabilities.Exists(id);
         }
 
-        public async Task<IEnumerable<T>> Read<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : IAggregate
+        public async Task<IEnumerable<T>> Read<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
+            where T : IAggregate
         {
             return await QueryCapabilities.Read(queryableExtension);
         }
@@ -108,7 +109,8 @@ namespace DataStore
             return await Advanced.ReadCommittedById(modelId);
         }
 
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : IAggregate
+        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true)
+            where T : IAggregate
         {
             return await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
         }
@@ -129,7 +131,7 @@ namespace DataStore
 
         public IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new()
         {
-            return new DataStoreWriteOnly<T>(DsConnection, _eventAggregator);
+            return new DataStoreWriteOnly<T>(DsConnection, eventAggregator);
         }
 
         public IDataStoreQueryCapabilities AsReadOnly()

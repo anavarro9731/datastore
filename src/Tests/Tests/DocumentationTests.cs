@@ -17,8 +17,7 @@ namespace Tests.Tests
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var eventAggregator = EventAggregator.Create();
-            var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
+            var dataStore = new DataStore.DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 
@@ -36,7 +35,7 @@ namespace Tests.Tests
             //Then 
 
             //We have a AggregateUpdated event
-            Assert.NotNull(eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has changed
             Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
@@ -50,8 +49,7 @@ namespace Tests.Tests
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var eventAggregator = EventAggregator.Create();
-            var dataStore = new DataStore.DataStore(documentRepository, eventAggregator);
+            var dataStore = new DataStore.DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 
@@ -69,7 +67,7 @@ namespace Tests.Tests
             //Then 
 
             //We have a AggregateUpdated event
-            Assert.NotNull(eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has NOT changed
             Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);

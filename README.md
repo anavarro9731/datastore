@@ -90,38 +90,37 @@ They are queued as events in the EventAggregator object.
 Calling DataStore.CommitChanges() will commit these events to the database.
 
 ```    
-        [Fact]
-        public async void CanUpdateCar()
+	[Fact]
+    public async void CanUpdateCar()
+    {
+        var documentRepository = new InMemoryDocumentRepository();
+        var inMemoryDb = documentRepository.Aggregates;
+        var dataStore = new DataStore.DataStore(documentRepository);
+
+        var carId = Guid.NewGuid();
+
+        //Given
+        inMemoryDb.Add(new Car
         {
-            var documentRepository = new InMemoryDocumentRepository();
-            var inMemoryDb = documentRepository.Aggregates;
-            var eventAggregator = EventAggregator.Create();
-            var dataStore = new DataStore(documentRepository, eventAggregator);
+            id = carId,
+            Make = "Toyota"
+        });
 
-            var carId = Guid.NewGuid();
+        //When
+        await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+        await dataStore.CommitChanges();
 
-            //Given
-            inMemoryDb.Add(new Car()
-            {
-                id = carId,
-                Make = "Toyota"
-            });
+        //Then 
 
-            //When
-            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-            await dataStore.CommitChanges();
+        //We have a AggregateUpdated event
+        Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
-            //Then 
+        //The underlying database has changed
+        Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
-            //We have a AggregateUpdated event
-            Assert.NotNull(eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-
-            //The underlying database has changed
-            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
-
-            //The dataStore reads the changes correctly
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);            
-        }
+        //The dataStore reads the changes correctly
+        Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+    }
 ```
 > Note: Read Queries performed during a session will be take into account any uncommitted operations in that session.
 > So the resultset will include any changes already requested (but not yet committed).
@@ -132,13 +131,12 @@ Calling DataStore.CommitChanges() will commit these events to the database.
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var eventAggregator = EventAggregator.Create();
-            var dataStore = new DataStore(documentRepository, eventAggregator);
+            var dataStore = new DataStore.DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 
             //Given
-            inMemoryDb.Add(new Car()
+            inMemoryDb.Add(new Car
             {
                 id = carId,
                 Make = "Toyota"
@@ -151,7 +149,7 @@ Calling DataStore.CommitChanges() will commit these events to the database.
             //Then 
 
             //We have a AggregateUpdated event
-            Assert.NotNull(eventAggregator.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has NOT changed
             Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
