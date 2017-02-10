@@ -6,7 +6,6 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using Interfaces;
-    using Interfaces.Addons;
     using Interfaces.Events;
 
     /// <summary>

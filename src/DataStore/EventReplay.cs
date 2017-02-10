@@ -4,7 +4,6 @@ namespace DataStore
     using System.Linq;
     using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
-    using Interfaces.Addons;
     using Interfaces.Events;
     using Models.Messages.Events;
 

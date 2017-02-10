@@ -2,7 +2,6 @@
 {
     using System.Collections.Generic;
     using Interfaces;
-    using Interfaces.Addons;
 
     public class ValueReturner : IValueReturner
     {

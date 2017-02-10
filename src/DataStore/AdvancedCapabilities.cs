@@ -6,7 +6,6 @@ namespace DataStore
     using System.Threading.Tasks;
     using Infrastructure.PureFunctions;
     using Interfaces;
-    using Interfaces.Addons;
     using Microsoft.Azure.Documents;
     using Models.Messages.Events;
 

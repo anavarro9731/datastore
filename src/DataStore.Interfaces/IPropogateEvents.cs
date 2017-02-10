@@ -1,9 +1,9 @@
-﻿namespace DataStore.Interfaces.Addons
-{
-    using System;
-    using System.Threading.Tasks;
-    using Events;
+﻿using System;
+using System.Threading.Tasks;
+using DataStore.Interfaces.Events;
 
+namespace DataStore.Interfaces
+{
     public interface IPropogateEvents<out T> 
         where T : IEvent
     {

@@ -4,7 +4,6 @@
     using System.Threading.Tasks;
     using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
-    using Interfaces.Addons;
     using Models.Messages.Events;
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
