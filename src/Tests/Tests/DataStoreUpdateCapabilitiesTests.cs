@@ -1,14 +1,13 @@
 using System;
 using System.Linq;
-using DataStore.Tests.Constants;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
+using DataStore.Models.Messages.Events;
+using Tests.Constants;
+using Tests.Models;
+using Tests.TestHarness;
 using Xunit;
 
-namespace DataStore.Tests.Tests
+namespace Tests.Tests
 {
-    using global::DataStore.Models.Messages.Events;
-
     [Collection(TestCollections.DataStoreTestCollection)]
     public class DataStoreUpdateCapabilitiesTests
     {

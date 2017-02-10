@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataStore;
+using DataStore.Impl.DocumentDb;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
 
-namespace DataStore.Tests.TestHarness
+namespace Tests.TestHarness
 {
-    using Impl.DocumentDb;
-    using Interfaces;
-    using Interfaces.Addons;
-    using Interfaces.Events;
-
     public class InMemoryTestHarness : ITestHarness
     {
-        public DataStore DataStore { get; }
+        public DataStore.DataStore DataStore { get; }
         public List<IDataStoreEvent> Events => _eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
         private InMemoryDocumentRepository  DocumentRepository { get; }
         private readonly IEventAggregator _eventAggregator = EventAggregator.Create(false);
@@ -20,7 +19,7 @@ namespace DataStore.Tests.TestHarness
         private InMemoryTestHarness()
         {
             this.DocumentRepository = new InMemoryDocumentRepository();
-            this.DataStore = new DataStore(this.DocumentRepository, _eventAggregator);
+            this.DataStore = new DataStore.DataStore(this.DocumentRepository, _eventAggregator);
         }
         
         public Task AddToDatabase<T>(T aggregate) where T: IAggregate

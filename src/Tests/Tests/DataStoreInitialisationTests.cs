@@ -1,10 +1,10 @@
 using System.Linq;
-using DataStore.Tests.Constants;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
+using Tests.Constants;
+using Tests.Models;
+using Tests.TestHarness;
 using Xunit;
 
-namespace DataStore.Tests.Tests
+namespace Tests.Tests
 {
     [Collection(TestCollections.DataStoreTestCollection)]
     public class DataStoreInitialisationTests

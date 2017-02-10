@@ -1,4 +1,4 @@
-﻿namespace DataStore.Tests.Constants
+﻿namespace Tests.Constants
 {
     public class TestCollections
     {

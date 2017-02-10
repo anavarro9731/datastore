@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
 
-namespace DataStore.Tests.TestHarness
+namespace Tests.TestHarness
 {
-    using Interfaces;
-    using Interfaces.Events;
-
     public interface ITestHarness
     {
-        DataStore DataStore { get; }
+        DataStore.DataStore DataStore { get; }
 
         List<IDataStoreEvent> Events { get; }
 
