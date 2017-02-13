@@ -20,6 +20,7 @@ namespace Tests.TestHarness
                 var documentdbsettingsJson = "DocumentDbSettings.json";
                 /*
                 Create this file in your DataStore.Tests project root and set it's build output to "copy always"
+                This file should always be .gitignore(d), don't want to expose this in your repo.
                 {
                     "AuthorizationKey": "<azurekey>",
                     "DatabaseName": "<dbname>",

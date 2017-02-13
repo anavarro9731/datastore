@@ -1,4 +1,6 @@
-﻿namespace DataStore.Models.Messages.Events
+﻿using PalmTree.Infrastructure.Models.Messages;
+
+namespace DataStore.Models.Messages.Events
 {
     using System;
     using System.Threading.Tasks;

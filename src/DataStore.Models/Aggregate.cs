@@ -1,9 +1,10 @@
-﻿namespace DataStore.Models
+﻿using PalmTree.Infrastructure.PureFunctions.Extensions;
+
+namespace DataStore.Models
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
 
     public abstract class Aggregate : Entity, IAggregate

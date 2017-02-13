@@ -1,15 +1,13 @@
-﻿namespace DataStore.Interfaces
-{
-    using System.Collections.Generic;
-    using Events;
+﻿using System.Collections.Generic;
+using PalmTree.Infrastructure.EventAggregator;
 
+namespace PalmTree.Infrastructure.Interfaces
+{
     public interface IEventAggregator
     {
         List<IEvent> Events { get; }
 
-        bool PropogateDomainEvents { get; }
-
-        bool PropogateDataStoreEvents { get; }
+        bool PropogateEvents { get; }
 
         IPropogateEvents<TEvent> Store<TEvent>(TEvent @event) where TEvent : IEvent;
 

@@ -1,7 +1,7 @@
-﻿namespace DataStore.Infrastructure.PureFunctions
-{
-    using System;
+﻿using System;
 
+namespace PalmTree.Infrastructure.PureFunctions
+{
     public static class Guard
     {
         //simplest form of validation ever!

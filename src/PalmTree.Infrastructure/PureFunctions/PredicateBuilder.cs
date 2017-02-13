@@ -1,11 +1,11 @@
-﻿namespace DataStore.Infrastructure.PureFunctions
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
 
+namespace PalmTree.Infrastructure.PureFunctions
+{
     /// <summary>
     /// Enables the efficient, dynamic composition of query predicates.
     /// </summary>

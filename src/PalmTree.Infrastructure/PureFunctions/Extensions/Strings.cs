@@ -1,7 +1,7 @@
-﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
-{
-    using System;
+﻿using System;
 
+namespace PalmTree.Infrastructure.PureFunctions.Extensions
+{
     public static class Strings
     {
         /// <summary>

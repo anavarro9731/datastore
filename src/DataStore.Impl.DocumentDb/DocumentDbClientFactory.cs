@@ -1,17 +1,18 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using PalmTree.Infrastructure.PureFunctions.Extensions;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
-    using Infrastructure.PureFunctions.Extensions;
     using Microsoft.Azure.Documents.Client;
     using Models.Config;
 
     public class DocumentDbClientFactory
     {
-        private readonly DocumentDbSettings _config;
+        private readonly DocumentDbSettings config;
 
         public DocumentDbClientFactory(DocumentDbSettings config)
         {
-            this._config = config;
+            this.config = config;
             new DocumentDbInitialiser(config).Initialise();
         }
 
@@ -25,8 +26,8 @@
         private DocumentClient CreateDocumentClient()
         {
             var client = new DocumentClient(
-                new Uri(_config.EndpointUrl),
-                _config.AuthorizationKey.ToSecureString());
+                new Uri(config.EndpointUrl),
+                config.AuthorizationKey.ToSecureString());
             
             return client;
         }

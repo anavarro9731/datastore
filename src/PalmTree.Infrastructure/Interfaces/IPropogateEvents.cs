@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataStore.Interfaces.Events;
+using PalmTree.Infrastructure.EventAggregator;
 
-namespace DataStore.Interfaces
+namespace PalmTree.Infrastructure.Interfaces
 {
     public interface IPropogateEvents<out T> 
         where T : IEvent

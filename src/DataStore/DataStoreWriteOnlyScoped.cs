@@ -1,4 +1,7 @@
-﻿namespace DataStore
+﻿using PalmTree.Infrastructure.EventAggregator;
+using PalmTree.Infrastructure.Interfaces;
+
+namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -14,11 +17,11 @@
     /// </summary>
     public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : IAggregate, new()
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventAggregator eventAggregator;
 
         public DataStoreWriteOnly(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
         {
-            _eventAggregator = eventAggregator ?? EventAggregator.Create();
+            this.eventAggregator = eventAggregator ?? EventAggregator.Create();
             DsConnection = documentRepository;
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, eventAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, eventAggregator);
@@ -35,7 +38,7 @@
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = _eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+            var dataStoreEvents = eventAggregator.Events.OfType<IDataStoreWriteEvent>();
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
                 await dataStoreWriteEvent.CommitClosure();

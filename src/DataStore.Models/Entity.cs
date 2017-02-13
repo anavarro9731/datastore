@@ -1,9 +1,10 @@
-﻿namespace DataStore.Models
+﻿using PalmTree.Infrastructure.PureFunctions.Extensions;
+
+namespace DataStore.Models
 {
     using System;
     using System.Dynamic;
     using System.Linq;
-    using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
     using Newtonsoft.Json;
 
@@ -14,11 +15,11 @@
     {
         /* Magic More Property is there to allow you add extra data to model's object 
          * for read purposes before passing it to API clients and on API calls inwards. */
-        private dynamic _more;
+        private dynamic more;
 
-        private string _schema;
+        private string schema;
 
-        private string _type;
+        private string type;
 
         // apart from keeping an audit trail this is used for sorting 
         public DateTime? Created { get; set; }
@@ -38,13 +39,13 @@
         {
             get
             {
-                this._more = this._more ?? new ExpandoObject();
-                return this._more;
+                this.more = this.more ?? new ExpandoObject();
+                return this.more;
             }
 
             set
             {
-                this._more = value;
+                this.more = value;
             }
         }
 
@@ -53,13 +54,13 @@
         {
             get
             {
-                this._schema = this._schema ?? this.GetType().Name;
-                return this._schema;
+                this.schema = this.schema ?? this.GetType().Name;
+                return this.schema;
             }
 
             set
             {
-                this._schema = value;
+                this.schema = value;
             }
         }
 
@@ -68,13 +69,13 @@
         {
             get
             {
-                this._type = this._type ?? this.GetType().FullName;
-                return this._type;
+                this.type = this.type ?? this.GetType().FullName;
+                return this.type;
             }
 
             set
             {
-                this._type = value;
+                this.type = value;
             }
         }
 

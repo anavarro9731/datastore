@@ -1,7 +1,7 @@
-﻿namespace DataStore.Interfaces.Events
-{
-    using System;
+﻿using System;
 
+namespace PalmTree.Infrastructure.EventAggregator
+{
     public interface IEvent
     {
         DateTime OccurredAt { get; set; }

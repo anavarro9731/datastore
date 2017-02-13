@@ -1,10 +1,10 @@
-namespace DataStore.Infrastructure.PureFunctions
-{
-    using System;
-    using System.IO;
-    using System.Linq;
-    using System.Security.Cryptography;
+using System;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 
+namespace PalmTree.Infrastructure.PureFunctions
+{
     /// <summary>
     ///     A simple wrapper to the AesManaged class and the AES algorithm.
     ///     Requires a securely stored key which should be a random string of characters that an attacker could never guess.

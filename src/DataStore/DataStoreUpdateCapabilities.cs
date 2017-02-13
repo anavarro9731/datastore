@@ -1,4 +1,7 @@
-﻿namespace DataStore
+﻿using PalmTree.Infrastructure.EventAggregator;
+using PalmTree.Infrastructure.Interfaces;
+
+namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -10,13 +13,13 @@
 
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
-        private readonly IEventAggregator _eventAggregator;
-        private readonly EventReplay _eventReplay;
+        private readonly IEventAggregator eventAggregator;
+        private readonly EventReplay eventReplay;
 
         public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
-            _eventAggregator = eventAggregator;
-            _eventReplay = new EventReplay(eventAggregator);
+            this.eventAggregator = eventAggregator;
+            eventReplay = new EventReplay(eventAggregator);
             DsConnection = dataStoreConnection;
         }
 
@@ -56,10 +59,10 @@
             Action<T> action,
             bool overwriteReadOnly = false) where T : IAggregate
         {
-            var objects = await _eventAggregator.Store(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+            var objects = await eventAggregator.Store(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .ForwardToAsync(DsConnection.ExecuteQuery);
 
-            objects = _eventReplay.ApplyAggregateEvents(objects, false);
+            objects = eventReplay.ApplyAggregateEvents(objects, false);
 
             var dataObjects = objects.AsEnumerable();
 
@@ -69,7 +72,7 @@
             foreach (var dataObject in dataObjects)
             {
                 action(dataObject);
-                _eventAggregator.Store(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
+                eventAggregator.Store(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
             }
 
             return dataObjects;

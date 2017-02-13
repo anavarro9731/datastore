@@ -1,4 +1,4 @@
-﻿namespace DataStore.Models.Messages
+﻿namespace PalmTree.Infrastructure.Models.Messages
 {
     public class CrudCommand<TCommand> : Command
     {

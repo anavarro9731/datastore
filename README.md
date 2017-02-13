@@ -126,38 +126,38 @@ Calling DataStore.CommitChanges() will commit these events to the database.
 > So the resultset will include any changes already requested (but not yet committed).
 
 ```
-        [Fact]
-        public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
+    [Fact]
+    public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
+    {
+        var documentRepository = new InMemoryDocumentRepository();
+        var inMemoryDb = documentRepository.Aggregates;
+        var dataStore = new DataStore.DataStore(documentRepository);
+
+        var carId = Guid.NewGuid();
+
+        //Given
+        inMemoryDb.Add(new Car
         {
-            var documentRepository = new InMemoryDocumentRepository();
-            var inMemoryDb = documentRepository.Aggregates;
-            var dataStore = new DataStore.DataStore(documentRepository);
+            id = carId,
+            Make = "Toyota"
+        });
 
-            var carId = Guid.NewGuid();
+        //When
+        await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+        //await dataStore.CommitChanges(); don't commit
 
-            //Given
-            inMemoryDb.Add(new Car
-            {
-                id = carId,
-                Make = "Toyota"
-            });
+        //Then 
 
-            //When
-            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-            //await dataStore.CommitChanges(); don't commit
+        //We have a AggregateUpdated event
+        Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
-            //Then 
+        //The underlying database has NOT changed
+        Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
-            //We have a AggregateUpdated event
-            Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-
-            //The underlying database has NOT changed
-            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
-
-            //The DataStore instance picks up the change, because it has applied
-            //all changes made during this session.
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
-        }
+        //The DataStore instance picks up the change, because it has applied
+        //all changes made during this session.
+        Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+    }
 ```
 
 > Using a DataStore instance across several consecutive sessions (sets of changes followed by a call to CommitChanges()) 

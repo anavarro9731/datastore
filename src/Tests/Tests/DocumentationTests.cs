@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using DataStore;
 using DataStore.Impl.DocumentDb;
 using DataStore.Models.Messages.Events;
 using Tests.Constants;

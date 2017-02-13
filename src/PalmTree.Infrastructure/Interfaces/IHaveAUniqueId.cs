@@ -1,7 +1,7 @@
-﻿namespace DataStore.Interfaces
-{
-    using System;
+﻿using System;
 
+namespace PalmTree.Infrastructure.Interfaces
+{
     public interface IHaveAUniqueId
     {
         Guid id { get; set; }
