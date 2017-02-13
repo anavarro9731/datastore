@@ -1,9 +1,9 @@
 ﻿
-namespace DataStore.Infrastructure.PureFunctions.Extensions
-{
-    using System;
-    using System.Linq;
+using System;
+using System.Linq;
 
+namespace PalmTree.Infrastructure.PureFunctions.Extensions
+{
     public static class AttributeExtensions
     {
         //from any class

@@ -1,4 +1,6 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using PalmTree.Infrastructure.Interfaces;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
@@ -15,14 +17,14 @@
 
     public class DocumentRepository : IDocumentRepository
     {
-        private readonly DocumentDbSettings _config;
+        private readonly DocumentDbSettings config;
 
-        private readonly DocumentClient _documentClient;
+        private readonly DocumentClient documentClient;
 
         public DocumentRepository(DocumentDbSettings config)
         {
-            _documentClient = new DocumentDbClientFactory(config).GetDocumentClient();
-            _config = config;
+            documentClient = new DocumentDbClientFactory(config).GetDocumentClient();
+            this.config = config;
         }
 
         #region IDocumentRepository Members
@@ -39,8 +41,8 @@
                 await
                     DocumentDbUtils.ExecuteWithRetries(
                         () =>
-                            _documentClient.CreateDocumentAsync(
-                                _config.CollectionSelfLink(),
+                            documentClient.CreateDocumentAsync(
+                                config.CollectionSelfLink(),
                                 aggregateAdded.Model));
             stopWatch.Stop();
             aggregateAdded.QueryDuration = stopWatch.Elapsed;
@@ -50,8 +52,8 @@
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
             var name = typeof(T).Name;            
-            var query = _documentClient.CreateDocumentQuery<T>(_config.CollectionSelfLink(),
-                new FeedOptions { EnableCrossPartitionQuery = _config.CollectionSettings.EnableCrossParitionQueries, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1 })
+            var query = documentClient.CreateDocumentQuery<T>(config.CollectionSelfLink(),
+                new FeedOptions { EnableCrossPartitionQuery = config.CollectionSettings.EnableCrossParitionQueries, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1 })
                 .Where(item => item.Schema == name);
             return query;
         }
@@ -61,7 +63,7 @@
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
             var stopWatch = Stopwatch.StartNew();
-            var result = await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.DeleteDocumentAsync(docLink));
+            var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.DeleteDocumentAsync(docLink));
             stopWatch.Stop();
             aggregateHardDeleted.QueryCost = result.RequestCharge;
             aggregateHardDeleted.QueryDuration = stopWatch.Elapsed;
@@ -78,7 +80,7 @@
             document.SetPropertyValue(nameof(IAggregate.Modified), DateTime.UtcNow);
 
             var stopWatch = Stopwatch.StartNew();
-            var result = await DocumentDbUtils.ExecuteWithRetries(() => _documentClient.ReplaceDocumentAsync(document.SelfLink, document));
+            var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.ReplaceDocumentAsync(document.SelfLink, document));
             stopWatch.Stop();
             aggregateSoftDeleted.QueryDuration = stopWatch.Elapsed;
             aggregateSoftDeleted.QueryCost = result.RequestCharge;
@@ -86,7 +88,7 @@
 
         public void Dispose()
         {
-            _documentClient.Dispose();
+            documentClient.Dispose();
         }
 
         public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) 
@@ -119,7 +121,7 @@
             try
             {
                 var stopWatch = Stopwatch.StartNew();
-                var result = await _documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id));
+                var result = await documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id));
                 if (result == null)
                 {
                     throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
@@ -142,7 +144,7 @@
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
-                        () => _documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model));
+                        () => documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model));
 
             stopWatch.Stop();
             aggregateUpdated.QueryDuration = stopWatch.Elapsed;
@@ -153,7 +155,7 @@
         {
             var stopWatch = Stopwatch.StartNew();
             var query =
-                _documentClient.CreateDocumentQuery(_config.CollectionSelfLink()).Where(item => item.Id == aggregateQueriedById.Id.ToString()).AsDocumentQuery();
+                documentClient.CreateDocumentQuery(config.CollectionSelfLink()).Where(item => item.Id == aggregateQueriedById.Id.ToString()).AsDocumentQuery();
 
             var results = await query.ExecuteNextAsync();
 
@@ -173,7 +175,7 @@
                 throw new ArgumentException("Id is required for update/delete/read operation");
             }
 
-            var docLink = UriFactory.CreateDocumentUri(_config.DatabaseName, _config.CollectionSettings.CollectionName, id.ToString());
+            var docLink = UriFactory.CreateDocumentUri(config.DatabaseName, config.CollectionSettings.CollectionName, id.ToString());
             return docLink;
         }
     }

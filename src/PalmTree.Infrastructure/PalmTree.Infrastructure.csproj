@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>PalmTree.Infrastructure Class Library</Description>
+    <Copyright>Copyright (c) 2016 Aaron Navarro</Copyright>
+    <Authors>Aaron Navarro</Authors>
+    <TargetFrameworks>net452</TargetFrameworks>
+    <AssemblyName>PalmTree.Infrastructure</AssemblyName>
+    <PackageId>PalmTree.Infrastructure</PackageId>
+    <PackageVersion>2.0.1</PackageVersion>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="6.2.1" />
+  </ItemGroup>
+ </Project>

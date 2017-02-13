@@ -78,6 +78,9 @@
     <Compile Include="Tests\DocumentationTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DocumentDbSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -85,9 +88,9 @@
       <Project>{c855dc43-d88f-4800-8aee-a451724b14f9}</Project>
       <Name>DataStore.Impl.DocumentDb</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DataStore.Infrastructure\DataStore.Infrastructure.csproj">
+    <ProjectReference Include="..\PalmTree.Infrastructure\PalmTree.Infrastructure.csproj">
       <Project>{2f9b2a79-d3f2-4818-8e86-6c5ed2024164}</Project>
-      <Name>DataStore.Infrastructure</Name>
+      <Name>PalmTree.Infrastructure</Name>
     </ProjectReference>
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj">
       <Project>{05013952-de52-4ef3-8f76-4e1b076134b6}</Project>

@@ -1,11 +1,11 @@
-﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using FluentValidation;
-    using FluentValidation.Validators;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using FluentValidation;
+using FluentValidation.Validators;
 
+namespace PalmTree.Infrastructure.PureFunctions.Extensions
+{
     public static class FluentValidationExtensions
     {
         public static IRuleBuilderOptions<T, TProperty> MaxLength<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, int maxLength)

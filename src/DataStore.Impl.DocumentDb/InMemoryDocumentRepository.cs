@@ -1,10 +1,12 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using PalmTree.Infrastructure.Interfaces;
+using PalmTree.Infrastructure.PureFunctions.Extensions;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Infrastructure.PureFunctions.Extensions;
     using Interfaces;
     using Interfaces.Events;
     using Microsoft.Azure.Documents;

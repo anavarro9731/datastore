@@ -14,21 +14,21 @@
 
     public class DocumentDbInitialiser : IDocumentDbInitialiser
     {
-        private readonly DocumentClient _documentClient;
+        private readonly DocumentClient documentClient;
 
-        private readonly DocumentDbSettings _settings;
+        private readonly DocumentDbSettings settings;
 
         public DocumentDbInitialiser(DocumentDbSettings settings)
         {
-            _settings = settings;
-            _documentClient = new DocumentClient(new Uri(settings.EndpointUrl), settings.AuthorizationKey);
+            this.settings = settings;
+            documentClient = new DocumentClient(new Uri(settings.EndpointUrl), settings.AuthorizationKey);
         }
 
         public Tuple<string, string> Initialise()
         {
-            var db = RetrieveOrCreateDatabaseAsync(_documentClient).Result;
+            var db = RetrieveOrCreateDatabaseAsync(documentClient).Result;
 
-            var collection = RetrieveOrCreateCollectionAsync(_settings.CollectionSettings, db).Result;
+            var collection = RetrieveOrCreateCollectionAsync(settings.CollectionSettings, db).Result;
 
             return new Tuple<string, string>(db.SelfLink, collection.SelfLink);
         }
@@ -37,7 +37,7 @@
             DocDbCollectionSettings collectionSettings,
             Database db)
         {
-            var collection = _documentClient.CreateDocumentCollectionQuery(db.SelfLink)
+            var collection = documentClient.CreateDocumentCollectionQuery(db.SelfLink)
                 .Where(d => d.Id == collectionSettings.CollectionName)
                 .AsEnumerable()
                 .FirstOrDefault();
@@ -58,7 +58,7 @@
                     requestOptions.OfferThroughput = 10100;
                 }
 
-                collection = await _documentClient.CreateDocumentCollectionAsync(
+                collection = await documentClient.CreateDocumentCollectionAsync(
                     db.SelfLink,
                     documentCollection, requestOptions).ConfigureAwait(false);
             }
@@ -71,7 +71,7 @@
         {
             var existingDatabase =
                 client.CreateDatabaseQuery()
-                    .Where(d => d.Id == _settings.DatabaseName)
+                    .Where(d => d.Id == settings.DatabaseName)
                     .AsEnumerable()
                     .SingleOrDefault();
 
@@ -79,7 +79,7 @@
                 return existingDatabase;
 
             return
-                await client.CreateDatabaseAsync(new Database { Id = _settings.DatabaseName }).ConfigureAwait(false);
+                await client.CreateDatabaseAsync(new Database { Id = settings.DatabaseName }).ConfigureAwait(false);
         }
     }
 }

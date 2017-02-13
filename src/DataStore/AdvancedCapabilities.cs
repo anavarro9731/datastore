@@ -1,23 +1,25 @@
+using PalmTree.Infrastructure.Interfaces;
+using PalmTree.Infrastructure.PureFunctions;
+
 namespace DataStore
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Infrastructure.PureFunctions;
     using Interfaces;
     using Microsoft.Azure.Documents;
     using Models.Messages.Events;
 
     public class AdvancedCapabilities : IAdvancedCapabilities
     {
-        private readonly IDocumentRepository _dataStoreConnection;
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IDocumentRepository dataStoreConnection;
+        private readonly IEventAggregator eventAggregator;
 
         public AdvancedCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
         {
-            _dataStoreConnection = dataStoreConnection;
-            _eventAggregator = eventAggregator;
+            this.dataStoreConnection = dataStoreConnection;
+            this.eventAggregator = eventAggregator;
         }
 
         public async Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
@@ -48,15 +50,15 @@ namespace DataStore
 
         private async Task<IEnumerable<T2>> ReadCommittedInternal<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : IAggregate
         {
-            var transformedQueryable = queryableExtension(_dataStoreConnection.CreateDocumentQuery<T>());
-            var results = await _eventAggregator.Store(new TransformationQueried<T2>(nameof(ReadCommittedInternal), transformedQueryable)).ForwardToAsync<IEnumerable<T2>>(_dataStoreConnection.ExecuteQuery);
+            var transformedQueryable = queryableExtension(dataStoreConnection.CreateDocumentQuery<T>());
+            var results = await eventAggregator.Store(new TransformationQueried<T2>(nameof(ReadCommittedInternal), transformedQueryable)).ForwardToAsync<IEnumerable<T2>>(dataStoreConnection.ExecuteQuery);
             return results;
         }
 
         // get a filtered list of the models from  a set of DataObjects
         public async Task<Document> ReadCommittedById(Guid modelId)
         {
-            var result = await _eventAggregator.Store(new AggregateQueriedById(nameof(ReadCommittedById), modelId)).ForwardToAsync(_dataStoreConnection.GetItemAsync);
+            var result = await eventAggregator.Store(new AggregateQueriedById(nameof(ReadCommittedById), modelId)).ForwardToAsync(dataStoreConnection.GetItemAsync);
             return result;
         }
     }

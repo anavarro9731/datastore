@@ -1,9 +1,9 @@
-﻿namespace DataStore.Models.Messages
-{
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using Interfaces.Events;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using PalmTree.Infrastructure.EventAggregator;
 
+namespace PalmTree.Infrastructure.Models.Messages
+{
     public class Event<TModel> : Event
     {
         public Event(TModel model)

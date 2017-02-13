@@ -1,7 +1,7 @@
-﻿namespace DataStore.Models.Messages
-{
-    using System;
+﻿using System;
 
+namespace PalmTree.Infrastructure.Models.Messages
+{
     public abstract class Message
     {
         protected Message()

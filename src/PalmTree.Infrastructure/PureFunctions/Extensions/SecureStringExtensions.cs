@@ -1,7 +1,7 @@
-﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
-{
-    using System.Security;
+﻿using System.Security;
 
+namespace PalmTree.Infrastructure.PureFunctions.Extensions
+{
     public static class SecureStringExtensions
     {
         public static SecureString ToSecureString(this string unsecuredString)

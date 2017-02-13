@@ -1,9 +1,9 @@
-﻿namespace DataStore.Infrastructure.PureFunctions
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
+namespace PalmTree.Infrastructure.PureFunctions
+{
     public static class EnumUtil
     {
         //* returns an enums values as a collection of that enum's type

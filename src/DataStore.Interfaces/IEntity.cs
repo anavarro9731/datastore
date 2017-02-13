@@ -1,3 +1,5 @@
+using PalmTree.Infrastructure.Interfaces;
+
 namespace DataStore.Interfaces
 {
     public interface IEntity : IHaveAUniqueId, IRememberWhenIWasChanged, IHaveSchema

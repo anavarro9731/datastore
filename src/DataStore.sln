@@ -5,7 +5,6 @@ VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{648EBFE5-272F-46F6-A666-2EAFF3D62902}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		..\LICENSE = ..\LICENSE
 		pack.cmd = pack.cmd
 		..\README.md = ..\README.md
@@ -17,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore", "DataStore\DataStore.csproj", "{6368A73A-49AB-40AB-8847-724E8820566D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Infrastructure", "DataStore.Infrastructure\DataStore.Infrastructure.csproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PalmTree.Infrastructure", "PalmTree.Infrastructure\PalmTree.Infrastructure.csproj", "{2F9B2A79-D3F2-4818-8E86-6C5ED2024164}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Impl.DocumentDb", "DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj", "{C855DC43-D88F-4800-8AEE-A451724B14F9}"
 EndProject

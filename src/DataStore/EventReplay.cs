@@ -1,25 +1,26 @@
+using System.Collections.Generic;
+using System.Linq;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
+using DataStore.Models.Messages.Events;
+using PalmTree.Infrastructure.Interfaces;
+using PalmTree.Infrastructure.PureFunctions.Extensions;
+
 namespace DataStore
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using Infrastructure.PureFunctions.Extensions;
-    using Interfaces;
-    using Interfaces.Events;
-    using Models.Messages.Events;
-
     public class EventReplay
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventAggregator eventAggregator;
 
         public EventReplay(IEventAggregator eventAggregator)
         {
-            _eventAggregator = eventAggregator;
+            this.eventAggregator = eventAggregator;
         }
 
         public List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : IAggregate
         {
             var modifiedResults = results.ToList();
-            var uncommittedEvents = _eventAggregator.Events.OrderBy(e => e.OccurredAt).OfType<IDataStoreWriteEvent<T>>().Where(e => !e.Committed);
+            var uncommittedEvents = eventAggregator.Events.OrderBy(e => e.OccurredAt).OfType<IDataStoreWriteEvent<T>>().Where(e => !e.Committed);
 
             foreach (var eventAggregatorEvent in uncommittedEvents)
             {

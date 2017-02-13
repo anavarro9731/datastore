@@ -10,33 +10,35 @@ using DataStore.Models.Config;
 using DataStore.Models.Messages.Events;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using PalmTree.Infrastructure.EventAggregator;
+using PalmTree.Infrastructure.Interfaces;
 
 namespace Tests.TestHarness
 {
     public class RemoteTestHarness : ITestHarness
     {
-        private readonly DocumentRepository _documentRepository;
-        private readonly IEventAggregator _eventAggregator = EventAggregator.Create(false);
+        private readonly DocumentRepository documentRepository;
+        private readonly IEventAggregator eventAggregator = EventAggregator.Create();
 
         private RemoteTestHarness(DocumentRepository documentRepository)
         {
-            _documentRepository = documentRepository;
-            DataStore = new DataStore.DataStore(_documentRepository, _eventAggregator);
+            this.documentRepository = documentRepository;
+            DataStore = new DataStore.DataStore(this.documentRepository, eventAggregator);
         }
 
         public DataStore.DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => _eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
+        public List<IDataStoreEvent> Events => eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
 
         public async Task AddToDatabase<T>(T aggregate) where T : IAggregate
         {
-            var newAggregate = new AggregateAdded<T>(nameof(AddToDatabase), aggregate, _documentRepository);
+            var newAggregate = new AggregateAdded<T>(nameof(AddToDatabase), aggregate, documentRepository);
             await newAggregate.CommitClosure();
         }
 
         public async Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : IHaveSchema, IHaveAUniqueId
         {
-            var query = extendQueryable == null ? _documentRepository.CreateDocumentQuery<T>() : extendQueryable(_documentRepository.CreateDocumentQuery<T>());
-            return await _documentRepository.ExecuteQuery(new AggregatesQueried<T>(nameof(QueryDatabase), query.AsQueryable()));
+            var query = extendQueryable == null ? documentRepository.CreateDocumentQuery<T>() : extendQueryable(documentRepository.CreateDocumentQuery<T>());
+            return await documentRepository.ExecuteQuery(new AggregatesQueried<T>(nameof(QueryDatabase), query.AsQueryable()));
         }
 
         public static ITestHarness Create(DocumentDbSettings dbConfig)

@@ -1,3 +1,5 @@
+using PalmTree.Infrastructure.Interfaces;
+
 namespace DataStore.Interfaces
 {
     using System;

@@ -1,4 +1,4 @@
-﻿namespace DataStore.Interfaces
+﻿namespace PalmTree.Infrastructure.Interfaces
 {
     public interface IValueReturner
     {

@@ -1,11 +1,11 @@
-﻿namespace DataStore.Infrastructure.PureFunctions.Extensions
-{
-    using System;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
+﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
+namespace PalmTree.Infrastructure.PureFunctions.Extensions
+{
     public static class Objects
     {
         private static char[] SystemTypeChars = new[] { '<', '>', '+' };

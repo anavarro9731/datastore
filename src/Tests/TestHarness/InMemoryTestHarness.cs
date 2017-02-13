@@ -2,35 +2,40 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DataStore;
 using DataStore.Impl.DocumentDb;
 using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
+using PalmTree.Infrastructure.EventAggregator;
+using PalmTree.Infrastructure.Interfaces;
 
 namespace Tests.TestHarness
 {
     public class InMemoryTestHarness : ITestHarness
     {
-        public DataStore.DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => _eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
-        private InMemoryDocumentRepository  DocumentRepository { get; }
-        private readonly IEventAggregator _eventAggregator = EventAggregator.Create(false);
+        private readonly IEventAggregator eventAggregator = EventAggregator.Create();
 
         private InMemoryTestHarness()
         {
-            this.DocumentRepository = new InMemoryDocumentRepository();
-            this.DataStore = new DataStore.DataStore(this.DocumentRepository, _eventAggregator);
+            DocumentRepository = new InMemoryDocumentRepository();
+            DataStore = new DataStore.DataStore(DocumentRepository, eventAggregator);
         }
-        
-        public Task AddToDatabase<T>(T aggregate) where T: IAggregate
+
+        private InMemoryDocumentRepository DocumentRepository { get; }
+        public DataStore.DataStore DataStore { get; }
+        public List<IDataStoreEvent> Events => eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
+
+        public Task AddToDatabase<T>(T aggregate) where T : IAggregate
         {
-            this.DocumentRepository.Aggregates.Add(aggregate);
+            DocumentRepository.Aggregates.Add(aggregate);
             return Task.FromResult(0);
         }
 
-        public Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : IHaveSchema, IHaveAUniqueId
+        public Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+            where T : IHaveSchema, IHaveAUniqueId
         {
-            var queryResult = extendQueryable == null ? this.DocumentRepository.Aggregates.OfType<T>() : extendQueryable(this.DocumentRepository.Aggregates.OfType<T>().AsQueryable());
+            var queryResult = extendQueryable == null
+                ? DocumentRepository.Aggregates.OfType<T>()
+                : extendQueryable(DocumentRepository.Aggregates.OfType<T>().AsQueryable());
             return Task.FromResult(queryResult);
         }
 
