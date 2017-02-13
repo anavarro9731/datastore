@@ -11,6 +11,8 @@ namespace DataStore
     using Interfaces.Events;
     using Models.Messages.Events;
 
+    //methods return the latest version of an object including uncommitted session changes
+
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
     {
         private readonly IEventAggregator eventAggregator;
@@ -29,6 +31,7 @@ namespace DataStore
         {
             if (id == Guid.Empty) return false;
 
+            //if its been deleted in this session (this takes the place of eventReplay for this function)
             if (eventAggregator.Events.OfType<IDataStoreWriteEvent>()
                 .ToList()
                 .Exists(e => e.AggregateId == id && e.GetType() == typeof(AggregateHardDeleted<>)))
