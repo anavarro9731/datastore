@@ -8,6 +8,8 @@ namespace DataStore
     using Interfaces;
     using Models.Messages.Events;
 
+    //methods return the enriched object as it was added to the database
+
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
     {
         private readonly IEventAggregator eventAggregator;

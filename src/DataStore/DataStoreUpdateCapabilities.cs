@@ -11,6 +11,8 @@ namespace DataStore
     using Interfaces;
     using Models.Messages.Events;
 
+    //methods return object after changes have been applied, including previous uncommitted session changes
+
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
         private readonly IEventAggregator eventAggregator;

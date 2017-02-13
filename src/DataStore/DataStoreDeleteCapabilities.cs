@@ -10,6 +10,13 @@ namespace DataStore
     using Interfaces;
     using Models.Messages.Events;
 
+    // Not sure if eventreplay makes sense in this class, needs review currently its not implemented.
+    // It's also questionable what happens to events subsquent to a hard-delete in a session, how does it error?
+
+    // All methods return the version of the object before it was deleted, for soft delete this is probably
+    // a bit confusing, but trying to mark them in this class raises issues with duplication of logic in 
+    // the documentRepository and matching the timestamps. Needs review.
+
     internal class DataStoreDeleteCapabilities : IDataStoreDeleteCapabilities
     {
         private readonly IEventAggregator eventAggregator;
