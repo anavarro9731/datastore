@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using PalmTree.Infrastructure.Interfaces;
+using PalmTree.Infrastructure.PureFunctions.Extensions;
 
 namespace PalmTree.Infrastructure.EventAggregator
 {
@@ -9,20 +12,21 @@ namespace PalmTree.Infrastructure.EventAggregator
     {
         private readonly TEvent _event;
 
-        private readonly bool propogateEvents;
+        private readonly IEnumerable<Type> whiteListedForPropogation;
 
         private readonly object toReturn;
 
-        internal EventPropogator(TEvent @event, bool propogateEvents, object toReturn)
+        internal EventPropogator(TEvent @event, IEnumerable<Type> whiteListedForPropogation, object toReturn)
         {
             this._event = @event;
-            this.propogateEvents = propogateEvents;
+            this.whiteListedForPropogation = whiteListedForPropogation;
             this.toReturn = toReturn;
         }
        
         public async Task<TOut> ForwardToAsync<TOut>(Func<TEvent, Task<TOut>> forwardTo)
         {
-            if (propogateEvents)
+            if (this.whiteListedForPropogation == null || 
+                this.whiteListedForPropogation.Any(x => _event.GetType().InheritsOrImplements(x)))
             {
                 return await forwardTo(_event);
             }
@@ -32,7 +36,8 @@ namespace PalmTree.Infrastructure.EventAggregator
 
         public Task ForwardToAsync(Func<TEvent, Task> forwardTo) 
         {
-            if (propogateEvents)
+            if (this.whiteListedForPropogation == null ||
+                this.whiteListedForPropogation.Any(x => _event.GetType().InheritsOrImplements(x)))
             {
                 forwardTo(_event);
             }
@@ -42,7 +47,8 @@ namespace PalmTree.Infrastructure.EventAggregator
 
         public void ForwardTo(Action<TEvent> passTo)
         {
-            if (propogateEvents)
+            if (this.whiteListedForPropogation == null ||
+                this.whiteListedForPropogation.Any(x => _event.GetType().InheritsOrImplements(x)))
             {
                 passTo(_event);
             }
@@ -50,7 +56,8 @@ namespace PalmTree.Infrastructure.EventAggregator
 
         public TOut ForwardTo<TOut>(Func<TEvent, TOut> passTo)
         {
-            if (propogateEvents)
+            if (this.whiteListedForPropogation == null ||
+                this.whiteListedForPropogation.Any(x => _event.GetType().InheritsOrImplements(x)))
             {
                 var returnValue = passTo(_event);
 
