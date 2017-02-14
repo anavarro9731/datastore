@@ -4,6 +4,6 @@ namespace PalmTree.Infrastructure.Models.Messages
 {
     public abstract class Command : Message
     {
-        public Guid SagaId { get; set; } 
+        public Guid? ProcessId { get; set; } 
     }
 }
