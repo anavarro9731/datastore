@@ -6,7 +6,7 @@
     <TargetFrameworks>net452</TargetFrameworks>
     <AssemblyName>PalmTree.Infrastructure</AssemblyName>
     <PackageId>PalmTree.Infrastructure</PackageId>
-    <PackageVersion>2.0.2</PackageVersion>
+    <PackageVersion>2.0.5</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
