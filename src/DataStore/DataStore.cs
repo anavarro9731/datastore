@@ -44,7 +44,8 @@ namespace DataStore
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+            var dataStoreEvents = eventAggregator.Events.OfType<IDataStoreWriteEvent>()
+                .Where(e => !e.Committed);
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
                 await dataStoreWriteEvent.CommitClosure();
