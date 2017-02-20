@@ -12,19 +12,26 @@
 
     Because the class is immutable you only configure it once, so there is not chance of changing the root configuration later.
     */
+
     public class DataStoreConfiguration
     {
-        public DataStoreConfiguration(
+        private DataStoreConfiguration(
             DocumentDbSettings documentDbSettings,
-            FileStorageSettings fileStorageSettings = null)        
+            FileStorageSettings fileStorageSettings)
         {
-            this.DocumentDbSettings = documentDbSettings;
-            this.FileStorageSettings = fileStorageSettings;
+            DocumentDbSettings = documentDbSettings;
+            FileStorageSettings = fileStorageSettings;
         }
 
         public DocumentDbSettings DocumentDbSettings { get; }
 
-        public FileStorageSettings FileStorageSettings { get; set; }
+        public FileStorageSettings FileStorageSettings { get; }
 
+        public static DataStoreConfiguration Create(
+            DocumentDbSettings documentDbSettings,
+            FileStorageSettings fileStorageSettings = null)
+        {
+            return new DataStoreConfiguration(documentDbSettings, fileStorageSettings);
+        }
     }
 }
