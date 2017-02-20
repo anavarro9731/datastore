@@ -2,7 +2,7 @@
 {
     public class DocumentDbSettings
     {
-        public DocumentDbSettings(
+        private DocumentDbSettings(
             string authorizationKey,
             string databaseName,
             DocDbCollectionSettings collectionSettings,
@@ -22,5 +22,13 @@
 
         public string EndpointUrl { get; }
 
+        public static DocumentDbSettings Create(
+            string authorizationKey,
+            string databaseName,
+            DocDbCollectionSettings collectionSettings,
+            string endpointUrl)
+        {
+            return new DocumentDbSettings(authorizationKey, databaseName, collectionSettings, endpointUrl);
+        }
     }
 }

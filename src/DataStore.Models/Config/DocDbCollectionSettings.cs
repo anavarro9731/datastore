@@ -1,8 +1,8 @@
-﻿namespace DataStore.Models.Config
-{
-    using System;
-    using Microsoft.Azure.Documents;
+﻿using System;
+using Microsoft.Azure.Documents;
 
+namespace DataStore.Models.Config
+{
     public class DocDbCollectionSettings
     {
         public enum PartitionKeyTypeEnum
@@ -12,7 +12,8 @@
             None
         }
 
-        private DocDbCollectionSettings(string collectionName, PartitionKeyTypeEnum partitionKey, bool enableCrossParitionQueries)
+        private DocDbCollectionSettings(string collectionName, PartitionKeyTypeEnum partitionKey,
+            bool enableCrossParitionQueries)
         {
             CollectionName = collectionName;
             PartitionKeyType = partitionKey;
@@ -24,7 +25,8 @@
         public PartitionKeyTypeEnum PartitionKeyType { get; }
         public bool EnableCrossParitionQueries { get; set; }
 
-        public static DocDbCollectionSettings Create(string collectionName, PartitionKeyTypeEnum partitionKey = PartitionKeyTypeEnum.None)
+        public static DocDbCollectionSettings Create(string collectionName,
+            PartitionKeyTypeEnum partitionKey = PartitionKeyTypeEnum.None)
         {
             return new DocDbCollectionSettings(collectionName, partitionKey, partitionKey != PartitionKeyTypeEnum.None);
         }
@@ -37,11 +39,20 @@
                 case PartitionKeyTypeEnum.ClassName:
                     return new PartitionKeyDefinition
                     {
-                        Paths = {"/" + nameof(Aggregate.Schema).ToLower()}
+                        Paths =
+                        {
+                            "/" + nameof(Aggregate.Schema).ToLower()
+                        }
                     };
                 case PartitionKeyTypeEnum.Id:
 
-                    return new PartitionKeyDefinition {Paths = {"/" + nameof(Aggregate.id)}};
+                    return new PartitionKeyDefinition
+                    {
+                        Paths =
+                        {
+                            "/" + nameof(Aggregate.id)
+                        }
+                    };
 
                 case PartitionKeyTypeEnum.None:
 
