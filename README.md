@@ -39,11 +39,12 @@ class Car : Aggregate {
 ```
 Create a new `DataStore` object.
 ```
-var d = new DataStore.DataStore(new DocumentRepository(new DocumentDbSettings(
-            string authorizationKey, 
-            string databaseName, 
-            string defaultCollectionName, 
-            string endpointUrl)
+var d = new DataStore.DataStore(new DocumentRepository(
+			DocumentDbSettings.Create(
+				authorizationKey, 
+				databaseName, 
+				DocDbCollectionSettings.Create(collectionName), 
+				endpointUrl)
 			));
 ```
 ##### Save it to DocumentDb
