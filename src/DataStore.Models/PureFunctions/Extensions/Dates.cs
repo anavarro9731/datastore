@@ -1,12 +1,12 @@
-﻿using System;
-
-namespace PalmTree.Infrastructure.PureFunctions.Extensions
+﻿namespace DataStore.Models.PureFunctions.Extensions
 {
+    using System;
+
     public static class Dates
     {
-        public static double ConvertToSecondsEpochTime(this DateTime src)
+        public static DateTime ConvertFromMillisecondsEpochTime(this double src)
         {
-            return (src - new DateTime(1970, 1, 1)).TotalSeconds;
+            return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(src);
         }
 
         public static DateTime ConvertFromSecondsEpochTime(this double src)
@@ -19,9 +19,9 @@ namespace PalmTree.Infrastructure.PureFunctions.Extensions
             return (src - new DateTime(1970, 1, 1)).TotalMilliseconds;
         }
 
-        public static DateTime ConvertFromMillisecondsEpochTime(this double src)
+        public static double ConvertToSecondsEpochTime(this DateTime src)
         {
-            return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(src);
+            return (src - new DateTime(1970, 1, 1)).TotalSeconds;
         }
     }
 }

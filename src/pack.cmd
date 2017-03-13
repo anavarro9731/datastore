@@ -6,12 +6,6 @@ dotnet pack -c RELEASE
 copy bin\RELEASE\*.nupkg c:\Nuget.Local
 																																																																																																																																																																		
 cd ..
-cd PalmTree.Infrastructure
-del bin\RELEASE\*.nupkg
-dotnet pack -c RELEASE 
-copy bin\RELEASE\*.nupkg c:\Nuget.Local
-
-cd ..
 cd DataStore.Interfaces
 del bin\RELEASE\*.nupkg
 dotnet pack -c RELEASE 

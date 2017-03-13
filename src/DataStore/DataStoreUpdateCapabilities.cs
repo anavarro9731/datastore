@@ -1,6 +1,4 @@
-﻿using PalmTree.Infrastructure.EventAggregator;
-using PalmTree.Infrastructure.Interfaces;
-
+﻿
 namespace DataStore
 {
     using System;
@@ -10,15 +8,16 @@ namespace DataStore
     using System.Threading.Tasks;
     using Interfaces;
     using Models.Messages.Events;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     //methods return object after changes have been applied, including previous uncommitted session changes
 
     internal class DataStoreUpdateCapabilities : IDataStoreUpdateCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator eventAggregator;
         private readonly EventReplay eventReplay;
 
-        public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
+        public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator eventAggregator)
         {
             this.eventAggregator = eventAggregator;
             eventReplay = new EventReplay(eventAggregator);
@@ -61,8 +60,8 @@ namespace DataStore
             Action<T> action,
             bool overwriteReadOnly = false) where T : IAggregate
         {
-            var objects = await eventAggregator.Store(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .ForwardToAsync(DsConnection.ExecuteQuery);
+            var objects = await eventAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                .To(DsConnection.ExecuteQuery);
 
             objects = eventReplay.ApplyAggregateEvents(objects, false);
 
@@ -74,7 +73,7 @@ namespace DataStore
             foreach (var dataObject in dataObjects)
             {
                 action(dataObject);
-                eventAggregator.Store(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
+                eventAggregator.Collect(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
             }
 
             return dataObjects;

@@ -1,7 +1,7 @@
-using PalmTree.Infrastructure.Interfaces;
-
 namespace DataStore.Interfaces
 {
+    using ServiceApi.Interfaces.LowLevel;
+
     public interface IEntity : IHaveAUniqueId, IRememberWhenIWasChanged, IHaveSchema
     {
         dynamic More { get; set; }

@@ -6,28 +6,28 @@ using System.Threading.Tasks;
 using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
 using Microsoft.Azure.Documents;
-using PalmTree.Infrastructure.EventAggregator;
-using PalmTree.Infrastructure.Interfaces;
 
 namespace DataStore
 {
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+
     /// <summary>
     ///     Facade over querying and unit of work capabilities
     ///     Derived non-generic shorthand when a single or primary store exists
     /// </summary>
     public class DataStore : IDataStore
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator messageAggregator;
 
-        public DataStore(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
+        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null)
         {
-            this.eventAggregator = eventAggregator ?? EventAggregator.Create();
+            this.messageAggregator = eventAggregator ?? MessageAggregator.DataStoreMessageAggregator.Create();
             DsConnection = documentRepository;
 
-            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.eventAggregator);
-            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.eventAggregator);
-            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, this.eventAggregator);
-            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.eventAggregator);
+            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.messageAggregator);
+            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.messageAggregator);
+            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, this.messageAggregator);
+            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.messageAggregator);
         }
 
         public IDocumentRepository DsConnection { get; }
@@ -40,18 +40,18 @@ namespace DataStore
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public IReadOnlyList<IDataStoreEvent> Events => eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
+        public IReadOnlyList<IDataStoreEvent> Events => messageAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = eventAggregator.Events.OfType<IDataStoreWriteEvent>()
+            var dataStoreEvents = messageAggregator.AllMessages.OfType<IDataStoreWriteEvent>()
                 .Where(e => !e.Committed);
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
                 await dataStoreWriteEvent.CommitClosure();
         }
 
-        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, eventAggregator);
+        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, messageAggregator);
 
         #region IDataStore Members
 
@@ -134,7 +134,7 @@ namespace DataStore
 
         public IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new()
         {
-            return new DataStoreWriteOnly<T>(DsConnection, eventAggregator);
+            return new DataStoreWriteOnly<T>(DsConnection, messageAggregator);
         }
 
         public IDataStoreQueryCapabilities AsReadOnly()

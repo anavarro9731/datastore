@@ -1,25 +1,25 @@
-﻿using PalmTree.Infrastructure.Models.Messages;
-
-namespace DataStore.Models.Messages.Events
+﻿namespace DataStore.Models.Messages.Events
 {
     using System;
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.Events;
 
-    public class AggregateHardDeleted<T> : Event<T>, IDataStoreWriteEvent<T> where T : IAggregate
+    public class AggregateHardDeleted<T> : IDataStoreWriteEvent<T> where T : IAggregate
     {
         public AggregateHardDeleted(string methodCalled, T model, IDocumentRepository repository)
-            : base(model)
         {
             CommitClosure = async () =>
             {
                 await repository.DeleteHardAsync(this);
-                this.Committed = true;
+                Committed = true;
             };
-            this.MethodCalled = methodCalled;
-            this.TypeName = typeof(T).FullName;
-            this.AggregateId = model.id;
+            MethodCalled = methodCalled;
+            TypeName = typeof(T).FullName;
+            AggregateId = model.id;
+            Model = model;
+            Created = DateTime.UtcNow;
+            MessageId = Guid.NewGuid();
         }
 
         #region IDataStoreWriteEvent<T> Members
@@ -31,6 +31,9 @@ namespace DataStore.Models.Messages.Events
         public Func<Task> CommitClosure { get; set; }
         public bool Committed { get; set; }
         public Guid AggregateId { get; }
+        public T Model { get; }
+        public DateTime Created { get; }
+        public Guid MessageId { get; }
 
         #endregion
     }

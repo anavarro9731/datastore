@@ -1,5 +1,3 @@
-using PalmTree.Infrastructure.Interfaces;
-
 namespace DataStore.Interfaces
 {
     using System;
@@ -8,6 +6,7 @@ namespace DataStore.Interfaces
     using System.Threading.Tasks;
     using Events;
     using Microsoft.Azure.Documents;
+    using ServiceApi.Interfaces.LowLevel;
 
     public interface IDocumentRepository : IDisposable
     {

@@ -1,7 +1,4 @@
-﻿using PalmTree.Infrastructure.Interfaces;
-using PalmTree.Infrastructure.PureFunctions.Extensions;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System.Collections.Generic;
     using System.IO;
@@ -10,11 +7,20 @@ namespace DataStore.Impl.DocumentDb
     using Interfaces;
     using Interfaces.Events;
     using Microsoft.Azure.Documents;
+    using Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
+    using ServiceApi.Interfaces.LowLevel;
 
     public class InMemoryDocumentRepository : IDocumentRepository
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
+
+        private IEnumerable<T> Clone<T>(IEnumerable<T> toClone) where T : IHaveAUniqueId
+        {
+            var asJson = JsonConvert.SerializeObject(toClone);
+            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson);
+            return cloned;
+        }
 
         #region IDocumentRepository Members
 
@@ -36,7 +42,7 @@ namespace DataStore.Impl.DocumentDb
 
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
-            return Task.FromResult((T) aggregate);
+            return Task.FromResult(aggregate);
         }
 
         public Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
@@ -45,7 +51,7 @@ namespace DataStore.Impl.DocumentDb
 
             (aggregate as dynamic).Active = false;
 
-            return Task.FromResult((T) aggregate);
+            return Task.FromResult(aggregate);
         }
 
         public void Dispose()
@@ -91,17 +97,9 @@ namespace DataStore.Impl.DocumentDb
 
             aggregateUpdated.Model.CopyProperties(toUpdate);
 
-            return Task.FromResult((T)toUpdate);
+            return Task.FromResult((T) toUpdate);
         }
 
         #endregion
-        
-        private IEnumerable<T> Clone<T>(IEnumerable<T> toClone) where T: IHaveAUniqueId
-        {
-            var asJson = JsonConvert.SerializeObject(toClone);
-            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson);
-            return cloned;
-        }
     }
-
 }

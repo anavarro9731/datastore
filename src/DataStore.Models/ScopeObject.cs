@@ -1,7 +1,7 @@
 ﻿namespace DataStore.Models
 {
     using System;
-    using Interfaces;
+    using ServiceApi.Interfaces.LowLevel;
 
     public class ScopeReference : IScopeReference, IEquatable<ScopeReference>
     {
@@ -27,7 +27,7 @@
                 return true;
 
             // If one is null, but not both, return false.
-            if ((object)a == null || (object)b == null)
+            if ((object) a == null || (object) b == null)
                 return false;
 
             // Return true if the fields match:
@@ -54,20 +54,20 @@
                 return false;
 
             //check on property equality
-            return PropertiesAreEqual((ScopeReference)obj);
+            return PropertiesAreEqual((ScopeReference) obj);
         }
 
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
-            int hash = 13;
-            hash = (hash* 7) + ScopeObjectId.GetHashCode();
-            hash = (hash* 7) + ScopeObjectType.GetHashCode();
+            var hash = 13;
+            hash = hash * 7 + ScopeObjectId.GetHashCode();
+            hash = hash * 7 + ScopeObjectType.GetHashCode();
             return hash;
         }
 
         protected bool PropertiesAreEqual(ScopeReference other) =>
-           this.ScopeObjectId.Equals(other.ScopeObjectId) && ScopeObjectType.Equals(other.ScopeObjectType);
-        
+            ScopeObjectId.Equals(other.ScopeObjectId) && ScopeObjectType.Equals(other.ScopeObjectType);
+
         #endregion
     }
 }

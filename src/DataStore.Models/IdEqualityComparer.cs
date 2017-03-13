@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using PalmTree.Infrastructure.Interfaces;
-
 namespace DataStore.Models
 {
+    using System.Collections.Generic;
+    using ServiceApi.Interfaces.LowLevel;
+
     public class IdEqualityComparer : IEqualityComparer<IHaveAUniqueId>
     {
         public bool Equals(IHaveAUniqueId x, IHaveAUniqueId y)

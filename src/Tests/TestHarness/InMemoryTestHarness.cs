@@ -5,24 +5,26 @@ using System.Threading.Tasks;
 using DataStore.Impl.DocumentDb;
 using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
-using PalmTree.Infrastructure.EventAggregator;
-using PalmTree.Infrastructure.Interfaces;
 
 namespace Tests.TestHarness
 {
+    using DataStore.MessageAggregator;
+    using ServiceApi.Interfaces.LowLevel;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+
     public class InMemoryTestHarness : ITestHarness
     {
-        private readonly IEventAggregator eventAggregator = EventAggregator.Create();
+        private readonly IMessageAggregator _messageAggregator = DataStoreMessageAggregator.Create();
 
         private InMemoryTestHarness()
         {
             DocumentRepository = new InMemoryDocumentRepository();
-            DataStore = new DataStore.DataStore(DocumentRepository, eventAggregator);
+            DataStore = new DataStore.DataStore(DocumentRepository, _messageAggregator);
         }
 
         private InMemoryDocumentRepository DocumentRepository { get; }
         public DataStore.DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
+        public List<IDataStoreEvent> Events => _messageAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
         public Task AddToDatabase<T>(T aggregate) where T : IAggregate
         {

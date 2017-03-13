@@ -1,25 +1,25 @@
-﻿using PalmTree.Infrastructure.Models.Messages;
-
-namespace DataStore.Models.Messages.Events
+﻿namespace DataStore.Models.Messages.Events
 {
     using System;
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.Events;
 
-    public class AggregateAdded<T> : Event<T>, IDataStoreWriteEvent<T> where T : IAggregate
+    public class AggregateAdded<T> : IDataStoreWriteEvent<T> where T : IAggregate
     {
         public AggregateAdded(string methodCalled, T model, IDocumentRepository repo)
-            : base(model)
         {
             CommitClosure = async () =>
             {
                 await repo.AddAsync(this);
-                this.Committed = true;
+                Committed = true;
             };
             TypeName = typeof(T).FullName;
             MethodCalled = methodCalled;
             AggregateId = model.id;
+            Model = model;
+            Created = DateTime.UtcNow;
+            MessageId = Guid.NewGuid();
         }
 
         #region IDataStoreWriteEvent<T> Members
@@ -32,6 +32,9 @@ namespace DataStore.Models.Messages.Events
         public string MethodCalled { get; set; }
         public double QueryCost { get; set; }
         public TimeSpan QueryDuration { get; set; }
+        public T Model { get; }
+        public DateTime Created { get; }
+        public Guid MessageId { get; }
 
         #endregion
     }

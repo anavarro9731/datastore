@@ -3,20 +3,17 @@
     <Description>DataStore.Interfaces Class Library</Description>
     <Authors>Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2016 Aaron Navarro</Copyright>
-    <Authors>Aaron Navarro</Authors>
     <TargetFrameworks>net452</TargetFrameworks>
     <AssemblyName>DataStore.Interfaces</AssemblyName>
     <PackageId>DataStore.Interfaces</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <PackageVersion>2.0.9</PackageVersion>
+    <PackageVersion>3.0.2</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.11.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PalmTree.Infrastructure\PalmTree.Infrastructure.csproj" />
+    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="2.0.1" />
   </ItemGroup>
 </Project>
