@@ -1,33 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore;
-using DataStore.Impl.DocumentDb;
-using DataStore.Interfaces;
-using DataStore.Interfaces.Events;
-using DataStore.Models.Config;
-using DataStore.Models.Messages.Events;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
-using PalmTree.Infrastructure.EventAggregator;
-using PalmTree.Infrastructure.Interfaces;
-
-namespace Tests.TestHarness
+﻿namespace Tests.TestHarness
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataStore;
+    using DataStore.Impl.DocumentDb;
+    using DataStore.Interfaces;
+    using DataStore.Interfaces.Events;
+    using DataStore.MessageAggregator;
+    using DataStore.Models.Config;
+    using DataStore.Models.Messages.Events;
+    using Microsoft.Azure.Documents;
+    using Microsoft.Azure.Documents.Client;
+    using ServiceApi.Interfaces.LowLevel;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+
     public class RemoteTestHarness : ITestHarness
     {
+        private readonly IMessageAggregator _eventAggregator = DataStoreMessageAggregator.Create();
         private readonly DocumentRepository documentRepository;
-        private readonly IEventAggregator eventAggregator = EventAggregator.Create();
 
         private RemoteTestHarness(DocumentRepository documentRepository)
         {
             this.documentRepository = documentRepository;
-            DataStore = new DataStore.DataStore(this.documentRepository, eventAggregator);
+            DataStore = new DataStore(this.documentRepository, _eventAggregator);
         }
 
-        public DataStore.DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => eventAggregator.Events.OfType<IDataStoreEvent>().ToList();
+        public DataStore DataStore { get; }
+        public List<IDataStoreEvent> Events => _eventAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
         public async Task AddToDatabase<T>(T aggregate) where T : IAggregate
         {
@@ -64,8 +65,8 @@ namespace Tests.TestHarness
         private static void DeleteAllDocsInCollection(DocumentClient documentClient, DocumentCollection collection)
         {
             var allDocsInCollection = documentClient.CreateDocumentQuery(collection.DocumentsLink,
-                new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1 }).ToList();
-            
+                new FeedOptions {EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1}).ToList();
+
             foreach (var doc in allDocsInCollection)
             {
                 //required if collection is partitioned
@@ -75,7 +76,7 @@ namespace Tests.TestHarness
                 {
                     var key = collection.PartitionKey.Paths[0];
                     PartitionKey partitionKey;
-                    if (key == "/schema") partitionKey = new PartitionKey(((dynamic)doc).schema);
+                    if (key == "/schema") partitionKey = new PartitionKey(((dynamic) doc).schema);
                     else if (key == "/id") partitionKey = new PartitionKey(doc.Id);
                     else throw new Exception("Error locating partition key");
                     requestOptions.PartitionKey = partitionKey;
@@ -83,7 +84,6 @@ namespace Tests.TestHarness
 
                 documentClient.DeleteDocumentAsync(doc.SelfLink, requestOptions).Wait();
             }
-                
         }
 
         private static void GetDocumentCollection(DocumentDbSettings documentDbSettings, DocumentClient documentClient, out DocumentCollection collection)

@@ -1,12 +1,11 @@
-﻿using PalmTree.Infrastructure.PureFunctions.Extensions;
-
-namespace DataStore.Models
+﻿namespace DataStore.Models
 {
     using System;
     using System.Dynamic;
     using System.Linq;
     using Interfaces;
     using Newtonsoft.Json;
+    using PureFunctions.Extensions;
 
     /// <summary>
     ///     represents an objects with a unique id
@@ -21,11 +20,11 @@ namespace DataStore.Models
 
         private string type;
 
-        // apart from keeping an audit trail this is used for sorting 
-        public DateTime? Created { get; set; }
-
         //here for easier comparison in some systems such as docdb
         public double? CreatedNumber { get; set; }
+
+        // apart from keeping an audit trail this is used for sorting 
+        public DateTime? Created { get; set; }
 
         // this is here to give references which are stored in a models json a unique Id which is necessary during updates to determines 
         // what changes have occurred. It can either be implemented as-is or the getter can be overridden to select another existing property as the key
@@ -39,14 +38,11 @@ namespace DataStore.Models
         {
             get
             {
-                this.more = this.more ?? new ExpandoObject();
-                return this.more;
+                more = more ?? new ExpandoObject();
+                return more;
             }
 
-            set
-            {
-                this.more = value;
-            }
+            set { more = value; }
         }
 
         [JsonProperty(PropertyName = "schema")]
@@ -54,14 +50,11 @@ namespace DataStore.Models
         {
             get
             {
-                this.schema = this.schema ?? this.GetType().Name;
-                return this.schema;
+                schema = schema ?? GetType().Name;
+                return schema;
             }
 
-            set
-            {
-                this.schema = value;
-            }
+            set { schema = value; }
         }
 
         [JsonProperty(PropertyName = "type")]
@@ -69,27 +62,20 @@ namespace DataStore.Models
         {
             get
             {
-                this.type = this.type ?? this.GetType().FullName;
-                return this.type;
+                type = type ?? GetType().FullName;
+                return type;
             }
 
-            set
-            {
-                this.type = value;
-            }
+            set { type = value; }
         }
 
         public void UpdateFromAnotherObject<T>(T source, params string[] exclude)
         {
             if (source == null)
-            {
                 throw new Exception("Source object is null");
-            }
 
-            if (!source.GetType().InheritsOrImplements(this.GetType()))
-            {
+            if (!source.GetType().InheritsOrImplements(GetType()))
                 throw new Exception("Source object not of the same base type");
-            }
 
             source.CopyProperties(this, exclude.ToArray());
         }

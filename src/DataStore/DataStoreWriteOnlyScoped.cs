@@ -1,7 +1,4 @@
-﻿using PalmTree.Infrastructure.EventAggregator;
-using PalmTree.Infrastructure.Interfaces;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -10,6 +7,7 @@ namespace DataStore
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.Events;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -17,15 +15,15 @@ namespace DataStore
     /// </summary>
     public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : IAggregate, new()
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreWriteOnly(IDocumentRepository documentRepository, IEventAggregator eventAggregator = null)
+        public DataStoreWriteOnly(IDocumentRepository documentRepository, IMessageAggregator messageAggregator = null)
         {
-            this.eventAggregator = eventAggregator ?? EventAggregator.Create();
+            this.messageAggregator = messageAggregator ?? MessageAggregator.DataStoreMessageAggregator.Create();
             DsConnection = documentRepository;
-            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, eventAggregator);
-            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, eventAggregator);
-            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, eventAggregator);
+            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, messageAggregator);
+            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, messageAggregator);
+            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, messageAggregator);
         }
 
         public IDocumentRepository DsConnection { get; }
@@ -38,7 +36,7 @@ namespace DataStore
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = eventAggregator.Events.OfType<IDataStoreWriteEvent>();
+            var dataStoreEvents = messageAggregator.AllMessages.OfType<IDataStoreWriteEvent>();
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
                 await dataStoreWriteEvent.CommitClosure();

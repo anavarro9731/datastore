@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
-using PalmTree.Infrastructure.Interfaces;
 
 namespace Tests.TestHarness
 {
+    using ServiceApi.Interfaces.LowLevel;
+
     public interface ITestHarness
     {
         DataStore.DataStore DataStore { get; }

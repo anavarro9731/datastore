@@ -1,17 +1,17 @@
-﻿using PalmTree.Infrastructure.Models.Messages;
-
-namespace DataStore.Models.Messages.Events
+﻿namespace DataStore.Models.Messages.Events
 {
     using System;
     using Interfaces.Events;
 
-    public class AggregateQueriedById : Event, IDataStoreReadById
+    public class AggregateQueriedById : IDataStoreReadById
     {
         public AggregateQueriedById(string methodCalled, Guid id, Type type = null)
         {
             MethodCalled = methodCalled;
             Id = id;
             TypeName = type?.FullName;
+            Created = DateTime.UtcNow;
+            MessageId = Guid.NewGuid();
         }
 
         public string TypeName { get; set; }
@@ -19,5 +19,7 @@ namespace DataStore.Models.Messages.Events
         public Guid Id { get; set; }
         public double QueryCost { get; set; }
         public TimeSpan QueryDuration { get; set; }
+        public DateTime Created { get; }
+        public Guid MessageId { get; }
     }
 }

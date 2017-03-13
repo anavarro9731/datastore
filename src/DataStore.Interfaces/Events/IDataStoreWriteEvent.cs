@@ -1,19 +1,15 @@
 ﻿namespace DataStore.Interfaces.Events
 {
     using System;
-    using System.Threading.Tasks;
+    using ServiceApi.Interfaces.LowLevel.Messages;
 
     public interface IDataStoreWriteEvent<T> : IDataStoreWriteEvent, IDataStoreEvent where T : IAggregate
     {
         T Model { get; }
     }
 
-    public interface IDataStoreWriteEvent
+    public interface IDataStoreWriteEvent : IQueuedStateChange
     {
-        Func<Task> CommitClosure { get; set; }
-
-        bool Committed { get; set; }
-
         Guid AggregateId { get; }
     }
 }

@@ -45,6 +45,9 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="ServiceApi.Interfaces.LowLevel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceApi.Interfaces.LowLevel.2.0.1\lib\net452\ServiceApi.Interfaces.LowLevel.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
@@ -78,19 +81,13 @@
     <Compile Include="Tests\DocumentationTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DocumentDbSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="DocumentDbSettings.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj">
       <Project>{c855dc43-d88f-4800-8aee-a451724b14f9}</Project>
       <Name>DataStore.Impl.DocumentDb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PalmTree.Infrastructure\PalmTree.Infrastructure.csproj">
-      <Project>{2f9b2a79-d3f2-4818-8e86-6c5ed2024164}</Project>
-      <Name>PalmTree.Infrastructure</Name>
     </ProjectReference>
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj">
       <Project>{05013952-de52-4ef3-8f76-4e1b076134b6}</Project>

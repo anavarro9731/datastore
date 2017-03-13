@@ -1,6 +1,4 @@
-﻿using PalmTree.Infrastructure.Interfaces;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -9,6 +7,7 @@ namespace DataStore
     using System.Threading.Tasks;
     using Interfaces;
     using Models.Messages.Events;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     // Not sure if eventreplay makes sense in this class, needs review currently its not implemented.
     // It's also questionable what happens to events subsquent to a hard-delete in a session, how does it error?
@@ -19,11 +18,11 @@ namespace DataStore
 
     internal class DataStoreDeleteCapabilities : IDataStoreDeleteCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreDeleteCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
+        public DataStoreDeleteCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
         {
-            this.eventAggregator = eventAggregator;
+            this.messageAggregator = messageAggregator;
             DsConnection = dataStoreConnection;
         }
 
@@ -33,32 +32,32 @@ namespace DataStore
 
         public async Task<T> DeleteHardById<T>(Guid id) where T : IAggregate
         {
-            var result = await eventAggregator.Store(new AggregateQueriedById(nameof(DeleteHardById), id, typeof(T)))
-                .ForwardToAsync(DsConnection.GetItemAsync<T>);
+            var result = await messageAggregator.CollectAndForward(new AggregateQueriedById(nameof(DeleteHardById), id, typeof(T)))
+                .To(DsConnection.GetItemAsync<T>);
 
-            eventAggregator.Store(new AggregateHardDeleted<T>(nameof(DeleteHardById), result, DsConnection));
+            messageAggregator.Collect(new AggregateHardDeleted<T>(nameof(DeleteHardById), result, DsConnection));
 
             return result;
         }
 
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
         {
-            var objects = await eventAggregator.Store(new AggregatesQueried<T>(nameof(DeleteHardWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .ForwardToAsync(DsConnection.ExecuteQuery);
+            var objects = await messageAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(DeleteHardWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                .To(DsConnection.ExecuteQuery);
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
-                eventAggregator.Store(new AggregateHardDeleted<T>(nameof(DeleteHardWhere), dataObject, DsConnection));
+                messageAggregator.Collect(new AggregateHardDeleted<T>(nameof(DeleteHardWhere), dataObject, DsConnection));
 
             return dataObjects;
         }
 
         public async Task<T> DeleteSoftById<T>(Guid id) where T : IAggregate
         {
-            var result = await eventAggregator.Store(new AggregateQueriedById(nameof(DeleteSoftById), id, typeof(T)))
-                .ForwardToAsync(DsConnection.GetItemAsync<T>);
+            var result = await messageAggregator.CollectAndForward(new AggregateQueriedById(nameof(DeleteSoftById), id, typeof(T)))
+                .To(DsConnection.GetItemAsync<T>);
 
-            eventAggregator.Store(new AggregateSoftDeleted<T>(nameof(DeleteSoftById), result, DsConnection));
+            messageAggregator.Collect(new AggregateSoftDeleted<T>(nameof(DeleteSoftById), result, DsConnection));
 
             return result;
         }
@@ -66,12 +65,12 @@ namespace DataStore
         // .. soft delete one or more DataObjects 
         public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
         {
-            var objects = await eventAggregator.Store(new AggregatesQueried<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .ForwardToAsync(DsConnection.ExecuteQuery);
+            var objects = await messageAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                .To(DsConnection.ExecuteQuery);
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
-                eventAggregator.Store(new AggregateSoftDeleted<T>(nameof(DeleteSoftWhere), dataObject, DsConnection));
+                messageAggregator.Collect(new AggregateSoftDeleted<T>(nameof(DeleteSoftWhere), dataObject, DsConnection));
 
             return dataObjects;
         }

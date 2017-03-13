@@ -1,22 +1,21 @@
-﻿using PalmTree.Infrastructure.Interfaces;
-using PalmTree.Infrastructure.PureFunctions.Extensions;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Threading.Tasks;
     using Interfaces;
     using Models.Messages.Events;
+    using Models.PureFunctions.Extensions;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     //methods return the enriched object as it was added to the database
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreCreateCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
+        public DataStoreCreateCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
         {
-            this.eventAggregator = eventAggregator;
+            this.messageAggregator = messageAggregator;
             DsConnection = dataStoreConnection;
         }
 
@@ -44,7 +43,7 @@ namespace DataStore
 
             enriched.WalkGraphAndUpdateEntityMeta();
 
-            eventAggregator.Store(new AggregateAdded<T>(nameof(Create), enriched, DsConnection));
+            messageAggregator.Collect(new AggregateAdded<T>(nameof(Create), enriched, DsConnection));
 
             return Task.FromResult(enriched);
         }

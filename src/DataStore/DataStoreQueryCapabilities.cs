@@ -1,6 +1,4 @@
-﻿using PalmTree.Infrastructure.EventAggregator;
-using PalmTree.Infrastructure.Interfaces;
-
+﻿
 namespace DataStore
 {
     using System;
@@ -10,18 +8,19 @@ namespace DataStore
     using Interfaces;
     using Interfaces.Events;
     using Models.Messages.Events;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     //methods return the latest version of an object including uncommitted session changes
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator messageAggregator;
         private readonly EventReplay eventReplay;
 
-        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IEventAggregator eventAggregator)
+        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
         {
-            this.eventAggregator = eventAggregator;
-            eventReplay = new EventReplay(eventAggregator);
+            this.messageAggregator = messageAggregator;
+            eventReplay = new EventReplay(messageAggregator);
             DbConnection = dataStoreConnection;
         }
 
@@ -32,12 +31,12 @@ namespace DataStore
             if (id == Guid.Empty) return false;
 
             //if its been deleted in this session (this takes the place of eventReplay for this function)
-            if (eventAggregator.Events.OfType<IDataStoreWriteEvent>()
+            if (messageAggregator.AllMessages.OfType<IDataStoreWriteEvent>()
                 .ToList()
                 .Exists(e => e.AggregateId == id && e.GetType() == typeof(AggregateHardDeleted<>)))
                 return false;
 
-            return await eventAggregator.Store(new AggregateQueriedById(nameof(Exists), id)).ForwardToAsync(DbConnection.Exists);
+            return await messageAggregator.CollectAndForward(new AggregateQueriedById(nameof(Exists), id)).To(DbConnection.Exists);
         }
 
         // get a filtered list of the models from set of DataObjects
@@ -82,7 +81,7 @@ namespace DataStore
             if (queryableExtension != null)
                 queryable = queryableExtension(queryable);
 
-            var results = await eventAggregator.Store(new AggregatesQueried<T>(nameof(ReadInternal), queryable)).ForwardToAsync(DbConnection.ExecuteQuery);
+            var results = await messageAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(ReadInternal), queryable)).To(DbConnection.ExecuteQuery);
 
             return results;
         }

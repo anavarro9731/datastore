@@ -2,8 +2,9 @@
 {
     using System;
     using System.Linq;
+    using ServiceApi.Interfaces.LowLevel.Messages;
 
-    public interface IDataStoreReadEvent : IDataStoreEvent
+    public interface IDataStoreReadEvent : IDataStoreEvent, IGatedMessage
     {
 
     }

@@ -3,24 +3,25 @@ using System.Linq;
 using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
 using DataStore.Models.Messages.Events;
-using PalmTree.Infrastructure.Interfaces;
-using PalmTree.Infrastructure.PureFunctions.Extensions;
 
 namespace DataStore
 {
+    using Models.PureFunctions.Extensions;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+
     public class EventReplay
     {
-        private readonly IEventAggregator eventAggregator;
+        private readonly IMessageAggregator _messageAggregator;
 
-        public EventReplay(IEventAggregator eventAggregator)
+        public EventReplay(IMessageAggregator messageAggregator)
         {
-            this.eventAggregator = eventAggregator;
+            this._messageAggregator = messageAggregator;
         }
 
         public List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : IAggregate
         {
             var modifiedResults = results.ToList();
-            var uncommittedEvents = eventAggregator.Events.OrderBy(e => e.OccurredAt).OfType<IDataStoreWriteEvent<T>>().Where(e => !e.Committed);
+            var uncommittedEvents = _messageAggregator.AllMessages.OfType<IDataStoreWriteEvent<T>>().OrderBy(e => e.Created).Where(e => !e.Committed);
 
             foreach (var eventAggregatorEvent in uncommittedEvents)
             {

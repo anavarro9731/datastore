@@ -1,6 +1,4 @@
-﻿using PalmTree.Infrastructure.Interfaces;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
@@ -14,6 +12,7 @@ namespace DataStore.Impl.DocumentDb
     using Microsoft.Azure.Documents.Linq;
     using Models.Config;
     using Models.Messages.Events;
+    using ServiceApi.Interfaces.LowLevel;
 
     public class DocumentRepository : IDocumentRepository
     {
@@ -27,14 +26,21 @@ namespace DataStore.Impl.DocumentDb
             this.config = config;
         }
 
+        private Uri CreateDocumentSelfLinkFromId(Guid id)
+        {
+            if (Guid.Empty == id)
+                throw new ArgumentException("Id is required for update/delete/read operation");
+
+            var docLink = UriFactory.CreateDocumentUri(config.DatabaseName, config.CollectionSettings.CollectionName, id.ToString());
+            return docLink;
+        }
+
         #region IDocumentRepository Members
 
         public async Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate
         {
             if (aggregateAdded == null || aggregateAdded.Model == null)
-            {
                 throw new ArgumentNullException(nameof(aggregateAdded));
-            }
 
             var stopWatch = Stopwatch.StartNew();
             var result =
@@ -51,9 +57,14 @@ namespace DataStore.Impl.DocumentDb
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
-            var name = typeof(T).Name;            
+            var name = typeof(T).Name;
             var query = documentClient.CreateDocumentQuery<T>(config.CollectionSelfLink(),
-                new FeedOptions { EnableCrossPartitionQuery = config.CollectionSettings.EnableCrossParitionQueries, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1 })
+                    new FeedOptions
+                    {
+                        EnableCrossPartitionQuery = config.CollectionSettings.EnableCrossParitionQueries,
+                        MaxDegreeOfParallelism = -1,
+                        MaxBufferedItemCount = -1
+                    })
                 .Where(item => item.Schema == name);
             return query;
         }
@@ -91,7 +102,7 @@ namespace DataStore.Impl.DocumentDb
             documentClient.Dispose();
         }
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) 
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
             var results = new List<T>();
 
@@ -123,9 +134,7 @@ namespace DataStore.Impl.DocumentDb
                 var stopWatch = Stopwatch.StartNew();
                 var result = await documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id));
                 if (result == null)
-                {
                     throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
-                }
                 stopWatch.Stop();
                 aggregateQueriedById.QueryDuration = stopWatch.Elapsed;
                 aggregateQueriedById.QueryCost = result.RequestCharge;
@@ -167,16 +176,5 @@ namespace DataStore.Impl.DocumentDb
         }
 
         #endregion
-
-        private Uri CreateDocumentSelfLinkFromId(Guid id)
-        {
-            if (Guid.Empty == id)
-            {
-                throw new ArgumentException("Id is required for update/delete/read operation");
-            }
-
-            var docLink = UriFactory.CreateDocumentUri(config.DatabaseName, config.CollectionSettings.CollectionName, id.ToString());
-            return docLink;
-        }
     }
 }
