@@ -165,7 +165,7 @@
 
             while (currentChild != typeof(object))
             {
-                if (parent == currentChild || HasAnyInterfaces(parent, currentChild)) return true;
+                if (parent == currentChild || parent == currentChild.BaseType || HasAnyInterfaces(parent, currentChild)) return true;
 
                 currentChild = currentChild.BaseType != null && currentChild.BaseType.IsGenericType
                                    ? currentChild.BaseType.GetGenericTypeDefinition()
