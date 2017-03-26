@@ -1,17 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Interfaces;
-using DataStore.Interfaces.Events;
-
-namespace Tests.TestHarness
+namespace DataStore.Tests.TestHarness
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.Events;
     using ServiceApi.Interfaces.LowLevel;
 
     public interface ITestHarness
     {
-        DataStore.DataStore DataStore { get; }
+        global::DataStore.DataStore DataStore { get; }
 
         List<IDataStoreEvent> Events { get; }
 

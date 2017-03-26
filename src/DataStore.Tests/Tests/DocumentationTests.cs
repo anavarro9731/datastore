@@ -1,13 +1,13 @@
-﻿using System;
-using System.Linq;
-using DataStore.Impl.DocumentDb;
-using DataStore.Models.Messages.Events;
-using Tests.Constants;
-using Tests.Models;
-using Xunit;
-
-namespace Tests.Tests
+﻿namespace DataStore.Tests.Tests
 {
+    using System;
+    using System.Linq;
+    using Constants;
+    using global::DataStore.Impl.DocumentDb;
+    using global::DataStore.Models.Messages.Events;
+    using Models;
+    using Xunit;
+
     [Collection(TestCollections.DocumentationTests)]
     public class DocumentationTests
     {
@@ -16,14 +16,14 @@ namespace Tests.Tests
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var dataStore = new DataStore.DataStore(documentRepository);
+            var dataStore = new global::DataStore.DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 
             //Given
             inMemoryDb.Add(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Toyota"
             });
 
@@ -37,7 +37,7 @@ namespace Tests.Tests
             Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has changed
-            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.Id == carId).Make);
 
             //The dataStore reads the changes correctly
             Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
@@ -48,14 +48,14 @@ namespace Tests.Tests
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var dataStore = new DataStore.DataStore(documentRepository);
+            var dataStore = new global::DataStore.DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 
             //Given
             inMemoryDb.Add(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Toyota"
             });
 
@@ -69,7 +69,7 @@ namespace Tests.Tests
             Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has NOT changed
-            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.Id == carId).Make);
 
             //The DataStore instance picks up the change, because it has applied
             //all changes made during this session.

@@ -2,7 +2,7 @@ namespace DataStore.Interfaces
 {
     using ServiceApi.Interfaces.LowLevel;
 
-    public interface IEntity : IHaveAUniqueId, IRememberWhenIWasChanged, IHaveSchema
+    public interface IEntity : IHaveAUniqueId, IRememberWhenIWasCreated, IRememberWhenIWasModified, IHaveSchema
     {
         dynamic More { get; set; }
 

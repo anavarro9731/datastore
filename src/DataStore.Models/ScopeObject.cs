@@ -1,6 +1,7 @@
 ﻿namespace DataStore.Models
 {
     using System;
+    using Interfaces;
     using ServiceApi.Interfaces.LowLevel;
 
     public class ScopeReference : IScopeReference, IEquatable<ScopeReference>

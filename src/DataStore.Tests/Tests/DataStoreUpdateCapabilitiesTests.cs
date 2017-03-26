@@ -1,13 +1,13 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages.Events;
-using Tests.Constants;
-using Tests.Models;
-using Tests.TestHarness;
-using Xunit;
-
-namespace Tests.Tests
+namespace DataStore.Tests.Tests
 {
+    using System;
+    using System.Linq;
+    using Constants;
+    using global::DataStore.Models.Messages.Events;
+    using Models;
+    using TestHarness;
+    using Xunit;
+
     [Collection(TestCollections.DataStoreTestCollection)]
     public class DataStoreUpdateCapabilitiesTests
     {
@@ -20,16 +20,16 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             });
 
             //When
-            await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
+            await testHarness.DataStore.UpdateWhere<Car>(car => car.Id == carId, car => car.Make = "Ford");
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
@@ -42,7 +42,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(existingCar);
@@ -55,7 +55,7 @@ namespace Tests.Tests
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
@@ -68,7 +68,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             });
 
@@ -78,7 +78,7 @@ namespace Tests.Tests
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
@@ -91,17 +91,17 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             });
 
             //When
-            await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
+            await testHarness.DataStore.UpdateWhere<Car>(car => car.Id == carId, car => car.Make = "Ford");
             await testHarness.DataStore.CommitChanges();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
@@ -114,7 +114,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             });
 
@@ -123,7 +123,7 @@ namespace Tests.Tests
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
@@ -136,17 +136,17 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             });
             await testHarness.DataStore.DeleteHardById<Car>(carId);
 
             //When
-            var results = await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
+            var results = await testHarness.DataStore.UpdateWhere<Car>(car => car.Id == carId, car => car.Make = "Ford");
 
             //Then
             Assert.Equal(results.Count(), 0); //there nothing should have been updated because it was already deleted.
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(existingCar);
@@ -170,7 +170,7 @@ namespace Tests.Tests
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
     }

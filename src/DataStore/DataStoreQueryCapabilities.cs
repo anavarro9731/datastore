@@ -69,7 +69,7 @@ namespace DataStore
         // get a filtered list of the models from  a set of DataObjects
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : IAggregate
         {
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = q => q.Where(a => a.id == modelId && a.Active);
+            Func<IQueryable<T>, IQueryable<T>> queryableExtension = q => q.Where(a => a.Id == modelId && a.Active);
             var results = await ReadInternal(queryableExtension);
 
             return eventReplay.ApplyAggregateEvents(results, true).Single();

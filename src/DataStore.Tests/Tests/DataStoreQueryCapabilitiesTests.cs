@@ -1,13 +1,13 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages.Events;
-using Tests.Constants;
-using Tests.Models;
-using Tests.TestHarness;
-using Xunit;
-
-namespace Tests.Tests
+namespace DataStore.Tests.Tests
 {
+    using System;
+    using System.Linq;
+    using Constants;
+    using global::DataStore.Models.Messages.Events;
+    using Models;
+    using TestHarness;
+    using Xunit;
+
     [Collection(TestCollections.DataStoreTestCollection)]
     public class DataStoreQueryCapabilitiesTests
     {
@@ -20,14 +20,14 @@ namespace Tests.Tests
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                Id = activeCarId,
                 Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
+                Id = inactiveCarId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -51,14 +51,14 @@ namespace Tests.Tests
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                Id = activeCarId,
                 Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
+                Id = inactiveCarId,
                 Active = false,
                 Make = "Jeep"
             };
@@ -66,8 +66,8 @@ namespace Tests.Tests
             await testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            var activeCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == activeCarId))).SingleOrDefault();
-            var inactiveCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == inactiveCarId))).SingleOrDefault();
+            var activeCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.Id == activeCarId))).SingleOrDefault();
+            var inactiveCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.Id == inactiveCarId))).SingleOrDefault();
 
             //Then
             Assert.Equal(2, testHarness.Events.Count(e => e is AggregatesQueried<Car>));
@@ -84,14 +84,14 @@ namespace Tests.Tests
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                Id = activeCarId,
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(activeExistingCar);
             await testHarness.DataStore.DeleteHardById<Car>(activeCarId);
 
             // When
-            var activeCarFromDataStore = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == activeCarId))).SingleOrDefault();
+            var activeCarFromDataStore = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.Id == activeCarId))).SingleOrDefault();
 
             //Then
             Assert.Null(activeCarFromDataStore);
@@ -106,14 +106,14 @@ namespace Tests.Tests
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                Id = activeCarId,
                 Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
+                Id = inactiveCarId,
                 Active = false,
                 Make = "Jeep"
             };
@@ -139,7 +139,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -153,7 +153,7 @@ namespace Tests.Tests
             //Then
             Assert.NotNull(testHarness.Events.Exists(e => e is AggregateQueriedById));
             Assert.Equal("Volvo", carFromDatabase.Make);
-            Assert.Equal(carId, carFromDatabase.id);
+            Assert.Equal(carId, carFromDatabase.Id);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace Tests.Tests
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                Id = activeCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -173,7 +173,7 @@ namespace Tests.Tests
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
+                Id = inactiveCarId,
                 Active = false,
                 Make = "Jeep"
             };
@@ -186,7 +186,7 @@ namespace Tests.Tests
 
             //Then
             Assert.Equal(2, testHarness.Events.Count(e => e is AggregatesQueried<Car>));
-            Assert.Equal(activeCarId, activeCarFromDatabase.id);
+            Assert.Equal(activeCarId, activeCarFromDatabase.Id);
             Assert.NotNull(exception);
         }
 
@@ -199,7 +199,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -208,11 +208,11 @@ namespace Tests.Tests
             await testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
 
             // When
-            var carFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).Single();
+            var carFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Id == carId))).Single();
 
             //Then
             Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
+            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Make);
             Assert.Equal("Ford", carFromDatabase.Make);
         }
 
@@ -225,7 +225,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -234,7 +234,7 @@ namespace Tests.Tests
             await testHarness.DataStore.DeleteHardById<Car>(carId);
 
             // When
-            var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).SingleOrDefault();
+            var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Id == carId))).SingleOrDefault();
 
             //Then
             Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
@@ -251,7 +251,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -260,7 +260,7 @@ namespace Tests.Tests
             await testHarness.DataStore.DeleteSoftById<Car>(carId);
 
             // When
-            var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).SingleOrDefault();
+            var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Id == carId))).SingleOrDefault();
 
             //Then
             Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
@@ -277,7 +277,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -286,14 +286,14 @@ namespace Tests.Tests
             //When
             await testHarness.DataStore.Create(new Car()
             {
-                id = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Active = true,
                 Make = "Ford"
             });
 
             // When
-            var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).Count();
-            var readActiveCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == carId))).Count();
+            var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Id == carId))).Count();
+            var readActiveCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.Id == carId))).Count();
 
             //Then
             Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
@@ -311,14 +311,14 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(existingCar);
             await testHarness.DataStore.DeleteHardById<Car>(carId);
             // When
-            var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
+            var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.Id == carId))).Single();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is TransformationQueried<Car>));
@@ -334,7 +334,7 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -343,7 +343,7 @@ namespace Tests.Tests
             await testHarness.DataStore.DeleteHardById<Car>(carId);
 
             // When
-            var transformedCar = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId).Select(c => new { c.id, c.Make }))).Single();
+            var transformedCar = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.Id == carId).Select(c => new { id = c.Id, c.Make }))).Single();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e.TypeName == transformedCar.GetType().FullName));
@@ -359,14 +359,14 @@ namespace Tests.Tests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                Id = carId,
                 Active = false,
                 Make = "Volvo"
             };
             await testHarness.AddToDatabase(existingCar);
 
             // When
-            var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
+            var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.Id == carId))).Single();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is TransformationQueried<Car>));
