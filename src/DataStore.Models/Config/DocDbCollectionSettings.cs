@@ -50,7 +50,7 @@ namespace DataStore.Models.Config
                     {
                         Paths =
                         {
-                            "/" + nameof(Aggregate.id)
+                            "/" + nameof(Aggregate.Id)
                         }
                     };
 

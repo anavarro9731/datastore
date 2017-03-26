@@ -7,12 +7,12 @@ namespace DataStore.Models
     {
         public bool Equals(IHaveAUniqueId x, IHaveAUniqueId y)
         {
-            return x.id == y.id;
+            return x.Id == y.Id;
         }
 
         public int GetHashCode(IHaveAUniqueId obj)
         {
-            return obj.id.GetHashCode();
+            return obj.Id.GetHashCode();
         }
     }
 }

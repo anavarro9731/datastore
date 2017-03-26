@@ -28,7 +28,7 @@
 
         // this is here to give references which are stored in a models json a unique Id which is necessary during updates to determines 
         // what changes have occurred. It can either be implemented as-is or the getter can be overridden to select another existing property as the key
-        public Guid id { get; set; }
+        public Guid Id { get; set; }
 
         // we require this field to determine if the entities have been updated so we don't
         // have to compare or update every one but only those that have changed.

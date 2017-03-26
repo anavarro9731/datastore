@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Impl.DocumentDb;
-using DataStore.Interfaces;
-using DataStore.Interfaces.Events;
-
-namespace Tests.TestHarness
+﻿namespace DataStore.Tests.TestHarness
 {
-    using DataStore.MessageAggregator;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using global::DataStore.Impl.DocumentDb;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.Events;
+    using global::DataStore.MessageAggregator;
     using ServiceApi.Interfaces.LowLevel;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
@@ -19,11 +18,11 @@ namespace Tests.TestHarness
         private InMemoryTestHarness()
         {
             DocumentRepository = new InMemoryDocumentRepository();
-            DataStore = new DataStore.DataStore(DocumentRepository, _messageAggregator);
+            DataStore = new global::DataStore.DataStore(DocumentRepository, _messageAggregator);
         }
 
         private InMemoryDocumentRepository DocumentRepository { get; }
-        public DataStore.DataStore DataStore { get; }
+        public global::DataStore.DataStore DataStore { get; }
         public List<IDataStoreEvent> Events => _messageAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
         public Task AddToDatabase<T>(T aggregate) where T : IAggregate

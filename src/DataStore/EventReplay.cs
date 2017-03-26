@@ -41,18 +41,18 @@ namespace DataStore
                     results.Add(eventAggregatorEvent.Model);
                 }
             }
-            else if (results.Exists(i => i.id == eventAggregatorEvent.Model.id))
+            else if (results.Exists(i => i.Id == eventAggregatorEvent.Model.Id))
             {
                 if (eventAggregatorEvent is AggregateUpdated<T>)
                 {
                     if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active)
                     {
-                        var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        var itemToRemove = results.Single(i => i.Id == eventAggregatorEvent.Model.Id);
                         results.Remove(itemToRemove);
                     }
                     else
                     {
-                        var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        var itemToUpdate = results.Single(i => i.Id == eventAggregatorEvent.Model.Id);
                         eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
                     }
                 }
@@ -61,14 +61,14 @@ namespace DataStore
                 {
                     if (requestingOnlyReadActive)
                     {
-                        var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        var itemToRemove = results.Single(i => i.Id == eventAggregatorEvent.Model.Id);
                         results.Remove(itemToRemove);
                     }
                 }
 
                 if (eventAggregatorEvent is AggregateHardDeleted<T>)
                 {
-                    var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                    var itemToRemove = results.Single(i => i.Id == eventAggregatorEvent.Model.Id);
                     results.Remove(itemToRemove);
                 }
             }

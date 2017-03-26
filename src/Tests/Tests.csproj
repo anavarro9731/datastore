@@ -64,21 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Constants\TestCollections.cs" />
-    <Compile Include="Models\Car.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestHarness\InMemoryTestHarness.cs" />
-    <Compile Include="TestHarness\ITestHarness.cs" />
-    <Compile Include="TestHarness\RemoteTestHarness.cs" />
-    <Compile Include="TestHarness\TestHarnessFunctions.cs" />
-    <Compile Include="TestHarness\TestHarnessOptions.cs" />
-    <Compile Include="Tests\DataStoreCreateCapabilitiesTests.cs" />
-    <Compile Include="Tests\DataStoreDeleteCapabilitiesTests.cs" />
-    <Compile Include="Tests\DataStoreInitialisationTests.cs" />
-    <Compile Include="Tests\DataStorePartitionTests.cs" />
-    <Compile Include="Tests\DataStoreQueryCapabilitiesTests.cs" />
-    <Compile Include="Tests\DataStoreUpdateCapabilitiesTests.cs" />
-    <Compile Include="Tests\DocumentationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DocumentDbSettings.json" />

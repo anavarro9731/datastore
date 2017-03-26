@@ -38,16 +38,16 @@
 
         public Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
         {
-            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateHardDeleted.Model.id);
+            var aggregate = Aggregates.OfType<T>().Single(a => a.Id == aggregateHardDeleted.Model.Id);
 
-            Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
+            Aggregates.RemoveAll(a => a.Id == aggregateHardDeleted.Model.Id);
 
             return Task.FromResult(aggregate);
         }
 
         public Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
         {
-            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
+            var aggregate = Aggregates.OfType<T>().Single(a => a.Id == aggregateSoftDeleted.Model.Id);
 
             (aggregate as dynamic).Active = false;
 
@@ -68,19 +68,19 @@
 
         public Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
-            return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedById.Id));
+            return Task.FromResult(Aggregates.Exists(a => a.Id == aggregateQueriedById.Id));
         }
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
-            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.OfType<T>().Single(a => a.Id == aggregateQueriedById.Id);
 
             return Task.FromResult(aggregate);
         }
 
         public Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById)
         {
-            var queryable = Aggregates.AsQueryable().Where(x => x.id == aggregateQueriedById.Id);
+            var queryable = Aggregates.AsQueryable().Where(x => x.Id == aggregateQueriedById.Id);
 
             var d = new Document();
 
@@ -93,7 +93,7 @@
 
         public Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
         {
-            var toUpdate = Aggregates.Single(x => x.id == aggregateUpdated.Model.id);
+            var toUpdate = Aggregates.Single(x => x.Id == aggregateUpdated.Model.Id);
 
             aggregateUpdated.Model.CopyProperties(toUpdate);
 

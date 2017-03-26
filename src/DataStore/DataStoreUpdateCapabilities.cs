@@ -32,7 +32,7 @@ namespace DataStore
         {
             var results =
                 await
-                    UpdateWhere<T>(o => o.id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.id)); }, overwriteReadOnly);
+                    UpdateWhere<T>(o => o.Id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.Id)); }, overwriteReadOnly);
 
             return results.Single();
         }
@@ -41,7 +41,7 @@ namespace DataStore
 
         public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : IAggregate
         {
-            var results = await UpdateWhere(o => o.id == id, action, overwriteReadOnly);
+            var results = await UpdateWhere(o => o.Id == id, action, overwriteReadOnly);
 
             return results.Single();
         }
@@ -50,7 +50,7 @@ namespace DataStore
         public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
             where T : IAggregate
         {
-            return await UpdateByIdUsingValuesFromAnotherInstance(src.id, src, overwriteReadOnly);
+            return await UpdateByIdUsingValuesFromAnotherInstance(src.Id, src, overwriteReadOnly);
         }
 
 

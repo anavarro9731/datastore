@@ -8,12 +8,12 @@
     <PackageId>DataStore.Interfaces</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <PackageVersion>3.0.2</PackageVersion>
+    <PackageVersion>3.1.0</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.11.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="2.0.4" />
+    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="[3.0.0,3.9.9]" />
   </ItemGroup>
 </Project>

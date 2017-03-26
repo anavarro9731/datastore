@@ -71,7 +71,7 @@
 
         public async Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
         {
-            var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
+            var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.Id);
 
             var stopWatch = Stopwatch.StartNew();
             var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.DeleteDocumentAsync(docLink));
@@ -85,7 +85,7 @@
             //HACK: this call inside the doc repository is effectively duplicate [see callers] 
             //and causes us to miss this query when profiling, arguably its cheap, but still
             //if I can determine how to create an Azure Document from T we can ditch it.
-            var document = await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
+            var document = await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.Id, typeof(T)));
 
             document.SetPropertyValue(nameof(IAggregate.Active), false);
             document.SetPropertyValue(nameof(IAggregate.Modified), DateTime.UtcNow);
@@ -153,7 +153,7 @@
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
-                        () => documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model));
+                        () => documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.Id), aggregateUpdated.Model));
 
             stopWatch.Stop();
             aggregateUpdated.QueryDuration = stopWatch.Elapsed;

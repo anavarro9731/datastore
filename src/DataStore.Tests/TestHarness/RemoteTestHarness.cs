@@ -1,16 +1,16 @@
-﻿namespace Tests.TestHarness
+﻿namespace DataStore.Tests.TestHarness
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using DataStore;
-    using DataStore.Impl.DocumentDb;
-    using DataStore.Interfaces;
-    using DataStore.Interfaces.Events;
-    using DataStore.MessageAggregator;
-    using DataStore.Models.Config;
-    using DataStore.Models.Messages.Events;
+    using global::DataStore;
+    using global::DataStore.Impl.DocumentDb;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.Events;
+    using global::DataStore.MessageAggregator;
+    using global::DataStore.Models.Config;
+    using global::DataStore.Models.Messages.Events;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using ServiceApi.Interfaces.LowLevel;

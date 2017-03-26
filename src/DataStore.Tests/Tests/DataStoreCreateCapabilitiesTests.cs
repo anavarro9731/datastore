@@ -1,13 +1,13 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages.Events;
-using Tests.Constants;
-using Tests.Models;
-using Tests.TestHarness;
-using Xunit;
-
-namespace Tests.Tests
+namespace DataStore.Tests.Tests
 {
+    using System;
+    using System.Linq;
+    using Constants;
+    using global::DataStore.Models.Messages.Events;
+    using Models;
+    using TestHarness;
+    using Xunit;
+
     [Collection(TestCollections.DataStoreTestCollection)]
     public class DataStoreCreateCapabilitiesTests
     {
@@ -19,7 +19,7 @@ namespace Tests.Tests
 
             var newCar = new Car()
             {
-                id = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Make = "Volvo"
             };
 
@@ -41,7 +41,7 @@ namespace Tests.Tests
 
             var newCar = new Car()
             {
-                id = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Make = "Volvo"
             };
 
