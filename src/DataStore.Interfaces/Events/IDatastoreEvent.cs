@@ -1,4 +1,6 @@
-﻿namespace DataStore.Interfaces.Events
+﻿using ServiceApi.Interfaces.LowLevel.Messages;
+
+namespace DataStore.Interfaces.Events
 {
     using System;
 

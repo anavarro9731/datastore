@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Description>DataStore.Impl.DocumentDb Class Library</Description>
+    <Description>Azure Document Db Implementation of DataStore</Description>
     <Authors>flytzen;Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2016 Aaron Navarro, Frans Lytzen</Copyright>
     <Authors>Aaron Navarro, Frans Lytzen</Authors>
@@ -9,7 +9,7 @@
     <PackageId>DataStore.Impl.DocumentDb</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <PackageVersion>3.1.0</PackageVersion>
+    <PackageVersion>3.3.0</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
@@ -17,6 +17,7 @@
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.13.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
   </ItemGroup>
 </Project>

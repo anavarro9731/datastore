@@ -1,13 +1,13 @@
-﻿namespace DataStore.Tests.Tests
-{
-    using System;
-    using System.Linq;
-    using Constants;
-    using global::DataStore.Impl.DocumentDb;
-    using global::DataStore.Models.Messages.Events;
-    using Models;
-    using Xunit;
+﻿using System;
+using System.Linq;
+using DataStore.Impl.DocumentDb;
+using DataStore.Models.Messages.Events;
+using DataStore.Tests.Constants;
+using DataStore.Tests.Models;
+using Xunit;
 
+namespace DataStore.Tests.Tests
+{
     [Collection(TestCollections.DocumentationTests)]
     public class DocumentationTests
     {
@@ -16,7 +16,7 @@
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var dataStore = new global::DataStore.DataStore(documentRepository);
+            var dataStore = new DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 
@@ -48,7 +48,7 @@
         {
             var documentRepository = new InMemoryDocumentRepository();
             var inMemoryDb = documentRepository.Aggregates;
-            var dataStore = new global::DataStore.DataStore(documentRepository);
+            var dataStore = new DataStore(documentRepository);
 
             var carId = Guid.NewGuid();
 

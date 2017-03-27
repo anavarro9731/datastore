@@ -5,7 +5,6 @@ namespace DataStore
     using System.Linq;
     using System.Threading.Tasks;
     using Interfaces;
-    using Microsoft.Azure.Documents;
     using Models.Messages.Events;
     using Models.PureFunctions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
@@ -55,7 +54,7 @@ namespace DataStore
         }
 
         // get a filtered list of the models from  a set of DataObjects
-        public async Task<Document> ReadCommittedById(Guid modelId)
+        public async Task<dynamic> ReadCommittedById(Guid modelId)
         {
             var result = await _messageAggregator.CollectAndForward(new AggregateQueriedById(nameof(ReadCommittedById), modelId)).To(_dataStoreConnection.GetItemAsync);
             return result;

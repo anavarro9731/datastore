@@ -17,15 +17,14 @@
             _allMessages.Add(message);
         }
 
-        public IPropogateMessages<TMessage> CollectAndForward<TMessage>(TMessage message) where TMessage : IGatedMessage
+        public IPropogateMessages<TMessage> CollectAndForward<TMessage>(TMessage message) where TMessage : IMessage
         {
             _allMessages.Add(message);
             return new DataStoreMessagePropogator<TMessage>(
-                message,
-                ReturnValues.ContainsKey(typeof(TMessage).FullName) ? ReturnValues[typeof(TMessage).FullName] : null);
+                message);
         }
 
-        public IValueReturner When<TMessage>() where TMessage : IGatedMessage
+        public IValueReturner When<TMessage>() where TMessage : IMessage
         {
             return new DataStoreValueReturner(ReturnValues, typeof(TMessage).FullName);
         }
