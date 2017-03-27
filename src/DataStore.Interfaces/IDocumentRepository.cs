@@ -5,7 +5,6 @@ namespace DataStore.Interfaces
     using System.Linq;
     using System.Threading.Tasks;
     using Events;
-    using Microsoft.Azure.Documents;
     using ServiceApi.Interfaces.LowLevel;
 
     public interface IDocumentRepository : IDisposable
@@ -20,7 +19,7 @@ namespace DataStore.Interfaces
 
         Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId;
 
-        Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById);
+        Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById);
 
         Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate;
     

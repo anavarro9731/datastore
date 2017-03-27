@@ -1,14 +1,15 @@
-﻿namespace DataStore.Interfaces.Events
-{
-    using System;
-    using ServiceApi.Interfaces.LowLevel.Messages;
+﻿using System;
+using ServiceApi.Interfaces.LowLevel.Messages;
 
-    public interface IDataStoreWriteEvent<T> : IDataStoreWriteEvent, IDataStoreEvent where T : IAggregate
+namespace DataStore.Interfaces.Events
+{
+    public interface IDataStoreWriteEvent<T> : IDataStoreWriteEvent
+        where T : IAggregate
     {
         T Model { get; }
     }
 
-    public interface IDataStoreWriteEvent : IQueuedStateChange
+    public interface IDataStoreWriteEvent : IQueuedStateChange, IDataStoreEvent
     {
         Guid AggregateId { get; }
     }

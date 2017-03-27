@@ -78,7 +78,7 @@
             return Task.FromResult(aggregate);
         }
 
-        public Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById)
+        public Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById)
         {
             var queryable = Aggregates.AsQueryable().Where(x => x.Id == aggregateQueriedById.Id);
 
@@ -88,7 +88,7 @@
 
             d.LoadFrom(new JsonTextReader(new StringReader(json)));
 
-            return Task.FromResult(d);
+            return Task.FromResult<dynamic>(d);
         }
 
         public Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate

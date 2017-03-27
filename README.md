@@ -17,7 +17,7 @@ It supports basic CRUD operations on any C# object, with some additional feature
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
-DataStore is built with .NET Core SDK v.1.0.0-preview4-004771 using (VS2017 RC4.26206.0) tools but requires TFM net452 for Azure SDK compliance.
+DataStore is built with .NET Core SDK v.1.0.0-preview4-004771 using (VS2017 26228.4) but uses TFM net452 for Azure SDK compliance.
 It is completely backwards compatible with the .NET Framework 4.5.2 platform and does not require .NET Core.
 
 ## Roadmap
@@ -29,6 +29,7 @@ It is completely backwards compatible with the .NET Framework 4.5.2 platform and
 ## Usage
 
 Import the Nuget Package *DataStore*.
+Import the Nuget Package *DataStore.Impl.DocumentDb*
 
 Create a C# class which inherits `DataStore.DataAccess.Models.Aggregate`.
 ```

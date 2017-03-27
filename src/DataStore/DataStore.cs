@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
-using Microsoft.Azure.Documents;
 
 namespace DataStore
 {
@@ -107,7 +106,7 @@ namespace DataStore
             return await QueryCapabilities.ReadActiveById<T>(modelId);
         }
 
-        public async Task<Document> ReadCommittedById(Guid modelId)
+        public async Task<dynamic> ReadCommittedById(Guid modelId)
         {
             return await Advanced.ReadCommittedById(modelId);
         }

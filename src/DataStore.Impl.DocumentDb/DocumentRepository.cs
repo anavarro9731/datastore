@@ -127,7 +127,7 @@
             return (T) (dynamic) result;
         }
 
-        public async Task<Document> GetItemAsync(IDataStoreReadById aggregateQueriedById)
+        public async Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById)
         {
             try
             {

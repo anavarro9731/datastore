@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Description>A Document-Centric Data Access Framework for Azure DocumentDb</Description>
+    <Description>A Document-Centric Data Access Framework</Description>
     <Copyright>Copyright (c) 2016 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
     <TargetFrameworks>net452</TargetFrameworks>
@@ -8,12 +8,11 @@
     <PackageId>DataStore</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <PackageVersion>3.2.0</PackageVersion>
+    <PackageVersion>3.3.0</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
-    <ProjectReference Include="..\DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj" />
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
   </ItemGroup>
 </Project>
