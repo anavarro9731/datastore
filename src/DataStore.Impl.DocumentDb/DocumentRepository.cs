@@ -110,7 +110,7 @@
             var stopWatch = Stopwatch.StartNew();
             while (documentQuery.HasMoreResults)
             {
-                var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>()).ConfigureAwait(false);
+                var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>());
 
                 aggregatesQueried.QueryCost += result.RequestCharge;
 
