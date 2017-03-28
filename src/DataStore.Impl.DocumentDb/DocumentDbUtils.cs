@@ -24,7 +24,7 @@
 
                 try
                 {
-                    return await function().ConfigureAwait(false);
+                    return await function();
                 }
                 catch (DocumentClientException clientException)
                 {
@@ -62,7 +62,7 @@
                 }
 
                 retryCount++;
-                await Task.Delay(timeToSleepBeforeRetry.Value).ConfigureAwait(false);
+                await Task.Delay(timeToSleepBeforeRetry.Value);
             }
 
             throw new DatabaseException("Document db exception, retries exceeded", retryableException);
