@@ -4,21 +4,22 @@ A Document-Centric Data Access Framework for Azure DocumentDB
 
 ## Overview
 
-DataStore is an easy-to-use, data-access framework, which maps POCO C# classes to documents.
+DataStore is an easy-to-use, data-access framework, which maps POCO C# classes to documents. 
+
+Currently supported dbs are :Azure DocumentDb (via DataStore.Impl.DocumentDb package).
 
 It supports basic CRUD operations on any C# object, with some additional features such as:
 
 * Strongly typed mapping between documents and C# class types with generics
 * Generic Repository with support for LINQ queries against objects and their children (where the DocumentDB client supports it)
-* Limited cross-document transactional support (see transactions examples below)
+* Limited cross-document transactional support
 * Limited Partitioned Collection Support (partition on Id or ClassName)
-* In-memory database, and event history for testing (see transactions examples below)
+* In-memory database, and event history for testing
 * Profiling (e.g. Duration and Query Cost in Request Units)
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
-DataStore is built with .NET Core SDK v.1.0.0-preview4-004771 using (VS2017 26228.4) but uses TFM net452 for Azure SDK compliance.
-It is completely backwards compatible with the .NET Framework 4.5.2 platform and does not require .NET Core.
+DataStore is built with .NET Core SDK v.1.0.0-preview4-004771 +(VS2017 RC4.262228.4.0) but  is backwards compatible with the .NET Framework 4.5.2 platform and does not require .NET Core.
 
 ## Roadmap
 
@@ -81,7 +82,7 @@ d.Update(car);
 
 or
 
-`var myToyota = d.ReadActiveById<Car>(car.Id);`
+`var myToyota = d.ReadActiveById<Car>(car.id);`
 
 See IDataStoreQueryCapabilities.cs for the full list of supported methods.
 
