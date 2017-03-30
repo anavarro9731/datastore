@@ -1,3 +1,5 @@
+using DataStore.Interfaces;
+
 namespace DataStore.Models
 {
     using System.Collections.Generic;
@@ -7,12 +9,12 @@ namespace DataStore.Models
     {
         public bool Equals(IHaveAUniqueId x, IHaveAUniqueId y)
         {
-            return x.Id == y.Id;
+            return x.id == y.id;
         }
 
         public int GetHashCode(IHaveAUniqueId obj)
         {
-            return obj.Id.GetHashCode();
+            return obj.id.GetHashCode();
         }
     }
 }

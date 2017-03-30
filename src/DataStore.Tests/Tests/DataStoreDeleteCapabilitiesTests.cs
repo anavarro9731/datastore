@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
@@ -65,12 +65,12 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
             //When
-            await testHarness.DataStore.DeleteHardWhere<Car>(car => car.Id == carId);
+            await testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId);
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateHardDeleted<Car>));
@@ -87,12 +87,12 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                Make = "Volvo"
             });
 
             //When
-            await testHarness.DataStore.DeleteHardWhere<Car>(car => car.Id == carId);
+            await testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId);
             await testHarness.DataStore.CommitChanges();
 
             //Then
@@ -110,7 +110,7 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
@@ -133,7 +133,7 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
@@ -143,7 +143,7 @@ namespace DataStore.Tests.Tests
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
-            Assert.False(testHarness.QueryDatabase<Car>(cars =>cars.Where(car => car.Id == carId)).Result.Single().Active);
+            Assert.False(testHarness.QueryDatabase<Car>(cars =>cars.Where(car => car.id == carId)).Result.Single().Active);
             Assert.Empty(testHarness.DataStore.ReadActive<Car>(car => car).Result);
             Assert.NotEmpty(testHarness.DataStore.Read<Car>(car => car).Result);
         }
@@ -157,12 +157,12 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
             //When
-            await testHarness.DataStore.DeleteSoftWhere<Car>(car => car.Id == carId);
+            await testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId);
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
@@ -180,17 +180,17 @@ namespace DataStore.Tests.Tests
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Volvo"
             });
 
             //When
-            await testHarness.DataStore.DeleteSoftWhere<Car>(car => car.Id == carId);
+            await testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId);
             await testHarness.DataStore.CommitChanges();
 
             //Then
             Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
-            Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == carId)).Result.Single().Active);
+            Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Active);
             Assert.Empty(testHarness.DataStore.ReadActive<Car>(car => car).Result);
             Assert.NotEmpty(testHarness.DataStore.Read<Car>(car => car).Result);
         }

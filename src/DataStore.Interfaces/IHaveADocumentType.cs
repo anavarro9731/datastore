@@ -5,6 +5,6 @@
     public interface IHaveSchema
     {
         //[JsonProperty(PropertyName = "schema")]
-        string Schema { get; }
+        string schema { get; }
     }
 }

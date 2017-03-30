@@ -7,7 +7,7 @@ namespace DataStore.Models
     {
         public EntityValidator()
         {
-            this.RuleFor(x => x.Id).NotEmpty();
+            this.RuleFor(x => x.id).NotEmpty();
         }
     }
 }

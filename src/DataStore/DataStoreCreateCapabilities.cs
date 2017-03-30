@@ -36,7 +36,7 @@
                     e.Created = DateTime.UtcNow;
                     e.Modified = DateTime.UtcNow;
 
-                    e.Id = model.Id == default(Guid) ? Guid.NewGuid() : model.Id;
+                    e.id = model.id == default(Guid) ? Guid.NewGuid() : model.id;
 
                     e.ScopeReferences = model.ScopeReferences;
                 });

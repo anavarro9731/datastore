@@ -16,7 +16,7 @@
          * for read purposes before passing it to API clients and on API calls inwards. */
         private dynamic more;
 
-        private string schema;
+        private string _schema;
 
         private string type;
 
@@ -26,10 +26,9 @@
         // apart from keeping an audit trail this is used for sorting 
         public DateTime? Created { get; set; }
 
-        // this is here to give references which are stored in a models json a unique Id which is necessary during updates to determines 
+        // this is here to give references which are stored in a models json a unique id which is necessary during updates to determines 
         // what changes have occurred. It can either be implemented as-is or the getter can be overridden to select another existing property as the key
-        [JsonProperty(PropertyName = "id")]
-        public Guid Id { get; set; }
+        public Guid id { get; set; }
 
         // we require this field to determine if the entities have been updated so we don't
         // have to compare or update every one but only those that have changed.
@@ -46,19 +45,19 @@
             set { more = value; }
         }
 
-        [JsonProperty(PropertyName = "schema")]
-        public string Schema
+        //required lowercase as it is a partitionkey
+        public string schema
         {
             get
             {
-                schema = schema ?? GetType().Name;
-                return schema;
+                _schema = _schema ?? GetType().Name;
+                return _schema;
             }
 
-            set { schema = value; }
+            set { _schema = value; }
         }
 
-        [JsonProperty(PropertyName = "type")]
+        //for reference only, not used at present
         public string Type
         {
             get
