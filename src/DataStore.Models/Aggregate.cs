@@ -29,9 +29,9 @@
                 var t = current.GetType();
 
                 foreach (var p in t.GetProperties())
-                    if (p.Name == nameof(Id))
+                    if (p.Name == nameof(id))
                     {
-                        //set an Id for any entity in the tree if it doesn't have one
+                        //set an id for any entity in the tree if it doesn't have one
                         //regardless of whether it is the aggregate or a child entity
                         //in many cases this will already be done in the app code
                         if ((Guid) p.GetValue(current, null) == Guid.Empty)

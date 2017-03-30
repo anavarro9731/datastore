@@ -42,7 +42,7 @@ namespace DataStore.Impl.DocumentDb.Config
                     {
                         Paths =
                         {
-                            "/" + nameof(Aggregate.Schema).ToLower()
+                            "/" + nameof(Aggregate.schema).ToLower()
                         }
                     };
                 case PartitionKeyTypeEnum.Id:
@@ -51,7 +51,7 @@ namespace DataStore.Impl.DocumentDb.Config
                     {
                         Paths =
                         {
-                            "/" + nameof(Aggregate.Id)
+                            "/" + nameof(Aggregate.id)
                         }
                     };
 

@@ -26,13 +26,13 @@ namespace DataStore
 
         private IDocumentRepository DsConnection { get; }
 
-        // .. update by Id; get values from any instance
+        // .. update by id; get values from any instance
         private async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
             where T : IAggregate
         {
             var results =
                 await
-                    UpdateWhere<T>(o => o.Id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.Id)); }, overwriteReadOnly);
+                    UpdateWhere<T>(o => o.id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.id)); }, overwriteReadOnly);
 
             return results.Single();
         }
@@ -41,16 +41,16 @@ namespace DataStore
 
         public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : IAggregate
         {
-            var results = await UpdateWhere(o => o.Id == id, action, overwriteReadOnly);
+            var results = await UpdateWhere(o => o.id == id, action, overwriteReadOnly);
 
             return results.Single();
         }
 
-        // .. update using Id; get values from another instance
+        // .. update using id; get values from another instance
         public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
             where T : IAggregate
         {
-            return await UpdateByIdUsingValuesFromAnotherInstance(src.Id, src, overwriteReadOnly);
+            return await UpdateByIdUsingValuesFromAnotherInstance(src.id, src, overwriteReadOnly);
         }
 
 

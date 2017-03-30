@@ -77,6 +77,7 @@ namespace DataStore.Tests.TestHarness
                 {
                     var key = collection.PartitionKey.Paths[0];
                     PartitionKey partitionKey;
+                    //NOTE: these values willalways be cahnged to lowercase by docdb so must make them lowercase on model
                     if (key == "/schema") partitionKey = new PartitionKey(((dynamic) doc).schema);
                     else if (key == "/id") partitionKey = new PartitionKey(doc.Id);
                     else throw new Exception("Error locating partition key");

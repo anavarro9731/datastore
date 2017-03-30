@@ -55,8 +55,8 @@ namespace DataStore.Impl.DocumentDb
                 //so make sure not to call it. Bad MS!
                 if (collectionSettings.PartitionKeyType != DocDbCollectionSettings.PartitionKeyTypeEnum.None)
                 {
-                    //set this over 10000 to cause docdb to create a partitioned collection
-                    requestOptions.OfferThroughput = 10100;
+                    //set this over 2500 (in increments of 100) to cause docdb to create a partitioned collection
+                    requestOptions.OfferThroughput = 2600;
                 }
 
                 collection = await documentClient.CreateDocumentCollectionAsync(

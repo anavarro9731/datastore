@@ -23,7 +23,7 @@ namespace DataStore.Tests.Tests
             //Given
             inMemoryDb.Add(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Toyota"
             });
 
@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests
             Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has changed
-            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.Id == carId).Make);
+            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
             //The dataStore reads the changes correctly
             Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
@@ -55,7 +55,7 @@ namespace DataStore.Tests.Tests
             //Given
             inMemoryDb.Add(new Car
             {
-                Id = carId,
+                id = carId,
                 Make = "Toyota"
             });
 
@@ -69,7 +69,7 @@ namespace DataStore.Tests.Tests
             Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
 
             //The underlying database has NOT changed
-            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.Id == carId).Make);
+            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
             //The DataStore instance picks up the change, because it has applied
             //all changes made during this session.

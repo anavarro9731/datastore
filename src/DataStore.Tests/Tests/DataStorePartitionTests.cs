@@ -31,7 +31,7 @@ namespace DataStore.Tests.Tests
             {
                 var car = new Car
                 {
-                    Id = Guid.NewGuid()
+                    id = Guid.NewGuid()
                 };
                 car.Make = "Saab";
 
@@ -67,7 +67,7 @@ namespace DataStore.Tests.Tests
             {
                 var car = new Car
                 {
-                    Id = Guid.NewGuid()
+                    id = Guid.NewGuid()
                 };
                 car.Make = "Volvo";
 

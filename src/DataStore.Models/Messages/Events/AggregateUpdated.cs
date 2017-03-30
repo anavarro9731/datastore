@@ -17,7 +17,7 @@
 
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;
-            AggregateId = model.Id;
+            AggregateId = model.id;
             Model = model;
             Created = DateTime.UtcNow;
             MessageId = Guid.NewGuid();
