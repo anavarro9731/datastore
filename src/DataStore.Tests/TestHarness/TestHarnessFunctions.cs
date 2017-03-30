@@ -1,8 +1,9 @@
-﻿namespace DataStore.Tests.TestHarness
+﻿using DataStore.Impl.DocumentDb.Config;
+
+namespace DataStore.Tests.TestHarness
 {
     using System;
     using System.IO;
-    using global::DataStore.Models.Config;
     using Newtonsoft.Json;
 
     public static class TestHarnessFunctions

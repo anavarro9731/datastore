@@ -1,16 +1,15 @@
-﻿namespace DataStore.Impl.DocumentDb
-{
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.Events;
-    using Microsoft.Azure.Documents;
-    using Models.PureFunctions.Extensions;
-    using Newtonsoft.Json;
-    using ServiceApi.Interfaces.LowLevel;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
+using DataStore.Models.PureFunctions.Extensions;
+using Newtonsoft.Json;
+using ServiceApi.Interfaces.LowLevel;
 
+namespace DataStore
+{
     public class InMemoryDocumentRepository : IDocumentRepository
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
@@ -82,13 +81,9 @@
         {
             var queryable = Aggregates.AsQueryable().Where(x => x.Id == aggregateQueriedById.Id);
 
-            var d = new Document();
-
-            var json = JsonConvert.SerializeObject(queryable.ToList().Single());
-
-            d.LoadFrom(new JsonTextReader(new StringReader(json)));
-
-            return Task.FromResult<dynamic>(d);
+            var document = queryable.ToList().Single();
+            
+            return Task.FromResult<dynamic>(document);
         }
 
         public Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate

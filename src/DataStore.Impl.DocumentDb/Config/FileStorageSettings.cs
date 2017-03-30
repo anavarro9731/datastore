@@ -1,4 +1,4 @@
-﻿namespace DataStore.Models.Config
+﻿namespace DataStore.Impl.DocumentDb.Config
 {
     public class FileStorageSettings
     {

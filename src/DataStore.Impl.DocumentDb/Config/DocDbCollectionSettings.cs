@@ -1,7 +1,8 @@
 ﻿using System;
+using DataStore.Models;
 using Microsoft.Azure.Documents;
 
-namespace DataStore.Models.Config
+namespace DataStore.Impl.DocumentDb.Config
 {
     public class DocDbCollectionSettings
     {
