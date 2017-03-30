@@ -1,4 +1,4 @@
-﻿namespace DataStore.Models.Config
+﻿namespace DataStore.Impl.DocumentDb.Config
 {
     /* 
     Because what goes in this class is effectively global, it is important that it stays limited to 2 things:

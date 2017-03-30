@@ -1,4 +1,6 @@
-﻿namespace DataStore.Tests.TestHarness
+﻿using DataStore.Impl.DocumentDb.Config;
+
+namespace DataStore.Tests.TestHarness
 {
     using System;
     using System.Collections.Generic;
@@ -9,7 +11,6 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.Events;
     using global::DataStore.MessageAggregator;
-    using global::DataStore.Models.Config;
     using global::DataStore.Models.Messages.Events;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;

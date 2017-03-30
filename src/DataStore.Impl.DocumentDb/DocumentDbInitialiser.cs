@@ -1,11 +1,12 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using DataStore.Impl.DocumentDb.Config;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
-    using Models.Config;
 
     public interface IDocumentDbInitialiser
     {

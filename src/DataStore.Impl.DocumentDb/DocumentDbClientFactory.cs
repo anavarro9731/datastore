@@ -1,8 +1,9 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using DataStore.Impl.DocumentDb.Config;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
     using Microsoft.Azure.Documents.Client;
-    using Models.Config;
     using Models.PureFunctions.Extensions;
 
     public class DocumentDbClientFactory

@@ -1,9 +1,10 @@
-﻿namespace DataStore.Tests.Tests
+﻿using DataStore.Impl.DocumentDb.Config;
+
+namespace DataStore.Tests.Tests
 {
     using System;
     using System.Linq;
     using Constants;
-    using global::DataStore.Models.Config;
     using Models;
     using TestHarness;
     using Xunit;

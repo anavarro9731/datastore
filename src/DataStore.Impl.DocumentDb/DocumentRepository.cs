@@ -1,4 +1,6 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using DataStore.Impl.DocumentDb.Config;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +12,6 @@
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
-    using Models.Config;
     using Models.Messages.Events;
     using ServiceApi.Interfaces.LowLevel;
 
