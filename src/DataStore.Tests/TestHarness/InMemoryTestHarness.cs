@@ -4,11 +4,9 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using global::DataStore.Impl.DocumentDb;
-    using global::DataStore.Interfaces;
-    using global::DataStore.Interfaces.Events;
-    using global::DataStore.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel;
+    using Interfaces;
+    using Interfaces.Events;
+    using MessageAggregator;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     public class InMemoryTestHarness : ITestHarness
@@ -18,11 +16,11 @@
         private InMemoryTestHarness()
         {
             DocumentRepository = new InMemoryDocumentRepository();
-            DataStore = new global::DataStore.DataStore(DocumentRepository, _messageAggregator);
+            DataStore = new DataStore(DocumentRepository, _messageAggregator);
         }
 
         private InMemoryDocumentRepository DocumentRepository { get; }
-        public global::DataStore.DataStore DataStore { get; }
+        public DataStore DataStore { get; }
         public List<IDataStoreEvent> Events => _messageAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
         public Task AddToDatabase<T>(T aggregate) where T : IAggregate

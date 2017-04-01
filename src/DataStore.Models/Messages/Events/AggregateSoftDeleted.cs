@@ -19,7 +19,6 @@
             AggregateId = model.id;
             Model = model;
             Created = DateTime.UtcNow;
-            MessageId = Guid.NewGuid();
         }
 
         #region IDataStoreWriteEvent<T> Members
@@ -30,10 +29,9 @@
         public TimeSpan QueryDuration { get; set; }
         public Func<Task> CommitClosure { get; set; }
         public bool Committed { get; set; }
-        public Guid AggregateId { get; }
-        public T Model { get; }
-        public DateTime Created { get; }
-        public Guid MessageId { get; }
+        public Guid AggregateId { get; set; }
+        public T Model { get; set; }
+        public DateTime Created { get; set; }
 
         #endregion
     }

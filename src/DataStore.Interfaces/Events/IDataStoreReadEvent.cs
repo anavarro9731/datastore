@@ -4,6 +4,8 @@ using ServiceApi.Interfaces.LowLevel.Messages;
 
 namespace DataStore.Interfaces.Events
 {
+    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+
     public interface IDataStoreReadFromQueryable<T> : IDataStoreReadEvent
     {
         IQueryable<T> Query { get; set; }
@@ -14,7 +16,7 @@ namespace DataStore.Interfaces.Events
         Guid Id { get; set; }
     }
 
-    public interface IDataStoreReadEvent : IDataStoreEvent, IStateQuery
+    public interface IDataStoreReadEvent : IDataStoreEvent, IRequestState
     {
     }
 }

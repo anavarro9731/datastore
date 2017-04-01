@@ -8,6 +8,7 @@ using DataStore.Interfaces.Events;
 
 namespace DataStore
 {
+    using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     /// <summary>
@@ -39,7 +40,7 @@ namespace DataStore
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public IReadOnlyList<IDataStoreEvent> Events => messageAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
+        public ServiceApi.Interfaces.LowLevel.MessageAggregator.IReadOnlyList<IDataStoreEvent> Events => new ReadOnlyCapableList<IDataStoreEvent>().Op(l => l.AddRange(messageAggregator.AllMessages.OfType<IDataStoreEvent>()));
 
         public async Task CommitChanges()
         {

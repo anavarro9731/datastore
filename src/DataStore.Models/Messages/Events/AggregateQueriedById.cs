@@ -11,7 +11,6 @@
             Id = id;
             TypeName = type?.FullName;
             Created = DateTime.UtcNow;
-            MessageId = Guid.NewGuid();
         }
 
         public string TypeName { get; set; }
@@ -19,7 +18,6 @@
         public Guid Id { get; set; }
         public double QueryCost { get; set; }
         public TimeSpan QueryDuration { get; set; }
-        public DateTime Created { get; }
-        public Guid MessageId { get; }
+        public DateTime Created { get; set; }
     }
 }

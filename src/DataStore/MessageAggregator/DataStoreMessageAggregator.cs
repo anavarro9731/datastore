@@ -1,7 +1,6 @@
 ﻿namespace DataStore.MessageAggregator
 {
     using System.Collections.Generic;
-    using ServiceApi.Interfaces.LowLevel;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
     using ServiceApi.Interfaces.LowLevel.Messages;
 
@@ -10,7 +9,7 @@
         private readonly ReadOnlyCapableList<IMessage> _allMessages = new ReadOnlyCapableList<IMessage>();
         public Dictionary<string, object> ReturnValues = new Dictionary<string, object>();
 
-        public ServiceApi.Interfaces.LowLevel.IReadOnlyList<IMessage> AllMessages => _allMessages;
+        public ServiceApi.Interfaces.LowLevel.MessageAggregator.IReadOnlyList<IMessage> AllMessages => _allMessages;
 
         public void Collect(IMessage message)
         {

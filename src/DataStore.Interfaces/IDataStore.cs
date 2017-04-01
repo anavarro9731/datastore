@@ -13,7 +13,7 @@ namespace DataStore.Interfaces
 
     {
         IAdvancedCapabilities Advanced { get; }
-        IReadOnlyList<IDataStoreEvent> Events { get; }
+        ServiceApi.Interfaces.LowLevel.MessageAggregator.IReadOnlyList<IDataStoreEvent> Events { get; }
         IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new();
         IDataStoreQueryCapabilities AsReadOnly();
         Task CommitChanges();

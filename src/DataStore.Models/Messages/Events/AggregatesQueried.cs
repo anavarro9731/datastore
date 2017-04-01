@@ -12,7 +12,6 @@
             TypeName = typeof(T).FullName;
             Query = query;
             Created = DateTime.UtcNow;
-            MessageId = Guid.NewGuid();
         }
 
         public IQueryable<T> Query { get; set; }
@@ -20,7 +19,6 @@
         public string MethodCalled { get; set; }
         public double QueryCost { get; set; }
         public TimeSpan QueryDuration { get; set; }
-        public DateTime Created { get; }
-        public Guid MessageId { get; }
+        public DateTime Created { get; set; }
     }
 }

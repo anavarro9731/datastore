@@ -10,5 +10,6 @@ namespace DataStore.Interfaces.Events
         string MethodCalled { get; set; }
         double QueryCost { get; set; }
         TimeSpan QueryDuration { get; set; }
+        DateTime Created { get; set; }
     }
 }
