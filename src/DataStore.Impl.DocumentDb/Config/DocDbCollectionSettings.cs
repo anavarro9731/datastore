@@ -1,9 +1,9 @@
-﻿using System;
-using DataStore.Models;
-using Microsoft.Azure.Documents;
-
-namespace DataStore.Impl.DocumentDb.Config
+﻿namespace DataStore.Impl.DocumentDb.Config
 {
+    using System;
+    using Interfaces.LowLevel;
+    using Microsoft.Azure.Documents;
+
     public class DocDbCollectionSettings
     {
         public enum PartitionKeyTypeEnum

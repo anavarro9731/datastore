@@ -1,7 +1,6 @@
-﻿using DataStore.Impl.DocumentDb.Config;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
+    using Config;
     using Microsoft.Azure.Documents.Client;
 
     public static class DocumentDbExtensions
@@ -13,7 +12,8 @@ namespace DataStore.Impl.DocumentDb
 
         public static string CollectionSelfLink(this DocumentDbSettings config)
         {
-            return UriFactory.CreateDocumentCollectionUri(config.DatabaseName, config.CollectionSettings.CollectionName).ToString();
+            return
+                UriFactory.CreateDocumentCollectionUri(config.DatabaseName, config.CollectionSettings.CollectionName).ToString();
         }
     }
 }

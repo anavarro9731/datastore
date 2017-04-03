@@ -4,8 +4,10 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::DataStore.Models.PureFunctions.Extensions;
     using Interfaces;
     using Interfaces.Events;
+    using Interfaces.LowLevel;
     using MessageAggregator;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
@@ -25,6 +27,9 @@
 
         public Task AddToDatabase<T>(T aggregate) where T : IAggregate
         {
+            //copied from datastore create capabilities, may get out of date
+            DataStoreCreateCapabilities.ForcePropertiesOnCreate(aggregate.ReadOnly, aggregate);
+
             DocumentRepository.Aggregates.Add(aggregate);
             return Task.FromResult(0);
         }

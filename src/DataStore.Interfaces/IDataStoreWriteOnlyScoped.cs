@@ -2,6 +2,7 @@ namespace DataStore.Interfaces
 {
     using System;
     using System.Threading.Tasks;
+    using LowLevel;
 
     public interface IDataStoreWriteOnlyScoped<T> :
         IDataStoreCreateCapabilitiesScoped<T>,

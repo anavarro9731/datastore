@@ -1,6 +1,7 @@
 namespace DataStore.Interfaces
 {
     using System.Threading.Tasks;
+    using LowLevel;
 
     public interface IDataStoreCreateCapabilities
     {

@@ -1,10 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using DataStore.Interfaces.Events;
-
 namespace DataStore.Interfaces
 {
+    using System;
+    using System.Threading.Tasks;
+    using Events;
+    using LowLevel;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+
     public interface IDataStore : IDisposable,
         IDataStoreCreateCapabilities,
         IDataStoreQueryCapabilities,
@@ -13,7 +14,7 @@ namespace DataStore.Interfaces
 
     {
         IAdvancedCapabilities Advanced { get; }
-        ServiceApi.Interfaces.LowLevel.MessageAggregator.IReadOnlyList<IDataStoreEvent> Events { get; }
+        IReadOnlyList<IDataStoreEvent> Events { get; }
         IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new();
         IDataStoreQueryCapabilities AsReadOnly();
         Task CommitChanges();

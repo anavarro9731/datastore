@@ -1,10 +1,9 @@
-﻿using DataStore.Impl.DocumentDb.Config;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using Config;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
 
@@ -54,10 +53,7 @@ namespace DataStore.Impl.DocumentDb
                 //the partitionKey property creates a default value on calls to the getter and default values will fail
                 //so make sure not to call it. Bad MS!
                 if (collectionSettings.PartitionKeyType != DocDbCollectionSettings.PartitionKeyTypeEnum.None)
-                {
-                    //set this over 2500 (in increments of 100) to cause docdb to create a partitioned collection
                     requestOptions.OfferThroughput = 2600;
-                }
 
                 collection = await documentClient.CreateDocumentCollectionAsync(
                     db.SelfLink,
@@ -80,7 +76,7 @@ namespace DataStore.Impl.DocumentDb
                 return existingDatabase;
 
             return
-                await client.CreateDatabaseAsync(new Database { Id = settings.DatabaseName });
+                await client.CreateDatabaseAsync(new Database {Id = settings.DatabaseName});
         }
     }
 }

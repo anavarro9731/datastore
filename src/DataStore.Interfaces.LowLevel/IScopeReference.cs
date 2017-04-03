@@ -1,4 +1,4 @@
-﻿namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces.LowLevel
 {
     using System;
 

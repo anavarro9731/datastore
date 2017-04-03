@@ -1,8 +1,7 @@
-﻿using DataStore.Impl.DocumentDb.Config;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
+    using Config;
     using Microsoft.Azure.Documents.Client;
     using Models.PureFunctions.Extensions;
 
