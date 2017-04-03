@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Models", "DataSto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStore.Tests", "DataStore.Tests\DataStore.Tests.csproj", "{30BAE076-F914-484D-A4F4-BB61E0CC285B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStore.Interfaces.LowLevel", "DataStore.Interfaces.LowLevel\DataStore.Interfaces.LowLevel.csproj", "{388865A0-FF06-4BFC-B98D-D12C42205620}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,18 @@ Global
 		{30BAE076-F914-484D-A4F4-BB61E0CC285B}.Release|x64.Build.0 = Release|Any CPU
 		{30BAE076-F914-484D-A4F4-BB61E0CC285B}.Release|x86.ActiveCfg = Release|Any CPU
 		{30BAE076-F914-484D-A4F4-BB61E0CC285B}.Release|x86.Build.0 = Release|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Debug|x64.Build.0 = Debug|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Debug|x86.Build.0 = Debug|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Release|Any CPU.Build.0 = Release|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Release|x64.ActiveCfg = Release|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Release|x64.Build.0 = Release|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Release|x86.ActiveCfg = Release|Any CPU
+		{388865A0-FF06-4BFC-B98D-D12C42205620}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

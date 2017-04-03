@@ -7,6 +7,8 @@
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.Events;
+    using Interfaces.LowLevel;
+    using MessageAggregator;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     /// <summary>
@@ -19,7 +21,7 @@
 
         public DataStoreWriteOnly(IDocumentRepository documentRepository, IMessageAggregator messageAggregator = null)
         {
-            this.messageAggregator = messageAggregator ?? MessageAggregator.DataStoreMessageAggregator.Create();
+            this.messageAggregator = messageAggregator ?? DataStoreMessageAggregator.Create();
             DsConnection = documentRepository;
             UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, messageAggregator);
             DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, messageAggregator);

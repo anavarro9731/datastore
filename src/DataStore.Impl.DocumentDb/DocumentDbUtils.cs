@@ -131,7 +131,7 @@
 
         private static bool IsRetryableError<V>(DocumentClientException de)
         {
-            return de.StatusCode != null && ((int)de.StatusCode == 429 || (int)de.StatusCode == 449);
+            return de.StatusCode != null && ((int) de.StatusCode == 429 || (int) de.StatusCode == 449);
         }
     }
 }

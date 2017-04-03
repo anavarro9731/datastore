@@ -1,9 +1,7 @@
-﻿using System;
-using System.Linq;
-using ServiceApi.Interfaces.LowLevel.Messages;
-
-namespace DataStore.Interfaces.Events
+﻿namespace DataStore.Interfaces.Events
 {
+    using System;
+    using System.Linq;
     using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
 
     public interface IDataStoreReadFromQueryable<T> : IDataStoreReadEvent

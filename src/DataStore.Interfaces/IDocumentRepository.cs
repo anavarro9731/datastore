@@ -5,7 +5,7 @@ namespace DataStore.Interfaces
     using System.Linq;
     using System.Threading.Tasks;
     using Events;
-    using ServiceApi.Interfaces.LowLevel;
+    using LowLevel;
 
     public interface IDocumentRepository : IDisposable
     {
@@ -22,7 +22,7 @@ namespace DataStore.Interfaces
         Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById);
 
         Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate;
-    
+
         Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate;
 
         Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate;

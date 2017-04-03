@@ -1,19 +1,18 @@
-﻿using DataStore.Impl.DocumentDb.Config;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
+    using Config;
     using Interfaces;
     using Interfaces.Events;
-    using Microsoft.Azure.Documents;
+    using Interfaces.LowLevel;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
     using Models.Messages.Events;
-    using ServiceApi.Interfaces.LowLevel;
+    using Models.PureFunctions.Extensions;
 
     public class DocumentRepository : IDocumentRepository
     {
@@ -32,7 +31,8 @@ namespace DataStore.Impl.DocumentDb
             if (Guid.Empty == id)
                 throw new ArgumentException("id is required for update/delete/read operation");
 
-            var docLink = UriFactory.CreateDocumentUri(config.DatabaseName, config.CollectionSettings.CollectionName, id.ToString());
+            var docLink = UriFactory.CreateDocumentUri(config.DatabaseName, config.CollectionSettings.CollectionName,
+                id.ToString());
             return docLink;
         }
 
@@ -52,8 +52,8 @@ namespace DataStore.Impl.DocumentDb
                                 config.CollectionSelfLink(),
                                 aggregateAdded.Model));
             stopWatch.Stop();
-            aggregateAdded.QueryDuration = stopWatch.Elapsed;
-            aggregateAdded.QueryCost = result.RequestCharge;
+            aggregateAdded.StateOperationDuration = stopWatch.Elapsed;
+            aggregateAdded.StateOperationCost = result.RequestCharge;
         }
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
@@ -77,8 +77,8 @@ namespace DataStore.Impl.DocumentDb
             var stopWatch = Stopwatch.StartNew();
             var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.DeleteDocumentAsync(docLink));
             stopWatch.Stop();
-            aggregateHardDeleted.QueryCost = result.RequestCharge;
-            aggregateHardDeleted.QueryDuration = stopWatch.Elapsed;
+            aggregateHardDeleted.StateOperationCost = result.RequestCharge;
+            aggregateHardDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
         public async Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
@@ -86,16 +86,21 @@ namespace DataStore.Impl.DocumentDb
             //HACK: this call inside the doc repository is effectively duplicate [see callers] 
             //and causes us to miss this query when profiling, arguably its cheap, but still
             //if I can determine how to create an Azure Document from T we can ditch it.
-            var document = await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
+            var document =
+                await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
 
+            var now = DateTime.UtcNow;
             document.SetPropertyValue(nameof(IAggregate.Active), false);
-            document.SetPropertyValue(nameof(IAggregate.Modified), DateTime.UtcNow);
+            document.SetPropertyValue(nameof(IAggregate.Modified), now);
+            document.SetPropertyValue(nameof(IAggregate.ModifiedAsMillisecondsEpochTime),
+                now.ConvertToMillisecondsEpochTime());
 
             var stopWatch = Stopwatch.StartNew();
-            var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.ReplaceDocumentAsync(document.SelfLink, document));
+            var result =
+                await DocumentDbUtils.ExecuteWithRetries(() => documentClient.ReplaceDocumentAsync(document.SelfLink, document));
             stopWatch.Stop();
-            aggregateSoftDeleted.QueryDuration = stopWatch.Elapsed;
-            aggregateSoftDeleted.QueryCost = result.RequestCharge;
+            aggregateSoftDeleted.StateOperationDuration = stopWatch.Elapsed;
+            aggregateSoftDeleted.StateOperationCost = result.RequestCharge;
         }
 
         public void Dispose()
@@ -113,19 +118,19 @@ namespace DataStore.Impl.DocumentDb
             {
                 var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>());
 
-                aggregatesQueried.QueryCost += result.RequestCharge;
+                aggregatesQueried.StateOperationCost += result.RequestCharge;
 
                 results.AddRange(result);
             }
             stopWatch.Stop();
-            aggregatesQueried.QueryDuration = stopWatch.Elapsed;
+            aggregatesQueried.StateOperationDuration = stopWatch.Elapsed;
             return results;
         }
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
             var result = await GetItemAsync(aggregateQueriedById);
-            return (T) (dynamic) result;
+            return (T) result;
         }
 
         public async Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById)
@@ -137,8 +142,8 @@ namespace DataStore.Impl.DocumentDb
                 if (result == null)
                     throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
                 stopWatch.Stop();
-                aggregateQueriedById.QueryDuration = stopWatch.Elapsed;
-                aggregateQueriedById.QueryCost = result.RequestCharge;
+                aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
+                aggregateQueriedById.StateOperationCost = result.RequestCharge;
 
                 return result.Resource;
             }
@@ -154,24 +159,28 @@ namespace DataStore.Impl.DocumentDb
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
-                        () => documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model));
+                        () =>
+                            documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
+                                aggregateUpdated.Model));
 
             stopWatch.Stop();
-            aggregateUpdated.QueryDuration = stopWatch.Elapsed;
-            aggregateUpdated.QueryCost = result.RequestCharge;
+            aggregateUpdated.StateOperationDuration = stopWatch.Elapsed;
+            aggregateUpdated.StateOperationCost = result.RequestCharge;
         }
 
         public async Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
             var stopWatch = Stopwatch.StartNew();
             var query =
-                documentClient.CreateDocumentQuery(config.CollectionSelfLink()).Where(item => item.Id == aggregateQueriedById.Id.ToString()).AsDocumentQuery();
+                documentClient.CreateDocumentQuery(config.CollectionSelfLink())
+                    .Where(item => item.Id == aggregateQueriedById.Id.ToString())
+                    .AsDocumentQuery();
 
             var results = await query.ExecuteNextAsync();
 
             stopWatch.Stop();
-            aggregateQueriedById.QueryDuration = stopWatch.Elapsed;
-            aggregateQueriedById.QueryCost = results.RequestCharge;
+            aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
+            aggregateQueriedById.StateOperationCost = results.RequestCharge;
 
             return results.Count > 0;
         }

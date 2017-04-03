@@ -6,6 +6,7 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using Interfaces;
+    using Interfaces.LowLevel;
     using Models.Messages.Events;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 

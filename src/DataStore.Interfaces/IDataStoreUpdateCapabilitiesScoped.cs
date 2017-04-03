@@ -4,6 +4,7 @@ namespace DataStore.Interfaces
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
+    using LowLevel;
 
     public interface IDataStoreUpdateCapabilitiesScoped<T> where T : IAggregate
     {

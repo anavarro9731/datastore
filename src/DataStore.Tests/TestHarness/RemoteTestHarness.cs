@@ -12,6 +12,7 @@ namespace DataStore.Tests.TestHarness
     using global::DataStore.Interfaces.Events;
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.Messages.Events;
+    using Interfaces.LowLevel;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using ServiceApi.Interfaces.LowLevel;

@@ -44,12 +44,12 @@
 
         public static T AsJson<T>(this object value) where T : JToken
         {
-            return (T)AsJson(value);
+            return (T) AsJson(value);
         }
 
         public static T Cast<T>(this object o)
         {
-            return (T)o;
+            return (T) o;
         }
 
         public static T Clone<T>(this T source, params string[] exclude) where T : class, new()
@@ -99,18 +99,21 @@
 
             // Collect all the valid properties to map
             var results = from srcProp in typeSrc.GetProperties()
-                          let targetProperty = typeDest.GetProperty(srcProp.Name)
-                          where
-                          srcProp.CanRead && targetProperty != null && targetProperty.GetSetMethod(true) != null && !targetProperty.GetSetMethod(true).IsPrivate
-                          && (targetProperty.GetSetMethod(true).Attributes & MethodAttributes.Static) == 0
-                          && targetProperty.PropertyType.IsAssignableFrom(srcProp.PropertyType) && !exclude.Contains(targetProperty.Name)
-                          select new
-                          {
-                              sourceProperty = srcProp, targetProperty
-                          };
+                let targetProperty = typeDest.GetProperty(srcProp.Name)
+                where
+                srcProp.CanRead && targetProperty != null && targetProperty.GetSetMethod(true) != null &&
+                !targetProperty.GetSetMethod(true).IsPrivate
+                && (targetProperty.GetSetMethod(true).Attributes & MethodAttributes.Static) == 0
+                && targetProperty.PropertyType.IsAssignableFrom(srcProp.PropertyType) && !exclude.Contains(targetProperty.Name)
+                select new
+                {
+                    sourceProperty = srcProp,
+                    targetProperty
+                };
 
             // map the properties
-            foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
+            foreach (var props in results)
+                props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
         /// <summary>
@@ -165,11 +168,12 @@
 
             while (currentChild != typeof(object))
             {
-                if (parent == currentChild || parent == currentChild.BaseType || HasAnyInterfaces(parent, currentChild)) return true;
+                if (parent == currentChild || parent == currentChild.BaseType || HasAnyInterfaces(parent, currentChild))
+                    return true;
 
                 currentChild = currentChild.BaseType != null && currentChild.BaseType.IsGenericType
-                                   ? currentChild.BaseType.GetGenericTypeDefinition()
-                                   : currentChild.BaseType;
+                    ? currentChild.BaseType.GetGenericTypeDefinition()
+                    : currentChild.BaseType;
 
                 if (currentChild == null) return false;
             }
@@ -227,7 +231,8 @@
             if (memberExpr == null)
             {
                 var unaryExpr = propertyRefExpr as UnaryExpression;
-                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert) memberExpr = unaryExpr.Operand as MemberExpression;
+                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
+                    memberExpr = unaryExpr.Operand as MemberExpression;
             }
 
             if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property) return memberExpr.Member.Name;
@@ -239,11 +244,13 @@
         {
             return child.GetInterfaces().Any(
                 childInterface =>
-                    {
-                    var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
+                {
+                    var currentInterface = childInterface.IsGenericType
+                        ? childInterface.GetGenericTypeDefinition()
+                        : childInterface;
 
                     return currentInterface == parent;
-                    });
+                });
         }
 
         private static Type ResolveGenericTypeDefinition(Type parent)

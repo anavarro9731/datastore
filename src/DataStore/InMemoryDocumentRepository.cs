@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Interfaces;
-using DataStore.Interfaces.Events;
-using DataStore.Models.PureFunctions.Extensions;
-using Newtonsoft.Json;
-using ServiceApi.Interfaces.LowLevel;
-
-namespace DataStore
+﻿namespace DataStore
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Interfaces;
+    using Interfaces.Events;
+    using Interfaces.LowLevel;
+    using Models.PureFunctions.Extensions;
+    using Newtonsoft.Json;
+
     public class InMemoryDocumentRepository : IDocumentRepository
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
@@ -48,8 +48,11 @@ namespace DataStore
         {
             var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
 
-            (aggregate as dynamic).Active = false;
-
+            var now = DateTime.UtcNow;
+            aggregate.Active = false;
+            aggregate.Modified = now;
+            aggregate.ModifiedAsMillisecondsEpochTime = now.ConvertToMillisecondsEpochTime();
+            
             return Task.FromResult(aggregate);
         }
 
@@ -82,7 +85,7 @@ namespace DataStore
             var queryable = Aggregates.AsQueryable().Where(x => x.id == aggregateQueriedById.Id);
 
             var document = queryable.ToList().Single();
-            
+
             return Task.FromResult<dynamic>(document);
         }
 

@@ -8,6 +8,7 @@ using DataStore.Interfaces.Events;
 
 namespace DataStore
 {
+    using Interfaces.LowLevel;
     using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 

@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.Events;
+    using Interfaces.LowLevel;
 
     public class AggregateAdded<T> : IDataStoreWriteEvent<T> where T : IAggregate
     {
@@ -29,8 +30,8 @@
 
         public string TypeName { get; set; }
         public string MethodCalled { get; set; }
-        public double QueryCost { get; set; }
-        public TimeSpan QueryDuration { get; set; }
+        public double StateOperationCost { get; set; }
+        public TimeSpan StateOperationDuration { get; set; }
         public T Model { get; set; }
         public DateTime Created { get; set; }
 

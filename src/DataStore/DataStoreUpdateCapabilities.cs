@@ -1,5 +1,4 @@
-﻿
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -7,7 +6,10 @@ namespace DataStore
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using Interfaces;
+    using Interfaces.LowLevel;
     using Models.Messages.Events;
+    using Models.PureFunctions;
+    using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     //methods return object after changes have been applied, including previous uncommitted session changes
@@ -31,8 +33,7 @@ namespace DataStore
             where T : IAggregate
         {
             var results =
-                await
-                    UpdateWhere<T>(o => o.id == id, model => { model.UpdateFromAnotherObject(src, nameof(model.id)); }, overwriteReadOnly);
+                await UpdateWhere<T>(o => o.id == id, model => src.CopyProperties(model), overwriteReadOnly);
 
             return results.Single();
         }
@@ -60,19 +61,39 @@ namespace DataStore
             Action<T> action,
             bool overwriteReadOnly = false) where T : IAggregate
         {
-            var objects = await eventAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+            var objects = await eventAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(UpdateWhere),
+                    DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
 
             objects = eventReplay.ApplyAggregateEvents(objects, false);
 
             var dataObjects = objects.AsEnumerable();
 
-            if (dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly))
-                throw new ApplicationException("Cannot update read-only items");
+            Guard.Against(dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly),
+                "Cannot update read-only items");
 
             foreach (var dataObject in dataObjects)
             {
+                var originalId = dataObject.id;
+                var restrictedProperties = originalId +
+                                           dataObject.schema +
+                                           dataObject.Created +
+                                           dataObject.CreatedAsMillisecondsEpochTime;
+
                 action(dataObject);
+
+                var restrictedProperties2 = dataObject.id +
+                                            dataObject.schema +
+                                            dataObject.Created +
+                                            dataObject.CreatedAsMillisecondsEpochTime;
+
+                //don't allow this to be set to null
+                dataObject.ScopeReferences = dataObject.ScopeReferences ?? new List<IScopeReference>();
+
+                Guard.Against(restrictedProperties2 != restrictedProperties,
+                    "Cannot change restricted properties [id, schema, Created, CreatedAsMillisecondsEpochTime on entity " +
+                    originalId);
+
                 eventAggregator.Collect(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
             }
 

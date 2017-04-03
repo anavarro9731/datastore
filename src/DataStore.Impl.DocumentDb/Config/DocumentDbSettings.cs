@@ -1,10 +1,9 @@
-﻿using Newtonsoft.Json;
-
-namespace DataStore.Impl.DocumentDb.Config
+﻿namespace DataStore.Impl.DocumentDb.Config
 {
+    using Newtonsoft.Json;
+
     public class DocumentDbSettings
     {
-
         [JsonConstructor]
         private DocumentDbSettings(
             string authorizationKey,

@@ -7,6 +7,7 @@ namespace DataStore
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.Events;
+    using Interfaces.LowLevel;
     using Models.Messages.Events;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 

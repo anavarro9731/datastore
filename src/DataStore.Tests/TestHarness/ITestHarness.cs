@@ -6,6 +6,7 @@ namespace DataStore.Tests.TestHarness
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.Events;
+    using Interfaces.LowLevel;
     using ServiceApi.Interfaces.LowLevel;
 
     public interface ITestHarness
