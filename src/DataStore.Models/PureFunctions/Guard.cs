@@ -4,22 +4,12 @@
 
     public static class Guard
     {
-        public static void Against(Func<bool> test, string errorMessage, string internalMessage = null)
-        {
-            if (test()) throw new ApplicationException(errorMessage, new Exception(internalMessage));
-        }
-
-        public static void Against(bool test, string errorMessage, string internalMessage = null)
-        {
-            if (test) throw new ApplicationException(errorMessage, new Exception(internalMessage));
-        }
-
-        public static void AgainstInternal(Func<bool> test, string errorMessage)
+        public static void Against(Func<bool> test, string errorMessage)
         {
             if (test()) throw new Exception(errorMessage);
         }
 
-        public static void AgainstInternal(bool test, string errorMessage)
+        public static void Against(bool test, string errorMessage)
         {
             if (test) throw new Exception(errorMessage);
         }
