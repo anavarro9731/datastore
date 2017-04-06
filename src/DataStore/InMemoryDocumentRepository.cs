@@ -32,12 +32,12 @@
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
-            return Clone(Aggregates.OfType<T>()).AsQueryable();
+            return Clone(Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>()).AsQueryable();
         }
 
         public Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
         {
-            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateHardDeleted.Model.id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateHardDeleted.Model.id);
 
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
@@ -46,7 +46,7 @@
 
         public Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
         {
-            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
 
             var now = DateTime.UtcNow;
             aggregate.Active = false;
@@ -75,7 +75,7 @@
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
-            var aggregate = Aggregates.OfType<T>().Single(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateQueriedById.Id);
 
             return Task.FromResult(aggregate);
         }

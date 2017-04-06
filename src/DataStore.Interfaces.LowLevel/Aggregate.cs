@@ -15,16 +15,22 @@
     /// </summary>
     public abstract class Aggregate : Entity, IAggregate
     {
-        //this default is hack left over because alot of the tests depend on it
-        //refactor all the tests are you can remove it. it is nice to see it set
-        //correctly though when used by clients as well
-        public bool Active { get; set; } = true;
+        protected Aggregate()
+        {
+            //These defaults are here because alot of the tests depend on these defaults.
+            //If we refactor all the tests are you can remove it. 
+            //However, it is a significant convenience for it to be set correctly by default.
+            schema = GetType().FullName;
+            Active = true;
+        }
+        
+        public bool Active { get; set; }
 
         public bool ReadOnly { get; set; }
 
         public List<IScopeReference> ScopeReferences { get; set; }
 
         //required lowercase when a docdb partitionkey
-        public string schema { get; set; }
+        public string schema { get; set; } 
     }
 }

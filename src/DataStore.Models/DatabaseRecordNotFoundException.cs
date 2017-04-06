@@ -1,6 +1,4 @@
-﻿using DataStore.Models;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Models
 {
     public class DatabaseRecordNotFoundException : DatabaseException
     {

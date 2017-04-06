@@ -1,7 +1,7 @@
-namespace DataStore.Impl.DocumentDb
-{
-    using System;
+using System;
 
+namespace DataStore.Models
+{
     public class DatabaseException : Exception
     {
         public DatabaseException()

@@ -51,6 +51,7 @@ namespace DataStore
                 e =>
                 {
                     //aggregate
+                    e.schema = typeof(T).FullName; //should be defaulted by Aggregate but needs to be forced
                     e.ReadOnly = readOnly;
                     e.ScopeReferences = e.ScopeReferences ?? new List<IScopeReference>();
                 });
