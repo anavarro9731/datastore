@@ -16,8 +16,9 @@ namespace DataStore.Tests.TestHarness
 
         public static ITestHarness GetTestHarness(TestHarnessOptions options)
         {
-            if (options.CollectionSettings.CollectionName.StartsWith("Integration"))
-            {
+            //if (options.CollectionSettings.CollectionName.StartsWith("Integration"))
+                if (true)
+                {
                 var documentdbsettingsJson = "DocumentDbSettings.json";
                 /*
                 Create this file in your DataStore.Tests project root and set it's build output to "copy always"
