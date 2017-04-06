@@ -1,4 +1,6 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using DataStore.Models;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Collections.Generic;
@@ -58,7 +60,7 @@
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
         {
-            var name = typeof(T).Name;
+            var name = typeof(T).FullName;
             var query = documentClient.CreateDocumentQuery<T>(config.CollectionSelfLink(),
                     new FeedOptions
                     {

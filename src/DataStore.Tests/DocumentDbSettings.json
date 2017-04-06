@@ -1,5 +1,5 @@
 {
-  "AuthorizationKey": "UhfXR7R9F4ShtqLxbGSPowGPjsXyvxKZ9AeTICKtnjl9kv7k7QZ7RHlQSxVW8Unm8M8vvrr2lUMXz65iiqZYHQ==",
-  "DatabaseName": "anavarro9731-datastore",
-  "EndpointUrl": "https://anavarro9731-datastore.documents.azure.com:443/"
+  "AuthorizationKey": "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+  "DatabaseName": "datastore",
+  "EndpointUrl": "https://localhost:8081/"
 }

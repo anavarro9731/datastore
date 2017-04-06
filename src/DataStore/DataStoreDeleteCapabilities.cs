@@ -68,7 +68,7 @@
         {
             var objects = await messageAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
-
+            
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
                 messageAggregator.Collect(new AggregateSoftDeleted<T>(nameof(DeleteSoftWhere), dataObject, DsConnection));

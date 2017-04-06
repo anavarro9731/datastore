@@ -1,4 +1,6 @@
-﻿namespace DataStore.Impl.DocumentDb
+﻿using DataStore.Models;
+
+namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Threading;
