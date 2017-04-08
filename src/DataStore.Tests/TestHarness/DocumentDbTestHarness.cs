@@ -1,54 +1,53 @@
-﻿using DataStore.Impl.DocumentDb.Config;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Impl.DocumentDb;
+using DataStore.Impl.DocumentDb.Config;
+using DataStore.Interfaces.Events;
+using DataStore.Interfaces.LowLevel;
+using DataStore.MessageAggregator;
+using DataStore.Models.Messages.Events;
+using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
+using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
 namespace DataStore.Tests.TestHarness
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using global::DataStore;
-    using global::DataStore.Impl.DocumentDb;
-    using global::DataStore.Interfaces;
-    using global::DataStore.Interfaces.Events;
-    using global::DataStore.MessageAggregator;
-    using global::DataStore.Models.Messages.Events;
-    using Interfaces.LowLevel;
-    using Microsoft.Azure.Documents;
-    using Microsoft.Azure.Documents.Client;
-    using ServiceApi.Interfaces.LowLevel;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-
-    public class RemoteTestHarness : ITestHarness
+    public class DocumentDbTestHarness : ITestHarness
     {
-        private readonly IMessageAggregator _eventAggregator = DataStoreMessageAggregator.Create();
-        private readonly DocumentRepository documentRepository;
+        private readonly IMessageAggregator eventAggregator = DataStoreMessageAggregator.Create();
+        private readonly DocumentDbRepository documentDbRepository;
 
-        private RemoteTestHarness(DocumentRepository documentRepository)
+        private DocumentDbTestHarness(DocumentDbRepository documentDbRepository)
         {
-            this.documentRepository = documentRepository;
-            DataStore = new DataStore(this.documentRepository, _eventAggregator);
+            this.documentDbRepository = documentDbRepository;
+            DataStore = new DataStore(this.documentDbRepository, eventAggregator);
         }
 
         public DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => _eventAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
+        public List<IDataStoreEvent> Events => eventAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
         public async Task AddToDatabase<T>(T aggregate) where T : IAggregate
         {
-            var newAggregate = new AggregateAdded<T>(nameof(AddToDatabase), aggregate, documentRepository);
+            var newAggregate = new AggregateAdded<T>(nameof(AddToDatabase), aggregate, documentDbRepository);
             await newAggregate.CommitClosure();
         }
 
-        public async Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : IHaveSchema, IHaveAUniqueId
+        public async Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+            where T : IHaveSchema, IHaveAUniqueId
         {
-            var query = extendQueryable == null ? documentRepository.CreateDocumentQuery<T>() : extendQueryable(documentRepository.CreateDocumentQuery<T>());
-            return await documentRepository.ExecuteQuery(new AggregatesQueried<T>(nameof(QueryDatabase), query.AsQueryable()));
+            var query = extendQueryable == null
+                ? documentDbRepository.CreateDocumentQuery<T>()
+                : extendQueryable(documentDbRepository.CreateDocumentQuery<T>());
+            return await documentDbRepository.ExecuteQuery(new AggregatesQueried<T>(nameof(QueryDatabase), query.AsQueryable()));
         }
 
         public static ITestHarness Create(DocumentDbSettings dbConfig)
         {
             ClearTestDatabase(dbConfig);
 
-            return new RemoteTestHarness(new DocumentRepository(dbConfig));
+            return new DocumentDbTestHarness(new DocumentDbRepository(dbConfig));
         }
 
         private static void ClearTestDatabase(DocumentDbSettings documentDbSettings)
@@ -67,7 +66,12 @@ namespace DataStore.Tests.TestHarness
         private static void DeleteAllDocsInCollection(DocumentClient documentClient, DocumentCollection collection)
         {
             var allDocsInCollection = documentClient.CreateDocumentQuery(collection.DocumentsLink,
-                new FeedOptions {EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = -1, MaxBufferedItemCount = -1}).ToList();
+                new FeedOptions
+                {
+                    EnableCrossPartitionQuery = true,
+                    MaxDegreeOfParallelism = -1,
+                    MaxBufferedItemCount = -1
+                }).ToList();
 
             foreach (var doc in allDocsInCollection)
             {
@@ -89,7 +93,8 @@ namespace DataStore.Tests.TestHarness
             }
         }
 
-        private static void GetDocumentCollection(DocumentDbSettings documentDbSettings, DocumentClient documentClient, out DocumentCollection collection)
+        private static void GetDocumentCollection(DocumentDbSettings documentDbSettings, DocumentClient documentClient,
+            out DocumentCollection collection)
         {
             collection =
                 documentClient.ReadDocumentCollectionAsync(documentDbSettings.CollectionSelfLink()).Result;

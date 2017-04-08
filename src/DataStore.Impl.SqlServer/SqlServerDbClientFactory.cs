@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using DataStore.Models.PureFunctions.Extensions;
 
 namespace DataStore.Impl.SqlServer
 {
@@ -11,9 +12,9 @@ namespace DataStore.Impl.SqlServer
             this.config = config;            
         }
             
-        public SqlConnection GetClient()
+        public SqlConnection OpenClient()
         {
-            return new SqlConnection(config.ConnectionString);
+            return new SqlConnection(config.ConnectionString).Op(c => c.Open());
         }
     }
 

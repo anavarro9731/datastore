@@ -1,14 +1,13 @@
-﻿using DataStore.Impl.DocumentDb.Config;
+﻿using System;
+using System.Linq;
+using DataStore.Impl.DocumentDb.Config;
+using DataStore.Tests.Constants;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Xunit;
 
 namespace DataStore.Tests.Tests
 {
-    using System;
-    using System.Linq;
-    using Constants;
-    using Models;
-    using TestHarness;
-    using Xunit;
-
     [Collection(TestCollections.DataStoreTestCollection)]
     public class DataStorePartitionTests
     {
@@ -17,14 +16,14 @@ namespace DataStore.Tests.Tests
             Integration_WhenDocumentsAreCreatedWithClassNameAsThePartitionKey_ItShouldPutThemAllInTheSamePartition()
         {
             //Given
+            var collectionName = nameof(
+                Integration_WhenDocumentsAreCreatedWithClassNameAsThePartitionKey_ItShouldPutThemAllInTheSamePartition);
+
             var docDbCollectionSettings =
-                DocDbCollectionSettings.Create(
-                    nameof(
-                        Integration_WhenDocumentsAreCreatedWithClassNameAsThePartitionKey_ItShouldPutThemAllInTheSamePartition),
+                DocDbCollectionSettings.Create(collectionName,
                     DocDbCollectionSettings.PartitionKeyTypeEnum.ClassName);
 
-            var testHarness = TestHarnessFunctions.GetTestHarness(
-                TestHarnessOptions.Create(docDbCollectionSettings));
+            var testHarness = TestHarnessFunctions.GetTestHarness(collectionName);
 
             //When
             for (var i = 0; i < 30; i++)
@@ -53,14 +52,14 @@ namespace DataStore.Tests.Tests
             //up to the max no. of partitions (e.g. 25)
         {
             //Given
+            var collectionName = nameof(
+                Integration_WhenDocumentsAreCreatedWithIdAsThePartitionKey_ItShouldPutThemAllInSeparatePartitions);
             var docDbCollectionSettings =
                 DocDbCollectionSettings.Create(
-                    nameof(
-                        Integration_WhenDocumentsAreCreatedWithIdAsThePartitionKey_ItShouldPutThemAllInSeparatePartitions),
+                    collectionName,
                     DocDbCollectionSettings.PartitionKeyTypeEnum.Id);
 
-            var testHarness = TestHarnessFunctions.GetTestHarness(
-                TestHarnessOptions.Create(docDbCollectionSettings));
+            var testHarness = TestHarnessFunctions.GetTestHarness(collectionName);
 
             //When
             for (var i = 0; i < 30; i++)

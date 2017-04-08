@@ -16,13 +16,13 @@ namespace DataStore.Impl.DocumentDb
     using Models.Messages.Events;
     using Models.PureFunctions.Extensions;
 
-    public class DocumentRepository : IDocumentRepository
+    public class DocumentDbRepository : IDocumentRepository
     {
         private readonly DocumentDbSettings config;
 
         private readonly DocumentClient documentClient;
 
-        public DocumentRepository(DocumentDbSettings config)
+        public DocumentDbRepository(DocumentDbSettings config)
         {
             documentClient = new DocumentDbClientFactory(config).GetDocumentClient();
             this.config = config;
