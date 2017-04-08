@@ -4,14 +4,14 @@ namespace DataStore.Tests.TestHarness
 {
     public class TestHarnessOptions
     {
+        public DocDbCollectionSettings CollectionSettings { get; private set; }
+
         public static TestHarnessOptions Create(DocDbCollectionSettings collectionSettings)
         {
-            return new TestHarnessOptions()
+            return new TestHarnessOptions
             {
                 CollectionSettings = collectionSettings
             };
         }
-
-        public DocDbCollectionSettings CollectionSettings { get; private set; }
     }
 }

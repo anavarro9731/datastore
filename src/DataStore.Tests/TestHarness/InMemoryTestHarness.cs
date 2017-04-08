@@ -1,16 +1,14 @@
-﻿namespace DataStore.Tests.TestHarness
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using global::DataStore.Models.PureFunctions.Extensions;
-    using Interfaces;
-    using Interfaces.Events;
-    using Interfaces.LowLevel;
-    using MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Interfaces.Events;
+using DataStore.Interfaces.LowLevel;
+using DataStore.MessageAggregator;
+using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
+namespace DataStore.Tests.TestHarness
+{
     public class InMemoryTestHarness : ITestHarness
     {
         private readonly IMessageAggregator _messageAggregator = DataStoreMessageAggregator.Create();

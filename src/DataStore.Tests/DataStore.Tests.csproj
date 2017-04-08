@@ -6,10 +6,14 @@
 
   <ItemGroup>
     <None Remove="DocumentDbSettings.json" />
+    <None Remove="SqlServerDbSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="DocumentDbSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerDbSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -23,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj" />
+    <ProjectReference Include="..\DataStore.Impl.SqlServer\DataStore.Impl.SqlServer.csproj" />
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
     <ProjectReference Include="..\DataStore\DataStore.csproj" />

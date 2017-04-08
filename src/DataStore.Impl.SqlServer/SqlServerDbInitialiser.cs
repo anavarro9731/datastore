@@ -12,13 +12,12 @@ namespace DataStore.Impl.SqlServer
 
             void TryCreateTable()
             {
-                using (var connection = factory.GetClient())
+                using (var connection = factory.OpenClient())
                 {
-                    connection.Open();
                     try
                     {
                         using (var command = new SqlCommand(
-                            "CREATE TABLE DataStoreAggregates (AggregateId uniqueidentifier, Schema nvarchar(250), Json nvarchar(max))", connection))
+                            "CREATE TABLE DataStoreAggregates (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max))", connection))
                         {
                             command.ExecuteNonQuery();
                         }
