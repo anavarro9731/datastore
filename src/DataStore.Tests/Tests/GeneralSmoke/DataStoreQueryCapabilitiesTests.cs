@@ -1,14 +1,15 @@
-namespace DataStore.Tests.Tests
-{
-    using System;
-    using System.Linq;
-    using Constants;
-    using global::DataStore.Models.Messages.Events;
-    using Models;
-    using TestHarness;
-    using Xunit;
+using System;
+using System.Linq;
+using DataStore.Models.Messages.Events;
+using DataStore.Tests.Constants;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Newtonsoft.Json;
+using Xunit;
 
-    [Collection(TestCollections.DataStoreTestCollection)]
+namespace DataStore.Tests.Tests.GeneralSmoke
+{
+    [Collection(TestCollections.CrudCapabilityTests)]
     public class DataStoreQueryCapabilitiesTests
     {
         [Fact]
@@ -79,7 +80,7 @@ namespace DataStore.Tests.Tests
         public async void WhenCallingExists_ItShouldReturnTheItemIfItExistsWhileConsideringChangesAlreadyMadeInTheSession()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActive_ItShouldOnlyReturnActiveItems));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingExists_ItShouldReturnTheItemIfItExistsWhileConsideringChangesAlreadyMadeInTheSession));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -101,7 +102,7 @@ namespace DataStore.Tests.Tests
         public async void WhenCallingExists_ItShouldReturnTheItemIfItExistsRegardlessOfStatus()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActive_ItShouldOnlyReturnActiveItems));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingExists_ItShouldReturnTheItemIfItExistsRegardlessOfStatus));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -131,10 +132,32 @@ namespace DataStore.Tests.Tests
         }
 
         [Fact]
-        public async void WhenCallingCanReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges()
+        public async void WhenCallingExists_ItShouldReturnFalseIfTheItemDoesNotExist()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCanReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingExists_ItShouldReturnFalseIfTheItemDoesNotExist));
+
+            var activeCarId = Guid.NewGuid();
+            var activeExistingCar = new Car
+            {
+                id = activeCarId,
+                Make = "Volvo"
+            };
+            await testHarness.AddToDatabase(activeExistingCar);
+            
+            // When
+            var carExists = await testHarness.DataStore.Exists(Guid.NewGuid());
+            
+            //Then
+            Assert.False(carExists);
+        }
+
+
+        [Fact]
+        public async void WhenCallingReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges()
+        {
+            // Given
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -147,8 +170,16 @@ namespace DataStore.Tests.Tests
             await testHarness.DataStore.DeleteHardById<Car>(carId);
 
             // When
+            Car carFromDatabase;
             var document = await testHarness.DataStore.Advanced.ReadCommittedById(carId);
-            var carFromDatabase = (Car)(dynamic)document;
+            try
+            {
+                carFromDatabase = (Car) (dynamic) document;
+            }
+            catch (Exception)
+            {
+                carFromDatabase = JsonConvert.DeserializeObject<Car>(JsonConvert.SerializeObject(document));
+            }
 
             //Then
             Assert.NotNull(testHarness.Events.Exists(e => e is AggregateQueriedById));
@@ -303,10 +334,10 @@ namespace DataStore.Tests.Tests
         }
 
         [Fact]
-        public async void WhenUsingCanReadCommitted_ItShouldReturnResultsWithoutConsiderationForChangesMadeInThisSession()
+        public async void WhenUsingReadCommitted_ItShouldReturnResultsWithoutConsiderationForChangesMadeInThisSession()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenUsingCanReadCommitted_YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenUsingReadCommitted_ItShouldReturnResultsWithoutConsiderationForChangesMadeInThisSession));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car

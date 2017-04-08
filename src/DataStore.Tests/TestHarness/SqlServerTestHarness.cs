@@ -51,13 +51,20 @@ namespace DataStore.Tests.TestHarness
 
         private static void ClearTestDatabase(SqlServerDbSettings settings)
         {
-            using (var client = new SqlServerDbClientFactory(settings).OpenClient())
+            DropExistingAggregatesTable();
+
+            SqlServerDbInitialiser.Initialise(new SqlServerDbClientFactory(settings));
+
+            void DropExistingAggregatesTable()
             {
-                client.CreateCommand().Op(c =>
+                using (var client = new SqlServerDbClientFactory(settings).OpenClient())
                 {
-                    c.CommandText = "USE datastore; EXEC sp_msforeachtable 'DROP TABLE [?]'";
-                    c.ExecuteNonQuery();
-                });
+                    client.CreateCommand().Op(c =>
+                    {
+                        c.CommandText = $"DROP TABLE DataStoreAggregates;";
+                        c.ExecuteNonQuery();
+                    });
+                }
             }
         }
     }

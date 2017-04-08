@@ -11,6 +11,7 @@ using DataStore.Interfaces.LowLevel;
 using DataStore.Models;
 using DataStore.Models.PureFunctions.Extensions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DataStore.Impl.SqlServer
 {
@@ -33,7 +34,7 @@ namespace DataStore.Impl.SqlServer
             using (var con = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"INSERT INTO {SqlServerDbSettings.SqlServerAggregatesTableName} VALUES(@AggregatedId, @Schema, @Json)", con))
+                    $"INSERT INTO {SqlServerDbSettings.SqlServerAggregatesTableName} VALUES(Convert(uniqueidentifier, @AggregateId), @Schema, @Json)", con))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateAdded.Model.id));
 
@@ -79,7 +80,7 @@ namespace DataStore.Impl.SqlServer
             using (var con = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"DELETE FROM {SqlServerDbSettings.SqlServerAggregatesTableName} WHERE AggregatedId = '@AggregatedId'", con))
+                    $"DELETE FROM {SqlServerDbSettings.SqlServerAggregatesTableName} WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)", con))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateHardDeleted.Model.id));
 
@@ -97,7 +98,7 @@ namespace DataStore.Impl.SqlServer
             using (var connection = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"UPDATE {SqlServerDbSettings.SqlServerAggregatesTableName} SET Json = @Json WHERE AggregatedId = '@AggregateId'",
+                    $"UPDATE {SqlServerDbSettings.SqlServerAggregatesTableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
                     connection))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateSoftDeleted.Model.id));
@@ -134,8 +135,26 @@ namespace DataStore.Impl.SqlServer
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
         {
-            var result = await GetItemAsync(aggregateQueriedById);
-            return (T) result;
+            var stopWatch = Stopwatch.StartNew();
+
+            var id = aggregateQueriedById.Id;
+
+            T result;
+            using (var connection = clientFactory.OpenClient())
+            {
+                using (var command = new SqlCommand($"SELECT Json FROM DataStoreAggregates WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
+                {
+                    var response = await command.ExecuteScalarAsync() as string;
+
+                    if (response == null) throw new DatabaseRecordNotFoundException(id.ToString());
+
+                    result = JsonConvert.DeserializeObject<T>(response);
+                }
+            }
+
+            stopWatch.Stop();
+            aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
+            return result;
         }
 
         public async Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById)
@@ -144,16 +163,16 @@ namespace DataStore.Impl.SqlServer
 
             var id = aggregateQueriedById.Id;
 
-            ExpandoObject result;
+            dynamic result;
             using (var connection = clientFactory.OpenClient())
             {
-                using (var command = new SqlCommand($"SELECT Json FROM DataStoreAggregates WHERE Id = '{id}'", connection))
+                using (var command = new SqlCommand($"SELECT Json FROM DataStoreAggregates WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
                 {
                     var response = await command.ExecuteScalarAsync() as string;
 
                     if (response == null) throw new DatabaseRecordNotFoundException(id.ToString());
 
-                    result = JsonConvert.DeserializeObject<ExpandoObject>(response);
+                    result = JsonConvert.DeserializeObject<dynamic>(response);
                 }
             }
 
@@ -169,7 +188,7 @@ namespace DataStore.Impl.SqlServer
             using (var connection = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"UPDATE {SqlServerDbSettings.SqlServerAggregatesTableName} SET Json = @Json WHERE AggregatedId = '@AggregateId'",
+                    $"UPDATE {SqlServerDbSettings.SqlServerAggregatesTableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
                     connection))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateUpdated.Model.id));
@@ -194,9 +213,9 @@ namespace DataStore.Impl.SqlServer
             string result;
             using (var connection = clientFactory.OpenClient())
             {
-                using (var command = new SqlCommand($"SELECT Id FROM DataStoreAggregates WHERE Id = '{id}'", connection))
+                using (var command = new SqlCommand($"SELECT AggregateId FROM DataStoreAggregates WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
                 {
-                    result = await command.ExecuteScalarAsync() as string;
+                    result = (await command.ExecuteScalarAsync())?.ToString();
                 }
             }
 

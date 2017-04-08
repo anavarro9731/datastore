@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Linq;
-using DataStore.Impl.DocumentDb;
 using DataStore.Models.Messages.Events;
 using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using Xunit;
 
-namespace DataStore.Tests.Tests
+namespace DataStore.Tests.Tests.GeneralSmoke.Documentation
 {
     [Collection(TestCollections.DocumentationTests)]
     public class DocumentationTests

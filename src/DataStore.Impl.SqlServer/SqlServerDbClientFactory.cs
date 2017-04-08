@@ -9,14 +9,12 @@ namespace DataStore.Impl.SqlServer
 
         public SqlServerDbClientFactory(SqlServerDbSettings config)
         {
-            this.config = config;            
+            this.config = config;
         }
-            
+
         public SqlConnection OpenClient()
         {
-            return new SqlConnection(config.ConnectionString).Op(c => c.Open());
+            return new SqlConnection(config.ToConnectionString()).Op(c => c.Open());
         }
     }
-
-    
 }

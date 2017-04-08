@@ -1,14 +1,14 @@
-namespace DataStore.Tests.Tests
-{
-    using System;
-    using System.Linq;
-    using Constants;
-    using global::DataStore.Models.Messages.Events;
-    using Models;
-    using TestHarness;
-    using Xunit;
+using System;
+using System.Linq;
+using DataStore.Models.Messages.Events;
+using DataStore.Tests.Constants;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Xunit;
 
-    [Collection(TestCollections.DataStoreTestCollection)]
+namespace DataStore.Tests.Tests.GeneralSmoke
+{
+    [Collection(TestCollections.CrudCapabilityTests)]
     public class DataStoreCreateCapabilitiesTests
     {
         [Fact]
