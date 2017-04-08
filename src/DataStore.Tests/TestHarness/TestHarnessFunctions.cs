@@ -45,7 +45,6 @@ namespace DataStore.Tests.TestHarness
 
         public static ITestHarness GetSqlServerTestHarness()
         {
-
             var documentdbsettingsJson = "SqlServerDbSettings.json";
             /*
             Create this file in your DataStore.Tests project root and set it's build output to "copy always"

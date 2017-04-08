@@ -4,10 +4,7 @@ namespace DataStore.Impl.SqlServer
 {
     public class SqlServerDbSettings
     {
-        public string ServerInstance { get; }
-        public string Database { get; }
-        public string UserId { get; }
-        public string Password { get; }
+        public const string SqlServerAggregatesTableName = "DataStoreAggregates";
 
         [JsonConstructor]
         private SqlServerDbSettings(string serverInstance, string database, string userId, string password)
@@ -18,8 +15,14 @@ namespace DataStore.Impl.SqlServer
             Password = password;
         }
 
-        pu
+        public string ServerInstance { get; }
+        public string Database { get; }
+        public string UserId { get; }
+        public string Password { get; }
 
-        public const string SqlServerAggregatesTableName = "DataStoreAggregates";
+        public string ToConnectionString()
+        {
+            return $"Server={ServerInstance};Database={Database};User Id={UserId};Password={Password}";
+        }
     }
 }

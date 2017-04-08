@@ -6,9 +6,9 @@ using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
 using Xunit;
 
-namespace DataStore.Tests.Tests
+namespace DataStore.Tests.Tests.AzureOnly.Expensive
 {
-    [Collection(TestCollections.DataStoreTestCollection)]
+    [Collection(TestCollections.ParitionTests)]
     public class DataStorePartitionTests
     {
         [Fact]
