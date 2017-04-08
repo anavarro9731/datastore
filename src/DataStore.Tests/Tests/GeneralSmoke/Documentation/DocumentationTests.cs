@@ -7,7 +7,7 @@ using Xunit;
 
 namespace DataStore.Tests.Tests.GeneralSmoke.Documentation
 {
-    [Collection(TestCollections.DocumentationTests)]
+    [Collection(TestCollections.RunSerially)]
     public class DocumentationTests
     {
         [Fact]

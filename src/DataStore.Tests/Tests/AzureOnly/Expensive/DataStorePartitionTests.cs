@@ -8,7 +8,7 @@ using Xunit;
 
 namespace DataStore.Tests.Tests.AzureOnly.Expensive
 {
-    [Collection(TestCollections.ParitionTests)]
+    [Collection(TestCollections.RunSerially)]
     public class DataStorePartitionTests
     {
         [Fact]

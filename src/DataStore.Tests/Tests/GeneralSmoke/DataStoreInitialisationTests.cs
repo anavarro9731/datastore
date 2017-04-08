@@ -6,7 +6,7 @@ using Xunit;
 
 namespace DataStore.Tests.Tests.GeneralSmoke
 {
-    [Collection(TestCollections.CrudCapabilityTests)]
+    [Collection(TestCollections.RunSerially)]
     public class DataStoreInitialisationTests
     {
         [Fact]

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace DataStore.Tests.Tests.GeneralSmoke
 {
-    [Collection(TestCollections.CrudCapabilityTests)]
+    [Collection(TestCollections.RunSerially)]
     public class DataStoreQueryCapabilitiesTests
     {
         [Fact]
@@ -151,7 +151,6 @@ namespace DataStore.Tests.Tests.GeneralSmoke
             //Then
             Assert.False(carExists);
         }
-
 
         [Fact]
         public async void WhenCallingReadCommittedById_ItShouldReturnTheItemWithThatIdWithoutConsiderationForSessionChanges()
