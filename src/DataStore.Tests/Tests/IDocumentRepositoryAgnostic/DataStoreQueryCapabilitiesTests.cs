@@ -7,7 +7,7 @@ using DataStore.Tests.TestHarness;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace DataStore.Tests.Tests.GeneralSmoke
+namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
 {
     [Collection(TestCollections.RunSerially)]
     public class DataStoreQueryCapabilitiesTests

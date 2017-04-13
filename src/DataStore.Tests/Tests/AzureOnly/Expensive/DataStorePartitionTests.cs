@@ -23,7 +23,7 @@ namespace DataStore.Tests.Tests.AzureOnly.Expensive
                 DocDbCollectionSettings.Create(collectionName,
                     DocDbCollectionSettings.PartitionKeyTypeEnum.ClassName);
 
-            var testHarness = TestHarnessFunctions.GetTestHarness(collectionName);
+            var testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName);
 
             //When
             for (var i = 0; i < 30; i++)
@@ -59,7 +59,7 @@ namespace DataStore.Tests.Tests.AzureOnly.Expensive
                     collectionName,
                     DocDbCollectionSettings.PartitionKeyTypeEnum.Id);
 
-            var testHarness = TestHarnessFunctions.GetTestHarness(collectionName);
+            var testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName);
 
             //When
             for (var i = 0; i < 30; i++)

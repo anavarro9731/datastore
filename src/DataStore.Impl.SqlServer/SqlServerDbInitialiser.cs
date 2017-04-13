@@ -4,7 +4,7 @@ namespace DataStore.Impl.SqlServer
 {
     public class SqlServerDbInitialiser
     {
-        public static void Initialise(SqlServerDbClientFactory factory)
+        public static void Initialise(SqlServerDbClientFactory factory, SqlServerDbSettings settings)
         {
             {
                 TryCreateTable();
@@ -17,7 +17,7 @@ namespace DataStore.Impl.SqlServer
                     try
                     {
                         using (var command = new SqlCommand(
-                            "CREATE TABLE DataStoreAggregates (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max))", connection))
+                            $"CREATE TABLE {settings.TableName} (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max))", connection))
                         {
                             command.ExecuteNonQuery();
                         }

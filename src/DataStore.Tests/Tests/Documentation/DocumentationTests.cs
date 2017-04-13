@@ -5,7 +5,7 @@ using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using Xunit;
 
-namespace DataStore.Tests.Tests.GeneralSmoke.Documentation
+namespace DataStore.Tests.Tests.Documentation
 {
     [Collection(TestCollections.RunSerially)]
     public class DocumentationTests
