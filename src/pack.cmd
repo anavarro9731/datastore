@@ -18,6 +18,12 @@ dotnet pack -c RELEASE
 copy bin\RELEASE\*.nupkg c:\Nuget.Local
 
 cd ..
+cd DataStore.Impl.SqlServer
+del bin\RELEASE\*.nupkg
+dotnet pack -c RELEASE 
+copy bin\RELEASE\*.nupkg c:\Nuget.Local
+
+cd ..
 cd DataStore.Models
 del bin\RELEASE\*.nupkg
 dotnet pack -c RELEASE 
