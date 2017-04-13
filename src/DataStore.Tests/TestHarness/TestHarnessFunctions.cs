@@ -11,11 +11,11 @@ namespace DataStore.Tests.TestHarness
         public static ITestHarness GetTestHarness(string testName)
         {
             //return GetDocumentDbTestHarness(testName);
-            return GetSqlServerTestHarness();
+            return GetSqlServerTestHarness(testName);
             //return GetInMemoryTestHarness();
         }
 
-        private static ITestHarness GetDocumentDbTestHarness(string testName)
+        internal static ITestHarness GetDocumentDbTestHarness(string testName)
         {
             var options = TestHarnessOptions.Create(DocDbCollectionSettings.Create(testName));
 
@@ -38,14 +38,14 @@ namespace DataStore.Tests.TestHarness
             return DocumentDbTestHarness.Create(documentDbSettings);
         }
 
-        public static ITestHarness GetInMemoryTestHarness()
+        internal static ITestHarness GetInMemoryTestHarness()
         {
             return InMemoryTestHarness.Create();
         }
 
-        public static ITestHarness GetSqlServerTestHarness()
+        internal static ITestHarness GetSqlServerTestHarness(string testName)
         {
-            var documentdbsettingsJson = "SqlServerDbSettings.json";
+            var sqlServerDbSettings = "SqlServerDbSettings.json";
             /*
             Create this file in your DataStore.Tests project root and set it's build output to "copy always"
             This file should always be .gitignore(d), don't want to expose this in your repo.
@@ -53,9 +53,10 @@ namespace DataStore.Tests.TestHarness
                 "ConnectionString": "<connstring>"
             }
             */
-            var location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, documentdbsettingsJson);
+            var location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, sqlServerDbSettings);
 
             var sqlServerSettings = JsonConvert.DeserializeObject<SqlServerDbSettings>(File.ReadAllText(location));
+            sqlServerSettings.TableName = testName;
 
             return SqlServerTestHarness.Create(sqlServerSettings);
         }

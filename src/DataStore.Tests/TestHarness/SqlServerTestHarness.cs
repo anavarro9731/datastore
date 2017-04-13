@@ -53,17 +53,25 @@ namespace DataStore.Tests.TestHarness
         {
             DropExistingAggregatesTable();
 
-            SqlServerDbInitialiser.Initialise(new SqlServerDbClientFactory(settings));
+            SqlServerDbInitialiser.Initialise(new SqlServerDbClientFactory(settings), settings);
 
             void DropExistingAggregatesTable()
             {
                 using (var client = new SqlServerDbClientFactory(settings).OpenClient())
                 {
-                    client.CreateCommand().Op(c =>
+                    try
                     {
-                        c.CommandText = $"DROP TABLE DataStoreAggregates;";
-                        c.ExecuteNonQuery();
-                    });
+                        client.CreateCommand()
+                            .Op(c =>
+                            {
+                                c.CommandText = $"DROP TABLE {settings.TableName};";
+                                c.ExecuteNonQuery();
+                            });
+                    }
+                    catch
+                    {
+                        // ignored, may not exist
+                    }
                 }
             }
         }

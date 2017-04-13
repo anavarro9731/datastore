@@ -6,7 +6,7 @@ using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
 using Xunit;
 
-namespace DataStore.Tests.Tests.GeneralSmoke
+namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
 {
     [Collection(TestCollections.RunSerially)]
     public class DataStoreDeleteCapabilitiesTests
