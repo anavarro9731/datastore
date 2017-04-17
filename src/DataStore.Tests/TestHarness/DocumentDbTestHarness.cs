@@ -16,12 +16,14 @@ namespace DataStore.Tests.TestHarness
 {
     public class DocumentDbTestHarness : ITestHarness
     {
+        private readonly DocumentDbSettings settings;
         private readonly IMessageAggregator eventAggregator = DataStoreMessageAggregator.Create();
         private readonly DocumentDbRepository documentDbRepository;
 
-        private DocumentDbTestHarness(DocumentDbRepository documentDbRepository)
+        private DocumentDbTestHarness(DocumentDbSettings settings)
         {
-            this.documentDbRepository = documentDbRepository;
+            this.settings = settings;
+            this.documentDbRepository = new DocumentDbRepository(settings);
             DataStore = new DataStore(this.documentDbRepository, eventAggregator);
         }
 
@@ -47,7 +49,21 @@ namespace DataStore.Tests.TestHarness
         {
             ClearTestDatabase(dbConfig);
 
-            return new DocumentDbTestHarness(new DocumentDbRepository(dbConfig));
+            return new DocumentDbTestHarness(dbConfig);
+        }
+
+        public async void RemoveAllCollections()
+        {
+            DocumentClient client;
+
+            GetDocumentClient(settings, out client);
+            var db = (await client.ReadDatabaseFeedAsync()).Single(d => d.Id == settings.DatabaseName);
+
+            var collections = (await client.ReadDocumentCollectionFeedAsync(db.CollectionsLink));
+            foreach (var documentCollection in collections)
+            {
+                await client.DeleteDocumentCollectionAsync(documentCollection.SelfLink);
+            }
         }
 
         private static void ClearTestDatabase(DocumentDbSettings documentDbSettings)
