@@ -1,4 +1,6 @@
 ﻿using System.Data.SqlClient;
+using System.Text;
+using System.Transactions;
 
 namespace DataStore.Impl.SqlServer
 {
@@ -12,21 +14,26 @@ namespace DataStore.Impl.SqlServer
 
             void TryCreateTable()
             {
-                using (var connection = factory.OpenClient())
+                using (var tx = new TransactionScope(TransactionScopeOption.RequiresNew))
                 {
-                    try
+                    using (var connection = factory.OpenClient())
                     {
-                        using (var command = new SqlCommand(
-                            $"CREATE TABLE {settings.TableName} (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max))", connection))
+                        using (var command = new SqlCommand(@"
+                            IF NOT EXISTS ( 
+                                SELECT * 
+                                  FROM INFORMATION_SCHEMA.TABLES 
+                                 WHERE TABLE_CATALOG = '" + settings.Database + @"' 
+                                   AND TABLE_SCHEMA = 'dbo' 
+                                   AND TABLE_NAME = '" + settings.TableName + @"'
+                            )
+                            BEGIN
+                                CREATE TABLE " + settings.Database + @".dbo." + settings.TableName + @" (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max))
+                            END", connection))
                         {
                             command.ExecuteNonQuery();
                         }
                     }
-                    catch
-                    {
-                        // ignored
-                        // wiil not work if table already exists
-                    }
+                    tx.Complete();
                 }
             }
         }
