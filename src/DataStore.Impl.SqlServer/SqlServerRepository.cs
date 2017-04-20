@@ -34,7 +34,7 @@ namespace DataStore.Impl.SqlServer
             using (var con = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"INSERT INTO {settings.TableName} VALUES(Convert(uniqueidentifier, @AggregateId), @Schema, @Json)", con))
+                    $"INSERT INTO {settings.TableName} ([AggregateId], [Schema], [Json]) VALUES(Convert(uniqueidentifier, @AggregateId), @Schema, @Json)", con))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateAdded.Model.id));
 

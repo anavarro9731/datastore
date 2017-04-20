@@ -27,7 +27,7 @@ namespace DataStore.Impl.SqlServer
                                    AND TABLE_NAME = '" + settings.TableName + @"'
                             )
                             BEGIN
-                                CREATE TABLE " + settings.Database + @".dbo." + settings.TableName + @" (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max))
+                                CREATE TABLE " + settings.Database + @".dbo." + settings.TableName + @" (AggregateId uniqueidentifier, [Schema] nvarchar(250), Json nvarchar(max), Version rowversion)
                             END", connection))
                         {
                             command.ExecuteNonQuery();
