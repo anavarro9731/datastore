@@ -7,22 +7,25 @@
     <Authors>Aaron Navarro</Authors>
     <TargetFrameworks>net452</TargetFrameworks>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <PackageVersion>1.0.0</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageVersion>1.0.2</PackageVersion>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
-
-
-  <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
-  </PropertyGroup>
+  
+  <ItemGroup>
+    <Reference Include="System.Transactions" />
+  </ItemGroup>
 
 </Project>
