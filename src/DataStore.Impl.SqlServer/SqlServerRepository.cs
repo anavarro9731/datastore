@@ -61,12 +61,14 @@ namespace DataStore.Impl.SqlServer
                 using (var command = new SqlCommand($"SELECT Json FROM {settings.TableName} WHERE [Schema] = '{schema}'",
                     connection))
                 {
-                    var reader = command.ExecuteReader();
-                    while (reader.Read())
+                    using (var reader = command.ExecuteReader())
                     {
-                        var json = reader.GetString(0);
+                        while (reader.Read())
+                        {
+                            var json = reader.GetString(0);
 
-                        query.Add(JsonConvert.DeserializeObject<T>(json));
+                            query.Add(JsonConvert.DeserializeObject<T>(json));
+                        }
                     }
                 }
             }            
