@@ -6,24 +6,28 @@ using DataStore.Interfaces.Events;
 using DataStore.Interfaces.LowLevel;
 using DataStore.MessageAggregator;
 using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+using ServiceApi.Interfaces.LowLevel.Messages;
 
 namespace DataStore.Tests.TestHarness
 {
     public class InMemoryTestHarness : ITestHarness
     {
-        private readonly IMessageAggregator _messageAggregator = DataStoreMessageAggregator.Create();
+        private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
 
         private InMemoryTestHarness()
         {
             DocumentRepository = new InMemoryDocumentRepository();
-            DataStore = new DataStore(DocumentRepository, _messageAggregator);
+            DataStore = new DataStore(DocumentRepository, messageAggregator);
         }
 
         private InMemoryDocumentRepository DocumentRepository { get; }
         public DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => _messageAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
-        public Task AddToDatabase<T>(T aggregate) where T : IAggregate
+        public List<IDataStoreOperation> Operations => messageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList();
+        public List<IQueuedDataStoreWriteOperation> QueuedWriteOperations => messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList();
+        public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
+
+        public Task AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
             //copied from datastore create capabilities, may get out of date
             DataStoreCreateCapabilities.ForcePropertiesOnCreate(aggregate.ReadOnly, aggregate);

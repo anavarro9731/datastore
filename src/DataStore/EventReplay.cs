@@ -1,10 +1,11 @@
+using DataStore.Models.Messages;
+
 namespace DataStore
 {
     using System.Collections.Generic;
     using System.Linq;
     using Interfaces.Events;
     using Interfaces.LowLevel;
-    using Models.Messages.Events;
     using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
@@ -17,11 +18,11 @@ namespace DataStore
             this.messageAggregator = messageAggregator;
         }
 
-        public List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : IAggregate
+        public List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : class, IAggregate, new()
         {
             var modifiedResults = results.ToList();
             var uncommittedEvents =
-                messageAggregator.AllMessages.OfType<IDataStoreWriteEvent<T>>().OrderBy(e => e.Created).Where(e => !e.Committed);
+                messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().OrderBy(e => e.Created).Where(e => !e.Committed);
 
             foreach (var eventAggregatorEvent in uncommittedEvents)
                 ApplyEvent(modifiedResults, eventAggregatorEvent, isReadActive);
@@ -29,43 +30,43 @@ namespace DataStore
             return modifiedResults;
         }
 
-        private static void ApplyEvent<T>(List<T> results, IDataStoreWriteEvent<T> eventAggregatorEvent,
-            bool requestingOnlyReadActive) where T : IAggregate
+        private static void ApplyEvent<T>(List<T> results, IQueuedDataStoreWriteOperation<T> operationAggregatorOperation,
+            bool requestingOnlyReadActive) where T : class, IAggregate, new()
         {
-            if (eventAggregatorEvent is AggregateAdded<T>)
+            if (operationAggregatorOperation is QueuedCreateOperation<T>)
             {
-                if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active)
+                if (requestingOnlyReadActive && !operationAggregatorOperation.Model.Active)
                 {
                 }
                 else
                 {
-                    results.Add(eventAggregatorEvent.Model);
+                    results.Add(operationAggregatorOperation.Model);
                 }
             }
-            else if (results.Exists(i => i.id == eventAggregatorEvent.Model.id))
+            else if (results.Exists(i => i.id == operationAggregatorOperation.Model.id))
             {
-                if (eventAggregatorEvent is AggregateUpdated<T>)
-                    if (requestingOnlyReadActive && !eventAggregatorEvent.Model.Active)
+                if (operationAggregatorOperation is QueuedUpdateOperation<T>)
+                    if (requestingOnlyReadActive && !operationAggregatorOperation.Model.Active)
                     {
-                        var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        var itemToRemove = results.Single(i => i.id == operationAggregatorOperation.Model.id);
                         results.Remove(itemToRemove);
                     }
                     else
                     {
-                        var itemToUpdate = results.Single(i => i.id == eventAggregatorEvent.Model.id);
-                        eventAggregatorEvent.Model.CopyProperties(itemToUpdate);
+                        var itemToUpdate = results.Single(i => i.id == operationAggregatorOperation.Model.id);
+                        operationAggregatorOperation.Model.CopyProperties(itemToUpdate);
                     }
 
-                if (eventAggregatorEvent is AggregateSoftDeleted<T>)
+                if (operationAggregatorOperation is QueuedSoftDeleteOperation<T>)
                     if (requestingOnlyReadActive)
                     {
-                        var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                        var itemToRemove = results.Single(i => i.id == operationAggregatorOperation.Model.id);
                         results.Remove(itemToRemove);
                     }
 
-                if (eventAggregatorEvent is AggregateHardDeleted<T>)
+                if (operationAggregatorOperation is QueuedHardDeleteOperation<T>)
                 {
-                    var itemToRemove = results.Single(i => i.id == eventAggregatorEvent.Model.id);
+                    var itemToRemove = results.Single(i => i.id == operationAggregatorOperation.Model.id);
                     results.Remove(itemToRemove);
                 }
             }

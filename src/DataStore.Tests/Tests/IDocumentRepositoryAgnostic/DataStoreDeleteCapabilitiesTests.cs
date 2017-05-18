@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using DataStore.Models.Messages.Events;
+using DataStore.Models.Messages;
 using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
@@ -31,7 +31,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateHardDeleted<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(testHarness.QueryDatabase<Car>().Result);
             Assert.Empty(testHarness.DataStore.Read<Car>(car => car).Result);
         }
@@ -56,7 +57,9 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateHardDeleted<Car>));
+
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(testHarness.QueryDatabase<Car>().Result);
             Assert.Empty(testHarness.DataStore.Read<Car>(car => car).Result);
         }
@@ -81,7 +84,9 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
+
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Active);
             Assert.Empty(testHarness.DataStore.ReadActive<Car>(car => car).Result);
             Assert.NotEmpty(testHarness.DataStore.Read<Car>(car => car).Result);
@@ -107,7 +112,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Active);
             Assert.Empty(testHarness.DataStore.ReadActive<Car>(car => car).Result);
             Assert.NotEmpty(testHarness.DataStore.Read<Car>(car => car).Result);
@@ -132,7 +138,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.DeleteSoftById<Car>(carId);
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>().Result);
             Assert.Empty(testHarness.DataStore.ReadActive<Car>(car => car).Result);
             Assert.NotEmpty(testHarness.DataStore.Read<Car>(car => car).Result);
@@ -157,19 +164,20 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId);
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateSoftDeleted<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>().Result);
             Assert.Empty(testHarness.DataStore.ReadActive<Car>(car => car).Result);
             Assert.NotEmpty(testHarness.DataStore.Read<Car>(car => car).Result);
         }
 
         [Fact]
-        public async void WhenCallingTheDeleteHardByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally()
+        public async void WhenCallingDeleteHardByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally()
         {
             // Given
             var testHarness =
                 TestHarnessFunctions.GetTestHarness(
-                    nameof(WhenCallingTheDeleteHardByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally));
+                    nameof(WhenCallingDeleteHardByIdWithoutCommitting_ItShouldOnlyMakeChangesLocally));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
@@ -182,18 +190,19 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.DeleteHardById<Car>(carId);
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateHardDeleted<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>().Result);
             Assert.Empty(testHarness.DataStore.Read<Car>(car => car).Result);
         }
 
         [Fact]
-        public async void WhenCallingTheDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesLocally()
+        public async void WhenCallingDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesLocally()
         {
             // Given
             var testHarness =
                 TestHarnessFunctions.GetTestHarness(
-                    nameof(WhenCallingTheDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesLocally));
+                    nameof(WhenCallingDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesLocally));
 
             var carId = Guid.NewGuid();
             await testHarness.AddToDatabase(new Car
@@ -206,7 +215,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId);
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateHardDeleted<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>().Result);
             Assert.Empty(testHarness.DataStore.Read<Car>(car => car).Result);
         }

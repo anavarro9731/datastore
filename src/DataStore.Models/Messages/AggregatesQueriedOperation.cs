@@ -1,12 +1,12 @@
-﻿namespace DataStore.Models.Messages.Events
-{
-    using System;
-    using System.Linq;
-    using Interfaces.Events;
+﻿using System;
+using System.Linq;
+using DataStore.Interfaces.Events;
 
-    public class AggregatesQueried<T> : IDataStoreReadFromQueryable<T>
+namespace DataStore.Models.Messages
+{
+    public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T>
     {
-        public AggregatesQueried(string methodCalled, IQueryable<T> query)
+        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;

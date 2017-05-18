@@ -15,7 +15,7 @@
     ///     Facade over querying and unit of work capabilities
     ///     Derived non-generic shorthand when a single or primary store exists
     /// </summary>
-    public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : IAggregate, new()
+    public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : class, IAggregate, new()
     {
         private readonly IMessageAggregator messageAggregator;
 
@@ -38,7 +38,7 @@
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = messageAggregator.AllMessages.OfType<IDataStoreWriteEvent>();
+            var dataStoreEvents = messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>();
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
                 await dataStoreWriteEvent.CommitClosure();
@@ -46,7 +46,7 @@
 
         #region IDataStoreWriteOnlyScoped<T> Members
 
-        public Task<T> Create(T model, bool readOnly = false)
+        public Task<T> Create(T model, bool readOnly = false) 
         {
             return CreateCapabilities.Create(model, readOnly);
         }

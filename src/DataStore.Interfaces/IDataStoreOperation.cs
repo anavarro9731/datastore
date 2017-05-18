@@ -2,7 +2,7 @@
 {
     using System;
 
-    public interface IDataStoreEvent
+    public interface IDataStoreOperation
     {
         string TypeName { get; set; }
         string MethodCalled { get; set; }

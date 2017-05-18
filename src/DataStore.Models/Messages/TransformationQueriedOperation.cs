@@ -1,12 +1,12 @@
-﻿namespace DataStore.Models.Messages.Events
-{
-    using System;
-    using System.Linq;
-    using Interfaces.Events;
+﻿using System;
+using System.Linq;
+using DataStore.Interfaces.Events;
 
-    public class TransformationQueried<T> : IDataStoreReadFromQueryable<T>
+namespace DataStore.Models.Messages
+{
+    public class TransformationQueriedOperation<T> : IDataStoreReadFromQueryable<T>
     {
-        public TransformationQueried(string methodCalled, IQueryable<T> query)
+        public TransformationQueriedOperation(string methodCalled, IQueryable<T> query)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;

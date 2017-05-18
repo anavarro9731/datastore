@@ -14,8 +14,9 @@ namespace DataStore.Interfaces
 
     {
         IAdvancedCapabilities Advanced { get; }
-        IReadOnlyList<IDataStoreEvent> Events { get; }
-        IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : IAggregate, new();
+        IReadOnlyList<IDataStoreOperation> ExecutedOperations { get; }
+        IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations { get; }
+        IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new();
         IDataStoreQueryCapabilities AsReadOnly();
         Task CommitChanges();
     }

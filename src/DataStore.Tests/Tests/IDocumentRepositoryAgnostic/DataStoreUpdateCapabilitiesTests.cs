@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using DataStore.Models.Messages.Events;
+using DataStore.Models.Messages;
 using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
@@ -28,7 +28,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
@@ -54,7 +55,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
@@ -77,7 +79,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
@@ -100,7 +103,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
@@ -122,7 +126,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
@@ -145,6 +150,11 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var results = await testHarness.DataStore.UpdateWhere<Car>(car => car.id == carId, car => car.Make = "Ford");
 
             //Then
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
+
+            //in this circumstance we have deleted the only thing we updated so there is no update required
+            Assert.Null(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+
             Assert.Equal(results.Count(), 0); //there nothing should have been updated because it was already deleted.
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
         }
@@ -169,7 +179,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.Update(existingCarFromDb);
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }

@@ -8,7 +8,7 @@ namespace DataStore.Interfaces
         IDataStoreCreateCapabilitiesScoped<T>,
         IDataStoreDeleteCapabilitiesScoped<T>,
         IDataStoreUpdateCapabilitiesScoped<T>,
-        IDisposable where T : IAggregate, new()
+        IDisposable where T : class, IAggregate, new()
 
     {
         Task CommitChanges();
