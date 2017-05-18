@@ -1,21 +1,19 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.LowLevel;
+using DataStore.Models.Messages;
+using DataStore.Models.PureFunctions;
+using DataStore.Models.PureFunctions.Extensions;
+using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
 [assembly: InternalsVisibleTo("DataStore.Tests")]
 
 namespace DataStore
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.LowLevel;
-    using Models.Messages.Events;
-    using Models.PureFunctions;
-    using Models.PureFunctions.Extensions;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-
     //methods return the enriched object as it was added to the database
 
     internal class DataStoreCreateCapabilities : IDataStoreCreateCapabilities
@@ -30,22 +28,20 @@ namespace DataStore
 
         private IDocumentRepository DsConnection { get; }
 
-        #region IDataStoreCreateCapabilities Members
-
-        public Task<T> Create<T>(T model, bool readOnly = false) where T : IAggregate, new()
+        public Task<T> Create<T>(T model, bool readOnly = false) where T : class, IAggregate, new()
         {
             var enriched = new T();
 
             UpdateFromAnotherObject(model, enriched);
-            
+
             ForcePropertiesOnCreate(readOnly, enriched);
 
-            messageAggregator.Collect(new AggregateAdded<T>(nameof(Create), enriched, DsConnection));
+            messageAggregator.Collect(new QueuedCreateOperation<T>(nameof(Create), enriched, DsConnection, messageAggregator));
 
-            return Task.FromResult(enriched);
+            return Task.FromResult(enriched.Clone());
         }
 
-        internal static void ForcePropertiesOnCreate<T>(bool readOnly, T enriched) where T : IAggregate
+        internal static void ForcePropertiesOnCreate<T>(bool readOnly, T enriched) where T : class, IAggregate, new()
         {
             enriched.Op(
                 e =>
@@ -120,7 +116,5 @@ namespace DataStore
                     }
             }
         }
-
-        #endregion
     }
 }

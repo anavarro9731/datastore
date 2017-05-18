@@ -27,7 +27,7 @@ namespace DataStore.Impl.SqlServer
 
         #region IDocumentRepository Members
 
-        public async Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate
+        public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();
 
@@ -75,7 +75,7 @@ namespace DataStore.Impl.SqlServer
             return query.AsQueryable();
         }
 
-        public async Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
+        public async Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();
 
@@ -95,7 +95,7 @@ namespace DataStore.Impl.SqlServer
             aggregateHardDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
-        public async Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
+        public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();
             using (var connection = clientFactory.OpenClient())
@@ -185,7 +185,7 @@ namespace DataStore.Impl.SqlServer
             return result;
         }
 
-        public async Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
+        public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();
 

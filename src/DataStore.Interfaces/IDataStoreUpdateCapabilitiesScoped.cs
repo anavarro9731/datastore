@@ -6,7 +6,7 @@ namespace DataStore.Interfaces
     using System.Threading.Tasks;
     using LowLevel;
 
-    public interface IDataStoreUpdateCapabilitiesScoped<T> where T : IAggregate
+    public interface IDataStoreUpdateCapabilitiesScoped<T> where T : class, IAggregate, new()
     {
         Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = false);
 

@@ -7,32 +7,37 @@ using DataStore.Impl.DocumentDb.Config;
 using DataStore.Interfaces.Events;
 using DataStore.Interfaces.LowLevel;
 using DataStore.MessageAggregator;
-using DataStore.Models.Messages.Events;
+using DataStore.Models.Messages;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+using ServiceApi.Interfaces.LowLevel.Messages;
 
 namespace DataStore.Tests.TestHarness
 {
     public class DocumentDbTestHarness : ITestHarness
     {
         private readonly DocumentDbSettings settings;
-        private readonly IMessageAggregator eventAggregator = DataStoreMessageAggregator.Create();
+        private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
         private readonly DocumentDbRepository documentDbRepository;
 
         private DocumentDbTestHarness(DocumentDbSettings settings)
         {
             this.settings = settings;
             this.documentDbRepository = new DocumentDbRepository(settings);
-            DataStore = new DataStore(this.documentDbRepository, eventAggregator);
+            DataStore = new DataStore(this.documentDbRepository, messageAggregator);
         }
 
         public DataStore DataStore { get; }
-        public List<IDataStoreEvent> Events => eventAggregator.AllMessages.OfType<IDataStoreEvent>().ToList();
 
-        public async Task AddToDatabase<T>(T aggregate) where T : IAggregate
+        public List<IDataStoreOperation> Operations => messageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList();
+        public List<IQueuedDataStoreWriteOperation> QueuedWriteOperations => messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList();
+        public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
+
+
+        public async Task AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            var newAggregate = new AggregateAdded<T>(nameof(AddToDatabase), aggregate, documentDbRepository);
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, documentDbRepository, messageAggregator);
             await newAggregate.CommitClosure();
         }
 
@@ -42,7 +47,7 @@ namespace DataStore.Tests.TestHarness
             var query = extendQueryable == null
                 ? documentDbRepository.CreateDocumentQuery<T>()
                 : extendQueryable(documentDbRepository.CreateDocumentQuery<T>());
-            return await documentDbRepository.ExecuteQuery(new AggregatesQueried<T>(nameof(QueryDatabase), query.AsQueryable()));
+            return await documentDbRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable()));
         }
 
         public static ITestHarness Create(DocumentDbSettings dbConfig)

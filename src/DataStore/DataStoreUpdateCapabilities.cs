@@ -1,4 +1,6 @@
-﻿namespace DataStore
+﻿using DataStore.Models.Messages;
+
+namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -7,7 +9,6 @@
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.LowLevel;
-    using Models.Messages.Events;
     using Models.PureFunctions;
     using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
@@ -30,26 +31,26 @@
 
         // .. update by id; get values from any instance
         private async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
-            where T : IAggregate
+            where T : class, IAggregate, new()
         {
             var results =
                 await UpdateWhere<T>(o => o.id == id, model => src.CopyProperties(model), overwriteReadOnly);
 
-            return results.Single();
+            return results.Single().Clone();
         }
 
         #region IDataStoreUpdateCapabilities Members
 
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : IAggregate
+        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : class, IAggregate, new()
         {
             var results = await UpdateWhere(o => o.id == id, action, overwriteReadOnly);
 
-            return results.Single();
+            return results.Single().Clone();
         }
 
         // .. update using id; get values from another instance
         public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
-            where T : IAggregate
+            where T : class, IAggregate, new()
         {
             return await UpdateByIdUsingValuesFromAnotherInstance(src.id, src, overwriteReadOnly);
         }
@@ -59,9 +60,9 @@
         public async Task<IEnumerable<T>> UpdateWhere<T>(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            bool overwriteReadOnly = false) where T : IAggregate
+            bool overwriteReadOnly = false) where T : class, IAggregate, new()
         {
-            var objects = await eventAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(UpdateWhere),
+            var objects = await eventAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(UpdateWhere),
                     DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
 
@@ -94,10 +95,10 @@
                     "Cannot change restricted properties [id, schema, Created, CreatedAsMillisecondsEpochTime on entity " +
                     originalId);
 
-                eventAggregator.Collect(new AggregateUpdated<T>(nameof(UpdateWhere), dataObject, DsConnection));
+                eventAggregator.Collect(new QueuedUpdateOperation<T>(nameof(UpdateWhere), dataObject, DsConnection, eventAggregator));
             }
 
-            return dataObjects;
+            return dataObjects.Select(d => d.Clone());
         }
 
         #endregion

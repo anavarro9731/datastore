@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using DataStore.Models.Messages.Events;
+using DataStore.Models.Messages;
 using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
@@ -12,10 +12,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
     public class DataStoreCreateCapabilitiesTests
     {
         [Fact]
-        public async void WhenCallingTheCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
+        public async void WhenCallingCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingTheCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
 
             var newCar = new Car()
             {
@@ -27,7 +27,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var result = await testHarness.DataStore.Create(newCar);
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateAdded<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is CreateOperation<Car>));
             Assert.Equal(0, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
             Assert.True(result.Active); 
@@ -50,7 +51,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             await testHarness.DataStore.CommitChanges();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregateAdded<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is CreateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
             Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.True(testHarness.QueryDatabase<Car>().Result.Single().Active);
             Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());

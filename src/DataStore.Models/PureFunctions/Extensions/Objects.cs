@@ -52,25 +52,15 @@
             return (T) o;
         }
 
-        public static T Clone<T>(this T source, params string[] exclude) where T : class, new()
+        public static T Clone<T>(this T source) where T : class, new()
         {
-            var instance = Activator.CreateInstance<T>();
-            source.CopyProperties(instance, exclude);
-            return instance;
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
         }
 
-        /// <summary>
-        ///     uses CopyProperties() to clone an object irrespective of type-safety
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="exclude"></param>
-        /// <returns></returns>
-        public static T Clone<T>(this object source, params string[] exclude) where T : class, new()
+        public static T Clone<T>(this object source) where T : class, new()
         {
             var n = new T();
-            source.CopyProperties(n, exclude);
-            return n;
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
         }
 
         public static ExpandoObject ConvertStrongTypeToExpando(this object obj)

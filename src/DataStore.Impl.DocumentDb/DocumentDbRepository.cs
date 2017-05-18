@@ -1,4 +1,5 @@
 ﻿using DataStore.Models;
+using DataStore.Models.Messages;
 
 namespace DataStore.Impl.DocumentDb
 {
@@ -13,7 +14,6 @@ namespace DataStore.Impl.DocumentDb
     using Interfaces.LowLevel;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
-    using Models.Messages.Events;
     using Models.PureFunctions.Extensions;
 
     public class DocumentDbRepository : IDocumentRepository
@@ -40,11 +40,11 @@ namespace DataStore.Impl.DocumentDb
 
         #region IDocumentRepository Members
 
-        public async Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate
+        public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
             if (aggregateAdded == null || aggregateAdded.Model == null)
                 throw new ArgumentNullException(nameof(aggregateAdded));
-
+                
             var stopWatch = Stopwatch.StartNew();
             var result =
                 await
@@ -72,7 +72,7 @@ namespace DataStore.Impl.DocumentDb
             return query;
         }
 
-        public async Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
+        public async Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
@@ -83,13 +83,13 @@ namespace DataStore.Impl.DocumentDb
             aggregateHardDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
-        public async Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
+        public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
             //HACK: this call inside the doc repository is effectively duplicate [see callers] 
             //and causes us to miss this query when profiling, arguably its cheap, but still
             //if I can determine how to create an Azure Document from T we can ditch it.
             var document =
-                await GetItemAsync(new AggregateQueriedById(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
+                await GetItemAsync(new AggregateQueriedByIdOperation(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
 
             var now = DateTime.UtcNow;
             document.SetPropertyValue(nameof(IAggregate.Active), false);
@@ -155,7 +155,7 @@ namespace DataStore.Impl.DocumentDb
             }
         }
 
-        public async Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
+        public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();
             var result =

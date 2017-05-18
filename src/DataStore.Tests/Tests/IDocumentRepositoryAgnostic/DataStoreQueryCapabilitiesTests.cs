@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using DataStore.Models.Messages.Events;
+using DataStore.Models.Messages;
 using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
@@ -39,7 +39,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var carsFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Make == "Volvo")));
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is AggregatesQueried<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2, carsFromDatabase.Count());
         }
 
@@ -71,7 +71,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var inactiveCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == inactiveCarId))).SingleOrDefault();
 
             //Then
-            Assert.Equal(2, testHarness.Events.Count(e => e is AggregatesQueried<Car>));
+            Assert.Equal(2, testHarness.Operations.Count(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal("Volvo", activeCarFromDatabase.Make);
             Assert.Null(inactiveCarFromDatabase);
         }
@@ -181,7 +181,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             }
 
             //Then
-            Assert.NotNull(testHarness.Events.Exists(e => e is AggregateQueriedById));
+            Assert.NotNull(testHarness.Operations.Exists(e => e is AggregateQueriedByIdOperation));
             Assert.Equal("Volvo", carFromDatabase.Make);
             Assert.Equal(carId, carFromDatabase.id);
         }
@@ -215,7 +215,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var exception = Assert.ThrowsAsync<Exception>(async () => await testHarness.DataStore.ReadActiveById<Car>(inactiveCarId));
 
             //Then
-            Assert.Equal(2, testHarness.Events.Count(e => e is AggregatesQueried<Car>));
+            Assert.Equal(2, testHarness.Operations.Count(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(activeCarId, activeCarFromDatabase.id);
             Assert.NotNull(exception);
         }
@@ -241,7 +241,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var carFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).Single();
 
             //Then
-            Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
+            Assert.NotNull(testHarness.Operations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Result.Single().Make);
             Assert.Equal("Ford", carFromDatabase.Make);
         }
@@ -267,7 +267,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).SingleOrDefault();
 
             //Then
-            Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
+            Assert.NotNull(testHarness.Operations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.Null(readCarFromDatabase);
         }
@@ -293,7 +293,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var readCarFromDatabase = (await testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))).SingleOrDefault();
 
             //Then
-            Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
+            Assert.NotNull(testHarness.Operations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.NotNull(readCarFromDatabase);
         }
@@ -326,7 +326,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var readActiveCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == carId))).Count();
 
             //Then
-            Assert.NotNull(testHarness.Events.All(e => e is AggregatesQueried<Car>));
+            Assert.NotNull(testHarness.Operations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.Equal(2, readCarFromDatabase);
             Assert.Equal(2, readActiveCarFromDatabase);
@@ -351,7 +351,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is TransformationQueried<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
             Assert.Equal("Volvo", carFromDatabase.Make);
         }
 
@@ -376,7 +376,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var transformedCar = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId).Select(c => new { id = c.id, c.Make }))).Single();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e.TypeName == transformedCar.GetType().FullName));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e.TypeName == transformedCar.GetType().FullName));
             Assert.Equal("Volvo", transformedCar.Make);
         }
 
@@ -399,7 +399,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             var carFromDatabase = (await testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))).Single();
 
             //Then
-            Assert.NotNull(testHarness.Events.SingleOrDefault(e => e is TransformationQueried<Car>));
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
             Assert.Equal("Volvo", carFromDatabase.Make);
         }
     }

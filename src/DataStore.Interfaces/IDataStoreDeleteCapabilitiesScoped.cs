@@ -6,7 +6,7 @@ namespace DataStore.Interfaces
     using System.Threading.Tasks;
     using LowLevel;
 
-    public interface IDataStoreDeleteCapabilitiesScoped<T> where T : IAggregate
+    public interface IDataStoreDeleteCapabilitiesScoped<T> where T : class, IAggregate, new()
     {
         Task<T> DeleteHardById(Guid id);
 

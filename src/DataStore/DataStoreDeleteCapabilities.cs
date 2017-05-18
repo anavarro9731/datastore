@@ -1,4 +1,7 @@
-﻿namespace DataStore
+﻿using DataStore.Models.Messages;
+using DataStore.Models.PureFunctions.Extensions;
+
+namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -7,7 +10,6 @@
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.LowLevel;
-    using Models.Messages.Events;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     // Not sure if eventreplay makes sense in this class, needs review currently its not implemented.
@@ -31,49 +33,49 @@
 
         #region IDataStoreDeleteCapabilities Members
 
-        public async Task<T> DeleteHardById<T>(Guid id) where T : IAggregate
+        public async Task<T> DeleteHardById<T>(Guid id) where T : class, IAggregate, new()
         {
-            var result = await messageAggregator.CollectAndForward(new AggregateQueriedById(nameof(DeleteHardById), id, typeof(T)))
+            var result = await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(DeleteHardById), id, typeof(T)))
                 .To(DsConnection.GetItemAsync<T>);
 
-            messageAggregator.Collect(new AggregateHardDeleted<T>(nameof(DeleteHardById), result, DsConnection));
+            messageAggregator.Collect(new QueuedHardDeleteOperation<T>(nameof(DeleteHardById), result, DsConnection, messageAggregator));
 
-            return result;
+            return result.Clone();
         }
 
-        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
+        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
-            var objects = await messageAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(DeleteHardWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+            var objects = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(DeleteHardWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
 
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
-                messageAggregator.Collect(new AggregateHardDeleted<T>(nameof(DeleteHardWhere), dataObject, DsConnection));
+                messageAggregator.Collect(new QueuedHardDeleteOperation<T>(nameof(DeleteHardWhere), dataObject, DsConnection, messageAggregator));
 
-            return dataObjects;
+            return dataObjects.Select(d => d.Clone());
         }
 
-        public async Task<T> DeleteSoftById<T>(Guid id) where T : IAggregate
+        public async Task<T> DeleteSoftById<T>(Guid id) where T : class, IAggregate, new()
         {
-            var result = await messageAggregator.CollectAndForward(new AggregateQueriedById(nameof(DeleteSoftById), id, typeof(T)))
+            var result = await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(DeleteSoftById), id, typeof(T)))
                 .To(DsConnection.GetItemAsync<T>);
 
-            messageAggregator.Collect(new AggregateSoftDeleted<T>(nameof(DeleteSoftById), result, DsConnection));
+            messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftById), result, DsConnection, messageAggregator));
 
-            return result;
+            return result.Clone();
         }
 
         // .. soft delete one or more DataObjects 
-        public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : IAggregate
+        public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
-            var objects = await messageAggregator.CollectAndForward(new AggregatesQueried<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+            var objects = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
             
             var dataObjects = objects.AsEnumerable();
             foreach (var dataObject in dataObjects)
-                messageAggregator.Collect(new AggregateSoftDeleted<T>(nameof(DeleteSoftWhere), dataObject, DsConnection));
+                messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftWhere), dataObject, DsConnection, messageAggregator));
 
-            return dataObjects;
+            return dataObjects.Select(o => o.Clone());
         }
 
         #endregion

@@ -9,7 +9,7 @@ namespace DataStore.Interfaces
 
     public interface IDocumentRepository : IDisposable
     {
-        Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate;
+        Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new();
 
         IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema;
 
@@ -21,10 +21,10 @@ namespace DataStore.Interfaces
 
         Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById);
 
-        Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate;
+        Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new();
 
-        Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate;
+        Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new();
 
-        Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate;
+        Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new();
     }
 }

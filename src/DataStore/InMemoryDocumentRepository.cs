@@ -23,7 +23,7 @@
 
         #region IDocumentRepository Members
 
-        public Task AddAsync<T>(IDataStoreWriteEvent<T> aggregateAdded) where T : IAggregate
+        public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
             Aggregates.Add(aggregateAdded.Model);
 
@@ -35,7 +35,7 @@
             return Clone(Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>()).AsQueryable();
         }
 
-        public Task DeleteHardAsync<T>(IDataStoreWriteEvent<T> aggregateHardDeleted) where T : IAggregate
+        public Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateHardDeleted.Model.id);
 
@@ -44,7 +44,7 @@
             return Task.FromResult(aggregate);
         }
 
-        public Task DeleteSoftAsync<T>(IDataStoreWriteEvent<T> aggregateSoftDeleted) where T : IAggregate
+        public Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
             var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
 
@@ -89,7 +89,7 @@
             return Task.FromResult<dynamic>(document);
         }
 
-        public Task UpdateAsync<T>(IDataStoreWriteEvent<T> aggregateUpdated) where T : IAggregate
+        public Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             var toUpdate = Aggregates.Single(x => x.id == aggregateUpdated.Model.id);
 

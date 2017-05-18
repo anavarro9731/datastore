@@ -1,11 +1,11 @@
-﻿namespace DataStore.Models.Messages.Events
-{
-    using System;
-    using Interfaces.Events;
+﻿using System;
+using DataStore.Interfaces.Events;
 
-    public class AggregateQueriedById : IDataStoreReadById
+namespace DataStore.Models.Messages
+{
+    public class AggregateQueriedByIdOperation : IDataStoreReadById
     {
-        public AggregateQueriedById(string methodCalled, Guid id, Type type = null)
+        public AggregateQueriedByIdOperation(string methodCalled, Guid id, Type type = null)
         {
             MethodCalled = methodCalled;
             Id = id;

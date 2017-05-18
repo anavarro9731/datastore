@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using DataStore.Models.Messages.Events;
+using DataStore.Models.Messages;
 using DataStore.Tests.Constants;
 using DataStore.Tests.Models;
 using Xunit;
@@ -33,7 +33,9 @@ namespace DataStore.Tests.Tests.Documentation
             //Then 
 
             //We have a AggregateUpdated event
-            Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+
 
             //The underlying database has changed
             Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
@@ -65,7 +67,7 @@ namespace DataStore.Tests.Tests.Documentation
             //Then 
 
             //We have a AggregateUpdated event
-            Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
             //The underlying database has NOT changed
             Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
