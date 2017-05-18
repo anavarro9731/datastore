@@ -15,9 +15,10 @@
             this.eventType = eventType;
         }
 
-        public void Return<TReturnValue>(TReturnValue returnValue)
+        public IValueReturner Return<TReturnValue>(TReturnValue returnValue)
         {
             this.returnValues.Add(this.eventType, returnValue);
+            return this;
         }
     }
 }
