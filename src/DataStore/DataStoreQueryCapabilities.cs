@@ -1,23 +1,21 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.Events;
+using DataStore.Interfaces.LowLevel;
 using DataStore.Models.Messages;
+using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
 namespace DataStore
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.Events;
-    using Interfaces.LowLevel;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-
     //methods return the latest version of an object including uncommitted session changes
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
     {
-        private readonly IMessageAggregator messageAggregator;
         private readonly EventReplay eventReplay;
+        private readonly IMessageAggregator messageAggregator;
 
         public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
         {
@@ -28,32 +26,59 @@ namespace DataStore
 
         private IDocumentRepository DbConnection { get; }
 
+        #region
+
         public async Task<bool> Exists(Guid id)
         {
             if (id == Guid.Empty) return false;
 
+            if (!HasBeenHardDeletedInThisSession(id)) return false;
+
+            return await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(Exists), id))
+                .To(DbConnection.Exists);
+        }
+
+        private bool HasBeenHardDeletedInThisSession(Guid id)
+        {
             //if its been deleted in this session (this takes the place of eventReplay for this function)
             if (messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
                 .ToList()
                 .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedHardDeleteOperation<>)))
-                return false;
+                return true;
+            return false;
+        }
 
-            return await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(Exists), id)).To(DbConnection.Exists);
+        private bool HasBeenDeletedInThisSession(Guid id)
+        {
+            //if its been deleted in this session (this takes the place of eventReplay for this function)
+            if (HasBeenDeletedInThisSession(id) || messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
+                .ToList()
+                .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedSoftDeleteOperation<>)))
+                return true;
+            return false;
         }
 
         // get a filtered list of the models from set of DataObjects
         public async Task<IEnumerable<T>> Read<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
             where T : class, IAggregate, new()
         {
-            var results = await ReadInternal(queryableExtension);
+            var queryable = DbConnection.CreateDocumentQuery<T>();
+
+            if (queryableExtension != null)
+                queryable = queryableExtension(queryable);
+
+            var results = await messageAggregator
+                .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
+                .To(DbConnection.ExecuteQuery);
 
             return eventReplay.ApplyAggregateEvents(results, false);
         }
 
         // get a filtered list of the models from a set of active DataObjects
-        public async Task<IEnumerable<T>> ReadActive<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> ReadActive<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
+            where T : class, IAggregate, new()
         {
-            Func<IQueryable<T>, IQueryable<T>> activeOnlyQueryableExtension = q =>
+            IQueryable<T> ActiveOnlyQueryableExtension(IQueryable<T> q)
             {
                 if (queryableExtension != null)
                     q = queryableExtension(q);
@@ -61,9 +86,14 @@ namespace DataStore
                 q = q.Where(a => a.Active);
 
                 return q;
-            };
+            }
 
-            var results = await ReadInternal(activeOnlyQueryableExtension);
+            var queryable = DbConnection.CreateDocumentQuery<T>();
+            queryable = ActiveOnlyQueryableExtension(queryable);
+
+            var results = await messageAggregator
+                .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
+                .To(DbConnection.ExecuteQuery);
 
             return eventReplay.ApplyAggregateEvents(results, true);
         }
@@ -71,21 +101,21 @@ namespace DataStore
         // get a filtered list of the models from  a set of DataObjects
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()
         {
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = q => q.Where(a => a.id == modelId && a.Active);
-            var results = await ReadInternal(queryableExtension);
+            if (modelId == Guid.Empty) return (T)null;
 
-            return eventReplay.ApplyAggregateEvents(results, true).Single();
+            if (HasBeenDeletedInThisSession(modelId)) return (T) null;
+            
+            var result = await messageAggregator
+                .CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadActiveById),modelId))
+                .To(DbConnection.GetItemAsync<T>);
+
+            if (result == null) return null;
+
+            if (result.Active) return result;
+
+            return null;
         }
 
-        private async Task<IEnumerable<T>> ReadInternal<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension) where T : class, IAggregate, new()
-        {
-            var queryable = DbConnection.CreateDocumentQuery<T>();
-            if (queryableExtension != null)
-                queryable = queryableExtension(queryable);
-
-            var results = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadInternal), queryable)).To(DbConnection.ExecuteQuery);
-
-            return results;
-        }
+        #endregion
     }
 }
