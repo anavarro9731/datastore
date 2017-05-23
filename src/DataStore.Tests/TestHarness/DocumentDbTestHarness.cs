@@ -42,7 +42,7 @@ namespace DataStore.Tests.TestHarness
         }
 
         public async Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
-            where T : IHaveSchema, IHaveAUniqueId
+            where T : class, IAggregate, new()
         {
             var query = extendQueryable == null
                 ? documentDbRepository.CreateDocumentQuery<T>()

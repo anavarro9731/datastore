@@ -12,10 +12,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
     public class DataStoreCreateCapabilitiesTests
     {
         [Fact]
-        public async void WhenCallingCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally()
+        public async void WhenCallingCreateWithoutCommitting_ItShouldOnlyMakeTheChangesInSession()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreateWithoutCommitting_ItShouldOnlyMakeTheChangesLocally));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreateWithoutCommitting_ItShouldOnlyMakeTheChangesInSession));
 
             var newCar = new Car()
             {
@@ -40,9 +40,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             // Given
             var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCommitAfterCreate_ItShouldPersistChangesToTheDatabase));
 
+            var newCarId = Guid.NewGuid();
             var newCar = new Car()
             {
-                id = Guid.NewGuid(),
+                id = newCarId,
                 Make = "Volvo"
             };
 
@@ -55,6 +56,34 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
             Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
             Assert.True(testHarness.QueryDatabase<Car>().Result.Single().Active);
+            Assert.True(testHarness.QueryDatabase<Car>().Result.Single().id == newCarId);
+            Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
+        }
+
+        [Fact]
+        public async void WhenCallingCommitAfterCreate_ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned()
+        {
+            // Given
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCommitAfterCreate_ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned));
+
+            var newCarId = Guid.NewGuid();
+            var newCar = new Car()
+            {
+                id = newCarId,
+                Make = "Volvo"
+            };
+
+            var result = await testHarness.DataStore.Create(newCar);
+            //When
+            result.id = Guid.NewGuid();
+            await testHarness.DataStore.CommitChanges();
+
+            //Then
+            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is CreateOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
+            Assert.Equal(1, testHarness.QueryDatabase<Car>().Result.Count());
+            Assert.True(testHarness.QueryDatabase<Car>().Result.Single().Active);
+            Assert.True(testHarness.QueryDatabase<Car>().Result.Single().id == newCarId);
             Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
         }
     }

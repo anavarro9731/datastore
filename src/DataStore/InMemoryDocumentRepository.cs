@@ -14,46 +14,40 @@
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
 
-        private IEnumerable<T> Clone<T>(IEnumerable<T> toClone) where T : IHaveAUniqueId
-        {
-            var asJson = JsonConvert.SerializeObject(toClone);
-            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson);
-            return cloned;
-        }
-
-        #region IDocumentRepository Members
+        #region
 
         public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
             Aggregates.Add(aggregateAdded.Model);
 
-            return Task.FromResult(aggregateAdded.Model);
+            return Task.CompletedTask;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
+        public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
         {
-            return Clone(Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>()).AsQueryable();
+            //clone otherwise its to easy to change the referenced object in test code affecting results
+            return Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().CloneEnumerable().AsQueryable();
         }
 
         public Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateHardDeleted.Model.id);
-
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
-            return Task.FromResult(aggregate);
+            return Task.CompletedTask;
         }
 
         public Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName)
+                .Cast<T>()
+                .Single(a => a.id == aggregateSoftDeleted.Model.id);
 
             var now = DateTime.UtcNow;
             aggregate.Active = false;
             aggregate.Modified = now;
             aggregate.ModifiedAsMillisecondsEpochTime = now.ConvertToMillisecondsEpochTime();
-            
-            return Task.FromResult(aggregate);
+
+            return Task.CompletedTask;
         }
 
         public void Dispose()
@@ -63,9 +57,10 @@
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
-            var cloned = aggregatesQueried.Query.ToList().AsEnumerable();
+            //clone otherwise its to easy to change the referenced object in test code affecting results
+            var result = aggregatesQueried.Query.ToList().CloneEnumerable();
 
-            return Task.FromResult(cloned);
+            return Task.FromResult(result);
         }
 
         public Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
@@ -73,20 +68,14 @@
             return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedById.Id));
         }
 
-        public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
+        public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName)
+                .Cast<T>()
+                .SingleOrDefault(a => a.id == aggregateQueriedById.Id);
 
-            return Task.FromResult(aggregate);
-        }
-
-        public Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById)
-        {
-            var queryable = Aggregates.AsQueryable().Where(x => x.id == aggregateQueriedById.Id);
-
-            var document = queryable.ToList().Single();
-
-            return Task.FromResult<dynamic>(document);
+            //clone otherwise its to easy to change the referenced object in test code affecting results
+            return Task.FromResult(aggregate?.Clone());
         }
 
         public Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
@@ -95,9 +84,11 @@
 
             aggregateUpdated.Model.CopyProperties(toUpdate);
 
-            return Task.FromResult((T) toUpdate);
+            return Task.CompletedTask;
         }
 
         #endregion
+
+
     }
 }

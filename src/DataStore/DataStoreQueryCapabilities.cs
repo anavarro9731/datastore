@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Interfaces;
-using DataStore.Interfaces.Events;
-using DataStore.Interfaces.LowLevel;
-using DataStore.Models.Messages;
-using DataStore.Models.PureFunctions.Extensions;
-using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-
-namespace DataStore
+﻿namespace DataStore
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Interfaces;
+    using Interfaces.Events;
+    using Interfaces.LowLevel;
+    using Models.Messages;
+    using Models.PureFunctions.Extensions;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+
     //methods return the latest version of an object including uncommitted session changes
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
@@ -37,16 +37,6 @@ namespace DataStore
 
             return await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(Exists), id))
                 .To(DbConnection.Exists);
-        }
-
-        private bool HasBeenHardDeletedInThisSession(Guid id)
-        {
-            //if its been deleted in this session (this takes the place of eventReplay for this function)
-            if (messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
-                .ToList()
-                .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedHardDeleteOperation<>)))
-                return true;
-            return false;
         }
 
         // get a filtered list of the models from set of DataObjects
@@ -77,7 +67,7 @@ namespace DataStore
             var queryable = DbConnection.CreateDocumentQuery<T>();
 
             if (queryableExtension != null)
-            queryable = ActiveOnlyQueryableExtension(queryable);
+                queryable = ActiveOnlyQueryableExtension(queryableExtension(queryable));
 
             var results = await messageAggregator
                 .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
@@ -97,9 +87,19 @@ namespace DataStore
 
             if (result == null || !result.Active) return null;
 
-            return eventReplay.ApplyAggregateEvents(new List<T> { result }, true).SingleOrDefault()?.Clone();
+            return eventReplay.ApplyAggregateEvents(new List<T> {result}, true).SingleOrDefault();
         }
 
         #endregion
+
+        private bool HasBeenHardDeletedInThisSession(Guid id)
+        {
+            //if its been deleted in this session (this takes the place of eventReplay for this function)
+            if (messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
+                .ToList()
+                .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedHardDeleteOperation<>)))
+                return true;
+            return false;
+        }
     }
 }

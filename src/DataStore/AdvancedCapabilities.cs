@@ -56,9 +56,9 @@ namespace DataStore
         }
 
         // get a filtered list of the models from  a set of DataObjects
-        public async Task<dynamic> ReadCommittedById(Guid modelId)
+        public async Task<T> ReadCommittedById<T>(Guid modelId) where T: class, IAggregate, new()
         {
-            var result = await _messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadCommittedById), modelId)).To(_dataStoreConnection.GetItemAsync);
+            var result = await _messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadCommittedById), modelId)).To(_dataStoreConnection.GetItemAsync<T>);
             return result;
         }
     }

@@ -109,10 +109,10 @@ namespace DataStore
         {
             return await QueryCapabilities.ReadActiveById<T>(modelId);
         }
-
-        public async Task<dynamic> ReadCommittedById(Guid modelId)
+         
+        public async Task<T> ReadCommittedById<T>(Guid modelId) where T : class, IAggregate, new()
         {
-            return await Advanced.ReadCommittedById(modelId);
+            return await Advanced.ReadCommittedById<T>(modelId);
         }
 
         public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true)
