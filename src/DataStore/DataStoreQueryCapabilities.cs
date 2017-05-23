@@ -6,6 +6,7 @@ using DataStore.Interfaces;
 using DataStore.Interfaces.Events;
 using DataStore.Interfaces.LowLevel;
 using DataStore.Models.Messages;
+using DataStore.Models.PureFunctions.Extensions;
 using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
 namespace DataStore
@@ -32,7 +33,7 @@ namespace DataStore
         {
             if (id == Guid.Empty) return false;
 
-            if (!HasBeenHardDeletedInThisSession(id)) return false;
+            if (HasBeenHardDeletedInThisSession(id)) return false;
 
             return await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(Exists), id))
                 .To(DbConnection.Exists);
@@ -44,16 +45,6 @@ namespace DataStore
             if (messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
                 .ToList()
                 .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedHardDeleteOperation<>)))
-                return true;
-            return false;
-        }
-
-        private bool HasBeenDeletedInThisSession(Guid id)
-        {
-            //if its been deleted in this session (this takes the place of eventReplay for this function)
-            if (HasBeenDeletedInThisSession(id) || messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
-                .ToList()
-                .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedSoftDeleteOperation<>)))
                 return true;
             return false;
         }
@@ -80,15 +71,12 @@ namespace DataStore
         {
             IQueryable<T> ActiveOnlyQueryableExtension(IQueryable<T> q)
             {
-                if (queryableExtension != null)
-                    q = queryableExtension(q);
-
-                q = q.Where(a => a.Active);
-
-                return q;
+                return q.Where(a => a.Active);
             }
 
             var queryable = DbConnection.CreateDocumentQuery<T>();
+
+            if (queryableExtension != null)
             queryable = ActiveOnlyQueryableExtension(queryable);
 
             var results = await messageAggregator
@@ -101,19 +89,15 @@ namespace DataStore
         // get a filtered list of the models from  a set of DataObjects
         public async Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()
         {
-            if (modelId == Guid.Empty) return (T)null;
+            if (modelId == Guid.Empty) return null;
 
-            if (HasBeenDeletedInThisSession(modelId)) return (T) null;
-            
             var result = await messageAggregator
-                .CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadActiveById),modelId))
+                .CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadActiveById), modelId))
                 .To(DbConnection.GetItemAsync<T>);
 
-            if (result == null) return null;
+            if (result == null || !result.Active) return null;
 
-            if (result.Active) return result;
-
-            return null;
+            return eventReplay.ApplyAggregateEvents(new List<T> { result }, true).SingleOrDefault()?.Clone();
         }
 
         #endregion

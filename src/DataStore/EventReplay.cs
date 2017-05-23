@@ -30,43 +30,43 @@ namespace DataStore
             return modifiedResults;
         }
 
-        private static void ApplyEvent<T>(List<T> results, IQueuedDataStoreWriteOperation<T> operationAggregatorOperation,
+        private static void ApplyEvent<T>(List<T> results, IQueuedDataStoreWriteOperation<T> previousUncommittedOperation,
             bool requestingOnlyReadActive) where T : class, IAggregate, new()
         {
-            if (operationAggregatorOperation is QueuedCreateOperation<T>)
+            if (previousUncommittedOperation is QueuedCreateOperation<T>)
             {
-                if (requestingOnlyReadActive && !operationAggregatorOperation.Model.Active)
+                if (requestingOnlyReadActive && !previousUncommittedOperation.Model.Active)
                 {
                 }
                 else
                 {
-                    results.Add(operationAggregatorOperation.Model);
+                    results.Add(previousUncommittedOperation.Model);
                 }
             }
-            else if (results.Exists(i => i.id == operationAggregatorOperation.Model.id))
+            else if (results.Exists(i => i.id == previousUncommittedOperation.Model.id))
             {
-                if (operationAggregatorOperation is QueuedUpdateOperation<T>)
-                    if (requestingOnlyReadActive && !operationAggregatorOperation.Model.Active)
+                if (previousUncommittedOperation is QueuedUpdateOperation<T>)
+                    if (requestingOnlyReadActive && !previousUncommittedOperation.Model.Active)
                     {
-                        var itemToRemove = results.Single(i => i.id == operationAggregatorOperation.Model.id);
+                        var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);
                         results.Remove(itemToRemove);
                     }
                     else
                     {
-                        var itemToUpdate = results.Single(i => i.id == operationAggregatorOperation.Model.id);
-                        operationAggregatorOperation.Model.CopyProperties(itemToUpdate);
+                        var itemToUpdate = results.Single(i => i.id == previousUncommittedOperation.Model.id);
+                        previousUncommittedOperation.Model.CopyProperties(itemToUpdate);
                     }
 
-                if (operationAggregatorOperation is QueuedSoftDeleteOperation<T>)
+                if (previousUncommittedOperation is QueuedSoftDeleteOperation<T>)
                     if (requestingOnlyReadActive)
                     {
-                        var itemToRemove = results.Single(i => i.id == operationAggregatorOperation.Model.id);
+                        var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);
                         results.Remove(itemToRemove);
                     }
 
-                if (operationAggregatorOperation is QueuedHardDeleteOperation<T>)
+                if (previousUncommittedOperation is QueuedHardDeleteOperation<T>)
                 {
-                    var itemToRemove = results.Single(i => i.id == operationAggregatorOperation.Model.id);
+                    var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);
                     results.Remove(itemToRemove);
                 }
             }

@@ -185,7 +185,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
             Assert.Equal("Volvo", carFromDatabase.Make);
             Assert.Equal(carId, carFromDatabase.id);
         }
-
+        
         [Fact]
         public async void WhenCallingReadActiveById_ItShouldReturnTheItemWithThatIdOnlyIfItIsActive()
         {
@@ -207,17 +207,18 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
                 Active = false,
                 Make = "Jeep"
             };
+
             await testHarness.AddToDatabase(activeExistingCar);
             await testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
             var activeCarFromDatabase = await testHarness.DataStore.ReadActiveById<Car>(activeCarId);
-            var exception = Assert.ThrowsAsync<Exception>(async () => await testHarness.DataStore.ReadActiveById<Car>(inactiveCarId));
+            var inactiveCarFromDatabase = await testHarness.DataStore.ReadActiveById<Car>(inactiveCarId);
 
             //Then
-            Assert.Equal(2, testHarness.Operations.Count(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal(2, testHarness.Operations.Count(e => e is AggregateQueriedByIdOperation));
             Assert.Equal(activeCarId, activeCarFromDatabase.id);
-            Assert.NotNull(exception);
+            Assert.Null(inactiveCarFromDatabase);
         }
 
         [Fact]
