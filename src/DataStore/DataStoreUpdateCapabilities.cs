@@ -1,6 +1,4 @@
-﻿using DataStore.Models.Messages;
-
-namespace DataStore
+﻿namespace DataStore
 {
     using System;
     using System.Collections.Generic;
@@ -9,6 +7,7 @@ namespace DataStore
     using System.Threading.Tasks;
     using Interfaces;
     using Interfaces.LowLevel;
+    using Models.Messages;
     using Models.PureFunctions;
     using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
@@ -29,32 +28,21 @@ namespace DataStore
 
         private IDocumentRepository DsConnection { get; }
 
-        // .. update by id; get values from any instance
-        private async Task<T> UpdateByIdUsingValuesFromAnotherInstance<T>(Guid id, T src, bool overwriteReadOnly = true)
+        #region
+
+        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true)
             where T : class, IAggregate, new()
         {
-            var results =
-                await UpdateWhere<T>(o => o.id == id, model => src.CopyProperties(model), overwriteReadOnly);
-
-            return results.Single().Clone();
-        }
-
-        #region IDataStoreUpdateCapabilities Members
-
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : class, IAggregate, new()
-        {
-            var results = await UpdateWhere(o => o.id == id, action, overwriteReadOnly);
-
-            return results.Single().Clone();
+            return await UpdateByIdInternal(id, action, overwriteReadOnly);
         }
 
         // .. update using id; get values from another instance
         public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
             where T : class, IAggregate, new()
-        {
-            return await UpdateByIdUsingValuesFromAnotherInstance(src.id, src, overwriteReadOnly);
+        {            
+            //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
+            return await UpdateByIdInternal<T>(src.id, model => src.Clone(), overwriteReadOnly);
         }
-
 
         // update a DataObject selected with a singular predicate
         public async Task<IEnumerable<T>> UpdateWhere<T>(
@@ -66,6 +54,29 @@ namespace DataStore
                     DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
 
+            return UpdateInternal(action, overwriteReadOnly, objects);
+        }
+
+        #endregion
+
+        private async Task<T> UpdateByIdInternal<T>(Guid id, Action<T> action, bool overwriteReadOnly)
+            where T : class, IAggregate, new()
+        {
+            var result = await eventAggregator
+                .CollectAndForward(new AggregateQueriedByIdOperation(nameof(UpdateById), id, typeof(T)))
+                .To(DsConnection.GetItemAsync<T>);
+
+            var list = new List<T>().Op(l =>
+            {
+                if (result != null) l.Add(result);
+            });
+
+            return UpdateInternal(action, overwriteReadOnly, list).SingleOrDefault();
+        }
+
+        private IEnumerable<T> UpdateInternal<T>(Action<T> action, bool overwriteReadOnly, IEnumerable<T> objects)
+            where T : class, IAggregate, new()
+        {
             objects = eventReplay.ApplyAggregateEvents(objects, false);
 
             var dataObjects = objects.AsEnumerable();
@@ -81,6 +92,7 @@ namespace DataStore
                                            dataObject.Created +
                                            dataObject.CreatedAsMillisecondsEpochTime;
 
+
                 action(dataObject);
 
                 var restrictedProperties2 = dataObject.id +
@@ -95,12 +107,12 @@ namespace DataStore
                     "Cannot change restricted properties [id, schema, Created, CreatedAsMillisecondsEpochTime on entity " +
                     originalId);
 
-                eventAggregator.Collect(new QueuedUpdateOperation<T>(nameof(UpdateWhere), dataObject, DsConnection, eventAggregator));
+                eventAggregator.Collect(
+                    new QueuedUpdateOperation<T>(nameof(UpdateWhere), dataObject, DsConnection, eventAggregator));
             }
 
+            //clone otherwise its to easy to change the referenced object before committing
             return dataObjects.Select(d => d.Clone());
         }
-
-        #endregion
     }
 }

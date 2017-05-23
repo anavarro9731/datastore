@@ -1,11 +1,13 @@
 ﻿namespace DataStore.Models.PureFunctions.Extensions
 {
     using System;
+    using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+    using Interfaces.LowLevel;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
     using Newtonsoft.Json.Linq;
@@ -61,6 +63,13 @@
         {
             var n = new T();
             return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
+        }
+
+        public static IEnumerable<T> CloneEnumerable<T>(this IEnumerable<T> toClone)
+        {
+            var asJson = JsonConvert.SerializeObject(toClone);
+            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson);
+            return cloned;
         }
 
         public static ExpandoObject ConvertStrongTypeToExpando(this object obj)

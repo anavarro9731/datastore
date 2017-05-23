@@ -17,10 +17,10 @@ namespace DataStore.Tests.TestHarness
         List<IMessage> AllMessages { get; }
 
         //add to the underlying db directly (i.e. not via datastore)
-        Task AddToDatabase<T>(T aggregate) where T : class, IAggregate, new();
+        void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new();
 
         //query the underlying db directly (i.e. not via datastore)
-        Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
-            where T : IHaveSchema, IHaveAUniqueId;
+        IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+            where T : class, IAggregate, new();
     }
 }

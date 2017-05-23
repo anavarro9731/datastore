@@ -51,7 +51,7 @@ namespace DataStore.Impl.SqlServer
             aggregateAdded.StateOperationDuration = stopWatch.Elapsed;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
+        public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
         {
             var schema = typeof(T).FullName;
 
@@ -120,7 +120,7 @@ namespace DataStore.Impl.SqlServer
             aggregateSoftDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
+        public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
             var stopWatch = Stopwatch.StartNew();
 
@@ -130,12 +130,10 @@ namespace DataStore.Impl.SqlServer
 
             aggregatesQueried.StateOperationDuration = stopWatch.Elapsed;
 
-            await Task.Delay(0);
-
-            return results;
+            return Task.FromResult(results.AsEnumerable());
         }
 
-        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
+        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();
 
@@ -149,9 +147,7 @@ namespace DataStore.Impl.SqlServer
                 {
                     var response = await command.ExecuteScalarAsync() as string;
 
-                    if (response == null) throw new DatabaseRecordNotFoundException(id.ToString());
-
-                    result = JsonConvert.DeserializeObject<T>(response);
+                    result = response == null ? null : JsonConvert.DeserializeObject<T>(response);
                 }
             }
 
@@ -159,32 +155,7 @@ namespace DataStore.Impl.SqlServer
             aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
             return result;
         }
-
-        public async Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById)
-        {
-            var stopWatch = Stopwatch.StartNew();
-
-            var id = aggregateQueriedById.Id;
-
-            dynamic result;
-            using (var connection = clientFactory.OpenClient())
-            {
-                using (var command = new SqlCommand(
-                    $"SELECT Json FROM {settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
-                {
-                    var response = await command.ExecuteScalarAsync() as string;
-
-                    if (response == null) throw new DatabaseRecordNotFoundException(id.ToString());
-
-                    result = JsonConvert.DeserializeObject<dynamic>(response);
-                }
-            }
-
-            stopWatch.Stop();
-            aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
-            return result;
-        }
-
+        
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             var stopWatch = Stopwatch.StartNew();

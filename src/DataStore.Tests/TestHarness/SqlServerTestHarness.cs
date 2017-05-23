@@ -30,19 +30,19 @@ namespace DataStore.Tests.TestHarness
         public List<IQueuedDataStoreWriteOperation> QueuedWriteOperations => messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList();
         public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
 
-        public async Task AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
+        public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
             var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, sqlServerRepository, messageAggregator);
-            await newAggregate.CommitClosure();
+            newAggregate.CommitClosure().Wait();
         }
 
-        public async Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
-            where T : IHaveSchema, IHaveAUniqueId
+        public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+            where T : class, IAggregate, new()
         {
             var query = extendQueryable == null
                 ? sqlServerRepository.CreateDocumentQuery<T>()
                 : extendQueryable(sqlServerRepository.CreateDocumentQuery<T>());
-            return await sqlServerRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable()));
+            return sqlServerRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).Result;
         }
 
         public static ITestHarness Create(SqlServerDbSettings dbConfig)

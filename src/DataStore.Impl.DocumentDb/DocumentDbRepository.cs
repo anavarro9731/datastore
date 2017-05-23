@@ -58,7 +58,7 @@ namespace DataStore.Impl.DocumentDb
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema
+        public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
         {
             var name = typeof(T).FullName;
             var query = documentClient.CreateDocumentQuery<T>(config.CollectionSelfLink(),
@@ -129,7 +129,7 @@ namespace DataStore.Impl.DocumentDb
             return results;
         }
 
-        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId
+        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var result = await GetItemAsync(aggregateQueriedById);
             return (T) result;

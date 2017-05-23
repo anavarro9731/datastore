@@ -3,7 +3,7 @@
     <Description>A Document-Centric Data Access Framework</Description>
     <Copyright>Copyright (c) 2016 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>net452</TargetFrameworks>
+    <TargetFrameworks>net461</TargetFrameworks>
     <AssemblyName>DataStore</AssemblyName>
     <PackageId>DataStore</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>

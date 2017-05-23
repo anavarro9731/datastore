@@ -170,7 +170,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic
 
             // When
             Car carFromDatabase;
-            var document = await testHarness.DataStore.Advanced.ReadCommittedById(carId);
+            var document = await testHarness.DataStore.Advanced.ReadCommittedById<Car>(carId);
             try
             {
                 carFromDatabase = (Car) (dynamic) document;

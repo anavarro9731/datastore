@@ -40,6 +40,7 @@ namespace DataStore
 
             messageAggregator.Collect(new QueuedHardDeleteOperation<T>(nameof(DeleteHardById), result, DsConnection, messageAggregator));
 
+            //clone otherwise its to easy to change the referenced object before committing
             return result.Clone();
         }
 
@@ -52,6 +53,7 @@ namespace DataStore
             foreach (var dataObject in dataObjects)
                 messageAggregator.Collect(new QueuedHardDeleteOperation<T>(nameof(DeleteHardWhere), dataObject, DsConnection, messageAggregator));
 
+            //clone otherwise its to easy to change the referenced object before committing
             return dataObjects.Select(d => d.Clone());
         }
 
@@ -62,6 +64,7 @@ namespace DataStore
 
             messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftById), result, DsConnection, messageAggregator));
 
+            //clone otherwise its to easy to change the referenced object before committing
             return result.Clone();
         }
 
@@ -75,6 +78,7 @@ namespace DataStore
             foreach (var dataObject in dataObjects)
                 messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftWhere), dataObject, DsConnection, messageAggregator));
 
+            //clone otherwise its to easy to change the referenced object before committing
             return dataObjects.Select(o => o.Clone());
         }
 

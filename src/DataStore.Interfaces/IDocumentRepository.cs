@@ -11,15 +11,13 @@ namespace DataStore.Interfaces
     {
         Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new();
 
-        IQueryable<T> CreateDocumentQuery<T>() where T : IHaveAUniqueId, IHaveSchema;
+        IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new();
 
         Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried);
 
         Task<bool> Exists(IDataStoreReadById aggregateQueriedById);
 
-        Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : IHaveAUniqueId;
-
-        Task<dynamic> GetItemAsync(IDataStoreReadById aggregateQueriedById);
+        Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new();
 
         Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new();
 
