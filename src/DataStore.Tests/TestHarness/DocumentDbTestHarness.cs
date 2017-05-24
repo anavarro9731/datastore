@@ -35,19 +35,19 @@ namespace DataStore.Tests.TestHarness
         public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
 
 
-        public async Task AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
+        public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
             var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, documentDbRepository, messageAggregator);
-            await newAggregate.CommitClosure();
+            newAggregate.CommitClosure().Wait();
         }
 
-        public async Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+        public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
             where T : class, IAggregate, new()
         {
             var query = extendQueryable == null
                 ? documentDbRepository.CreateDocumentQuery<T>()
                 : extendQueryable(documentDbRepository.CreateDocumentQuery<T>());
-            return await documentDbRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable()));
+            return documentDbRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).Result;
         }
 
         public static ITestHarness Create(DocumentDbSettings dbConfig)

@@ -7,15 +7,15 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
     using TestHarness;
     using Xunit;
 
-    public class WhenCallingCommitAfterDeleteSoftById
+    public class WhenCallingDeleteSoftWhereWithoutCommitting
     {
-        public WhenCallingCommitAfterDeleteSoftById()
+        public WhenCallingDeleteSoftWhereWithoutCommitting()
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(ItShouldPersistChangesToTheDatabase));
+                nameof(WhenCallingDeleteSoftWhereWithoutCommitting));
 
-            carId = Guid.NewGuid();
+            var carId = Guid.NewGuid();
             testHarness.AddToDatabase(new Car
             {
                 id = carId,
@@ -23,19 +23,18 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             });
 
             //When
-            testHarness.DataStore.DeleteSoftById<Car>(carId).Wait();
-            testHarness.DataStore.CommitChanges().Wait();
+            testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId).Wait();
         }
 
         private readonly ITestHarness testHarness;
-        private readonly Guid carId;
 
         [Fact]
-        public async void ItShouldPersistChangesToTheDatabase()
+        public async void ItShouldOnlyMakeTheChangesInSession()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            //Then
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
             Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
-            Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Active);
+            Assert.NotEmpty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.ReadActive<Car>(car => car));
             Assert.NotEmpty(await testHarness.DataStore.Read<Car>(car => car));
         }

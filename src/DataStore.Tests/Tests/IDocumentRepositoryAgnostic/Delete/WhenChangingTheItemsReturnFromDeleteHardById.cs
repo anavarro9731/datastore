@@ -1,51 +1,46 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using global::DataStore.Models.Messages;
     using Models;
     using TestHarness;
     using Xunit;
 
-    public class WhenCallingCommitAfterDeleteHardWhere
+    public class WhenChangingTheItemsReturnFromDeleteHardById
+
     {
-        public WhenCallingCommitAfterDeleteHardWhere()
+        public WhenChangingTheItemsReturnFromDeleteHardById()
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingCommitAfterDeleteHardWhere));
+                nameof(WhenChangingTheItemsReturnFromDeleteHardById
+                ));
 
-            carId = Guid.NewGuid();
+            var carId = Guid.NewGuid();
             testHarness.AddToDatabase(new Car
             {
                 id = carId,
                 Make = "Volvo"
             });
 
+            var result = testHarness.DataStore.DeleteHardById<Car>(carId).Result;
+
             //When
-            result = testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Result;
+            result.id = Guid.NewGuid(); //change in memory before commit
             testHarness.DataStore.CommitChanges().Wait();
         }
 
-        private readonly IEnumerable<Car> result;
         private readonly ITestHarness testHarness;
-        private readonly Guid carId;
 
         [Fact]
-        public async void ItShouldPersistChangesToTheDatabase()
+        public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
+            //Then
             Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
             Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
-        }
-
-
-        [Fact]
-        public void ItShouldReturnTheItemsDeleted()
-        {
-            Assert.Equal(carId, result.Single().id);
         }
     }
 }
