@@ -12,8 +12,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         public WhenCallingDeleteHardById()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingDeleteHardById));
+            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDeleteHardById));
 
             carId = Guid.NewGuid();
             testHarness.AddToDatabase(new Car
@@ -32,12 +31,16 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         private readonly Guid carId;
 
         [Fact]
-        public async void ItShouldPersistChangesToTheDatabase()
+        public void ItShouldPersistChangesToTheDatabase()
         {
-            //Then
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
-            Assert.Empty(testHarness.QueryDatabase<Car>());
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));           
+            Assert.Empty(testHarness.QueryDatabase<Car>());            
+        }
+
+        [Fact]
+        public async void ItShouldFlushTheSessionCache()
+        {
+            Assert.Empty(testHarness.DataStore.QueuedOperations);
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
         }
 

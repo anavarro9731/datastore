@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.13.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
   </ItemGroup>
@@ -31,10 +32,6 @@
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
     <ProjectReference Include="..\DataStore\DataStore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="IDocumentRepositoryAgnostic\Tests\" />
   </ItemGroup>
 
 </Project>
