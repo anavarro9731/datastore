@@ -3,15 +3,12 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Interfaces.Events;
     using Models;
     using TestHarness;
     using Xunit;
 
     public class WhenCallingDeleteHardWhereWithoutCommitting
     {
-        private readonly ITestHarness testHarness;
-
         public WhenCallingDeleteHardWhereWithoutCommitting()
         {
             // Given
@@ -29,12 +26,13 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Wait();
         }
 
+        private readonly ITestHarness testHarness;
+
         [Fact]
         public async void WhenCallingDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesInSession()
         {
-            //Then
-            Assert.Null(Enumerable.SingleOrDefault<IDataStoreOperation>(testHarness.Operations, e => e is HardDeleteOperation<Car>));
-            Assert.NotNull(Enumerable.SingleOrDefault<IQueuedDataStoreWriteOperation>(testHarness.QueuedWriteOperations, e => e is QueuedHardDeleteOperation<Car>));
+            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
         }

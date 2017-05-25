@@ -85,7 +85,11 @@
                 .CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadActiveById), modelId))
                 .To(DbConnection.GetItemAsync<T>);
 
-            if (result == null || !result.Active) return null;
+            if (result == null || !result.Active)
+            {
+                var replayResult = eventReplay.ApplyAggregateEvents(new List<T>(), true).SingleOrDefault();
+                return replayResult;
+            }
 
             return eventReplay.ApplyAggregateEvents(new List<T> {result}, true).SingleOrDefault();
         }

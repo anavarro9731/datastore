@@ -36,7 +36,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
-            //Then
             Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
             Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(testHarness.QueryDatabase<Car>());
