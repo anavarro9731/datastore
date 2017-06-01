@@ -3,18 +3,18 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Interfaces.Events;
     using Models;
     using TestHarness;
     using Xunit;
 
-    public class WhenChangingTheItemsReturnFromDeleteSoftDeleteWhere
+    public class WhenChangingTheItemsReturnedFromDeleteSoftById
     {
-        public WhenChangingTheItemsReturnFromDeleteSoftDeleteWhere()
+        public WhenChangingTheItemsReturnedFromDeleteSoftById()
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenChangingTheItemsReturnFromDeleteSoftDeleteWhere));
+                nameof(WhenChangingTheItemsReturnedFromDeleteSoftById
+                ));
 
             carId = Guid.NewGuid();
             testHarness.AddToDatabase(new Car
@@ -24,15 +24,15 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             });
 
 
-            var result = testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId).Result;
+            var result = testHarness.DataStore.DeleteSoftById<Car>(carId).Result;
 
             //When
-            result.Single().id = Guid.NewGuid(); //change in memory before commit
+            result.id = Guid.NewGuid(); //change in memory before commit
             testHarness.DataStore.CommitChanges().Wait();
         }
 
-        private readonly Guid carId;
         private readonly ITestHarness testHarness;
+        private readonly Guid carId;
 
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
