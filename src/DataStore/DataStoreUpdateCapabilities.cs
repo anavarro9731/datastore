@@ -41,7 +41,8 @@
             where T : class, IAggregate, new()
         {            
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
-            return await UpdateByIdInternal<T>(src.id, model => src.Clone(), overwriteReadOnly);
+            var cloned = src.Clone();
+            return await UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model), overwriteReadOnly);
         }
 
         // update a DataObject selected with a singular predicate

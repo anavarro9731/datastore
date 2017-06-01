@@ -7,13 +7,14 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
     using TestHarness;
     using Xunit;
 
-    public class WhenChangingTheItemsReturnFromDeleteHardWhere
+    public class WhenChangingTheItemsReturnedFromDeleteHardById
+
     {
-        public WhenChangingTheItemsReturnFromDeleteHardWhere()
+        public WhenChangingTheItemsReturnedFromDeleteHardById()
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned
+                nameof(WhenChangingTheItemsReturnedFromDeleteHardById
                 ));
 
             var carId = Guid.NewGuid();
@@ -23,10 +24,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
                 Make = "Volvo"
             });
 
-            var result = testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Result;
+            var result = testHarness.DataStore.DeleteHardById<Car>(carId).Result;
 
             //When
-            result.Single().id = Guid.NewGuid(); //change in memory before commit
+            result.id = Guid.NewGuid(); //change in memory before commit
             testHarness.DataStore.CommitChanges().Wait();
         }
 
