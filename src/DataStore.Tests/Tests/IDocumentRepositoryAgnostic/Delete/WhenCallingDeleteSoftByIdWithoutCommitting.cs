@@ -31,8 +31,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         [Fact]
         public async void ItShouldOnlyMakeChangesInSession()
         {
-            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
+            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.ReadActive<Car>(car => car));
             Assert.NotEmpty(await testHarness.DataStore.Read<Car>(car => car));

@@ -30,13 +30,19 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
 
 
         [Fact]
-        public void ItShouldOnlyMakeTheChangesInSession()
-        {
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
-            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is CreateOperation<Car>));
-            Assert.Equal(0, testHarness.QueryDatabase<Car>().Count());
+        public void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
+        {         
             Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
             Assert.True(result.Active);
+        }
+
+        [Fact]
+        public void ItShouldNotWriteToTheDatabase()
+        {
+            Assert.NotNull(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
+            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
+            Assert.Equal(0, testHarness.QueryDatabase<Car>().Count());
+
         }
     }
 }

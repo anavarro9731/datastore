@@ -13,7 +13,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingCommitAfterDeleteSoftWhere_ItShouldPersistTheChangesToTheDatabase));
+                nameof(WhenCallingDeleteSoftWhere));
 
             carId = Guid.NewGuid();
             testHarness.AddToDatabase(new Car
@@ -31,10 +31,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         private readonly Guid carId;
 
         [Fact]
-        public async void WhenCallingCommitAfterDeleteSoftWhere_ItShouldPersistTheChangesToTheDatabase()
+        public async void ItShouldPersistTheChangesToTheDatabase()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Active);
             Assert.Empty(await testHarness.DataStore.ReadActive<Car>(car => car));
             Assert.NotEmpty(await testHarness.DataStore.Read<Car>(car => car));

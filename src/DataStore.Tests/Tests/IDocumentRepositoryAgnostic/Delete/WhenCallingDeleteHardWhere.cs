@@ -35,8 +35,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         [Fact]
         public async void ItShouldPersistChangesToTheDatabase()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
         }

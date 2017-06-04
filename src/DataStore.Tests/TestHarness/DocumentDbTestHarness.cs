@@ -30,8 +30,6 @@ namespace DataStore.Tests.TestHarness
 
         public DataStore DataStore { get; }
 
-        public List<IDataStoreOperation> Operations => messageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList();
-        public List<IQueuedDataStoreWriteOperation> QueuedWriteOperations => messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList();
         public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
 
 

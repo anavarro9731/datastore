@@ -1,13 +1,11 @@
-﻿using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Constants;
-using DataStore.Tests.Models;
-using Xunit;
-
-namespace DataStore.Tests.Tests.Documentation
+﻿namespace DataStore.Tests.Tests.Documentation
 {
-    [Collection(TestCollections.RunSerially)]
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using Models;
+    using Xunit;
+
     public class DocumentationTests
     {
         [Fact]
@@ -32,13 +30,11 @@ namespace DataStore.Tests.Tests.Documentation
 
             //Then 
 
-            //We have a AggregateUpdated event
-            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+            //We have executed an update operation
+            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
 
-
-            //The underlying database has changed
-            Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+            //We have no queued update operations
+            Assert.Null(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
             //The dataStore reads the changes correctly
             Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
@@ -66,14 +62,17 @@ namespace DataStore.Tests.Tests.Documentation
 
             //Then 
 
-            //We have a AggregateUpdated event
-            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+            //We have a queued update operation
+            Assert.NotNull(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+
+            //We have not execute any update operations
+            Assert.Null(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
 
             //The underlying database has NOT changed
             Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
             //The DataStore instance picks up the change, because it has applied
-            //all changes made during this session.
+            //all the previous changes made during this session to any query.
             Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
         }
     }

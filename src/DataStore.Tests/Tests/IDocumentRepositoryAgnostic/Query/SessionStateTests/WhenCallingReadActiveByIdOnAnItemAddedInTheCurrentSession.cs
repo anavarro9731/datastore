@@ -43,7 +43,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldReturnThatItem()
         {
-            Assert.NotNull(testHarness.Operations.All(e => e is AggregateQueriedByIdOperation));                      
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));                      
             Assert.NotNull(newCarFromSession);
         }
 

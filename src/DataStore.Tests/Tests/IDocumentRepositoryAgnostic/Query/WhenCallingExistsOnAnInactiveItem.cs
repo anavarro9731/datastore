@@ -40,7 +40,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldReturnTheItem()
         {
-            //Then
             Assert.True(inactiveCarExists);
             Assert.True(activeCarExists);
         }

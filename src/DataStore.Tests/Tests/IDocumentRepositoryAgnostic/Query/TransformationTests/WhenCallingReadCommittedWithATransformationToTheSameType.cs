@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.Transformation
         [Fact]
         public void YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
             Assert.Equal(carFromDatabase.GetType(), typeof(Car));
         }
     }

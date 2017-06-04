@@ -1,6 +1,7 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
     using System;
+    using System.Linq;
     using global::DataStore.Models.Messages;
     using Models;
     using Newtonsoft.Json;
@@ -45,7 +46,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldReturnTheItem()
         {
-            Assert.NotNull(testHarness.Operations.Exists(e => e is AggregateQueriedByIdOperation));
             Assert.Equal("Volvo", carFromDatabase.Make);
             Assert.Equal(carId, carFromDatabase.id);
         }

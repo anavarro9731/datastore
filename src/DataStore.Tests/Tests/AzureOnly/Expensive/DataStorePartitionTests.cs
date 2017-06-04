@@ -1,96 +1,105 @@
-﻿//using System;
-//using System.Linq;
-//using DataStore.Impl.DocumentDb.Config;
-//using DataStore.Tests.Constants;
-//using DataStore.Tests.Models;
-//using DataStore.Tests.TestHarness;
-//using Xunit;
+﻿namespace DataStore.Tests.Tests.AzureOnly.Expensive
+{
+    using System;
+    using System.Linq;
+    using Constants;
+    using Impl.DocumentDb.Config;
+    using Models;
+    using TestHarness;
+    using Xunit;
 
-//namespace DataStore.Tests.Tests.AzureOnly.Expensive
-//{
-//    [Collection(TestCollections.RunSerially)]
-//    public class DataStorePartitionTests
-//    {
-//        [Fact]
-//        public async void
-//            Integration_WhenDocumentsAreCreatedWithClassNameAsThePartitionKey_ItShouldPutThemAllInTheSamePartition()
-//        {
-//            //Given
-//            var collectionName = nameof(
-//                Integration_WhenDocumentsAreCreatedWithClassNameAsThePartitionKey_ItShouldPutThemAllInTheSamePartition);
+    [Collection(TestCollections.RunSerially)]
+    public class WhenDocumentsAreCreatedWithClassNameAsThePartitionKey
+    {
+        public WhenDocumentsAreCreatedWithClassNameAsThePartitionKey()
+        {
+            //Given
+            var collectionName = nameof(WhenDocumentsAreCreatedWithClassNameAsThePartitionKey);
 
-//            var docDbCollectionSettings =
-//                DocDbCollectionSettings.Create(collectionName,
-//                    DocDbCollectionSettings.PartitionKeyTypeEnum.ClassName);
+            var docDbCollectionSettings =
+                DocDbCollectionSettings.Create(collectionName,
+                    DocDbCollectionSettings.PartitionKeyTypeEnum.ClassName);
 
-//            var testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName);
+            testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName);
 
-//            //When
-//            for (var i = 0; i < 30; i++)
-//            {
-//                var car = new Car
-//                {
-//                    id = Guid.NewGuid()
-//                };
-//                car.Make = "Saab";
+            //When
+            for (var i = 0; i < 30; i++)
+            {
+                var car = new Car
+                {
+                    id = Guid.NewGuid(),
+                    Make = "Saab"
+                };
 
-//                await testHarness.DataStore.Create(car);
-//            }
-//            await testHarness.DataStore.CommitChanges();
+                testHarness.DataStore.Create(car).Wait();
+            }
+            testHarness.DataStore.CommitChanges().Wait();
 
-//            //HACK: runtime manual override
-//            docDbCollectionSettings.EnableCrossParitionQueries = false;
+            //HACK: runtime manual override
+            docDbCollectionSettings.EnableCrossParitionQueries = false;
+        }
 
-//            //Then
-//            //this line should not throw a cross-partition error because they are all in the same partition
-//            Assert.Equal(30, testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active)).Result.Count());
-//        }
+        private readonly ITestHarness testHarness;
 
-//        [Fact]
-//        public async void
-//            Integration_WhenDocumentsAreCreatedWithIdAsThePartitionKey_ItShouldPutThemAllInSeparatePartitions()
-//            //up to the max no. of partitions (e.g. 25)
-//        {
-//            //Given
-//            var collectionName = nameof(
-//                Integration_WhenDocumentsAreCreatedWithIdAsThePartitionKey_ItShouldPutThemAllInSeparatePartitions);
-//            var docDbCollectionSettings =
-//                DocDbCollectionSettings.Create(
-//                    collectionName,
-//                    DocDbCollectionSettings.PartitionKeyTypeEnum.Id);
+        [Fact]
+        public void ItShouldPutThemAllInTheSamePartition()
+        {
+            //this line should not throw a cross-partition error because they are all in the same partition
+            Assert.Equal(30, testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active)).Count());
+        }
+    }
 
-//            var testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName);
+    [Collection(TestCollections.RunSerially)]
+    public class WhenDocumentsAreCreatedWithIdAsThePartitionKey
+    {
+        public WhenDocumentsAreCreatedWithIdAsThePartitionKey()
+        {
+            //Given
+            var collectionName = nameof(WhenDocumentsAreCreatedWithIdAsThePartitionKey);
 
-//            //When
-//            for (var i = 0; i < 30; i++)
-//            {
-//                var car = new Car
-//                {
-//                    id = Guid.NewGuid()
-//                };
-//                car.Make = "Volvo";
+            docDbCollectionSettings = DocDbCollectionSettings.Create(
+                collectionName,
+                DocDbCollectionSettings.PartitionKeyTypeEnum.Id);
 
-//                await testHarness.DataStore.Create(car);
-//            }
-//            await testHarness.DataStore.CommitChanges();
+            testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName);
 
-//            //Then
-//            Assert.Equal(30, testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active)).Result.Count());
+            //When
+            for (var i = 0; i < 30; i++)
+            {
+                var car = new Car
+                {
+                    id = Guid.NewGuid(),
+                    Make = "Volvo"
+                };
 
-//            try
-//            {
-//                //HACK: runtime manual override
-//                docDbCollectionSettings.EnableCrossParitionQueries = false;
+                testHarness.DataStore.Create(car).Wait();
+            }
+            testHarness.DataStore.CommitChanges().Wait();
+        }
 
-//                //this fails because QueryDatabase() is not partition aware 
-//                await testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active));
+        private readonly ITestHarness testHarness;
+        private readonly DocDbCollectionSettings docDbCollectionSettings;
 
-//                Assert.True(false); //never hit this
-//            }
-//            catch (Exception e)
-//            {
-//                Assert.True(e.Message.Contains("x-ms-documentdb-query-enablecrosspartition"));
-//            }
-//        }
-//    }
-//}
+        [Fact]
+        public void ItShouldPutThemAllInSeparatePartitions()
+            //up to the max no. of partitions (e.g. 25)
+        {
+            Assert.Equal(30, testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active)).Count());
+
+            try
+            {
+                //HACK: runtime manual override
+                docDbCollectionSettings.EnableCrossParitionQueries = false;
+
+                //this fails because QueryDatabase() is not partition aware 
+                testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active));
+
+                Assert.True(false); //never hit this
+            }
+            catch (Exception e)
+            {
+                Assert.True(e.Message.Contains("x-ms-documentdb-query-enablecrosspartition"));
+            }
+        }
+    }
+}

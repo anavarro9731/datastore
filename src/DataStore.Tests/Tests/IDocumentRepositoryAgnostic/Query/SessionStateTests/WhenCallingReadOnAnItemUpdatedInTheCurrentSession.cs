@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldReturnTheItemWithTheUpdatesApplied()
         {
-            Assert.NotNull(testHarness.Operations.All(e => e is AggregatesQueriedOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
             Assert.Equal("Ford", carFromSession.Make);
         }
