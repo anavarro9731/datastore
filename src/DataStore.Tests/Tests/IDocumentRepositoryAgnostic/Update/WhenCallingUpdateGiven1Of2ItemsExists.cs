@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using Models;
+    using TestHarness;
+    using Xunit;
+
     public class WhenCallingUpdateGiven1Of2ItemsExists
     {
         public WhenCallingUpdateGiven1Of2ItemsExists()
@@ -39,10 +39,14 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         private readonly ITestHarness testHarness;
 
         [Fact]
+        public void ItShouldExecuteOnlyOneUpdate()
+        {
+            Assert.Equal(1, testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
+        }
+
+        [Fact]
         public void ItShouldReturnOnlyOneItem()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal(1, result.Count());
         }
     }

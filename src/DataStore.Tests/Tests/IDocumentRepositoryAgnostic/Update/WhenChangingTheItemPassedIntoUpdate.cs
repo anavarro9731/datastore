@@ -1,19 +1,18 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
-    public class WhenChangingTheItemsReturnedFromUpdate
+    using System;
+    using System.Linq;
+    using Models;
+    using TestHarness;
+    using Xunit;
+
+    public class WhenChangingTheItemPassedIntoUpdate
     {
-        public WhenChangingTheItemsReturnedFromUpdate()
+        public WhenChangingTheItemPassedIntoUpdate()
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenChangingTheItemsReturnedFromUpdate));
+                nameof(WhenChangingTheItemPassedIntoUpdate));
 
             carId = Guid.NewGuid();
             var existingCar = new Car
@@ -23,12 +22,16 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
             };
             testHarness.AddToDatabase(existingCar);
 
+            //read from db to pickup changes to properties made by datastore oncreate
             var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
             existingCarFromDb.Make = "Ford";
-            result = testHarness.DataStore.Update(existingCarFromDb).Result;
+
+            testHarness.DataStore.Update(existingCarFromDb).Wait();
+
+            //change the id before committing, if not cloned this would cause the item not to be found
+            existingCarFromDb.id = Guid.NewGuid();
 
             //When
-            result.id = Guid.NewGuid();
             testHarness.DataStore.CommitChanges().Wait();
         }
 
@@ -39,8 +42,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         [Fact]
         public void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is UpdateOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
             Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }

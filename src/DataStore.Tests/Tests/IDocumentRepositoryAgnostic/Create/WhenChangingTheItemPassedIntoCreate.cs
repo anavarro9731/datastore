@@ -6,12 +6,12 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
     using TestHarness;
     using Xunit;
 
-    public class WhenChangingTheItemReturnedFromCreate
+    public class WhenChangingTheItemPassedIntoCreate
     {
-        public WhenChangingTheItemReturnedFromCreate()
+        public WhenChangingTheItemPassedIntoCreate()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemReturnedFromCreate));
+            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemPassedIntoCreate));
 
             newCarId = Guid.NewGuid();
 
@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
             var result = testHarness.DataStore.Create(newCar).Result;
 
             //change the id before committing, if not cloned this would cause the item to be created with a different id
-            result.id = Guid.NewGuid();
+            newCar.id = Guid.NewGuid();
 
             //When
             testHarness.DataStore.CommitChanges().Wait();

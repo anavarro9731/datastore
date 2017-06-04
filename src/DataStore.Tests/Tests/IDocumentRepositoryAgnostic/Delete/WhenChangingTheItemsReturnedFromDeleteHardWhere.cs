@@ -2,7 +2,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
 {
     using System;
     using System.Linq;
-    using global::DataStore.Models.Messages;
     using Models;
     using TestHarness;
     using Xunit;
@@ -13,7 +12,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned
+                nameof(WhenChangingTheItemsReturnedFromDeleteHardWhere
                 ));
 
             var carId = Guid.NewGuid();
@@ -35,8 +34,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
         }

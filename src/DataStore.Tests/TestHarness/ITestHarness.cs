@@ -1,19 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Interfaces.Events;
-using DataStore.Interfaces.LowLevel;
-using ServiceApi.Interfaces.LowLevel.Messages;
-
 namespace DataStore.Tests.TestHarness
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Interfaces.LowLevel;
+    using ServiceApi.Interfaces.LowLevel.Messages;
+
     public interface ITestHarness
     {
         DataStore DataStore { get; }
 
-        List<IDataStoreOperation> Operations { get; }
-        List<IQueuedDataStoreWriteOperation> QueuedWriteOperations { get; }
         List<IMessage> AllMessages { get; }
 
         //add to the underlying db directly (i.e. not via datastore)

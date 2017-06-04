@@ -38,6 +38,8 @@ namespace DataStore
             var result = await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(DeleteHardById), id, typeof(T)))
                 .To(DsConnection.GetItemAsync<T>);
 
+            if (result == null) return null;
+
             messageAggregator.Collect(new QueuedHardDeleteOperation<T>(nameof(DeleteHardById), result, DsConnection, messageAggregator));
 
             //clone otherwise its to easy to change the referenced object before committing
@@ -49,7 +51,10 @@ namespace DataStore
             var objects = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(DeleteHardWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
 
-            var dataObjects = objects.AsEnumerable();
+            var dataObjects = objects as T[] ?? objects.ToArray();
+
+            if (!dataObjects.Any()) return dataObjects;
+
             foreach (var dataObject in dataObjects)
                 messageAggregator.Collect(new QueuedHardDeleteOperation<T>(nameof(DeleteHardWhere), dataObject, DsConnection, messageAggregator));
 
@@ -62,6 +67,8 @@ namespace DataStore
             var result = await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(DeleteSoftById), id, typeof(T)))
                 .To(DsConnection.GetItemAsync<T>);
 
+            if (result == null) return null;
+
             messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftById), result, DsConnection, messageAggregator));
 
             //clone otherwise its to easy to change the referenced object before committing
@@ -73,8 +80,11 @@ namespace DataStore
         {
             var objects = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
-            
-            var dataObjects = objects.AsEnumerable();
+
+            var dataObjects = objects as T[] ?? objects.ToArray();
+
+            if (!dataObjects.Any()) return dataObjects;
+
             foreach (var dataObject in dataObjects)
                 messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftWhere), dataObject, DsConnection, messageAggregator));
 

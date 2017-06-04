@@ -31,17 +31,17 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         private readonly Guid carId;
 
         [Fact]
-        public void ItShouldPersistChangesToTheDatabase()
-        {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));           
-            Assert.Empty(testHarness.QueryDatabase<Car>());            
-        }
-
-        [Fact]
         public async void ItShouldFlushTheSessionCache()
         {
             Assert.Empty(testHarness.DataStore.QueuedOperations);
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
+        }
+
+        [Fact]
+        public void ItShouldPersistChangesToTheDatabase()
+        {
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.Empty(testHarness.QueryDatabase<Car>());
         }
 
         [Fact]

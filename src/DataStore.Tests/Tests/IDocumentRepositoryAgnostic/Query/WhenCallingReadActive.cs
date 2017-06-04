@@ -45,8 +45,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldOnlyReturnActiveItems()
         {
-            //Then
-            Assert.Equal(2, testHarness.Operations.Count(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal(2, testHarness.DataStore.ExecutedOperations.Count(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal("Volvo", activeCarFromDatabase.Make);
             Assert.Null(inactiveCarFromDatabase);
         }

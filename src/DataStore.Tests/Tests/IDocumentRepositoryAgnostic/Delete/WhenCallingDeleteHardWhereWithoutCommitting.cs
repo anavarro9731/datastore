@@ -31,8 +31,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         [Fact]
         public async void WhenCallingDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesInSession()
         {
-            Assert.Null(testHarness.Operations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
-            Assert.NotNull(testHarness.QueuedWriteOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
+            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>());
             Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
         }

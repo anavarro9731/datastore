@@ -39,7 +39,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldReturnThatItem()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
             Assert.NotNull(carFromDatabase);
         }
     }

@@ -43,7 +43,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldNotReturnTheItem()
         {
-            Assert.Equal(1, testHarness.Operations.Count(e => e is AggregateQueriedByIdOperation));
+            Assert.Equal(1, testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
             Assert.Null(inactiveCarFromDatabase);
         }
     }

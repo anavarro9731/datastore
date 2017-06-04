@@ -34,10 +34,12 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         [Fact]
         public void ItShouldPersistTheLastChangeToTheDatabase()
         {
-            Assert.Equal(2, testHarness.Operations.Count(e => e is UpdateOperation<Car>));
-            Assert.Equal(2, testHarness.QueuedWriteOperations.Count(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Honda", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
             Assert.Equal("Honda", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
+
+        public void ItShouldCallUpdateTwice()
+        {
+            Assert.Equal(2, testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
         }
     }
 }

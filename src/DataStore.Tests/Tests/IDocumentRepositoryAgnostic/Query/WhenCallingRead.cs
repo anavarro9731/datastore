@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         [Fact]
         public void ItShouldReturnAllItemsRegardlessOfActiveFlag()
         {
-            Assert.NotNull(testHarness.Operations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2, carsFromDatabase.Count());
         }
     }

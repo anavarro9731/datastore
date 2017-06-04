@@ -1,7 +1,6 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
     using System;
-    using System.Linq;
     using Models;
     using TestHarness;
     using Xunit;
@@ -11,10 +10,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         public WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession()
         {
             // Given
-            var testHarness =
+            testHarness =
                 TestHarnessFunctions.GetTestHarness(nameof(WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession));
 
-            var activeCarId = Guid.NewGuid();
+            activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
                 id = activeCarId,
@@ -22,19 +21,17 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             };
             testHarness.AddToDatabase(activeExistingCar);
 
-            testHarness.DataStore.DeleteHardById<Car>(activeCarId).Wait();
-
             // When
-            activeCarFromDataStore = testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == activeCarId))
-                .Result.SingleOrDefault();
+            testHarness.DataStore.DeleteHardById<Car>(activeCarId).Wait();
         }
 
-        private readonly Car activeCarFromDataStore;
+        private readonly ITestHarness testHarness;
+        private readonly Guid activeCarId;
 
         [Fact]
         public void ItShouldReturnNull()
         {
-            Assert.Null(activeCarFromDataStore);
+            Assert.Null(testHarness.DataStore.ReadActiveById<Car>(activeCarId).Result);
         }
     }
 }
