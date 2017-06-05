@@ -28,9 +28,13 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         [Fact]
         public void ItShouldReturnNull()
         {
-            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
-            Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Null(result);
+        }
+
+        [Fact]
+        public void ItShouldNotExecuteAnyUpdateOperations()
+        {
+            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
         }
     }
 }

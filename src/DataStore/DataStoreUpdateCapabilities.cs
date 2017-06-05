@@ -51,11 +51,11 @@
             Action<T> action,
             bool overwriteReadOnly = false) where T : class, IAggregate, new()
         {
-            var objects = await eventAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(UpdateWhere),
+            var objectsToUpdate = await eventAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(UpdateWhere),
                     DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                 .To(DsConnection.ExecuteQuery);
 
-            return UpdateInternal(action, overwriteReadOnly, objects);
+            return UpdateInternal(action, overwriteReadOnly, objectsToUpdate);
         }
 
         #endregion
@@ -63,13 +63,13 @@
         private async Task<T> UpdateByIdInternal<T>(Guid id, Action<T> action, bool overwriteReadOnly)
             where T : class, IAggregate, new()
         {
-            var result = await eventAggregator
+            var objectToUpdate = await eventAggregator
                 .CollectAndForward(new AggregateQueriedByIdOperation(nameof(UpdateById), id, typeof(T)))
                 .To(DsConnection.GetItemAsync<T>);
 
             var list = new List<T>().Op(l =>
             {
-                if (result != null) l.Add(result);
+                if (objectToUpdate != null) l.Add(objectToUpdate);
             });
 
             return UpdateInternal(action, overwriteReadOnly, list).SingleOrDefault();

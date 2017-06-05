@@ -1,18 +1,17 @@
+using System;
+using System.Linq;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Xunit;
+
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
-    using System;
-    using System.Linq;
-    using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
-    using Xunit;
-
     public class WhenCallingReadActive
     {
         public WhenCallingReadActive()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActive));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActive));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -38,16 +37,19 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
                 .Result.SingleOrDefault();
         }
 
-        private readonly ITestHarness testHarness;
         private readonly Car activeCarFromDatabase;
         private readonly Car inactiveCarFromDatabase;
 
         [Fact]
-        public void ItShouldOnlyReturnActiveItems()
+        public void ItShouldNotReturnInActiveItems()
         {
-            Assert.Equal(2, testHarness.DataStore.ExecutedOperations.Count(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Equal("Volvo", activeCarFromDatabase.Make);
             Assert.Null(inactiveCarFromDatabase);
+        }
+
+        [Fact]
+        public void ItShouldReturnActiveItems()
+        {
+            Assert.Equal("Volvo", activeCarFromDatabase.Make);
         }
     }
 }

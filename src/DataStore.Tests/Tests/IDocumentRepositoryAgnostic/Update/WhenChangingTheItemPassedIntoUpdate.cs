@@ -36,7 +36,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         }
 
         private readonly ITestHarness testHarness;
-        private readonly Car result;
         private readonly Guid carId;
 
         [Fact]
