@@ -1,12 +1,12 @@
+using System;
+using System.Linq;
+using DataStore.Models.Messages;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Xunit;
+
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
-    using System;
-    using System.Linq;
-    using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
-    using Xunit;
-
     public class WhenCallingReadActiveByIdOnAnActiveItem
     {
         public WhenCallingReadActiveByIdOnAnActiveItem()
