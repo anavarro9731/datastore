@@ -1,10 +1,10 @@
+using DataStore.Interfaces;
 using DataStore.Models.Messages;
 
 namespace DataStore
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Interfaces.Events;
     using Interfaces.LowLevel;
     using Models.PureFunctions.Extensions;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;

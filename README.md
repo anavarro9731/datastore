@@ -93,74 +93,77 @@ They are queued as events in the EventAggregator object.
 Calling DataStore.CommitChanges() will commit these events to the database.
 
 ```    
-	[Fact]
-    public async void CanUpdateCar()
-    {
-        var documentRepository = new InMemoryDocumentRepository();
-        var inMemoryDb = documentRepository.Aggregates;
-        var dataStore = new DataStore.DataStore(documentRepository);
-
-        var carId = Guid.NewGuid();
-
-        //Given
-        inMemoryDb.Add(new Car
+		[Fact]
+        public async void CanUpdateCar()
         {
-            id = carId,
-            Make = "Toyota"
-        });
+            var documentRepository = new InMemoryDocumentRepository();
+            var inMemoryDb = documentRepository.Aggregates;
+            var dataStore = new DataStore(documentRepository);
 
-        //When
-        await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-        await dataStore.CommitChanges();
+            var carId = Guid.NewGuid();
 
-        //Then 
+            //Given
+            inMemoryDb.Add(new Car
+            {
+                id = carId,
+                Make = "Toyota"
+            });
 
-        //We have a AggregateUpdated event
-        Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            //When
+            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+            await dataStore.CommitChanges();
 
-        //The underlying database has changed
-        Assert.Equal("Ford", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+            //Then 
 
-        //The dataStore reads the changes correctly
-        Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
-    }
+            //We have executed an update operation
+            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+
+            //We have no queued update operations
+            Assert.Null(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+
+            //The dataStore reads the changes correctly
+            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
 ```
 > Note: Read Queries performed during a session will be take into account any uncommitted operations in that session.
 > So the resultset will include any changes already requested (but not yet committed).
 
 ```
-    [Fact]
-    public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
-    {
-        var documentRepository = new InMemoryDocumentRepository();
-        var inMemoryDb = documentRepository.Aggregates;
-        var dataStore = new DataStore.DataStore(documentRepository);
-
-        var carId = Guid.NewGuid();
-
-        //Given
-        inMemoryDb.Add(new Car
+		[Fact]
+        public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
         {
-            id = carId,
-            Make = "Toyota"
-        });
+            var documentRepository = new InMemoryDocumentRepository();
+            var inMemoryDb = documentRepository.Aggregates;
+            var dataStore = new DataStore(documentRepository);
 
-        //When
-        await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-        //await dataStore.CommitChanges(); don't commit
+            var carId = Guid.NewGuid();
 
-        //Then 
+            //Given
+            inMemoryDb.Add(new Car
+            {
+                id = carId,
+                Make = "Toyota"
+            });
 
-        //We have a AggregateUpdated event
-        Assert.NotNull(dataStore.Events.SingleOrDefault(e => e is AggregateUpdated<Car>));
+            //When
+            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+            //await dataStore.CommitChanges(); don't commit
 
-        //The underlying database has NOT changed
-        Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+            //Then 
 
-        //The DataStore instance picks up the change, because it has applied
-        //all changes made during this session.
-        Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
-    }
+            //We have a queued update operation
+            Assert.NotNull(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+
+            //We have not execute any update operations
+            Assert.Null(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+
+            //The underlying database has NOT changed
+            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
+
+            //The DataStore instance picks up the change, because it has applied
+            //all the previous changes made during this session to any query.
+            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+        }
 ```
 
 > Using a DataStore instance across several consecutive sessions (sets of changes followed by a call to CommitChanges()) 

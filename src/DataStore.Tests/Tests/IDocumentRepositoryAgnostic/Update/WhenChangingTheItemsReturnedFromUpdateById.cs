@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using DataStore.Models.Messages;
 using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
 using Xunit;
@@ -22,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
                 Make = "Volvo"
             });
 
-            result = testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford").Result;
+            var result = testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford").Result;
 
             //When
             result.id = Guid.NewGuid();
@@ -30,7 +29,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         }
 
         private readonly ITestHarness testHarness;
-        private readonly Car result;
         private readonly Guid carId;
 
         [Fact]

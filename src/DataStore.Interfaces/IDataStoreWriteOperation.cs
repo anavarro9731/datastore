@@ -1,7 +1,7 @@
 ﻿using DataStore.Interfaces.LowLevel;
 using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
 
-namespace DataStore.Interfaces.Events
+namespace DataStore.Interfaces
 {
     public interface IDataStoreWriteOperation<T> : IDataStoreWriteOperation
         where T : class, IAggregate, new()

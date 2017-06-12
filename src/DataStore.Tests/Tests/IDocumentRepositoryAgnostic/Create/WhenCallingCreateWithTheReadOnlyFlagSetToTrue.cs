@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
         [Fact]
         public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
-            Assert.Equal(true, testHarness.DataStore.ReadActiveById<Car>(newCarId).Result.ReadOnly);
+            Assert.True(testHarness.DataStore.ReadActiveById<Car>(newCarId).Result.ReadOnly);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using System.Text;
 using System.Transactions;
 
 namespace DataStore.Impl.SqlServer

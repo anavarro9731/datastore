@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using DataStore.Impl.DocumentDb;
 using DataStore.Impl.DocumentDb.Config;
-using DataStore.Interfaces.Events;
 using DataStore.Interfaces.LowLevel;
 using DataStore.MessageAggregator;
 using DataStore.Models.Messages;
@@ -17,25 +15,27 @@ namespace DataStore.Tests.TestHarness
 {
     public class DocumentDbTestHarness : ITestHarness
     {
-        private readonly DocumentDbSettings settings;
-        private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
         private readonly DocumentDbRepository documentDbRepository;
+        private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
+        private readonly DocumentDbSettings settings;
 
         private DocumentDbTestHarness(DocumentDbSettings settings)
         {
             this.settings = settings;
-            this.documentDbRepository = new DocumentDbRepository(settings);
-            DataStore = new DataStore(this.documentDbRepository, messageAggregator);
+            documentDbRepository = new DocumentDbRepository(settings);
+            DataStore = new DataStore(documentDbRepository, messageAggregator);
         }
 
         public DataStore DataStore { get; }
 
         public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
 
+        #region
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, documentDbRepository, messageAggregator);
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, documentDbRepository,
+                messageAggregator);
             newAggregate.CommitClosure().Wait();
         }
 
@@ -45,8 +45,12 @@ namespace DataStore.Tests.TestHarness
             var query = extendQueryable == null
                 ? documentDbRepository.CreateDocumentQuery<T>()
                 : extendQueryable(documentDbRepository.CreateDocumentQuery<T>());
-            return documentDbRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).Result;
+            return documentDbRepository
+                .ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable()))
+                .Result;
         }
+
+        #endregion
 
         public static ITestHarness Create(DocumentDbSettings dbConfig)
         {
@@ -60,13 +64,11 @@ namespace DataStore.Tests.TestHarness
             DocumentClient client;
 
             GetDocumentClient(settings, out client);
-            var db = (await client.ReadDatabaseFeedAsync()).Single(d => d.Id == settings.DatabaseName);
+            var db = (await client.ReadDatabaseFeedAsync().ConfigureAwait(false)).Single(d => d.Id == settings.DatabaseName);
 
-            var collections = (await client.ReadDocumentCollectionFeedAsync(db.CollectionsLink));
+            var collections = await client.ReadDocumentCollectionFeedAsync(db.CollectionsLink).ConfigureAwait(false);
             foreach (var documentCollection in collections)
-            {
-                await client.DeleteDocumentCollectionAsync(documentCollection.SelfLink);
-            }
+                await client.DeleteDocumentCollectionAsync(documentCollection.SelfLink).ConfigureAwait(false);
         }
 
         private static void ClearTestDatabase(DocumentDbSettings documentDbSettings)
@@ -85,12 +87,13 @@ namespace DataStore.Tests.TestHarness
         private static void DeleteAllDocsInCollection(DocumentClient documentClient, DocumentCollection collection)
         {
             var allDocsInCollection = documentClient.CreateDocumentQuery(collection.DocumentsLink,
-                new FeedOptions
-                {
-                    EnableCrossPartitionQuery = true,
-                    MaxDegreeOfParallelism = -1,
-                    MaxBufferedItemCount = -1
-                }).ToList();
+                    new FeedOptions
+                    {
+                        EnableCrossPartitionQuery = true,
+                        MaxDegreeOfParallelism = -1,
+                        MaxBufferedItemCount = -1
+                    })
+                .ToList();
 
             foreach (var doc in allDocsInCollection)
             {
@@ -101,7 +104,7 @@ namespace DataStore.Tests.TestHarness
                 {
                     var key = collection.PartitionKey.Paths[0];
                     PartitionKey partitionKey;
-                    //NOTE: these values willalways be cahnged to lowercase by docdb so must make them lowercase on model
+                    //NOTE: these values will always be cahnged to lowercase by docdb so must make them lowercase on model
                     if (key == "/schema") partitionKey = new PartitionKey(((dynamic) doc).schema);
                     else if (key == "/id") partitionKey = new PartitionKey(doc.Id);
                     else throw new Exception("Error locating partition key");

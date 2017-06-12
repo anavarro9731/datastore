@@ -1,19 +1,17 @@
-namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
-{
-    using System;
-    using System.Linq;
-    using global::DataStore.Models.Messages;
-    using Models;
-    using Newtonsoft.Json;
-    using TestHarness;
-    using Xunit;
+using System;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Newtonsoft.Json;
+using Xunit;
 
+namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
+{
     public class WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession
     {
         public WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
+            var testHarness = TestHarnessFunctions.GetTestHarness(
                 nameof(WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession));
 
             carId = Guid.NewGuid();
@@ -39,7 +37,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             }
         }
 
-        private readonly ITestHarness testHarness;
         private readonly Car carFromDatabase;
         private readonly Guid carId;
 

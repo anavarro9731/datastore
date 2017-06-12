@@ -12,7 +12,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.Transformation
         public WhenCallingReadCommittedWithATransformation()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedWithATransformation));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedWithATransformation));
 
             carId = Guid.NewGuid();
             var existingCar = new Car
@@ -39,9 +39,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.Transformation
                 });
         }
 
-        private readonly ITestHarness testHarness;
         private (Guid Id, string Make) transformedType;
-        private Guid carId;
+        private readonly Guid carId;
 
         [Fact]
         public void ItShouldReturnTheTransformedTypeWithTheRightValues()

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using DataStore.Interfaces;
 using DataStore.Interfaces.LowLevel;
 using DataStore.Models.Messages;
-using DataStore.Models.PureFunctions;
 using DataStore.Models.PureFunctions.Extensions;
 using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
@@ -28,6 +27,8 @@ namespace DataStore
 
         private IDocumentRepository DsConnection { get; }
 
+        #region
+
         public Task<T> Create<T>(T model, bool readOnly = false) where T : class, IAggregate, new()
         {
             //create a new one, we definately don't want to use the instance passed in, in the event it changes after this call
@@ -42,6 +43,8 @@ namespace DataStore
             //essentially no external client should be able to get a reference to the instance we use internally
             return Task.FromResult(newObject.Clone());
         }
+
+        #endregion
 
         internal static void ForceProperties<T>(bool readOnly, T enriched) where T : class, IAggregate, new()
         {

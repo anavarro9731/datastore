@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataStore.Interfaces;
-using DataStore.Interfaces.Events;
 using DataStore.Interfaces.LowLevel;
 using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
@@ -20,7 +19,7 @@ namespace DataStore.Models.Messages
                         Created = DateTime.UtcNow,
                         Model = model
                     })
-                    .To(repo.DeleteHardAsync);
+                    .To(repo.DeleteHardAsync).ConfigureAwait(false);
 
                 Committed = true;
             };

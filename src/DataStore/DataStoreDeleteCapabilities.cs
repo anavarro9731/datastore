@@ -36,7 +36,7 @@ namespace DataStore
         public async Task<T> DeleteHardById<T>(Guid id) where T : class, IAggregate, new()
         {
             var result = await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(DeleteHardById), id, typeof(T)))
-                .To(DsConnection.GetItemAsync<T>);
+                .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             if (result == null) return null;
 
@@ -49,7 +49,7 @@ namespace DataStore
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             var objects = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(DeleteHardWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .To(DsConnection.ExecuteQuery);
+                .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
             var dataObjects = objects as T[] ?? objects.ToArray();
 
@@ -65,7 +65,7 @@ namespace DataStore
         public async Task<T> DeleteSoftById<T>(Guid id) where T : class, IAggregate, new()
         {
             var result = await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(DeleteSoftById), id, typeof(T)))
-                .To(DsConnection.GetItemAsync<T>);
+                .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             if (result == null) return null;
 
@@ -79,7 +79,7 @@ namespace DataStore
         public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             var objects = await messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(DeleteSoftWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .To(DsConnection.ExecuteQuery);
+                .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
             var dataObjects = objects as T[] ?? objects.ToArray();
 

@@ -39,7 +39,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
             Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
             //nothing should have been updated because it was already deleted.
-            Assert.Equal(results.Count(), 0);
+            Assert.Equal(0, results.Count());
             Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
         }
 

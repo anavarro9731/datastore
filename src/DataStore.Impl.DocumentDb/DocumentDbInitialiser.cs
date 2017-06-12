@@ -57,7 +57,7 @@
 
                 collection = await documentClient.CreateDocumentCollectionAsync(
                     db.SelfLink,
-                    documentCollection, requestOptions);
+                    documentCollection, requestOptions).ConfigureAwait(false);
             }
 
 
@@ -76,7 +76,7 @@
                 return existingDatabase;
 
             return
-                await client.CreateDatabaseAsync(new Database {Id = settings.DatabaseName});
+                await client.CreateDatabaseAsync(new Database {Id = settings.DatabaseName}).ConfigureAwait(false);
         }
     }
 }

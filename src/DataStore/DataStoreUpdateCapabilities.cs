@@ -30,19 +30,19 @@
 
         #region
 
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true)
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true)
             where T : class, IAggregate, new()
         {
-            return await UpdateByIdInternal(id, action, overwriteReadOnly);
+            return UpdateByIdInternal(id, action, overwriteReadOnly);
         }
 
         // .. update using id; get values from another instance
-        public async Task<T> Update<T>(T src, bool overwriteReadOnly = true)
+        public Task<T> Update<T>(T src, bool overwriteReadOnly = true)
             where T : class, IAggregate, new()
         {            
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
             var cloned = src.Clone();
-            return await UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model), overwriteReadOnly);
+            return UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model), overwriteReadOnly);
         }
 
         // update a DataObject selected with a singular predicate
@@ -53,7 +53,7 @@
         {
             var objectsToUpdate = await eventAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(UpdateWhere),
                     DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                .To(DsConnection.ExecuteQuery);
+                .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
             return UpdateInternal(action, overwriteReadOnly, objectsToUpdate);
         }
@@ -65,12 +65,14 @@
         {
             var objectToUpdate = await eventAggregator
                 .CollectAndForward(new AggregateQueriedByIdOperation(nameof(UpdateById), id, typeof(T)))
-                .To(DsConnection.GetItemAsync<T>);
+                .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             var list = new List<T>().Op(l =>
             {
                 if (objectToUpdate != null) l.Add(objectToUpdate);
             });
+
+            //can't just return null here because we need to reply previous events the object might have been added previously
 
             return UpdateInternal(action, overwriteReadOnly, list).SingleOrDefault();
         }

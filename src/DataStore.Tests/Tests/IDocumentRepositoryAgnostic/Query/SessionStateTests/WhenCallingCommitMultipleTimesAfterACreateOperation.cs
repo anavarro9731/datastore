@@ -30,7 +30,7 @@
 
         private readonly ITestHarness testHarness;
         private readonly Guid newCarId;
-        private Car car;
+        private readonly Car car;
 
         [Fact]
         public void ItShouldPersistChangesToTheDatabaseOnlyOnce()
@@ -45,7 +45,7 @@
         {
             Assert.NotNull(car);
             Assert.Equal(car.schema, typeof(Car).FullName);
-            Assert.Equal(false, car.ReadOnly);
+            Assert.False(car.ReadOnly);
             Assert.NotNull(car.ScopeReferences);
         }
 

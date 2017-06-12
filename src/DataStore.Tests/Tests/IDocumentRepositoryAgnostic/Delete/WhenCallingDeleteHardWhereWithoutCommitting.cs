@@ -13,7 +13,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         {
             // Given
             testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesInSession));
+                nameof(WhenCallingDeleteHardWhereWithoutCommitting));
 
             var carId = Guid.NewGuid();
             testHarness.AddToDatabase(new Car
@@ -29,7 +29,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         private readonly ITestHarness testHarness;
 
         [Fact]
-        public async void WhenCallingDeleteHardWhereWithoutCommitting_ItShouldOnlyMakeChangesInSession()
+        public async void ItShouldOnlyMakeChangesInSession()
         {
             Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
             Assert.NotNull(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));

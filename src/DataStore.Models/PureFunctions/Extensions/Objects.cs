@@ -1,18 +1,17 @@
-﻿namespace DataStore.Models.PureFunctions.Extensions
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Dynamic;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using Interfaces.LowLevel;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-    using Newtonsoft.Json.Linq;
-    using Newtonsoft.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
+namespace DataStore.Models.PureFunctions.Extensions
+{
     public static class Objects
     {
         private static readonly char[] SystemTypeChars =
@@ -61,7 +60,6 @@
 
         public static T Clone<T>(this object source) where T : class, new()
         {
-            var n = new T();
             return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
         }
 
@@ -182,7 +180,7 @@
 
         public static bool IsAnonymousType(this Type type)
         {
-            var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Count() > 0;
+            var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
             var nameContainsAnonymousType = type.FullName.Contains("AnonymousType");
             var isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
 
@@ -224,7 +222,7 @@
 
         private static string GetPropertyNameCore(Expression propertyRefExpr)
         {
-            if (propertyRefExpr == null) throw new ArgumentNullException("propertyRefExpr", "propertyRefExpr is null.");
+            if (propertyRefExpr == null) throw new ArgumentNullException(nameof(propertyRefExpr), "propertyRefExpr is null.");
 
             var memberExpr = propertyRefExpr as MemberExpression;
             if (memberExpr == null)
@@ -236,20 +234,21 @@
 
             if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property) return memberExpr.Member.Name;
 
-            throw new ArgumentException("No property reference expression was found.", "propertyRefExpr");
+            throw new ArgumentException("No property reference expression was found.", nameof(propertyRefExpr));
         }
 
         private static bool HasAnyInterfaces(Type parent, Type child)
         {
-            return child.GetInterfaces().Any(
-                childInterface =>
-                {
-                    var currentInterface = childInterface.IsGenericType
-                        ? childInterface.GetGenericTypeDefinition()
-                        : childInterface;
+            return child.GetInterfaces()
+                .Any(
+                    childInterface =>
+                    {
+                        var currentInterface = childInterface.IsGenericType
+                            ? childInterface.GetGenericTypeDefinition()
+                            : childInterface;
 
-                    return currentInterface == parent;
-                });
+                        return currentInterface == parent;
+                    });
         }
 
         private static Type ResolveGenericTypeDefinition(Type parent)

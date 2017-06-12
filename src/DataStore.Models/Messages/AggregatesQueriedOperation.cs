@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using DataStore.Interfaces.Events;
+using DataStore.Interfaces;
 
 namespace DataStore.Models.Messages
 {

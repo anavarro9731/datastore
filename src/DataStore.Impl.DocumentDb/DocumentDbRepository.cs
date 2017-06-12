@@ -1,5 +1,7 @@
-﻿using DataStore.Models;
+﻿using System.Net;
+using DataStore.Models;
 using DataStore.Models.Messages;
+using Microsoft.Azure.Documents;
 
 namespace DataStore.Impl.DocumentDb
 {
@@ -10,7 +12,6 @@ namespace DataStore.Impl.DocumentDb
     using System.Threading.Tasks;
     using Config;
     using Interfaces;
-    using Interfaces.Events;
     using Interfaces.LowLevel;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
@@ -52,7 +53,7 @@ namespace DataStore.Impl.DocumentDb
                         () =>
                             documentClient.CreateDocumentAsync(
                                 config.CollectionSelfLink(),
-                                aggregateAdded.Model));
+                                aggregateAdded.Model)).ConfigureAwait(false);
             stopWatch.Stop();
             aggregateAdded.StateOperationDuration = stopWatch.Elapsed;
             aggregateAdded.StateOperationCost = result.RequestCharge;
@@ -77,7 +78,7 @@ namespace DataStore.Impl.DocumentDb
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
             var stopWatch = Stopwatch.StartNew();
-            var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.DeleteDocumentAsync(docLink));
+            var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.DeleteDocumentAsync(docLink)).ConfigureAwait(false);
             stopWatch.Stop();
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
             aggregateHardDeleted.StateOperationDuration = stopWatch.Elapsed;
@@ -89,7 +90,7 @@ namespace DataStore.Impl.DocumentDb
             //and causes us to miss this query when profiling, arguably its cheap, but still
             //if I can determine how to create an Azure Document from T we can ditch it.
             var document =
-                await GetItemAsync(new AggregateQueriedByIdOperation(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)));
+                await GetItemAsync(new AggregateQueriedByIdOperation(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T))).ConfigureAwait(false);
 
             var now = DateTime.UtcNow;
             document.SetPropertyValue(nameof(IAggregate.Active), false);
@@ -98,8 +99,7 @@ namespace DataStore.Impl.DocumentDb
                 now.ConvertToMillisecondsEpochTime());
 
             var stopWatch = Stopwatch.StartNew();
-            var result =
-                await DocumentDbUtils.ExecuteWithRetries(() => documentClient.ReplaceDocumentAsync(document.SelfLink, document));
+            var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.ReplaceDocumentAsync(document.SelfLink, document)).ConfigureAwait(false);
             stopWatch.Stop();
             aggregateSoftDeleted.StateOperationDuration = stopWatch.Elapsed;
             aggregateSoftDeleted.StateOperationCost = result.RequestCharge;
@@ -118,7 +118,7 @@ namespace DataStore.Impl.DocumentDb
             var stopWatch = Stopwatch.StartNew();
             while (documentQuery.HasMoreResults)
             {
-                var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>());
+                var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>()).ConfigureAwait(false);
 
                 aggregatesQueried.StateOperationCost += result.RequestCharge;
 
@@ -131,7 +131,7 @@ namespace DataStore.Impl.DocumentDb
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var result = await GetItemAsync(aggregateQueriedById);
+            var result = await GetItemAsync(aggregateQueriedById).ConfigureAwait(false);
             return (T) result;
         }
 
@@ -140,7 +140,9 @@ namespace DataStore.Impl.DocumentDb
             try
             {
                 var stopWatch = Stopwatch.StartNew();
-                var result = await documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id));
+                if (aggregateQueriedById.Id == Guid.Empty) return null; //createdocumentselflink will fail otherwise
+                var result = await documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id))
+                    .ConfigureAwait(false);
                 if (result == null)
                     throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
                 stopWatch.Stop();
@@ -148,6 +150,14 @@ namespace DataStore.Impl.DocumentDb
                 aggregateQueriedById.StateOperationCost = result.RequestCharge;
 
                 return result.Resource;
+            }
+            catch (DocumentClientException de)
+            {
+                if (de.StatusCode == HttpStatusCode.NotFound) //handle when it doesn't exists and return null
+                {
+                    return null;
+                }
+                throw new DatabaseException($"Failed to retrieve record with id {aggregateQueriedById.Id}: {de.Message}", de);
             }
             catch (Exception e)
             {
@@ -163,7 +173,7 @@ namespace DataStore.Impl.DocumentDb
                     DocumentDbUtils.ExecuteWithRetries(
                         () =>
                             documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
-                                aggregateUpdated.Model));
+                                aggregateUpdated.Model)).ConfigureAwait(false);
 
             stopWatch.Stop();
             aggregateUpdated.StateOperationDuration = stopWatch.Elapsed;
@@ -178,7 +188,7 @@ namespace DataStore.Impl.DocumentDb
                     .Where(item => item.Id == aggregateQueriedById.Id.ToString())
                     .AsDocumentQuery();
 
-            var results = await query.ExecuteNextAsync();
+            var results = await query.ExecuteNextAsync().ConfigureAwait(false);
 
             stopWatch.Stop();
             aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;

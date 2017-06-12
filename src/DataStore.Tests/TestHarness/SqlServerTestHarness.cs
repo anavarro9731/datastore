@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using DataStore.Impl.SqlServer;
-using DataStore.Interfaces.Events;
 using DataStore.Interfaces.LowLevel;
 using DataStore.MessageAggregator;
 using DataStore.Models.Messages;
@@ -28,9 +26,12 @@ namespace DataStore.Tests.TestHarness
 
         public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
 
+        #region
+
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, sqlServerRepository, messageAggregator);
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, sqlServerRepository,
+                messageAggregator);
             newAggregate.CommitClosure().Wait();
         }
 
@@ -40,8 +41,11 @@ namespace DataStore.Tests.TestHarness
             var query = extendQueryable == null
                 ? sqlServerRepository.CreateDocumentQuery<T>()
                 : extendQueryable(sqlServerRepository.CreateDocumentQuery<T>());
-            return sqlServerRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).Result;
+            return sqlServerRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable()))
+                .Result;
         }
+
+        #endregion
 
         public static ITestHarness Create(SqlServerDbSettings dbConfig)
         {
@@ -75,6 +79,6 @@ namespace DataStore.Tests.TestHarness
                     }
                 }
             }
-        }       
+        }
     }
 }

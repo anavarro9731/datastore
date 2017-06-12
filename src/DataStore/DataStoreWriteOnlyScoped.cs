@@ -6,7 +6,6 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using Interfaces;
-    using Interfaces.Events;
     using Interfaces.LowLevel;
     using MessageAggregator;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
@@ -41,7 +40,7 @@
             var dataStoreEvents = messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>();
 
             foreach (var dataStoreWriteEvent in dataStoreEvents)
-                await dataStoreWriteEvent.CommitClosure();
+                await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
         }
 
         #region IDataStoreWriteOnlyScoped<T> Members
@@ -51,25 +50,25 @@
             return CreateCapabilities.Create(model, readOnly);
         }
 
-        public async Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate)
+        public  Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate)
         {
-            return await DeleteCapabilities.DeleteHardWhere(predicate);
+            return  DeleteCapabilities.DeleteHardWhere(predicate);
         }
 
-        public async Task<T> DeleteSoftById(Guid id)
+        public  Task<T> DeleteSoftById(Guid id)
         {
-            return await DeleteCapabilities.DeleteSoftById<T>(id);
+            return  DeleteCapabilities.DeleteSoftById<T>(id);
         }
 
-        public async Task<T> DeleteHardById(Guid id)
+        public  Task<T> DeleteHardById(Guid id)
         {
-            return await DeleteCapabilities.DeleteHardById<T>(id);
+            return  DeleteCapabilities.DeleteHardById<T>(id);
         }
 
 
-        public async Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate)
+        public  Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate)
         {
-            return await DeleteCapabilities.DeleteSoftWhere(predicate);
+            return  DeleteCapabilities.DeleteSoftWhere(predicate);
         }
 
         public void Dispose()
@@ -77,22 +76,22 @@
             DsConnection.Dispose();
         }
 
-        public async Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true)
+        public  Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true)
         {
-            return await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
+            return  UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
         }
 
-        public async Task<T> Update(T src, bool overwriteReadOnly = true)
+        public  Task<T> Update(T src, bool overwriteReadOnly = true)
         {
-            return await UpdateCapabilities.Update(src, overwriteReadOnly);
+            return  UpdateCapabilities.Update(src, overwriteReadOnly);
         }
 
-        public async Task<IEnumerable<T>> UpdateWhere(
+        public  Task<IEnumerable<T>> UpdateWhere(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
             bool overwriteReadOnly = false)
         {
-            return await UpdateCapabilities.UpdateWhere(predicate, action);
+            return  UpdateCapabilities.UpdateWhere(predicate, action);
         }
 
         #endregion
