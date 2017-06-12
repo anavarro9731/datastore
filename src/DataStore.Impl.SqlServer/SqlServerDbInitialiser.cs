@@ -27,11 +27,13 @@ namespace DataStore.Impl.SqlServer
                             )
                             BEGIN
                                 CREATE TABLE " + settings.Database + @".dbo." + settings.TableName + @" (
-                                    AggregateId uniqueidentifier NOT NULL PRIMARY KEY, 
-                                    [Schema] nvarchar(250) NOT NULL, 
-                                    Json nvarchar(max) NOT NULL, 
-                                    Version rowversion NOT NULL
-                                );
+                                    AggregateId uniqueidentifier NOT NULL PRIMARY KEY NONCLUSTERED,
+                                    [Schema] nvarchar(250) NOT NULL,
+                                    Json nvarchar(max) NOT NULL,
+                                    Version rowversion NOT NULL,
+                                    [ClusterId] int NOT NULL IDENTITY(1,1) UNIQUE CLUSTERED,                                    
+                                );                                
+                                CREATE NONCLUSTERED INDEX IX_Schema ON " + settings.TableName + @"([Schema])
                             END", connection))
                         {
                             command.ExecuteNonQuery();
