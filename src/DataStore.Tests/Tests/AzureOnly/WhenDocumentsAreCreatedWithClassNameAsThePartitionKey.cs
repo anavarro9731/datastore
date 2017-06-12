@@ -6,8 +6,9 @@ using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
 using Xunit;
 
-namespace DataStore.Tests.Tests.AzureOnly.Expensive
+namespace DataStore.Tests.Tests.AzureOnly
 {
+    
     [Collection(TestCollections.RunSerially)]
     public class WhenDocumentsAreCreatedWithClassNameAsThePartitionKey
     {
