@@ -12,7 +12,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.Transformation
         public WhenCallingReadCommittedWithATransformationToTheSameType()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried));
+            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedWithATransformationToTheSameType));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
