@@ -1,12 +1,12 @@
-namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
-{
-    using System;
-    using System.Linq;
-    using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
-    using Xunit;
+using System;
+using System.Linq;
+using DataStore.Models.Messages;
+using DataStore.Tests.Models;
+using DataStore.Tests.TestHarness;
+using Xunit;
 
+namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
+{
     public class WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession
     {
         public WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession()

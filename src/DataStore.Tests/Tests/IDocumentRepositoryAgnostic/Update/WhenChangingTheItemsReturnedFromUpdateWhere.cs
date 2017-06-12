@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using DataStore.Models.Messages;
 using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
 using Xunit;

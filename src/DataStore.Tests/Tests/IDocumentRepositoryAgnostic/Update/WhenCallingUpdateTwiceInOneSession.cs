@@ -37,6 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
             Assert.Equal("Honda", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
         }
 
+        [Fact]
         public void ItShouldCallUpdateTwice()
         {
             Assert.Equal(2, testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));

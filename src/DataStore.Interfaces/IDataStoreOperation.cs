@@ -1,7 +1,7 @@
-﻿namespace DataStore.Interfaces.Events
-{
-    using System;
+﻿using System;
 
+namespace DataStore.Interfaces
+{
     public interface IDataStoreOperation
     {
         string TypeName { get; set; }

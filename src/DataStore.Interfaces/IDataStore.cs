@@ -2,7 +2,6 @@ namespace DataStore.Interfaces
 {
     using System;
     using System.Threading.Tasks;
-    using Events;
     using LowLevel;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 

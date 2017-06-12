@@ -1,65 +1,70 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.LowLevel;
 using DataStore.Models.Messages;
+using DataStore.Models.PureFunctions;
+using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
 namespace DataStore
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.LowLevel;
-    using Models.PureFunctions;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-
     public class AdvancedCapabilities : IAdvancedCapabilities
     {
-        private readonly IDocumentRepository _dataStoreConnection;
-        private readonly IMessageAggregator _messageAggregator;
+        private readonly IDocumentRepository dataStoreConnection;
+        private readonly IMessageAggregator messageAggregator;
 
         public AdvancedCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
         {
-            this._dataStoreConnection = dataStoreConnection;
-            this._messageAggregator = messageAggregator;
+            this.dataStoreConnection = dataStoreConnection;
+            this.messageAggregator = messageAggregator;
         }
 
-        public async Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : class, IAggregate, new()
+        #region
+
+        public Task<IEnumerable<T2>> ReadCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension)
+            where T : class, IAggregate, new()
         {
-            Guard.Against(() => queryableExtension == null, "Queryable cannot be null when asking for a different return type to the type being queried");
+            Guard.Against(() => queryableExtension == null,
+                "Queryable cannot be null when asking for a different return type to the type being queried");
 
-            var results = await ReadCommittedInternal(queryableExtension);
-
-            return results;
+            return ReadCommittedInternal(queryableExtension);
         }
 
         // get a filtered list of the models from a set of active DataObjects
-        public async Task<IEnumerable<T2>> ReadActiveCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : class, IAggregate, new()
+        public Task<IEnumerable<T2>> ReadActiveCommitted<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension)
+            where T : class, IAggregate, new()
         {
-            Guard.Against(() => queryableExtension == null, "Queryable cannot be null when asking for a different return type to the type being queried");
+            Guard.Against(() => queryableExtension == null,
+                "Queryable cannot be null when asking for a different return type to the type being queried");
 
-            Func<IQueryable<T>, IQueryable<T2>> activeOnlyQueryableExtension = (q) =>
+            Func<IQueryable<T>, IQueryable<T2>> activeOnlyQueryableExtension = q =>
             {
                 q = q.Where(a => a.Active);
 
                 return queryableExtension(q);
             };
 
-            var results = await this.ReadCommittedInternal(activeOnlyQueryableExtension);
-
-            return results;
-        }
-
-        private async Task<IEnumerable<T2>> ReadCommittedInternal<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension) where T : class, IAggregate, new()
-        {
-            var transformedQueryable = queryableExtension(_dataStoreConnection.CreateDocumentQuery<T>());
-            var results = await _messageAggregator.CollectAndForward(new TransformationQueriedOperation<T2>(nameof(ReadCommittedInternal), transformedQueryable)).To(_dataStoreConnection.ExecuteQuery);
-            return results;
+            return ReadCommittedInternal(activeOnlyQueryableExtension);
         }
 
         // get a filtered list of the models from  a set of DataObjects
-        public async Task<T> ReadCommittedById<T>(Guid modelId) where T: class, IAggregate, new()
+        public Task<T> ReadCommittedById<T>(Guid modelId) where T : class, IAggregate, new()
         {
-            var result = await _messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadCommittedById), modelId)).To(_dataStoreConnection.GetItemAsync<T>);
-            return result;
+            return messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadCommittedById), modelId))
+                .To(dataStoreConnection.GetItemAsync<T>);
+        }
+
+        #endregion
+
+        private Task<IEnumerable<T2>> ReadCommittedInternal<T, T2>(Func<IQueryable<T>, IQueryable<T2>> queryableExtension)
+            where T : class, IAggregate, new()
+        {
+            var transformedQueryable = queryableExtension(dataStoreConnection.CreateDocumentQuery<T>());
+            return messageAggregator.CollectAndForward(
+                    new TransformationQueriedOperation<T2>(nameof(ReadCommittedInternal), transformedQueryable))
+                .To(dataStoreConnection.ExecuteQuery);
         }
     }
 }

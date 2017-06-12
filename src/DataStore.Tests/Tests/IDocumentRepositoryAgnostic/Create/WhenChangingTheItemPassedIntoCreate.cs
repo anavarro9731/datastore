@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
                 Make = "Volvo"
             };
 
-            var result = testHarness.DataStore.Create(newCar).Result;
+            testHarness.DataStore.Create(newCar).Wait();
 
             //change the id before committing, if not cloned this would cause the item to be created with a different id
             newCar.id = Guid.NewGuid();

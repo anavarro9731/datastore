@@ -1,5 +1,5 @@
 ﻿using System;
-using DataStore.Interfaces.Events;
+using DataStore.Interfaces;
 
 namespace DataStore.Models.Messages
 {

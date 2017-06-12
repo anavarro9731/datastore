@@ -15,9 +15,9 @@ namespace DataStore.Tests.TestHarness
             //return GetInMemoryTestHarness();
         }
 
-        internal static ITestHarness GetDocumentDbTestHarness(string testName)
+        internal static ITestHarness GetDocumentDbTestHarness(string testName, DocDbCollectionSettings collectionSettings = null)
         {
-            var options = TestHarnessOptions.Create(DocDbCollectionSettings.Create(testName));
+            var options = TestHarnessOptions.Create(collectionSettings ?? DocDbCollectionSettings.Create(testName));
 
             var documentdbsettingsJson = "DocumentDbSettings.json";
             /*

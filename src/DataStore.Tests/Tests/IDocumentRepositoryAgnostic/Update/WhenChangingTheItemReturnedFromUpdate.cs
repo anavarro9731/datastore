@@ -26,7 +26,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
             var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
             existingCarFromDb.Make = "Ford";
 
-            result = testHarness.DataStore.Update(existingCarFromDb).Result;
+            var result = testHarness.DataStore.Update(existingCarFromDb).Result;
             
             //change the id before committing, if not cloned this would cause the item not to be found
             result.id = Guid.NewGuid();
@@ -36,7 +36,6 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         }
 
         private readonly ITestHarness testHarness;
-        private readonly Car result;
         private readonly Guid carId;
 
         [Fact]

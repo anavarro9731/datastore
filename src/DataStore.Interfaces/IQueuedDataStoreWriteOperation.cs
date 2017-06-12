@@ -1,9 +1,9 @@
-﻿namespace DataStore.Interfaces.Events
-{
-    using System;
-    using LowLevel;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+﻿using System;
+using DataStore.Interfaces.LowLevel;
+using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
 
+namespace DataStore.Interfaces
+{
     public interface IQueuedDataStoreWriteOperation<T> : IQueuedDataStoreWriteOperation
         where T : class, IAggregate, new()
     {

@@ -3,8 +3,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.Transformation
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using global::DataStore.Tests.Models;
-    using global::DataStore.Tests.TestHarness;
+    using Models;
+    using TestHarness;
     using Xunit;
 
     public class WhenCallingReadCommittedWithATransformationToTheSameType
@@ -36,7 +36,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.Transformation
         public void YouCanReturnResultsOfTheSameTypeAsTheOneYouQueried()
         {
             Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
-            Assert.Equal(carFromDatabase.GetType(), typeof(Car));
+            Assert.Equal(typeof(Car), carFromDatabase.GetType());
         }
     }
 }

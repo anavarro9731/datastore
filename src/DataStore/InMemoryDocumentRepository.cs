@@ -1,15 +1,13 @@
-﻿namespace DataStore
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.Events;
-    using Interfaces.LowLevel;
-    using Models.PureFunctions.Extensions;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.LowLevel;
+using DataStore.Models.PureFunctions.Extensions;
 
+namespace DataStore
+{
     public class InMemoryDocumentRepository : IDocumentRepository
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
@@ -88,7 +86,5 @@
         }
 
         #endregion
-
-
     }
 }

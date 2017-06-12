@@ -26,11 +26,11 @@ namespace DataStore.Impl.DocumentDb
 
                 try
                 {
-                    return await function();
+                    return await function().ConfigureAwait(false);
                 }
                 catch (DocumentClientException clientException)
                 {
-                    if (IsRetryableError<TV>(clientException))
+                    if (IsRetryableError(clientException))
                     {
                         timeToSleepBeforeRetry = clientException.RetryAfter;
                         retryableException = clientException;
@@ -47,7 +47,7 @@ namespace DataStore.Impl.DocumentDb
                     if (exception != null)
                     {
                         var documentClientException = exception;
-                        if (IsRetryableError<TV>(documentClientException))
+                        if (IsRetryableError(documentClientException))
                         {
                             timeToSleepBeforeRetry = documentClientException.RetryAfter;
                             retryableException = documentClientException;
@@ -64,7 +64,7 @@ namespace DataStore.Impl.DocumentDb
                 }
 
                 retryCount++;
-                await Task.Delay(timeToSleepBeforeRetry.Value);
+                await Task.Delay(timeToSleepBeforeRetry.Value).ConfigureAwait(false);
             }
 
             throw new DatabaseException("Document db exception, retries exceeded", retryableException);
@@ -91,7 +91,7 @@ namespace DataStore.Impl.DocumentDb
                 }
                 catch (DocumentClientException clientException)
                 {
-                    if (IsRetryableError<TV>(clientException))
+                    if (IsRetryableError(clientException))
                     {
                         timeToSleepBeforeRetry = clientException.RetryAfter;
                         retryableException = clientException;
@@ -108,7 +108,7 @@ namespace DataStore.Impl.DocumentDb
                     if (exception != null)
                     {
                         var documentClientException = exception;
-                        if (IsRetryableError<TV>(documentClientException))
+                        if (IsRetryableError(documentClientException))
                         {
                             timeToSleepBeforeRetry = documentClientException.RetryAfter;
                             retryableException = documentClientException;
@@ -131,9 +131,11 @@ namespace DataStore.Impl.DocumentDb
             throw new DatabaseException("Document db exception, retries exceeded", retryableException);
         }
 
-        private static bool IsRetryableError<V>(DocumentClientException de)
+        private static bool IsRetryableError(DocumentClientException de)
         {
-            return de.StatusCode != null && ((int) de.StatusCode == 429 || (int) de.StatusCode == 449);
+            int requestRateExceeded = 429;
+            int transientErrorSafeToRetry = 449;
+            return de.StatusCode != null && ((int) de.StatusCode == requestRateExceeded || (int) de.StatusCode == transientErrorSafeToRetry);
         }
     }
 }

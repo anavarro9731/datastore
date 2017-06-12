@@ -1,16 +1,14 @@
-﻿namespace DataStore
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.Events;
-    using Interfaces.LowLevel;
-    using Models.Messages;
-    using Models.PureFunctions.Extensions;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DataStore.Interfaces;
+using DataStore.Interfaces.LowLevel;
+using DataStore.Models.Messages;
+using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
+namespace DataStore
+{
     //methods return the latest version of an object including uncommitted session changes
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
@@ -36,7 +34,8 @@
             if (HasBeenHardDeletedInThisSession(id)) return false;
 
             return await messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(Exists), id))
-                .To(DbConnection.Exists);
+                .To(DbConnection.Exists)
+                .ConfigureAwait(false);
         }
 
         // get a filtered list of the models from set of DataObjects
@@ -50,7 +49,8 @@
 
             var results = await messageAggregator
                 .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
-                .To(DbConnection.ExecuteQuery);
+                .To(DbConnection.ExecuteQuery)
+                .ConfigureAwait(false);
 
             return eventReplay.ApplyAggregateEvents(results, false);
         }
@@ -71,7 +71,8 @@
 
             var results = await messageAggregator
                 .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
-                .To(DbConnection.ExecuteQuery);
+                .To(DbConnection.ExecuteQuery)
+                .ConfigureAwait(false);
 
             return eventReplay.ApplyAggregateEvents(results, true);
         }
@@ -83,7 +84,8 @@
 
             var result = await messageAggregator
                 .CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadActiveById), modelId))
-                .To(DbConnection.GetItemAsync<T>);
+                .To(DbConnection.GetItemAsync<T>)
+                .ConfigureAwait(false);
 
             if (result == null || !result.Active)
             {
@@ -91,7 +93,11 @@
                 return replayResult;
             }
 
-            return eventReplay.ApplyAggregateEvents(new List<T> {result}, true).SingleOrDefault();
+            return eventReplay.ApplyAggregateEvents(new List<T>
+                {
+                    result
+                }, true)
+                .SingleOrDefault();
         }
 
         #endregion
