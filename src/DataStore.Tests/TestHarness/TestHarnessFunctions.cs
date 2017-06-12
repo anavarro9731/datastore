@@ -11,8 +11,8 @@ namespace DataStore.Tests.TestHarness
         public static ITestHarness GetTestHarness(string testName)
         {
             //return GetDocumentDbTestHarness(testName);
-            return GetSqlServerTestHarness(testName);
-            //return GetInMemoryTestHarness();
+            //return GetSqlServerTestHarness(testName);
+            return GetInMemoryTestHarness();
         }
 
         internal static ITestHarness GetDocumentDbTestHarness(string testName, DocDbCollectionSettings collectionSettings = null)
