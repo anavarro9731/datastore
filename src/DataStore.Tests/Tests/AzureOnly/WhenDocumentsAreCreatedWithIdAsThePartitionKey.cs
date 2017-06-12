@@ -6,7 +6,7 @@ using DataStore.Tests.Models;
 using DataStore.Tests.TestHarness;
 using Xunit;
 
-namespace DataStore.Tests.Tests.AzureOnly.Expensive
+namespace DataStore.Tests.Tests.AzureOnly
 {
     [Collection(TestCollections.RunSerially)]
     public class WhenDocumentsAreCreatedWithIdAsThePartitionKey
@@ -39,7 +39,8 @@ namespace DataStore.Tests.Tests.AzureOnly.Expensive
         private readonly ITestHarness testHarness;
         private readonly DocDbCollectionSettings docDbCollectionSettings;
 
-        [Fact]
+        //[Fact]
+        [Fact(Skip = "expensive")]
         public void ItShouldPutThemAllInSeparatePartitions()
             //up to the max no. of partitions (e.g. 25)
         {
