@@ -18,7 +18,4 @@
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Interfaces.LowLevel\DataStore.Interfaces.LowLevel.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Messages\" />
-  </ItemGroup>
 </Project>
