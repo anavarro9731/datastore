@@ -46,7 +46,7 @@ namespace DataStore.Impl.DocumentDb
             if (aggregateAdded == null || aggregateAdded.Model == null)
                 throw new ArgumentNullException(nameof(aggregateAdded));
                 
-            var stopWatch = Stopwatch.StartNew();
+            
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
@@ -54,9 +54,9 @@ namespace DataStore.Impl.DocumentDb
                             documentClient.CreateDocumentAsync(
                                 config.CollectionSelfLink(),
                                 aggregateAdded.Model)).ConfigureAwait(false);
-            stopWatch.Stop();
-            aggregateAdded.StateOperationDuration = stopWatch.Elapsed;
+
             aggregateAdded.StateOperationCost = result.RequestCharge;
+
         }
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
@@ -77,11 +77,8 @@ namespace DataStore.Impl.DocumentDb
         {
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
-            var stopWatch = Stopwatch.StartNew();
             var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.DeleteDocumentAsync(docLink)).ConfigureAwait(false);
-            stopWatch.Stop();
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
-            aggregateHardDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
         public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
@@ -98,10 +95,8 @@ namespace DataStore.Impl.DocumentDb
             document.SetPropertyValue(nameof(IAggregate.ModifiedAsMillisecondsEpochTime),
                 now.ConvertToMillisecondsEpochTime());
 
-            var stopWatch = Stopwatch.StartNew();
             var result = await DocumentDbUtils.ExecuteWithRetries(() => documentClient.ReplaceDocumentAsync(document.SelfLink, document)).ConfigureAwait(false);
-            stopWatch.Stop();
-            aggregateSoftDeleted.StateOperationDuration = stopWatch.Elapsed;
+
             aggregateSoftDeleted.StateOperationCost = result.RequestCharge;
         }
 
@@ -115,7 +110,7 @@ namespace DataStore.Impl.DocumentDb
             var results = new List<T>();
 
             var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
-            var stopWatch = Stopwatch.StartNew();
+
             while (documentQuery.HasMoreResults)
             {
                 var result = await DocumentDbUtils.ExecuteWithRetries(() => documentQuery.ExecuteNextAsync<T>()).ConfigureAwait(false);
@@ -124,8 +119,7 @@ namespace DataStore.Impl.DocumentDb
 
                 results.AddRange(result);
             }
-            stopWatch.Stop();
-            aggregatesQueried.StateOperationDuration = stopWatch.Elapsed;
+
             return results;
         }
 
@@ -139,14 +133,12 @@ namespace DataStore.Impl.DocumentDb
         {
             try
             {
-                var stopWatch = Stopwatch.StartNew();
                 if (aggregateQueriedById.Id == Guid.Empty) return null; //createdocumentselflink will fail otherwise
                 var result = await documentClient.ReadDocumentAsync(CreateDocumentSelfLinkFromId(aggregateQueriedById.Id))
                     .ConfigureAwait(false);
                 if (result == null)
                     throw new DatabaseRecordNotFoundException(aggregateQueriedById.Id.ToString());
-                stopWatch.Stop();
-                aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
+
                 aggregateQueriedById.StateOperationCost = result.RequestCharge;
 
                 return result.Resource;
@@ -167,7 +159,6 @@ namespace DataStore.Impl.DocumentDb
 
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            var stopWatch = Stopwatch.StartNew();
             var result =
                 await
                     DocumentDbUtils.ExecuteWithRetries(
@@ -175,14 +166,11 @@ namespace DataStore.Impl.DocumentDb
                             documentClient.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
                                 aggregateUpdated.Model)).ConfigureAwait(false);
 
-            stopWatch.Stop();
-            aggregateUpdated.StateOperationDuration = stopWatch.Elapsed;
             aggregateUpdated.StateOperationCost = result.RequestCharge;
         }
 
         public async Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
-            var stopWatch = Stopwatch.StartNew();
             var query =
                 documentClient.CreateDocumentQuery(config.CollectionSelfLink())
                     .Where(item => item.Id == aggregateQueriedById.Id.ToString())
@@ -190,8 +178,6 @@ namespace DataStore.Impl.DocumentDb
 
             var results = await query.ExecuteNextAsync().ConfigureAwait(false);
 
-            stopWatch.Stop();
-            aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
             aggregateQueriedById.StateOperationCost = results.RequestCharge;
 
             return results.Count > 0;

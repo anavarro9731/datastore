@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics;
+using DataStore.Models.PureFunctions.Extensions;
 using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 using ServiceApi.Interfaces.LowLevel.Messages;
+using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
 
 namespace DataStore.MessageAggregator
 {
@@ -15,12 +18,26 @@ namespace DataStore.MessageAggregator
 
         public void To(Action<TMessage> passTo)
         {
+            var stopWatch = new Stopwatch().Op(s => s.Start());
+
             passTo(message);
+
+            if (message is IStateOperation)
+            {
+                ((IStateOperation) message).StateOperationDuration = stopWatch.Elapsed;
+            }
         }
 
         public TOut To<TOut>(Func<TMessage, TOut> passTo)
         {
+            var stopWatch = new Stopwatch().Op(s => s.Start());
+
             var returnValue = passTo(message);
+
+            if (message is IStateOperation)
+            {
+                ((IStateOperation)message).StateOperationDuration = stopWatch.Elapsed;
+            }
 
             return returnValue;
         }
