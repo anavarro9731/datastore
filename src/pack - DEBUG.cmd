@@ -2,37 +2,37 @@ mkdir c:\Nuget.Local
 
 cd DataStore
 del bin\DEBUG\*.nupkg
-dotnet pack -c DEBUG 
+dotnet pack -c DEBUG --include-symbols
 copy bin\DEBUG\*.nupkg c:\Nuget.Local
 																																																																																																																																																																		
 cd ..
 cd DataStore.Interfaces
 del bin\DEBUG\*.nupkg
-dotnet pack -c DEBUG 
+dotnet pack -c DEBUG --include-symbols
 copy bin\DEBUG\*.nupkg c:\Nuget.Local
 
 cd ..
 cd DataStore.Impl.DocumentDb
 del bin\DEBUG\*.nupkg
-dotnet pack -c DEBUG 
+dotnet pack -c DEBUG --include-symbols
 copy bin\DEBUG\*.nupkg c:\Nuget.Local
 
 cd ..
 cd DataStore.Impl.SqlServer
 del bin\DEBUG\*.nupkg
-dotnet pack -c DEBUG 
+dotnet pack -c DEBUG --include-symbols
 copy bin\DEBUG\*.nupkg c:\Nuget.Local
 
 cd ..
 cd DataStore.Models
 del bin\DEBUG\*.nupkg
-dotnet pack -c DEBUG 
+dotnet pack -c DEBUG --include-symbols
 copy bin\DEBUG\*.nupkg c:\Nuget.Local
 
 cd ..
 cd DataStore.Interfaces.LowLevel
 del bin\DEBUG\*.nupkg
-dotnet pack -c DEBUG 
+dotnet pack -c DEBUG --include-symbols
 copy bin\DEBUG\*.nupkg c:\Nuget.Local
 
 cd ..
