@@ -9,7 +9,7 @@
     <PackageId>DataStore.Impl.DocumentDb</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>3.6.0</Version>
+    <Version>3.6.1</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>

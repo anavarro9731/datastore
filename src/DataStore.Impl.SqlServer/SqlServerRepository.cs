@@ -28,8 +28,6 @@ namespace DataStore.Impl.SqlServer
 
         public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
-            var stopWatch = Stopwatch.StartNew();
-
             using (var con = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
@@ -47,8 +45,6 @@ namespace DataStore.Impl.SqlServer
                 }
             }
 
-            stopWatch.Stop();
-            aggregateAdded.StateOperationDuration = stopWatch.Elapsed;
         }
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
@@ -77,9 +73,6 @@ namespace DataStore.Impl.SqlServer
 
         public async Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            var stopWatch = Stopwatch.StartNew();
-
-
             using (var con = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
@@ -91,13 +84,10 @@ namespace DataStore.Impl.SqlServer
                 }
             }
 
-            stopWatch.Stop();
-            aggregateHardDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
         public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
-            var stopWatch = Stopwatch.StartNew();
             using (var connection = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
@@ -116,27 +106,17 @@ namespace DataStore.Impl.SqlServer
                     await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             }
-            stopWatch.Stop();
-            aggregateSoftDeleted.StateOperationDuration = stopWatch.Elapsed;
         }
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
-            var stopWatch = Stopwatch.StartNew();
-
             var results = aggregatesQueried.Query.ToList();
-
-            stopWatch.Stop();
-
-            aggregatesQueried.StateOperationDuration = stopWatch.Elapsed;
 
             return Task.FromResult(results.AsEnumerable());
         }
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var stopWatch = Stopwatch.StartNew();
-
             var id = aggregateQueriedById.Id;
 
             T result;
@@ -150,16 +130,11 @@ namespace DataStore.Impl.SqlServer
                     result = response == null ? null : JsonConvert.DeserializeObject<T>(response);
                 }
             }
-
-            stopWatch.Stop();
-            aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
             return result;
         }
 
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            var stopWatch = Stopwatch.StartNew();
-
             using (var connection = clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
@@ -174,15 +149,10 @@ namespace DataStore.Impl.SqlServer
                     await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             }
-
-            stopWatch.Stop();
-            aggregateUpdated.StateOperationDuration = stopWatch.Elapsed;
         }
 
         public async Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
-            var stopWatch = Stopwatch.StartNew();
-
             var id = aggregateQueriedById.Id;
 
             string result;
@@ -196,8 +166,6 @@ namespace DataStore.Impl.SqlServer
                 }
             }
 
-            stopWatch.Stop();
-            aggregateQueriedById.StateOperationDuration = stopWatch.Elapsed;
             return result != null;
         }
 
