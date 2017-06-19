@@ -19,7 +19,7 @@ It supports basic CRUD operations on any C# object, with some additional feature
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
-DataStore is built with .NET Core SDK v.1.0.0-preview4-004771 +(VS2017 RC4.262228.4.0) but  is backwards compatible with the .NET Framework 4.5.2 platform and does not require .NET Core.
+DataStore is built with .NET Core SDK v.1.0.0 +(VS2017 262228.4) but  is backwards compatible with the .NET Framework 4.5.2 platform and does not require .NET Core.
 
 ## Roadmap
 
@@ -93,7 +93,7 @@ They are queued as events in the EventAggregator object.
 Calling DataStore.CommitChanges() will commit these events to the database.
 
 ```    
-		[Fact]
+        [Fact]
         public async void CanUpdateCar()
         {
             var documentRepository = new InMemoryDocumentRepository();
@@ -124,12 +124,13 @@ Calling DataStore.CommitChanges() will commit these events to the database.
             //The dataStore reads the changes correctly
             Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
         }
+
 ```
 > Note: Read Queries performed during a session will be take into account any uncommitted operations in that session.
 > So the resultset will include any changes already requested (but not yet committed).
 
 ```
-		[Fact]
+       [Fact]
         public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
         {
             var documentRepository = new InMemoryDocumentRepository();
