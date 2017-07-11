@@ -18,7 +18,9 @@ namespace DataStore.Models.Messages
         public string TypeName { get; set; }
         public string MethodCalled { get; set; }
         public double StateOperationCost { get; set; }
-        public TimeSpan StateOperationDuration { get; set; }
+        public long StateOperationStartTimestamp { get; set; }
+        public long? StateOperationStopTimestamp { get; set; }
+        public TimeSpan? StateOperationDuration { get; set; }
         public DateTime Created { get; set; }
     }
 }
