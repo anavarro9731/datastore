@@ -115,7 +115,16 @@ namespace DataStore.Impl.SqlServer
             return Task.FromResult(results.AsEnumerable());
         }
 
-        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
+        public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
+        {
+            // NOTE: SqlCommand.ExecuteScalarAsync() has severe performance issues when 
+            //       retrieving large recordsets, therefore we use the sync implementation.
+
+            var result = GetItem<T>(aggregateQueriedById);
+            return Task.FromResult(result);
+        }
+
+        private T GetItem<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var id = aggregateQueriedById.Id;
 
@@ -125,7 +134,7 @@ namespace DataStore.Impl.SqlServer
                 using (var command = new SqlCommand(
                     $"SELECT Json FROM {settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
                 {
-                    var response = await command.ExecuteScalarAsync().ConfigureAwait(false) as string;
+                    var response = command.ExecuteScalar() as string;
 
                     result = response == null ? null : JsonConvert.DeserializeObject<T>(response);
                 }
