@@ -46,7 +46,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
         [Fact]
         public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
-            Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
+            Assert.Equal(1, testHarness.DataStore.ReadActive<Car>().Result.Count());
         }
     }
 }

@@ -9,6 +9,8 @@ using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
 namespace DataStore
 {
+    using System.Linq.Expressions;
+
     //methods return the latest version of an object including uncommitted session changes
 
     public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
@@ -39,14 +41,13 @@ namespace DataStore
         }
 
         // get a filtered list of the models from set of DataObjects
-        public async Task<IEnumerable<T>> Read<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
+        public async Task<IEnumerable<T>> Read<T>(Expression<Func<T,bool>> predicate = null)
             where T : class, IAggregate, new()
         {
             var queryable = DbConnection.CreateDocumentQuery<T>();
 
-            if (queryableExtension != null)
-                queryable = queryableExtension(queryable);
-
+            if (predicate != null) queryable = queryable.Where(predicate);
+                
             var results = await messageAggregator
                 .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
                 .To(DbConnection.ExecuteQuery)
@@ -56,18 +57,12 @@ namespace DataStore
         }
 
         // get a filtered list of the models from a set of active DataObjects
-        public async Task<IEnumerable<T>> ReadActive<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
+        public async Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null)
             where T : class, IAggregate, new()
         {
-            IQueryable<T> ActiveOnlyQueryableExtension(IQueryable<T> q)
-            {
-                return q.Where(a => a.Active);
-            }
+            var queryable = DbConnection.CreateDocumentQuery<T>().Where(a => a.Active);
 
-            var queryable = DbConnection.CreateDocumentQuery<T>();
-
-            if (queryableExtension != null)
-                queryable = ActiveOnlyQueryableExtension(queryableExtension(queryable));
+            if (predicate != null) queryable = queryable.Where(predicate);
 
             var results = await messageAggregator
                 .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))

@@ -33,7 +33,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            carsFromDatabase = testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.Make == "Volvo")).Result;
+            carsFromDatabase = testHarness.DataStore.Read<Car>(car => car.Make == "Volvo").Result;
         }
 
         private readonly ITestHarness testHarness;

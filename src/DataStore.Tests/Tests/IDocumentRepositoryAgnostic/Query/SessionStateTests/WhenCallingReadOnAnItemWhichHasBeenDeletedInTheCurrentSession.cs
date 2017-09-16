@@ -27,7 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
             testHarness.DataStore.DeleteHardById<Car>(carId).Wait();
 
             // When
-            carFromSession = testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId))
+            carFromSession = testHarness.DataStore.Read<Car>(car => car.id == carId)
                 .Result.SingleOrDefault();
         }
 
