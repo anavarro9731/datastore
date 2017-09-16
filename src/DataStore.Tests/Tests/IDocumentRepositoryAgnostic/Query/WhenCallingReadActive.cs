@@ -31,9 +31,9 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            activeCarFromDatabase = testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == activeCarId))
+            activeCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == activeCarId)
                 .Result.SingleOrDefault();
-            inactiveCarFromDatabase = testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == inactiveCarId))
+            inactiveCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == inactiveCarId)
                 .Result.SingleOrDefault();
         }
 

@@ -15,7 +15,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveAndNoItemsMatchThePredicate));
 
             // When
-            carsFromDatabase = testHarness.DataStore.ReadActive<Car>(cars => cars.Where(car => car.id == Guid.NewGuid()))
+            carsFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == Guid.NewGuid())
                 .Result;
         }
 

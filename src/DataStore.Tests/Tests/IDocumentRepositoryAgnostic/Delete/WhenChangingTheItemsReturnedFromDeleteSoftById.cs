@@ -37,8 +37,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
             Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Active);
-            Assert.Empty(await testHarness.DataStore.ReadActive<Car>(car => car));
-            Assert.NotEmpty(await testHarness.DataStore.Read<Car>(car => car));
+            Assert.Empty(await testHarness.DataStore.ReadActive<Car>());
+            Assert.NotEmpty(await testHarness.DataStore.Read<Car>());
         }
     }
 }

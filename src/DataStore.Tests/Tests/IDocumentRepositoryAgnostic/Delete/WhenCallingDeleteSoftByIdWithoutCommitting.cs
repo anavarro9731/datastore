@@ -34,8 +34,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
             Assert.NotNull(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
             Assert.NotEmpty(testHarness.QueryDatabase<Car>());
-            Assert.Empty(await testHarness.DataStore.ReadActive<Car>(car => car));
-            Assert.NotEmpty(await testHarness.DataStore.Read<Car>(car => car));
+            Assert.Empty(await testHarness.DataStore.ReadActive<Car>());
+            Assert.NotEmpty(await testHarness.DataStore.Read<Car>());
         }
     }
 }

@@ -32,7 +32,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
         [Fact]
         public void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
         {         
-            Assert.Equal(1, testHarness.DataStore.ReadActive<Car>(car => car).Result.Count());
+            Assert.Equal(1, testHarness.DataStore.ReadActive<Car>().Result.Count());
             Assert.True(result.Active);
         }
 

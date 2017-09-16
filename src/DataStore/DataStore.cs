@@ -100,16 +100,15 @@
             return QueryCapabilities.Exists(id);
         }
 
-        public Task<IEnumerable<T>> Read<T>(Func<IQueryable<T>, IQueryable<T>> queryableExtension = null)
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null)
             where T : class, IAggregate, new()
         {
-            return QueryCapabilities.Read(queryableExtension);
+            return QueryCapabilities.Read(predicate);
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>(
-            Func<IQueryable<T>, IQueryable<T>> queryableExtension = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.ReadActive(queryableExtension);
+            return QueryCapabilities.ReadActive(predicate);
         }
 
         public Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()

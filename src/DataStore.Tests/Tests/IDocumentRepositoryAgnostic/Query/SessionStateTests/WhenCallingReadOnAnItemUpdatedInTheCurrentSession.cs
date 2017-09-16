@@ -27,7 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
             testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford").Wait();
 
             // When
-            carFromSession = testHarness.DataStore.Read<Car>(cars => cars.Where(car => car.id == carId)).Result.Single();
+            carFromSession = testHarness.DataStore.Read<Car>(car => car.id == carId).Result.Single();
         }
 
         private readonly ITestHarness testHarness;

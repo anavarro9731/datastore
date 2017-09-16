@@ -34,7 +34,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         public async void ItShouldFlushTheSessionCache()
         {
             Assert.Empty(testHarness.DataStore.QueuedOperations);
-            Assert.Empty(await testHarness.DataStore.Read<Car>(car => car));
+            Assert.Empty(await testHarness.DataStore.Read<Car>());
         }
 
         [Fact]
