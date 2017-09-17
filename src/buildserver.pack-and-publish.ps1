@@ -156,7 +156,7 @@ function PublishProjects {
 
 
 		if ($unlistedProjects.Contains($project)) {
-            $command = "..\tools\nuget delete $project $latestVersion $nugetApiKey -Source $nugetFeedUri"
+            $command = "..\tools\nuget delete $project $latestVersion -Source $nugetFeedUri -ApiKey $nugetApiKey"
             WriteHost $command
             iex $command
         }
