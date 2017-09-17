@@ -161,9 +161,11 @@ function PublishProjects {
             iex $command
         }
 
-		$command = "..\tools\nuget push $scriptFolder\$project\bin\Release\$packagePrefix$project.$latestVersion.symbols.nupkg $nugetApiKey -Source $nugetSymbolFeedUri"
-        WriteHost $command
-        iex $command
+		if ($symbolfeedUri) {
+			$command = "..\tools\nuget push $scriptFolder\$project\bin\Release\$packagePrefix$project.$latestVersion.symbols.nupkg $nugetApiKey -Source $nugetSymbolFeedUri"
+			WriteHost $command
+			iex $command
+		}
 	}    
 }
 
