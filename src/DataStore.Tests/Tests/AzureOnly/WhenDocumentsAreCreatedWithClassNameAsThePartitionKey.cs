@@ -8,6 +8,7 @@ using Xunit;
 
 namespace DataStore.Tests.Tests.AzureOnly
 {
+
     
     [Collection(TestCollections.RunSerially)]
     public class WhenDocumentsAreCreatedWithClassNameAsThePartitionKey
@@ -24,7 +25,7 @@ namespace DataStore.Tests.Tests.AzureOnly
             testHarness = TestHarnessFunctions.GetDocumentDbTestHarness(collectionName, docDbCollectionSettings);
 
             //When
-            for (var i = 0; i < 30; i++)
+            for (var i = 0; i < 5; i++)
             {
                 var car = new Car
                 {
@@ -42,11 +43,12 @@ namespace DataStore.Tests.Tests.AzureOnly
 
         private readonly ITestHarness testHarness;
 
-        [Fact]
+        //[Fact]
+        [Fact(Skip = "azure only")]
         public void ItShouldPutThemAllInTheSamePartition()
         {
             //this line should not throw a cross-partition error because they are all in the same partition
-            Assert.Equal(30, testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active)).Count());
+            Assert.Equal(5, testHarness.QueryDatabase<Car>(query => query.Where(x => x.Active)).Count());
         }
     }
 }
