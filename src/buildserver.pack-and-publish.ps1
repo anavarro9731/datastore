@@ -170,9 +170,12 @@ function PublishProjects {
 function CheckForPublishTag {
 
     $message = git log -1 --pretty=%B    
-    #$message = $(Build.SOURCEVERSIONMESSAGE)
-
+    
 	$result = "$message" -match "Updated Project Versions to";
+
+	if ($result -ne $true) {
+		WriteHostStep "No new version found, skipping publish..."
+	}
 
     return $result
 }
