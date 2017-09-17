@@ -180,17 +180,6 @@ function CheckForPublishTag {
     return $result
 }
 
-function TagCommitAsPublished {
-
-    Param([EditableVersion] $latestVersion)
-
-    WriteHostStep "Tagging Commit with version $latestVersion"
-    git tag published-as-version-$latestVersion
-    git push --porcelain 
-    #see https://stackoverflow.com/questions/12751261/powershell-displays-some-git-command-results-as-error-in-console-even-though-ope for --porcelain switch
-
-    }
-
 #START
 
 #entry method
@@ -224,7 +213,6 @@ function Main {
 
 		PublishProjects $projectsToPublish $unlistedProjects $feedUri $symbolFeedUri $feedApiKey $latestVersion
 
-        TagCommitAsPublished $latestVersion
 	}
         
     Write-Host "Done."        
