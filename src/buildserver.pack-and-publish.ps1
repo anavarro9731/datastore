@@ -216,6 +216,8 @@ function Main {
 
 	if (CheckForPublishTag -eq $true) {		
 
+		WriteHostStep "Beginning Pack and Publish ... with params (feedUri=$feedUri, symbolFeedUri=$symbolFeedUri, feedApiKey=$feedApiKey)"
+
 		$latestVersion = VerifyVersionsInSync $projectsToPublish
 		    
 		PackProjects $projectsToPublish
