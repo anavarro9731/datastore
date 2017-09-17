@@ -252,8 +252,8 @@ function Main {
         "DataStore",		      
         "DataStore.Impl.DocumentDb",
 		"DataStore.Impl.SqlServer",
-		"DataStore.Impl.Interfaces",
-		"DataStore.Impl.Interfaces.LowLevel",
+		"DataStore.Interfaces",
+		"DataStore.Interfaces.LowLevel",
 		"DataStore.Models"
     )
     
