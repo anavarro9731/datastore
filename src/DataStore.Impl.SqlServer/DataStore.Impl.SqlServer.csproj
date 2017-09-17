@@ -1,6 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  
-   <PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
     <Description>Sql Server Implementation of DataStore</Description>
     <Authors>Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
@@ -8,21 +7,17 @@
     <TargetFrameworks>net461</TargetFrameworks>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>3.9.0</Version>
+    <Version>3.10.0</Version>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
   </ItemGroup>
-  
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
-  
   <ItemGroup>
     <Reference Include="System.Transactions" />
   </ItemGroup>
-
 </Project>
