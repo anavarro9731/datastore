@@ -1,0 +1,3 @@
+﻿The interfaces in this folder are here to aggregate messages, possibly from multiple compliant libraries
+
+Messages which require or set state can be "gated" to prevent execution or return test state (aka "message mocking")
