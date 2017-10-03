@@ -1,14 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{648EBFE5-272F-46F6-A666-2EAFF3D62902}"
 	ProjectSection(SolutionItems) = preProject
-		buildserver.build-and-test.ps1 = buildserver.build-and-test.ps1
-		buildserver.pack-and-publish.ps1 = buildserver.pack-and-publish.ps1
-		..\LICENSE = ..\LICENSE
-		prepare-new-version.ps1 = prepare-new-version.ps1
+		.gitignore = .gitignore
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
@@ -123,5 +120,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {48A72D00-AE97-4309-9C36-DF4ECA73A289}
 	EndGlobalSection
 EndGlobal
