@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Description>Azure Document Db Implementation of DataStore</Description>
+    <Description>Azure CosmosDb Implementation of DataStore</Description>
     <Authors>flytzen;Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2017 Aaron Navarro, Frans Lytzen</Copyright>
     <Authors>Aaron Navarro, Frans Lytzen</Authors>
     <TargetFrameworks>net461</TargetFrameworks>
     <AssemblyName>DataStore.Impl.DocumentDb</AssemblyName>
     <PackageId>DataStore.Impl.DocumentDb</PackageId>
-    <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
+    <PackageTags>CosmosDb;DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
     <Version>4.7.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
