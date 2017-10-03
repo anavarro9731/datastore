@@ -4,7 +4,7 @@ Cross-Library messaging and permissions
 
 ## Overview
 
-Circuitboard is a libraray designed to standardise and approach to cross-library messaging and ecurity at an application-level
+Circuitboard is a libraray designed to standardise and approach to cross-library messaging and security at an application-level
 
 It is a collection of interfaces to allow for:
 
