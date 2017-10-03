@@ -1,7 +1,7 @@
 namespace DataStore.Models
 {
     using System.Collections.Generic;
-    using Interfaces.LowLevel;
+    using DataStore.Interfaces.LowLevel;
 
     public class IdEqualityComparer : IEqualityComparer<IHaveAUniqueId>
     {

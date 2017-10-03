@@ -1,50 +1,50 @@
-using System;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Newtonsoft.Json;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
 {
+    using System;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Newtonsoft.Json;
+    using Xunit;
+
     public class WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession
     {
+        private readonly Car carFromDatabase;
+
+        private readonly Guid carId;
+
         public WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession()
         {
             // Given
-            var testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession));
+            var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession));
 
-            carId = Guid.NewGuid();
+            this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                id = this.carId,
                 Active = false,
                 Make = "Volvo"
             };
             testHarness.AddToDatabase(existingCar);
 
-            testHarness.DataStore.DeleteHardById<Car>(carId).Wait();
+            testHarness.DataStore.DeleteHardById<Car>(this.carId).Wait();
 
             // When
-            var document = testHarness.DataStore.Advanced.ReadCommittedById<Car>(carId).Result;
+            var document = testHarness.DataStore.Advanced.ReadCommittedById<Car>(this.carId).Result;
             try
             {
-                carFromDatabase = document; //this approach is for Azure
+                this.carFromDatabase = document; //this approach is for Azure
             }
             catch (Exception)
             {
-                carFromDatabase = JsonConvert.DeserializeObject<Car>(JsonConvert.SerializeObject(document));
+                this.carFromDatabase = JsonConvert.DeserializeObject<Car>(JsonConvert.SerializeObject(document));
             }
         }
-
-        private readonly Car carFromDatabase;
-        private readonly Guid carId;
 
         [Fact]
         public void ItShouldReturnTheItem()
         {
-            Assert.Equal("Volvo", carFromDatabase.Make);
-            Assert.Equal(carId, carFromDatabase.id);
+            Assert.Equal("Volvo", this.carFromDatabase.Make);
+            Assert.Equal(this.carId, this.carFromDatabase.id);
         }
     }
 }

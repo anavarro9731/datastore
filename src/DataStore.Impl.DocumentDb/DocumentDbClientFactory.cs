@@ -1,9 +1,9 @@
 ﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
-    using Config;
+    using DataStore.Impl.DocumentDb.Config;
+    using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Documents.Client;
-    using Models.PureFunctions.Extensions;
 
     public class DocumentDbClientFactory
     {
@@ -24,9 +24,7 @@
 
         private DocumentClient CreateDocumentClient()
         {
-            var client = new DocumentClient(
-                new Uri(config.EndpointUrl),
-                config.AuthorizationKey.ToSecureString());
+            var client = new DocumentClient(new Uri(this.config.EndpointUrl), this.config.AuthorizationKey.ToSecureString());
 
             return client;
         }

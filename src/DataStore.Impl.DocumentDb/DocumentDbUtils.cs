@@ -1,10 +1,9 @@
-﻿using DataStore.Models;
-
-namespace DataStore.Impl.DocumentDb
+﻿namespace DataStore.Impl.DocumentDb
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using DataStore.Models;
     using Microsoft.Azure.Documents;
 
     public static class DocumentDbUtils
@@ -133,9 +132,9 @@ namespace DataStore.Impl.DocumentDb
 
         private static bool IsRetryableError(DocumentClientException de)
         {
-            int requestRateExceeded = 429;
-            int transientErrorSafeToRetry = 449;
-            return de.StatusCode != null && ((int) de.StatusCode == requestRateExceeded || (int) de.StatusCode == transientErrorSafeToRetry);
+            var requestRateExceeded = 429;
+            var transientErrorSafeToRetry = 449;
+            return de.StatusCode != null && ((int)de.StatusCode == requestRateExceeded || (int)de.StatusCode == transientErrorSafeToRetry);
         }
     }
 }

@@ -1,37 +1,34 @@
-﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Interfaces;
-using DataStore.Interfaces.LowLevel;
-using DataStore.Models.PureFunctions.Extensions;
-using Newtonsoft.Json;
-
-namespace DataStore.Impl.SqlServer
+﻿namespace DataStore.Impl.SqlServer
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data.SqlClient;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataStore.Interfaces;
+    using DataStore.Interfaces.LowLevel;
+    using DataStore.Models.PureFunctions.Extensions;
+    using Newtonsoft.Json;
+
     public class SqlServerRepository : IDocumentRepository
     {
         private readonly SqlServerDbClientFactory clientFactory;
+
         private readonly SqlServerDbSettings settings;
 
         public SqlServerRepository(SqlServerDbSettings settings)
         {
             this.settings = settings;
-            clientFactory = new SqlServerDbClientFactory(settings);
-            SqlServerDbInitialiser.Initialise(clientFactory, settings);
+            this.clientFactory = new SqlServerDbClientFactory(settings);
+            SqlServerDbInitialiser.Initialise(this.clientFactory, settings);
         }
-
-        #region
 
         public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
-            using (var con = clientFactory.OpenClient())
+            using (var con = this.clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"INSERT INTO {settings.TableName} ([AggregateId], [Schema], [Json]) VALUES(Convert(uniqueidentifier, @AggregateId), @Schema, @Json)",
+                    $"INSERT INTO {this.settings.TableName} ([AggregateId], [Schema], [Json]) VALUES(Convert(uniqueidentifier, @AggregateId), @Schema, @Json)",
                     con))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateAdded.Model.id));
@@ -44,7 +41,6 @@ namespace DataStore.Impl.SqlServer
                     await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             }
-
         }
 
         public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
@@ -52,10 +48,9 @@ namespace DataStore.Impl.SqlServer
             var schema = typeof(T).FullName;
 
             var query = new List<T>();
-            using (var connection = clientFactory.OpenClient())
+            using (var connection = this.clientFactory.OpenClient())
             {
-                using (var command = new SqlCommand($"SELECT Json FROM {settings.TableName} WHERE [Schema] = '{schema}'",
-                    connection))
+                using (var command = new SqlCommand($"SELECT Json FROM {this.settings.TableName} WHERE [Schema] = '{schema}'", connection))
                 {
                     using (var reader = command.ExecuteReader())
                     {
@@ -73,25 +68,23 @@ namespace DataStore.Impl.SqlServer
 
         public async Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            using (var con = clientFactory.OpenClient())
+            using (var con = this.clientFactory.OpenClient())
             {
-                using (var command = new SqlCommand(
-                    $"DELETE FROM {settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)", con))
+                using (var command = new SqlCommand($"DELETE FROM {this.settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)", con))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateHardDeleted.Model.id));
 
                     await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             }
-
         }
 
         public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
-            using (var connection = clientFactory.OpenClient())
+            using (var connection = this.clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"UPDATE {settings.TableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
+                    $"UPDATE {this.settings.TableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
                     connection))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateSoftDeleted.Model.id));
@@ -108,11 +101,34 @@ namespace DataStore.Impl.SqlServer
             }
         }
 
+        public void Dispose()
+        {
+            //nothing to dispose
+        }
+
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
             var results = aggregatesQueried.Query.ToList();
 
             return Task.FromResult(results.AsEnumerable());
+        }
+
+        public async Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
+        {
+            var id = aggregateQueriedById.Id;
+
+            string result;
+            using (var connection = this.clientFactory.OpenClient())
+            {
+                using (var command = new SqlCommand(
+                    $"SELECT AggregateId FROM {this.settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')",
+                    connection))
+                {
+                    result = (await command.ExecuteScalarAsync().ConfigureAwait(false))?.ToString();
+                }
+            }
+
+            return result != null;
         }
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
@@ -124,30 +140,12 @@ namespace DataStore.Impl.SqlServer
             return Task.FromResult(result);
         }
 
-        private T GetItem<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
-        {
-            var id = aggregateQueriedById.Id;
-
-            T result;
-            using (var connection = clientFactory.OpenClient())
-            {
-                using (var command = new SqlCommand(
-                    $"SELECT Json FROM {settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
-                {
-                    var response = command.ExecuteScalar() as string;
-
-                    result = response == null ? null : JsonConvert.DeserializeObject<T>(response);
-                }
-            }
-            return result;
-        }
-
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            using (var connection = clientFactory.OpenClient())
+            using (var connection = this.clientFactory.OpenClient())
             {
                 using (var command = new SqlCommand(
-                    $"UPDATE {settings.TableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
+                    $"UPDATE {this.settings.TableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
                     connection))
                 {
                     command.Parameters.Add(new SqlParameter("AggregateId", aggregateUpdated.Model.id));
@@ -160,29 +158,21 @@ namespace DataStore.Impl.SqlServer
             }
         }
 
-        public async Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
+        private T GetItem<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var id = aggregateQueriedById.Id;
 
-            string result;
-            using (var connection = clientFactory.OpenClient())
+            T result;
+            using (var connection = this.clientFactory.OpenClient())
             {
-                using (var command = new SqlCommand(
-                    $"SELECT AggregateId FROM {settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')",
-                    connection))
+                using (var command = new SqlCommand($"SELECT Json FROM {this.settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
                 {
-                    result = (await command.ExecuteScalarAsync().ConfigureAwait(false))?.ToString();
+                    var response = command.ExecuteScalar() as string;
+
+                    result = response == null ? null : JsonConvert.DeserializeObject<T>(response);
                 }
             }
-
-            return result != null;
+            return result;
         }
-
-        public void Dispose()
-        {
-            //nothing to dispose
-        }
-
-        #endregion
     }
 }

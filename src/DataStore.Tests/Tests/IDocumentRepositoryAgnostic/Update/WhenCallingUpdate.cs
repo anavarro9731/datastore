@@ -1,46 +1,46 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingUpdate
     {
+        private readonly Guid carId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingUpdate()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdate));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdate));
 
-            carId = Guid.NewGuid();
+            this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                id = this.carId,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
-            var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
+            var existingCarFromDb = this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result;
             existingCarFromDb.Make = "Ford";
 
             //When
-            testHarness.DataStore.Update(existingCarFromDb).Wait();
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.Update(existingCarFromDb).Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid carId;
-
 
         [Fact]
         public void ItShouldPersistChangesToTheDatabase()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
-            Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }
 }

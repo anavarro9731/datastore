@@ -1,28 +1,28 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
 {
     using System;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingDeleteHardByIdOnAnItemThatDoesNotExist
     {
+        private readonly Car result;
+
         public WhenCallingDeleteHardByIdOnAnItemThatDoesNotExist()
         {
             // Given
             var testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDeleteHardByIdOnAnItemThatDoesNotExist));
 
             //When
-            result = testHarness.DataStore.DeleteHardById<Car>(Guid.NewGuid()).Result;
+            this.result = testHarness.DataStore.DeleteHardById<Car>(Guid.NewGuid()).Result;
             testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly Car result;
 
         [Fact]
         public void ItShouldReturnNull()
         {
-            Assert.Null(result);
+            Assert.Null(this.result);
         }
     }
 }

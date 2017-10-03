@@ -1,23 +1,29 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingReadActiveByIdOnAnActiveItem
     {
+        private readonly Car activeCarFromDatabase;
+
+        private readonly Guid activeCarId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingReadActiveByIdOnAnActiveItem()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnActiveItem));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnActiveItem));
 
-            activeCarId = Guid.NewGuid();
+            this.activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                id = this.activeCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -30,22 +36,18 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
                 Make = "Jeep"
             };
 
-            testHarness.AddToDatabase(activeExistingCar);
-            testHarness.AddToDatabase(inactiveExistingCar);
+            this.testHarness.AddToDatabase(activeExistingCar);
+            this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            activeCarFromDatabase = testHarness.DataStore.ReadActiveById<Car>(activeCarId).Result;
+            this.activeCarFromDatabase = this.testHarness.DataStore.ReadActiveById<Car>(this.activeCarId).Result;
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car activeCarFromDatabase;
-        private readonly Guid activeCarId;
 
         [Fact]
         public void ItShouldReturnTheItem()
         {
-            Assert.Equal(1, testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
-            Assert.Equal(activeCarId, activeCarFromDatabase.id);
+            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
+            Assert.Equal(this.activeCarId, this.activeCarFromDatabase.id);
         }
     }
 }

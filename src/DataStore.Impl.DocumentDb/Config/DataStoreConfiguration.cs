@@ -15,9 +15,7 @@
 
     public class DataStoreConfiguration
     {
-        private DataStoreConfiguration(
-            DocumentDbSettings documentDbSettings,
-            FileStorageSettings fileStorageSettings)
+        private DataStoreConfiguration(DocumentDbSettings documentDbSettings, FileStorageSettings fileStorageSettings)
         {
             DocumentDbSettings = documentDbSettings;
             FileStorageSettings = fileStorageSettings;
@@ -27,9 +25,7 @@
 
         public FileStorageSettings FileStorageSettings { get; }
 
-        public static DataStoreConfiguration Create(
-            DocumentDbSettings documentDbSettings,
-            FileStorageSettings fileStorageSettings = null)
+        public static DataStoreConfiguration Create(DocumentDbSettings documentDbSettings, FileStorageSettings fileStorageSettings = null)
         {
             return new DataStoreConfiguration(documentDbSettings, fileStorageSettings);
         }

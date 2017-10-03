@@ -1,8 +1,8 @@
 ﻿namespace DataStore.Interfaces
 {
     using System.Collections.Generic;
-    using LowLevel;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
+    using CircuitBoard.Permissions;
+    using DataStore.Interfaces.LowLevel;
 
     public interface IDataPermission : IApplicationPermission
     {

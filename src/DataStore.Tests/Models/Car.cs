@@ -1,7 +1,7 @@
-﻿using DataStore.Interfaces.LowLevel;
-
-namespace DataStore.Tests.Models
+﻿namespace DataStore.Tests.Models
 {
+    using global::DataStore.Interfaces.LowLevel;
+
     public class Car : Aggregate
     {
         public string Make { get; set; }

@@ -1,43 +1,44 @@
-using System;
-using System.Linq;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingCreateWithTheReadOnlyFlagSetToTrue
     {
+        private readonly Guid newCarId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingCreateWithTheReadOnlyFlagSetToTrue()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
 
-            newCarId = Guid.NewGuid();
+            this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
 
             //When
-            testHarness.DataStore.Create(newCar, true).Wait();
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.Create(newCar, true).Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid newCarId;
 
         [Fact]
         public void ItShouldPersistChangesToTheDatabase()
         {
-            Assert.True(testHarness.QueryDatabase<Car>().Single().ReadOnly);
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().ReadOnly);
         }
 
         [Fact]
         public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
-            Assert.True(testHarness.DataStore.ReadActiveById<Car>(newCarId).Result.ReadOnly);
+            Assert.True(this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId).Result.ReadOnly);
         }
     }
 }

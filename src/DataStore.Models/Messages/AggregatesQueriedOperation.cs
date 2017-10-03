@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using DataStore.Interfaces;
-
-namespace DataStore.Models.Messages
+﻿namespace DataStore.Models.Messages
 {
+    using System;
+    using System.Linq;
+    using DataStore.Interfaces;
+
     public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T>
     {
         public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query)
@@ -14,13 +14,20 @@ namespace DataStore.Models.Messages
             Created = DateTime.UtcNow;
         }
 
-        public IQueryable<T> Query { get; set; }
-        public string TypeName { get; set; }
-        public string MethodCalled { get; set; }
-        public double StateOperationCost { get; set; }
-        public long StateOperationStartTimestamp { get; set; }
-        public long? StateOperationStopTimestamp { get; set; }
-        public TimeSpan? StateOperationDuration { get; set; }
         public DateTime Created { get; set; }
+
+        public string MethodCalled { get; set; }
+
+        public IQueryable<T> Query { get; set; }
+
+        public double StateOperationCost { get; set; }
+
+        public TimeSpan? StateOperationDuration { get; set; }
+
+        public long StateOperationStartTimestamp { get; set; }
+
+        public long? StateOperationStopTimestamp { get; set; }
+
+        public string TypeName { get; set; }
     }
 }

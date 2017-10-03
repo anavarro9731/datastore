@@ -1,41 +1,40 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
 {
     using System;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenChangingTheItemsReturnedFromDeleteHardById
 
     {
+        private readonly ITestHarness testHarness;
+
         public WhenChangingTheItemsReturnedFromDeleteHardById()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenChangingTheItemsReturnedFromDeleteHardById
-                ));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemsReturnedFromDeleteHardById));
 
             var carId = Guid.NewGuid();
-            testHarness.AddToDatabase(new Car
-            {
-                id = carId,
-                Make = "Volvo"
-            });
+            this.testHarness.AddToDatabase(
+                new Car
+                {
+                    id = carId,
+                    Make = "Volvo"
+                });
 
-            var result = testHarness.DataStore.DeleteHardById<Car>(carId).Result;
+            var result = this.testHarness.DataStore.DeleteHardById<Car>(carId).Result;
 
             //When
             result.id = Guid.NewGuid(); //change in memory before commit
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
-            Assert.Empty(testHarness.QueryDatabase<Car>());
-            Assert.Empty(await testHarness.DataStore.Read<Car>());
+            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
     }
 }

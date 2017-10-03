@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataStore.Interfaces;
-using DataStore.Interfaces.LowLevel;
-using DataStore.Models.PureFunctions.Extensions;
-
-namespace DataStore
+﻿namespace DataStore
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.PureFunctions.Extensions;
+
     public class InMemoryDocumentRepository : IDocumentRepository
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
-
-        #region
 
         public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
@@ -36,9 +34,7 @@ namespace DataStore
 
         public Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName)
-                .Cast<T>()
-                .Single(a => a.id == aggregateSoftDeleted.Model.id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
 
             var now = DateTime.UtcNow;
             aggregate.Active = false;
@@ -68,9 +64,7 @@ namespace DataStore
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName)
-                .Cast<T>()
-                .SingleOrDefault(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().SingleOrDefault(a => a.id == aggregateQueriedById.Id);
 
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Task.FromResult(aggregate?.Clone());
@@ -84,7 +78,5 @@ namespace DataStore
 
             return Task.CompletedTask;
         }
-
-        #endregion
     }
 }

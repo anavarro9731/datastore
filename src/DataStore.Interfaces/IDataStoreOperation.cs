@@ -1,11 +1,13 @@
-﻿using System;
-
-namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces
 {
+    using System;
+
     public interface IDataStoreOperation
     {
-        string TypeName { get; set; }
-        string MethodCalled { get; set; }
         DateTime Created { get; set; }
+
+        string MethodCalled { get; set; }
+
+        string TypeName { get; set; }
     }
 }

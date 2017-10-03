@@ -4,7 +4,7 @@ namespace DataStore.Interfaces
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using LowLevel;
+    using DataStore.Interfaces.LowLevel;
 
     public interface IDataStoreDeleteCapabilities
     {

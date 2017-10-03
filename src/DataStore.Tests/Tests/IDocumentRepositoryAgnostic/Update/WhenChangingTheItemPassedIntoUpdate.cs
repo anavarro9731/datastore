@@ -2,47 +2,47 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
     using System;
     using System.Linq;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenChangingTheItemPassedIntoUpdate
     {
+        private readonly Guid carId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenChangingTheItemPassedIntoUpdate()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenChangingTheItemPassedIntoUpdate));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemPassedIntoUpdate));
 
-            carId = Guid.NewGuid();
+            this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                id = this.carId,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
             //read from db to pickup changes to properties made by datastore oncreate
-            var existingCarFromDb = testHarness.DataStore.ReadActiveById<Car>(carId).Result;
+            var existingCarFromDb = this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result;
             existingCarFromDb.Make = "Ford";
 
-            testHarness.DataStore.Update(existingCarFromDb).Wait();
+            this.testHarness.DataStore.Update(existingCarFromDb).Wait();
 
             //change the id before committing, if not cloned this would cause the item not to be found
             existingCarFromDb.id = Guid.NewGuid();
 
             //When
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid carId;
 
         [Fact]
         public void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }
 }

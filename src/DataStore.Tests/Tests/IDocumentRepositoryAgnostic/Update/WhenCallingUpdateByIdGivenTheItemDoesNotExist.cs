@@ -1,40 +1,40 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingUpdateByIdGivenTheItemDoesNotExist
     {
+        private readonly Car result;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingUpdateByIdGivenTheItemDoesNotExist()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingUpdateByIdGivenTheItemDoesNotExist));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdateByIdGivenTheItemDoesNotExist));
 
             var carId = Guid.NewGuid();
 
             //When
-            result = testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Whatever").Result;
-            testHarness.DataStore.CommitChanges().Wait();
-        }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car result;
-
-        [Fact]
-        public void ItShouldReturnNull()
-        {
-            Assert.Null(result);
+            this.result = this.testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Whatever").Result;
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
 
         [Fact]
         public void ItShouldNotExecuteAnyUpdateOperations()
         {
-            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+        }
+
+        [Fact]
+        public void ItShouldReturnNull()
+        {
+            Assert.Null(this.result);
         }
     }
 }

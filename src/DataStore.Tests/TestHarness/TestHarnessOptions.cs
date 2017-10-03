@@ -1,7 +1,7 @@
-﻿using DataStore.Impl.DocumentDb.Config;
-
-namespace DataStore.Tests.TestHarness
+﻿namespace DataStore.Tests.TestHarness
 {
+    using global::DataStore.Impl.DocumentDb.Config;
+
     public class TestHarnessOptions
     {
         public DocDbCollectionSettings CollectionSettings { get; private set; }

@@ -2,42 +2,43 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
 {
     using System;
     using System.Linq;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenChangingTheItemReturnedFromCreate
     {
+        private readonly Guid newCarId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenChangingTheItemReturnedFromCreate()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemReturnedFromCreate));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemReturnedFromCreate));
 
-            newCarId = Guid.NewGuid();
+            this.newCarId = Guid.NewGuid();
 
             var newCar = new Car
             {
-                id = newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
 
-            var result = testHarness.DataStore.Create(newCar).Result;
+            var result = this.testHarness.DataStore.Create(newCar).Result;
 
             //change the id before committing, if not cloned this would cause the item to be created with a different id
             result.id = Guid.NewGuid();
 
             //When
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid newCarId;
 
         [Fact]
         public void ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned()
         {
-            Assert.True(testHarness.QueryDatabase<Car>().Single().id == newCarId);
-            Assert.NotNull(testHarness.DataStore.ReadActiveById<Car>(newCarId).Result);
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
+            Assert.NotNull(this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId).Result);
         }
     }
 }

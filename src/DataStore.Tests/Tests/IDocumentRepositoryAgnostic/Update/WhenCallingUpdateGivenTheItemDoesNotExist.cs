@@ -2,36 +2,36 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingUpdateGivenTheItemDoesNotExist
     {
+        private readonly Car result;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingUpdateGivenTheItemDoesNotExist()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingUpdateGivenTheItemDoesNotExist));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdateGivenTheItemDoesNotExist));
 
             //When
-            result = testHarness.DataStore.Update(new Car()).Result;
-            testHarness.DataStore.CommitChanges().Wait();
+            this.result = this.testHarness.DataStore.Update(new Car()).Result;
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car result;
 
         [Fact]
         public void ItShouldNotExecuteAnyUpdateOperation()
         {
-            Assert.Equal(0, testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
+            Assert.Equal(0, this.testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
         }
 
         [Fact]
         public void ItShouldReturnNull()
         {
-            Assert.Null(result);
+            Assert.Null(this.result);
         }
     }
 }

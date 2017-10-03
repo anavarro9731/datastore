@@ -3,16 +3,20 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingReadActiveByIdOnAnInactiveItem
     {
+        private readonly Car inactiveCarFromDatabase;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingReadActiveByIdOnAnInactiveItem()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnInactiveItem));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnInactiveItem));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -30,21 +34,18 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
                 Make = "Jeep"
             };
 
-            testHarness.AddToDatabase(activeExistingCar);
-            testHarness.AddToDatabase(inactiveExistingCar);
+            this.testHarness.AddToDatabase(activeExistingCar);
+            this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            inactiveCarFromDatabase = testHarness.DataStore.ReadActiveById<Car>(inactiveCarId).Result;
+            this.inactiveCarFromDatabase = this.testHarness.DataStore.ReadActiveById<Car>(inactiveCarId).Result;
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car inactiveCarFromDatabase;
 
         [Fact]
         public void ItShouldNotReturnTheItem()
         {
-            Assert.Equal(1, testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
-            Assert.Null(inactiveCarFromDatabase);
+            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
+            Assert.Null(this.inactiveCarFromDatabase);
         }
     }
 }

@@ -5,11 +5,7 @@
     public class DocumentDbSettings
     {
         [JsonConstructor]
-        private DocumentDbSettings(
-            string authorizationKey,
-            string databaseName,
-            DocDbCollectionSettings collectionSettings,
-            string endpointUrl)
+        private DocumentDbSettings(string authorizationKey, string databaseName, DocDbCollectionSettings collectionSettings, string endpointUrl)
         {
             AuthorizationKey = authorizationKey;
             DatabaseName = databaseName;
@@ -19,17 +15,13 @@
 
         public string AuthorizationKey { get; }
 
-        public string DatabaseName { get; }
-
         public DocDbCollectionSettings CollectionSettings { get; set; }
+
+        public string DatabaseName { get; }
 
         public string EndpointUrl { get; }
 
-        public static DocumentDbSettings Create(
-            string authorizationKey,
-            string databaseName,
-            DocDbCollectionSettings collectionSettings,
-            string endpointUrl)
+        public static DocumentDbSettings Create(string authorizationKey, string databaseName, DocDbCollectionSettings collectionSettings, string endpointUrl)
         {
             return new DocumentDbSettings(authorizationKey, databaseName, collectionSettings, endpointUrl);
         }

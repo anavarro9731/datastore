@@ -1,46 +1,47 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingUpdateTwiceInOneSession
     {
+        private readonly Guid carId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingUpdateTwiceInOneSession()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdateTwiceInOneSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdateTwiceInOneSession));
 
-            carId = Guid.NewGuid();
+            this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                id = this.carId,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
             //When
-            testHarness.DataStore.UpdateById<Car>(carId, c => c.Make = "Toyota").Wait();
-            testHarness.DataStore.UpdateById<Car>(carId, c => c.Make = "Honda").Wait();
-            testHarness.DataStore.CommitChanges().Wait();
-        }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid carId;
-
-        [Fact]
-        public void ItShouldPersistTheLastChangeToTheDatabase()
-        {
-            Assert.Equal("Honda", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+            this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota").Wait();
+            this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda").Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
 
         [Fact]
         public void ItShouldCallUpdateTwice()
         {
-            Assert.Equal(2, testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
+            Assert.Equal(2, this.testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
+        }
+
+        [Fact]
+        public void ItShouldPersistTheLastChangeToTheDatabase()
+        {
+            Assert.Equal("Honda", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }
 }

@@ -1,12 +1,16 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
     using System;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingExistsOnAnInactiveItem
     {
+        private readonly bool activeCarExists;
+
+        private readonly bool inactiveCarExists;
+
         public WhenCallingExistsOnAnInactiveItem()
         {
             // Given
@@ -30,18 +34,15 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            activeCarExists = testHarness.DataStore.Exists(activeCarId).Result;
-            inactiveCarExists = testHarness.DataStore.Exists(inactiveCarId).Result;
+            this.activeCarExists = testHarness.DataStore.Exists(activeCarId).Result;
+            this.inactiveCarExists = testHarness.DataStore.Exists(inactiveCarId).Result;
         }
-
-        private readonly bool activeCarExists;
-        private readonly bool inactiveCarExists;
 
         [Fact]
         public void ItShouldReturnTheItem()
         {
-            Assert.True(inactiveCarExists);
-            Assert.True(activeCarExists);
+            Assert.True(this.inactiveCarExists);
+            Assert.True(this.activeCarExists);
         }
     }
 }

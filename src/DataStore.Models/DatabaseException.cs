@@ -1,7 +1,7 @@
-using System;
-
 namespace DataStore.Models
 {
+    using System;
+
     public class DatabaseException : Exception
     {
         public DatabaseException()

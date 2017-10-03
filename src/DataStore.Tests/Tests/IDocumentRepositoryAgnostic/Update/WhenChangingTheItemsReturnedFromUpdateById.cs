@@ -1,41 +1,42 @@
-using System;
-using System.Linq;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenChangingTheItemsReturnedFromUpdateById
     {
+        private readonly Guid carId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenChangingTheItemsReturnedFromUpdateById()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenChangingTheItemsReturnedFromUpdateById));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemsReturnedFromUpdateById));
 
-            carId = Guid.NewGuid();
-            testHarness.AddToDatabase(new Car
-            {
-                id = carId,
-                Make = "Volvo"
-            });
+            this.carId = Guid.NewGuid();
+            this.testHarness.AddToDatabase(
+                new Car
+                {
+                    id = this.carId,
+                    Make = "Volvo"
+                });
 
-            var result = testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford").Result;
+            var result = this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford").Result;
 
             //When
             result.id = Guid.NewGuid();
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid carId;
 
         [Fact]
         public void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
-            Assert.Equal("Ford", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
-            Assert.Equal("Ford", testHarness.DataStore.ReadActiveById<Car>(carId).Result.Make);
+            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }
 }

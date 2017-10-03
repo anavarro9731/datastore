@@ -2,40 +2,39 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
 {
     using System;
     using System.Linq;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenChangingTheItemsReturnedFromDeleteHardWhere
     {
+        private readonly ITestHarness testHarness;
+
         public WhenChangingTheItemsReturnedFromDeleteHardWhere()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenChangingTheItemsReturnedFromDeleteHardWhere
-                ));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenChangingTheItemsReturnedFromDeleteHardWhere));
 
             var carId = Guid.NewGuid();
-            testHarness.AddToDatabase(new Car
-            {
-                id = carId,
-                Make = "Volvo"
-            });
+            this.testHarness.AddToDatabase(
+                new Car
+                {
+                    id = carId,
+                    Make = "Volvo"
+                });
 
-            var result = testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Result;
+            var result = this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Result;
 
             //When
             result.Single().id = Guid.NewGuid(); //change in memory before commit
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
-            Assert.Empty(testHarness.QueryDatabase<Car>());
-            Assert.Empty(await testHarness.DataStore.Read<Car>());
+            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
     }
 }

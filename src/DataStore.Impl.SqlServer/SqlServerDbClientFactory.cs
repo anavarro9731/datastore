@@ -1,8 +1,8 @@
-﻿using System.Data.SqlClient;
-using DataStore.Models.PureFunctions.Extensions;
-
-namespace DataStore.Impl.SqlServer
+﻿namespace DataStore.Impl.SqlServer
 {
+    using System.Data.SqlClient;
+    using DataStore.Models.PureFunctions.Extensions;
+
     public class SqlServerDbClientFactory
     {
         private readonly SqlServerDbSettings config;
@@ -14,7 +14,7 @@ namespace DataStore.Impl.SqlServer
 
         public SqlConnection OpenClient()
         {
-            return new SqlConnection(config.ToConnectionString()).Op(c => c.Open());
+            return new SqlConnection(this.config.ToConnectionString()).Op(c => c.Open());
         }
     }
 }
