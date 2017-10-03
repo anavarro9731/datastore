@@ -4,7 +4,7 @@
     <Authors>Aaron Navarro</Authors>
     <TargetFramework>net40</TargetFramework>
     <PackageProjectUrl>https://github.com/anavarro9731/</PackageProjectUrl>
-    <Version>0.7.0</Version>
+    <Version>0.8.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 </Project>
