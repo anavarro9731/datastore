@@ -5,10 +5,10 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.LowLevel;
-    using MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using CircuitBoard.MessageAggregator;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.MessageAggregator;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -37,38 +37,34 @@
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>();
+            var dataStoreEvents = this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>();
 
-            foreach (var dataStoreWriteEvent in dataStoreEvents)
-                await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
+            foreach (var dataStoreWriteEvent in dataStoreEvents) await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
         }
 
-        #region IDataStoreWriteOnlyScoped<T> Members
-
-        public Task<T> Create(T model, bool readOnly = false) 
+        public Task<T> Create(T model, bool readOnly = false)
         {
             return CreateCapabilities.Create(model, readOnly);
         }
 
-        public  Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate)
+        public Task<T> DeleteHardById(Guid id)
         {
-            return  DeleteCapabilities.DeleteHardWhere(predicate);
+            return DeleteCapabilities.DeleteHardById<T>(id);
         }
 
-        public  Task<T> DeleteSoftById(Guid id)
+        public Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate)
         {
-            return  DeleteCapabilities.DeleteSoftById<T>(id);
+            return DeleteCapabilities.DeleteHardWhere(predicate);
         }
 
-        public  Task<T> DeleteHardById(Guid id)
+        public Task<T> DeleteSoftById(Guid id)
         {
-            return  DeleteCapabilities.DeleteHardById<T>(id);
+            return DeleteCapabilities.DeleteSoftById<T>(id);
         }
 
-
-        public  Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate)
+        public Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate)
         {
-            return  DeleteCapabilities.DeleteSoftWhere(predicate);
+            return DeleteCapabilities.DeleteSoftWhere(predicate);
         }
 
         public void Dispose()
@@ -76,24 +72,19 @@
             DsConnection.Dispose();
         }
 
-        public  Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true)
+        public Task<T> Update(T src, bool overwriteReadOnly = true)
         {
-            return  UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
+            return UpdateCapabilities.Update(src, overwriteReadOnly);
         }
 
-        public  Task<T> Update(T src, bool overwriteReadOnly = true)
+        public Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true)
         {
-            return  UpdateCapabilities.Update(src, overwriteReadOnly);
+            return UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
         }
 
-        public  Task<IEnumerable<T>> UpdateWhere(
-            Expression<Func<T, bool>> predicate,
-            Action<T> action,
-            bool overwriteReadOnly = false)
+        public Task<IEnumerable<T>> UpdateWhere(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false)
         {
-            return  UpdateCapabilities.UpdateWhere(predicate, action);
+            return UpdateCapabilities.UpdateWhere(predicate, action);
         }
-
-        #endregion
     }
 }

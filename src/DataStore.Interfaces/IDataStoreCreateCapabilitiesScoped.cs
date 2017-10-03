@@ -1,7 +1,7 @@
 namespace DataStore.Interfaces
 {
     using System.Threading.Tasks;
-    using LowLevel;
+    using DataStore.Interfaces.LowLevel;
 
     public interface IDataStoreCreateCapabilitiesScoped<T> where T : class, IAggregate, new()
     {

@@ -5,11 +5,11 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using Interfaces;
-    using Interfaces.LowLevel;
-    using MessageAggregator;
-    using Models.PureFunctions.Extensions;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using CircuitBoard.MessageAggregator;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.MessageAggregator;
+    using global::DataStore.Models.PureFunctions.Extensions;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -21,16 +21,25 @@
 
         public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null)
         {
-            messageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
+            this.messageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
             DsConnection = documentRepository;
 
-            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, messageAggregator);
-            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, messageAggregator);
-            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, messageAggregator);
-            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, messageAggregator);
+            QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.messageAggregator);
+            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.messageAggregator);
+            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, this.messageAggregator);
+            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.messageAggregator);
         }
 
+        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, this.messageAggregator);
+
         public IDocumentRepository DsConnection { get; }
+
+        public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations => new ReadOnlyCapableList<IDataStoreOperation>().Op(
+            l => l.AddRange(this.messageAggregator.AllMessages.OfType<IDataStoreOperation>()));
+
+        public CircuitBoard.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
+            new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
+                l => l.AddRange(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -40,27 +49,21 @@
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public ServiceApi.Interfaces.LowLevel.MessageAggregator.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
-            new ReadOnlyCapableList<IDataStoreOperation>().Op(
-                l => l.AddRange(messageAggregator.AllMessages.OfType<IDataStoreOperation>()));
+        public IDataStoreQueryCapabilities AsReadOnly()
+        {
+            return QueryCapabilities;
+        }
 
-        public ServiceApi.Interfaces.LowLevel.MessageAggregator.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
-            new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(l => l.AddRange(messageAggregator.AllMessages
-                .OfType<IQueuedDataStoreWriteOperation>()
-                .Where(o => o.Committed == false)));
-
-        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, messageAggregator);
-
-        #region
+        public IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new()
+        {
+            return new DataStoreWriteOnly<T>(DsConnection, this.messageAggregator);
+        }
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
-                .Where(e => !e.Committed)
-                .ToList();
+            var dataStoreEvents = this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed).ToList();
 
-            foreach (var dataStoreWriteEvent in dataStoreEvents)
-                await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
+            foreach (var dataStoreWriteEvent in dataStoreEvents) await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
         }
 
         public Task<T> Create<T>(T model, bool readOnly = false) where T : class, IAggregate, new()
@@ -68,8 +71,12 @@
             return CreateCapabilities.Create(model, readOnly);
         }
 
-        public Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate)
-            where T : class, IAggregate, new()
+        public Task<T> DeleteHardById<T>(Guid id) where T : class, IAggregate, new()
+        {
+            return DeleteCapabilities.DeleteHardById<T>(id);
+        }
+
+        public Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return DeleteCapabilities.DeleteHardWhere(predicate);
         }
@@ -79,13 +86,7 @@
             return DeleteCapabilities.DeleteSoftById<T>(id);
         }
 
-        public Task<T> DeleteHardById<T>(Guid id) where T : class, IAggregate, new()
-        {
-            return DeleteCapabilities.DeleteHardById<T>(id);
-        }
-
-        public Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate)
-            where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return DeleteCapabilities.DeleteSoftWhere(predicate);
         }
@@ -100,8 +101,7 @@
             return QueryCapabilities.Exists(id);
         }
 
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null)
-            where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
         {
             return QueryCapabilities.Read(predicate);
         }
@@ -116,36 +116,20 @@
             return QueryCapabilities.ReadActiveById<T>(modelId);
         }
 
-        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true)
-            where T : class, IAggregate, new()
-        {
-            return UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
-        }
-
-        public Task<T> Update<T>(T src, bool overwriteReadOnly = true)
-            where T : class, IAggregate, new()
+        public Task<T> Update<T>(T src, bool overwriteReadOnly = true) where T : class, IAggregate, new()
         {
             return UpdateCapabilities.Update(src, overwriteReadOnly);
         }
 
-        public Task<IEnumerable<T>> UpdateWhere<T>(
-            Expression<Func<T, bool>> predicate,
-            Action<T> action,
-            bool overwriteReadOnly = false) where T : class, IAggregate, new()
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : class, IAggregate, new()
+        {
+            return UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
+        }
+
+        public Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false)
+            where T : class, IAggregate, new()
         {
             return UpdateCapabilities.UpdateWhere(predicate, action);
         }
-
-        public IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new()
-        {
-            return new DataStoreWriteOnly<T>(DsConnection, messageAggregator);
-        }
-
-        public IDataStoreQueryCapabilities AsReadOnly()
-        {
-            return QueryCapabilities;
-        }
-
-        #endregion
     }
 }

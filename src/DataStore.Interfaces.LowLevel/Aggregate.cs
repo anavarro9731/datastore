@@ -23,14 +23,14 @@
             schema = GetType().FullName;
             Active = true;
         }
-        
+
         public bool Active { get; set; }
 
         public bool ReadOnly { get; set; }
 
-        public List<IScopeReference> ScopeReferences { get; set; }
-
         //required lowercase when a docdb partitionkey
-        public string schema { get; set; } 
+        public string schema { get; set; }
+
+        public List<IScopeReference> ScopeReferences { get; set; }
     }
 }

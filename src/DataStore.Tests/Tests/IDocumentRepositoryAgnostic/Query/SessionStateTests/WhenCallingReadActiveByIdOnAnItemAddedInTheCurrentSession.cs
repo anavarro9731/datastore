@@ -1,19 +1,22 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession
     {
+        private readonly Car newCarFromSession;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -22,36 +25,32 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
                 Active = true,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
             var newCarId = Guid.NewGuid();
-            testHarness.DataStore.Create(new Car
+            this.testHarness.DataStore.Create(
+                new Car
                 {
                     id = newCarId,
                     Active = true,
                     Make = "Ford"
-                })
-                .Wait();
+                }).Wait();
 
-
-            newCarFromSession = testHarness.DataStore.ReadActiveById<Car>(newCarId).Result;
-        }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car newCarFromSession;
-
-        [Fact]
-        public void ItShouldReturnThatItem()
-        {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));                      
-            Assert.NotNull(newCarFromSession);
+            this.newCarFromSession = this.testHarness.DataStore.ReadActiveById<Car>(newCarId).Result;
         }
 
         [Fact]
         public void ItShouldNotHaveAddedThatItemToTheDatabaseYet()
         {
-            Assert.Equal(1, testHarness.QueryDatabase<Car>().Count());
-            Assert.Equal(2, testHarness.DataStore.ReadActive<Car>().Result.Count());
+            Assert.Equal(1, this.testHarness.QueryDatabase<Car>().Count());
+            Assert.Equal(2, this.testHarness.DataStore.ReadActive<Car>().Result.Count());
+        }
+
+        [Fact]
+        public void ItShouldReturnThatItem()
+        {
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));
+            Assert.NotNull(this.newCarFromSession);
         }
     }
 }

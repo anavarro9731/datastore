@@ -4,16 +4,20 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
     using System.Collections.Generic;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingRead
     {
+        private readonly IEnumerable<Car> carsFromDatabase;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingRead()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingRead));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingRead));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -29,21 +33,18 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
                 Active = false,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(activeExistingCar);
-            testHarness.AddToDatabase(inactiveExistingCar);
+            this.testHarness.AddToDatabase(activeExistingCar);
+            this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            carsFromDatabase = testHarness.DataStore.Read<Car>(car => car.Make == "Volvo").Result;
+            this.carsFromDatabase = this.testHarness.DataStore.Read<Car>(car => car.Make == "Volvo").Result;
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly IEnumerable<Car> carsFromDatabase;
 
         [Fact]
         public void ItShouldReturnAllItemsRegardlessOfActiveFlag()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Equal(2, carsFromDatabase.Count());
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal(2, this.carsFromDatabase.Count());
         }
     }
 }

@@ -1,10 +1,9 @@
-﻿using DataStore.Interfaces.LowLevel;
-using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
-
-namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces
 {
-    public interface IDataStoreWriteOperation<T> : IDataStoreWriteOperation
-        where T : class, IAggregate, new()
+    using CircuitBoard.Messages;
+    using DataStore.Interfaces.LowLevel;
+
+    public interface IDataStoreWriteOperation<T> : IDataStoreWriteOperation where T : class, IAggregate, new()
     {
         T Model { get; set; }
     }

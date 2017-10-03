@@ -1,13 +1,12 @@
-using DataStore.Interfaces;
-using DataStore.Models.Messages;
-
 namespace DataStore
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Interfaces.LowLevel;
-    using Models.PureFunctions.Extensions;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using CircuitBoard.MessageAggregator;
+    using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Models.PureFunctions.Extensions;
 
     public class EventReplay
     {
@@ -21,17 +20,15 @@ namespace DataStore
         public List<T> ApplyAggregateEvents<T>(IEnumerable<T> results, bool isReadActive) where T : class, IAggregate, new()
         {
             var modifiedResults = results.ToList();
-            var uncommittedEvents =
-                messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().OrderBy(e => e.Created).Where(e => !e.Committed);
+            var uncommittedEvents = this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().OrderBy(e => e.Created).Where(e => !e.Committed);
 
-            foreach (var eventAggregatorEvent in uncommittedEvents)
-                ApplyEvent(modifiedResults, eventAggregatorEvent, isReadActive);
+            foreach (var eventAggregatorEvent in uncommittedEvents) ApplyEvent(modifiedResults, eventAggregatorEvent, isReadActive);
 
             return modifiedResults;
         }
 
-        private static void ApplyEvent<T>(List<T> results, IQueuedDataStoreWriteOperation<T> previousUncommittedOperation,
-            bool requestingOnlyReadActive) where T : class, IAggregate, new()
+        private static void ApplyEvent<T>(List<T> results, IQueuedDataStoreWriteOperation<T> previousUncommittedOperation, bool requestingOnlyReadActive)
+            where T : class, IAggregate, new()
         {
             if (previousUncommittedOperation is QueuedCreateOperation<T>)
             {
@@ -46,6 +43,7 @@ namespace DataStore
             else if (results.Exists(i => i.id == previousUncommittedOperation.Model.id))
             {
                 if (previousUncommittedOperation is QueuedUpdateOperation<T>)
+                {
                     if (requestingOnlyReadActive && !previousUncommittedOperation.Model.Active)
                     {
                         var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);
@@ -56,13 +54,16 @@ namespace DataStore
                         var itemToUpdate = results.Single(i => i.id == previousUncommittedOperation.Model.id);
                         previousUncommittedOperation.Model.CopyProperties(itemToUpdate);
                     }
+                }
 
                 if (previousUncommittedOperation is QueuedSoftDeleteOperation<T>)
+                {
                     if (requestingOnlyReadActive)
                     {
                         var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);
                         results.Remove(itemToRemove);
                     }
+                }
 
                 if (previousUncommittedOperation is QueuedHardDeleteOperation<T>)
                 {

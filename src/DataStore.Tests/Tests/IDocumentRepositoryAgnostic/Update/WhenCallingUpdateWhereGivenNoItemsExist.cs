@@ -3,36 +3,36 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
     using System.Collections.Generic;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingUpdateWhereGivenNoItemsExist
     {
+        private readonly IEnumerable<Car> result;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingUpdateWhereGivenNoItemsExist()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingUpdateWhereGivenNoItemsExist));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingUpdateWhereGivenNoItemsExist));
 
             //When
-            result = testHarness.DataStore.UpdateWhere<Car>(c => c.Make == "DoesNotExist", car => { }).Result;
-            testHarness.DataStore.CommitChanges().Wait();
+            this.result = this.testHarness.DataStore.UpdateWhere<Car>(c => c.Make == "DoesNotExist", car => { }).Result;
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly IEnumerable<Car> result;
-        private readonly ITestHarness testHarness;
 
         [Fact]
         public void ItShouldNotExecuteAnyUpdate()
         {
-            Assert.Null(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
         }
 
         [Fact]
         public void ItShouldReturnNoResults()
         {
-            Assert.Empty(result);
+            Assert.Empty(this.result);
         }
     }
 }

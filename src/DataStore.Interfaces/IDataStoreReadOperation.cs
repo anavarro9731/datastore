@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
-
-namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces
 {
+    using System;
+    using System.Linq;
+    using CircuitBoard.Messages;
+
     public interface IDataStoreReadFromQueryable<T> : IDataStoreReadOperation
     {
         IQueryable<T> Query { get; set; }

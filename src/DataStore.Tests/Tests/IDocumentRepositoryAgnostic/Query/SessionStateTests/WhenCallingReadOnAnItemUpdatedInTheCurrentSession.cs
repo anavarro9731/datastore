@@ -1,45 +1,46 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingReadOnAnItemUpdatedInTheCurrentSession
     {
+        private readonly Car carFromSession;
+
+        private readonly Guid carId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingReadOnAnItemUpdatedInTheCurrentSession()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingReadOnAnItemUpdatedInTheCurrentSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadOnAnItemUpdatedInTheCurrentSession));
 
-            carId = Guid.NewGuid();
+            this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
+                id = this.carId,
                 Active = false,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
-            testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Ford").Wait();
+            this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford").Wait();
 
             // When
-            carFromSession = testHarness.DataStore.Read<Car>(car => car.id == carId).Result.Single();
+            this.carFromSession = this.testHarness.DataStore.Read<Car>(car => car.id == this.carId).Result.Single();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car carFromSession;
-        private readonly Guid carId;
 
         [Fact]
         public void ItShouldReturnTheItemWithTheUpdatesApplied()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Equal("Volvo", testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Make);
-            Assert.Equal("Ford", carFromSession.Make);
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.carFromSession.Make);
         }
     }
 }

@@ -2,21 +2,22 @@ namespace DataStore.Interfaces
 {
     using System;
     using System.Threading.Tasks;
-    using LowLevel;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using CircuitBoard;
+    using DataStore.Interfaces.LowLevel;
 
-    public interface IDataStore : IDisposable,
-        IDataStoreCreateCapabilities,
-        IDataStoreQueryCapabilities,
-        IDataStoreDeleteCapabilities,
-        IDataStoreUpdateCapabilities
+    public interface IDataStore : IDisposable, IDataStoreCreateCapabilities, IDataStoreQueryCapabilities, IDataStoreDeleteCapabilities, IDataStoreUpdateCapabilities
 
     {
         IAdvancedCapabilities Advanced { get; }
+
         IReadOnlyList<IDataStoreOperation> ExecutedOperations { get; }
+
         IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations { get; }
-        IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new();
+
         IDataStoreQueryCapabilities AsReadOnly();
+
+        IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new();
+
         Task CommitChanges();
     }
 }

@@ -3,7 +3,7 @@
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
+    using global::DataStore.Tests.Models;
     using Xunit;
 
     public class DocumentationTests
@@ -18,11 +18,12 @@
             var carId = Guid.NewGuid();
 
             //Given
-            inMemoryDb.Add(new Car
-            {
-                id = carId,
-                Make = "Toyota"
-            });
+            inMemoryDb.Add(
+                new Car
+                {
+                    id = carId,
+                    Make = "Toyota"
+                });
 
             //When
             await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
@@ -50,11 +51,12 @@
             var carId = Guid.NewGuid();
 
             //Given
-            inMemoryDb.Add(new Car
-            {
-                id = carId,
-                Make = "Toyota"
-            });
+            inMemoryDb.Add(
+                new Car
+                {
+                    id = carId,
+                    Make = "Toyota"
+                });
 
             //When
             await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");

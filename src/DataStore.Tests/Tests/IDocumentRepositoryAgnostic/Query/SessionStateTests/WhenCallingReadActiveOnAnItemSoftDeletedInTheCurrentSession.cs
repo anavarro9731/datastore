@@ -1,19 +1,22 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession
     {
+        private readonly Car carFromSession;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession()
         {
             // Given
-            testHarness =
-                TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -22,24 +25,20 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
                 Active = false,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
-            testHarness.DataStore.DeleteSoftById<Car>(carId).Wait();
+            this.testHarness.DataStore.DeleteSoftById<Car>(carId).Wait();
 
             // When
-            carFromSession = testHarness.DataStore.ReadActive<Car>(car => car.id == carId)
-                .Result.SingleOrDefault();
+            this.carFromSession = this.testHarness.DataStore.ReadActive<Car>(car => car.id == carId).Result.SingleOrDefault();
         }
-
-        private readonly Car carFromSession;
-        private readonly ITestHarness testHarness;
 
         [Fact]
         public void ItShouldNotReturnThatItem()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Equal(1, testHarness.QueryDatabase<Car>().Count());
-            Assert.Null(carFromSession);
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal(1, this.testHarness.QueryDatabase<Car>().Count());
+            Assert.Null(this.carFromSession);
         }
     }
 }

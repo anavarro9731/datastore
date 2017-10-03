@@ -1,12 +1,11 @@
-using System;
-using System.Diagnostics;
-using DataStore.Models.PureFunctions.Extensions;
-using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-using ServiceApi.Interfaces.LowLevel.Messages;
-using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
-
 namespace DataStore.MessageAggregator
 {
+    using System;
+    using System.Diagnostics;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
+    using global::DataStore.Models.PureFunctions.Extensions;
+
     public class DataStoreMessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {
         private readonly TMessage message;
@@ -20,11 +19,11 @@ namespace DataStore.MessageAggregator
         {
             var stopWatch = new Stopwatch().Op(s => s.Start());
 
-            passTo(message);
+            passTo(this.message);
 
-            if (message is IStateOperation)
+            if (this.message is IStateOperation)
             {
-                ((IStateOperation) message).StateOperationDuration = stopWatch.Elapsed;
+                ((IStateOperation)this.message).StateOperationDuration = stopWatch.Elapsed;
             }
         }
 
@@ -32,11 +31,11 @@ namespace DataStore.MessageAggregator
         {
             var stopWatch = new Stopwatch().Op(s => s.Start());
 
-            var returnValue = passTo(message);
+            var returnValue = passTo(this.message);
 
-            if (message is IStateOperation)
+            if (this.message is IStateOperation)
             {
-                ((IStateOperation)message).StateOperationDuration = stopWatch.Elapsed;
+                ((IStateOperation)this.message).StateOperationDuration = stopWatch.Elapsed;
             }
 
             return returnValue;

@@ -1,8 +1,8 @@
-﻿using System.Data.SqlClient;
-using System.Transactions;
-
-namespace DataStore.Impl.SqlServer
+﻿namespace DataStore.Impl.SqlServer
 {
+    using System.Data.SqlClient;
+    using System.Transactions;
+
     public class SqlServerDbInitialiser
     {
         public static void Initialise(SqlServerDbClientFactory factory, SqlServerDbSettings settings)
@@ -17,7 +17,8 @@ namespace DataStore.Impl.SqlServer
                 {
                     using (var connection = factory.OpenClient())
                     {
-                        using (var command = new SqlCommand(@"
+                        using (var command = new SqlCommand(
+                            @"
                             IF NOT EXISTS ( 
                                 SELECT * 
                                   FROM INFORMATION_SCHEMA.TABLES 
@@ -34,7 +35,8 @@ namespace DataStore.Impl.SqlServer
                                     [ClusterId] int NOT NULL IDENTITY(1,1) UNIQUE CLUSTERED,                                    
                                 );                                
                                 CREATE NONCLUSTERED INDEX IX_Schema ON " + settings.TableName + @"([Schema])
-                            END", connection))
+                            END",
+                            connection))
                         {
                             command.ExecuteNonQuery();
                         }

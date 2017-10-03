@@ -1,19 +1,22 @@
-using System;
-using System.Linq;
-using DataStore.Models.Messages;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTests
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Models.Messages;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession
     {
+        private readonly Car carFromDatabase;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -23,24 +26,19 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
                 Make = "Volvo"
             };
 
-            testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddToDatabase(existingCar);
 
-            testHarness.DataStore.DeleteHardById<Car>(carId).Wait();
+            this.testHarness.DataStore.DeleteHardById<Car>(carId).Wait();
 
             // When
-            carFromDatabase = testHarness.DataStore.Advanced
-                .ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId))
-                .Result.Single();
+            this.carFromDatabase = this.testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId)).Result.Single();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Car carFromDatabase;
 
         [Fact]
         public void ItShouldReturnThatItem()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
-            Assert.NotNull(carFromDatabase);
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
+            Assert.NotNull(this.carFromDatabase);
         }
     }
 }

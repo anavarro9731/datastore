@@ -5,6 +5,7 @@
     public interface IRememberWhenIWasModified
     {
         DateTime? Modified { get; set; }
+
         double? ModifiedAsMillisecondsEpochTime { get; set; }
     }
 }

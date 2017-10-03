@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using DataStore.Impl.DocumentDb.Config;
-using DataStore.Impl.SqlServer;
-using Newtonsoft.Json;
-
-namespace DataStore.Tests.TestHarness
+﻿namespace DataStore.Tests.TestHarness
 {
+    using System;
+    using System.IO;
+    using global::DataStore.Impl.DocumentDb.Config;
+    using global::DataStore.Impl.SqlServer;
+    using Newtonsoft.Json;
+
     public static class TestHarnessFunctions
     {
         public static ITestHarness GetTestHarness(string testName)

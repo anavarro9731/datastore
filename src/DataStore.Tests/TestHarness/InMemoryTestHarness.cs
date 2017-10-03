@@ -3,10 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Interfaces.LowLevel;
-    using MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
+    using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.MessageAggregator;
 
     public class InMemoryTestHarness : ITestHarness
     {
@@ -15,16 +15,19 @@
         private InMemoryTestHarness()
         {
             DocumentRepository = new InMemoryDocumentRepository();
-            DataStore = new DataStore(DocumentRepository, messageAggregator);
+            DataStore = new DataStore(DocumentRepository, this.messageAggregator);
         }
 
-        private InMemoryDocumentRepository DocumentRepository { get; }
+        public List<IMessage> AllMessages => this.messageAggregator.AllMessages.ToList();
+
         public DataStore DataStore { get; }
 
-        
-        public List<IMessage> AllMessages => messageAggregator.AllMessages.ToList();
+        private InMemoryDocumentRepository DocumentRepository { get; }
 
-        #region
+        public static ITestHarness Create()
+        {
+            return new InMemoryTestHarness();
+        }
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
@@ -34,20 +37,12 @@
             DocumentRepository.Aggregates.Add(aggregate);
         }
 
-        public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
-            where T : class, IAggregate, new()
+        public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
         {
             var queryResult = extendQueryable == null
-                ? DocumentRepository.Aggregates.OfType<T>()
-                : extendQueryable(DocumentRepository.Aggregates.OfType<T>().AsQueryable());
+                                  ? DocumentRepository.Aggregates.OfType<T>()
+                                  : extendQueryable(DocumentRepository.Aggregates.OfType<T>().AsQueryable());
             return queryResult;
-        }
-
-        #endregion
-
-        public static ITestHarness Create()
-        {
-            return new InMemoryTestHarness();
         }
     }
 }

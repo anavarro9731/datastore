@@ -3,41 +3,42 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingDeleteSoftWhere
     {
+        private readonly Guid carId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingDeleteSoftWhere()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingDeleteSoftWhere));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDeleteSoftWhere));
 
-            carId = Guid.NewGuid();
-            testHarness.AddToDatabase(new Car
-            {
-                id = carId,
-                Make = "Volvo"
-            });
+            this.carId = Guid.NewGuid();
+            this.testHarness.AddToDatabase(
+                new Car
+                {
+                    id = this.carId,
+                    Make = "Volvo"
+                });
 
             //When
-            testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId).Wait();
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == this.carId).Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid carId;
 
         [Fact]
         public async void ItShouldPersistTheChangesToTheDatabase()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
-            Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
-            Assert.False(testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == carId)).Single().Active);
-            Assert.Empty(await testHarness.DataStore.ReadActive<Car>());
-            Assert.NotEmpty(await testHarness.DataStore.Read<Car>());
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is SoftDeleteOperation<Car>));
+            Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedSoftDeleteOperation<Car>));
+            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
+            Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
+            Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-
-namespace DataStore.MessageAggregator
+﻿namespace DataStore.MessageAggregator
 {
+    using System.Collections.Generic;
+    using CircuitBoard.MessageAggregator;
+
     public class DataStoreValueReturner : IValueReturner
     {
         private readonly string eventType;
@@ -15,14 +15,10 @@ namespace DataStore.MessageAggregator
             this.eventType = eventType;
         }
 
-        #region
-
         public IValueReturner Return<TReturnValue>(TReturnValue returnValue)
         {
-            returnValues.Add(eventType, returnValue);
+            this.returnValues.Add(this.eventType, returnValue);
             return this;
         }
-
-        #endregion
     }
 }

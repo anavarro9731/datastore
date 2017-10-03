@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-
-namespace DataStore.Impl.SqlServer
+﻿namespace DataStore.Impl.SqlServer
 {
+    using Newtonsoft.Json;
+
     public class SqlServerDbSettings
     {
         [JsonConstructor]
@@ -14,23 +14,19 @@ namespace DataStore.Impl.SqlServer
             TableName = tableName ?? "DataStoreAggregates";
         }
 
-        public string ServerInstance { get; }
         public string Database { get; }
-        public string UserId { get; }
+
         public string Password { get; }
+
+        public string ServerInstance { get; }
+
         public string TableName { get; set; }
 
-        public static SqlServerDbSettings Create(string serverInstance, string database, string userId, string password,
-            string tableName)
+        public string UserId { get; }
+
+        public static SqlServerDbSettings Create(string serverInstance, string database, string userId, string password, string tableName)
         {
-            return new SqlServerDbSettings
-            (
-                serverInstance,
-                database,
-                userId,
-                password,
-                tableName
-            );
+            return new SqlServerDbSettings(serverInstance, database, userId, password, tableName);
         }
 
         public string ToConnectionString()

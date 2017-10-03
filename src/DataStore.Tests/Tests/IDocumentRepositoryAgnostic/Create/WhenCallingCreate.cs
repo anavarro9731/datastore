@@ -3,50 +3,51 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingCreate
     {
+        private readonly Guid newCarId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingCreate()
         {
             // Given
-            testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreate));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingCreate));
 
-            newCarId = Guid.NewGuid();
+            this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
 
             //When
-            testHarness.DataStore.Create(newCar).Wait();
-            testHarness.DataStore.CommitChanges().Wait();
+            this.testHarness.DataStore.Create(newCar).Wait();
+            this.testHarness.DataStore.CommitChanges().Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid newCarId;
 
         [Fact]
         public void ItShouldFlushTheQueue()
         {
-            Assert.Null(testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
+            Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
         }
 
         [Fact]
         public void ItShouldPersistChangesToTheDatabase()
         {
-            Assert.NotNull(testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
-            Assert.True(testHarness.QueryDatabase<Car>().Single().Active);
-            Assert.True(testHarness.QueryDatabase<Car>().Single().id == newCarId);
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
         }
 
         [Fact]
         public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
-            Assert.Equal(1, testHarness.DataStore.ReadActive<Car>().Result.Count());
+            Assert.Equal(1, this.testHarness.DataStore.ReadActive<Car>().Result.Count());
         }
     }
 }

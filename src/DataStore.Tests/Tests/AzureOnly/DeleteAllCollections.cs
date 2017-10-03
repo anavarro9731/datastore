@@ -1,11 +1,10 @@
 ﻿namespace DataStore.Tests.Tests.AzureOnly
 {
-    using TestHarness;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class DeleteAllCollections
     {
-        
         [Fact(Skip = "Used only for maintenance")]
         //[Fact]
         public void CanDeleteAllCollections()
@@ -14,5 +13,4 @@
             harness.RemoveAllCollections();
         }
     }
-    
 }

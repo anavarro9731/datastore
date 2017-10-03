@@ -1,13 +1,17 @@
-using System;
-using System.Linq;
-using DataStore.Tests.Models;
-using DataStore.Tests.TestHarness;
-using Xunit;
-
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
+    using System;
+    using System.Linq;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
+    using Xunit;
+
     public class WhenCallingReadActive
     {
+        private readonly Car activeCarFromDatabase;
+
+        private readonly Car inactiveCarFromDatabase;
+
         public WhenCallingReadActive()
         {
             // Given
@@ -31,25 +35,20 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            activeCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == activeCarId)
-                .Result.SingleOrDefault();
-            inactiveCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == inactiveCarId)
-                .Result.SingleOrDefault();
+            this.activeCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == activeCarId).Result.SingleOrDefault();
+            this.inactiveCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == inactiveCarId).Result.SingleOrDefault();
         }
-
-        private readonly Car activeCarFromDatabase;
-        private readonly Car inactiveCarFromDatabase;
 
         [Fact]
         public void ItShouldNotReturnInActiveItems()
         {
-            Assert.Null(inactiveCarFromDatabase);
+            Assert.Null(this.inactiveCarFromDatabase);
         }
 
         [Fact]
         public void ItShouldReturnActiveItems()
         {
-            Assert.Equal("Volvo", activeCarFromDatabase.Make);
+            Assert.Equal("Volvo", this.activeCarFromDatabase.Make);
         }
     }
 }

@@ -1,37 +1,37 @@
 namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
 {
     using System;
-    using Models;
-    using TestHarness;
+    using global::DataStore.Tests.Models;
+    using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession
     {
+        private readonly Guid activeCarId;
+
+        private readonly ITestHarness testHarness;
+
         public WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession()
         {
             // Given
-            testHarness =
-                TestHarnessFunctions.GetTestHarness(nameof(WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession));
 
-            activeCarId = Guid.NewGuid();
+            this.activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                id = this.activeCarId,
                 Make = "Volvo"
             };
-            testHarness.AddToDatabase(activeExistingCar);
+            this.testHarness.AddToDatabase(activeExistingCar);
 
             // When
-            testHarness.DataStore.DeleteHardById<Car>(activeCarId).Wait();
+            this.testHarness.DataStore.DeleteHardById<Car>(this.activeCarId).Wait();
         }
-
-        private readonly ITestHarness testHarness;
-        private readonly Guid activeCarId;
 
         [Fact]
         public void ItShouldReturnNull()
         {
-            Assert.Null(testHarness.DataStore.ReadActiveById<Car>(activeCarId).Result);
+            Assert.Null(this.testHarness.DataStore.ReadActiveById<Car>(this.activeCarId).Result);
         }
     }
 }
