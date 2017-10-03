@@ -68,8 +68,8 @@ function global:Run {
             "CircuitBoard"
         ) -unlistedProjects @(            
         ) `
-        -nugetFeedUri " https://www.nuget.org/api/v2/package" `
-        -nugetSymbolFeedUri " https://www.nuget.org/api/v2/package" `
+        -nugetFeedUri "https://www.nuget.org/api/v2/package" `
+        -nugetSymbolFeedUri "https://www.nuget.org/api/v2/package" `
         -nugetApiKey $nugetApiKey `
         -originUrl $originUrl
     }
