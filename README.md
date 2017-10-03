@@ -1,6 +1,6 @@
 # DataStore
 
-A Document-Centric Data Access Framework for Azure DocumentDB
+A Document-Centric Data Access Framework for Azure CosmosDb (DocumentDB client)
 
 ## Overview
 
