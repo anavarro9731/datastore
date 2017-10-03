@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Copyright>Copyright (c) 2016 Aaron Navarro</Copyright>
+    <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
+    <Description>Cross-Library messaging and permissions</Description>
     <Authors>Aaron Navarro</Authors>
     <TargetFramework>net40</TargetFramework>
     <PackageProjectUrl>https://github.com/anavarro9731/</PackageProjectUrl>
