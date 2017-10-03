@@ -48,7 +48,9 @@ function global:Run {
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
         [Alias('o')]
-        [string] $originUrl
+        [string] $originUrl,
+        [Alias('k')]
+        [string] $nugetApiKey
 	)
 	
 	if ($PrepareNewVersion) {
@@ -66,9 +68,9 @@ function global:Run {
             "CircuitBoard"
         ) -unlistedProjects @(            
         ) `
-        -mygetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" `
-        -mygetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" `
-        -mygetApiKey "7cde1967-fe13-4672-91ef-f1deb3543e78" `
+        -nugetFeedUri " https://www.nuget.org/api/v2/package" `
+        -nugetSymbolFeedUri " https://www.nuget.org/api/v2/package" `
+        -nugetApiKey $nugetApiKey `
         -originUrl $originUrl
     }
 }
