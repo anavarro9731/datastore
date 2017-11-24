@@ -165,7 +165,7 @@
             T result;
             using (var connection = this.clientFactory.OpenClient())
             {
-                using (var command = new SqlCommand($"SELECT Json FROM {this.settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}')", connection))
+                using (var command = new SqlCommand($"SELECT Json FROM {this.settings.TableName} WHERE AggregateId = CONVERT(uniqueidentifier, '{id}') AND [Schema] = '{typeof(T).FullName}'", connection))
                 {
                     var response = command.ExecuteScalar() as string;
 
