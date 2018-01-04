@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{648EBFE5-272F-46F6-A666-2EAFF3D62902}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,6 +22,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Interfaces.LowLevel", "DataStore.Interfaces.LowLevel\DataStore.Interfaces.LowLevel.csproj", "{388865A0-FF06-4BFC-B98D-D12C42205620}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Impl.SqlServer", "DataStore.Impl.SqlServer\DataStore.Impl.SqlServer.csproj", "{A61D8F57-A04A-4774-AA5D-1E9902CEE336}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStore.Impl.RavenDb", "DataStore.Impl.RavenDb\DataStore.Impl.RavenDb.csproj", "{70BF9990-AB6B-4512-8031-DA3BA642A593}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +119,18 @@ Global
 		{A61D8F57-A04A-4774-AA5D-1E9902CEE336}.Release|x64.Build.0 = Release|Any CPU
 		{A61D8F57-A04A-4774-AA5D-1E9902CEE336}.Release|x86.ActiveCfg = Release|Any CPU
 		{A61D8F57-A04A-4774-AA5D-1E9902CEE336}.Release|x86.Build.0 = Release|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Debug|x64.Build.0 = Debug|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Debug|x86.Build.0 = Debug|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Release|x64.ActiveCfg = Release|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Release|x64.Build.0 = Release|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Release|x86.ActiveCfg = Release|Any CPU
+		{70BF9990-AB6B-4512-8031-DA3BA642A593}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

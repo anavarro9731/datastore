@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RavenDB.Client" Version="3.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
+    <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
+  </ItemGroup>
+
+</Project>

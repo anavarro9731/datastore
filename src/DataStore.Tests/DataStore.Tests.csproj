@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj" />
+    <ProjectReference Include="..\DataStore.Impl.RavenDb\DataStore.Impl.RavenDb.csproj" />
     <ProjectReference Include="..\DataStore.Impl.SqlServer\DataStore.Impl.SqlServer.csproj" />
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
