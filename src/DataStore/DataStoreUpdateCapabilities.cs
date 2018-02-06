@@ -34,7 +34,20 @@
         {
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
             var cloned = src.Clone();
-            return UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model), overwriteReadOnly);
+
+            //exclude these for the scenario where you try to update an object which
+            //has been added in this session but has not yet been committed
+            //because timestamps are set AFTER you pass the object to the datastore
+            //if you use the original object you passed to the Create<T>() Function
+            //it will attempt to overwrite the Created variables with NULL values
+            var excludedParameters = new[]
+            {
+                nameof(IAggregate.Created),
+                nameof(IAggregate.CreatedAsMillisecondsEpochTime)
+            };
+
+             return UpdateByIdInternal<T>(src.id, model => 
+                cloned.CopyProperties(model, excludedParameters), overwriteReadOnly);
         }
 
         public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : class, IAggregate, new()
@@ -51,7 +64,9 @@
                               new AggregatesQueriedOperation<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                           .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
-            return UpdateInternal(action, overwriteReadOnly, objectsToUpdate);
+            var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, false).AsEnumerable();
+
+            return UpdateInternal(action, overwriteReadOnly, dataObjects);
         }
 
         private async Task<T> UpdateByIdInternal<T>(Guid id, Action<T> action, bool overwriteReadOnly) where T : class, IAggregate, new()
@@ -65,17 +80,18 @@
                     if (objectToUpdate != null) l.Add(objectToUpdate);
                     });
 
-            //can't just return null here because we need to reply previous events the object might have been added previously
-
-            return UpdateInternal(action, overwriteReadOnly, list).SingleOrDefault();
+            //can't just return null here because we need to reply previous events
+            //the object might have been added previously in this session
+            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, false);
+            
+            //remove any items added by replaying events which are not the object we want to update
+            dataObjects = dataObjects.Where(x => x.id == id).ToList();
+            
+            return UpdateInternal(action, overwriteReadOnly, dataObjects).SingleOrDefault();
         }
 
-        private IEnumerable<T> UpdateInternal<T>(Action<T> action, bool overwriteReadOnly, IEnumerable<T> objects) where T : class, IAggregate, new()
+        private IEnumerable<T> UpdateInternal<T>(Action<T> action, bool overwriteReadOnly, IEnumerable<T> dataObjects) where T : class, IAggregate, new()
         {
-            objects = this.eventReplay.ApplyAggregateEvents(objects, false);
-
-            var dataObjects = objects.AsEnumerable();
-
             Guard.Against(dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly), "Cannot update read-only items");
 
             foreach (var dataObject in dataObjects)
