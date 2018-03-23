@@ -59,24 +59,24 @@
 
         public static T Clone<T>(this T source) where T : class, new()
         {
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
         }
 
         public static T Clone<T>(this object source) where T : class, new()
         {
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
         }
 
         public static IEnumerable<T> CloneEnumerable<T>(this IEnumerable<T> toClone)
         {
-            var asJson = JsonConvert.SerializeObject(toClone);
-            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson);
+            var asJson = JsonConvert.SerializeObject(toClone, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
             return cloned;
         }
 
         public static ExpandoObject ConvertStrongTypeToExpando(this object obj)
         {
-            var serializedObject = JsonConvert.SerializeObject(obj);
+            var serializedObject = JsonConvert.SerializeObject(obj, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto});
 
             var asExpando = JsonConvert.DeserializeObject<ExpandoObject>(serializedObject, new ExpandoObjectConverter());
 
