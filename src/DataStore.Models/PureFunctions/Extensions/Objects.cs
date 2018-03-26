@@ -59,18 +59,21 @@
 
         public static T Clone<T>(this T source) where T : class, new()
         {
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+            var jsonSerializerSettings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto };
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source, jsonSerializerSettings), jsonSerializerSettings);
         }
 
         public static T Clone<T>(this object source) where T : class, new()
         {
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+            var jsonSerializerSettings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto };
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source, jsonSerializerSettings), jsonSerializerSettings);
         }
 
         public static IEnumerable<T> CloneEnumerable<T>(this IEnumerable<T> toClone)
         {
-            var asJson = JsonConvert.SerializeObject(toClone, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
-            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+            var jsonSerializerSettings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto };
+            var asJson = JsonConvert.SerializeObject(toClone, jsonSerializerSettings);
+            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson, jsonSerializerSettings);
             return cloned;
         }
 
