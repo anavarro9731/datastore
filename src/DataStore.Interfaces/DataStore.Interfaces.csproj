@@ -3,7 +3,7 @@
     <Description>DataStore.Interfaces Class Library</Description>
     <Authors>Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks>net452</TargetFrameworks>
     <AssemblyName>DataStore.Interfaces</AssemblyName>
     <PackageId>DataStore.Interfaces</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
