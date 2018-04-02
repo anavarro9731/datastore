@@ -59,19 +59,28 @@
 
         public static T Clone<T>(this T source) where T : class, new()
         {
-            var jsonSerializerSettings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonSerializerSettings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
+            };
             return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source, jsonSerializerSettings), jsonSerializerSettings);
         }
 
         public static T Clone<T>(this object source) where T : class, new()
         {
-            var jsonSerializerSettings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonSerializerSettings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
+            };
             return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source, jsonSerializerSettings), jsonSerializerSettings);
         }
 
         public static IEnumerable<T> CloneEnumerable<T>(this IEnumerable<T> toClone)
         {
-            var jsonSerializerSettings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonSerializerSettings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
+            };
             var asJson = JsonConvert.SerializeObject(toClone, jsonSerializerSettings);
             var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson, jsonSerializerSettings);
             return cloned;
@@ -79,7 +88,12 @@
 
         public static ExpandoObject ConvertStrongTypeToExpando(this object obj)
         {
-            var serializedObject = JsonConvert.SerializeObject(obj, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto});
+
+            var jsonSerializerSettings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
+            };
+            var serializedObject = JsonConvert.SerializeObject(obj, jsonSerializerSettings);
 
             var asExpando = JsonConvert.DeserializeObject<ExpandoObject>(serializedObject, new ExpandoObjectConverter());
 
