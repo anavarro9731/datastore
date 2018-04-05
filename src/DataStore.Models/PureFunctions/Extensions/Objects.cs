@@ -14,6 +14,16 @@
 
     public static class Objects
     {
+        private static readonly JsonSerializerSettings DeSerialisationSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto
+        };
+
+        private static readonly JsonSerializerSettings SerialisationSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Objects
+        };
+
         private static readonly char[] SystemTypeChars =
         {
             '<',
@@ -44,6 +54,7 @@
                         ContractResolver = new CamelCasePropertyNamesContractResolver()
                     });
             }
+
             return json;
         }
 
@@ -52,54 +63,31 @@
             return (T)AsJson(value);
         }
 
+        public static string ToJsonString(this object source, Formatting formatting = Formatting.None)
+        {
+            return source == null ? null : JsonConvert.SerializeObject(source, formatting, SerialisationSettings);
+        }
+
+        public static T FromJsonString<T>(this string source)
+        {
+            return source == null ? default(T) : JsonConvert.DeserializeObject<T>(source, DeSerialisationSettings);
+        }
+
         public static T Cast<T>(this object o)
         {
             return (T)o;
         }
 
-        public static T Clone<T>(this T source) where T : class, new()
+        public static T Clone<T>(this T source) 
         {
-            var jsonSerializerSettings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
-            };
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source, jsonSerializerSettings), jsonSerializerSettings);
+            return source.ToJsonString().FromJsonString<T>();
         }
 
-        public static T Clone<T>(this object source) where T : class, new()
+        public static T Clone<T>(this object source) 
         {
-            var jsonSerializerSettings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
-            };
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source, jsonSerializerSettings), jsonSerializerSettings);
+            return source.ToJsonString().FromJsonString<T>();
         }
-
-        public static IEnumerable<T> CloneEnumerable<T>(this IEnumerable<T> toClone)
-        {
-            var jsonSerializerSettings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
-            };
-            var asJson = JsonConvert.SerializeObject(toClone, jsonSerializerSettings);
-            var cloned = JsonConvert.DeserializeObject<IEnumerable<T>>(asJson, jsonSerializerSettings);
-            return cloned;
-        }
-
-        public static ExpandoObject ConvertStrongTypeToExpando(this object obj)
-        {
-
-            var jsonSerializerSettings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Auto & TypeNameHandling.Objects
-            };
-            var serializedObject = JsonConvert.SerializeObject(obj, jsonSerializerSettings);
-
-            var asExpando = JsonConvert.DeserializeObject<ExpandoObject>(serializedObject, new ExpandoObjectConverter());
-
-            return asExpando;
-        }
-
+        
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
         /// </summary>
