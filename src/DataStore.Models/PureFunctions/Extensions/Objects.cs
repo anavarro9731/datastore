@@ -16,12 +16,12 @@
     {
         private static readonly JsonSerializerSettings DeSerialisationSettings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Auto
+            
         };
 
         private static readonly JsonSerializerSettings SerialisationSettings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Objects
+            
         };
 
         private static readonly char[] SystemTypeChars =
