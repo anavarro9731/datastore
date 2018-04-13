@@ -1,14 +1,11 @@
 ﻿namespace DataStore.Models.PureFunctions.Extensions
 {
     using System;
-    using System.Collections.Generic;
-    using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
     using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Serialization;
 
@@ -16,12 +13,12 @@
     {
         private static readonly JsonSerializerSettings DeSerialisationSettings = new JsonSerializerSettings
         {
-            
+            TypeNameHandling = TypeNameHandling.Auto //for things with $type use that type when deserializing
         };
 
         private static readonly JsonSerializerSettings SerialisationSettings = new JsonSerializerSettings
         {
-            
+            TypeNameHandling = TypeNameHandling.Objects //apply $type to only objects not collections
         };
 
         private static readonly char[] SystemTypeChars =
@@ -63,31 +60,21 @@
             return (T)AsJson(value);
         }
 
-        public static string ToJsonString(this object source, Formatting formatting = Formatting.None)
-        {
-            return source == null ? null : JsonConvert.SerializeObject(source, formatting, SerialisationSettings);
-        }
-
-        public static T FromJsonString<T>(this string source)
-        {
-            return source == null ? default(T) : JsonConvert.DeserializeObject<T>(source, DeSerialisationSettings);
-        }
-
         public static T Cast<T>(this object o)
         {
             return (T)o;
         }
 
-        public static T Clone<T>(this T source) 
+        public static T Clone<T>(this T source)
         {
             return source.ToJsonString().FromJsonString<T>();
         }
 
-        public static T Clone<T>(this object source) 
+        public static T Clone<T>(this object source)
         {
             return source.ToJsonString().FromJsonString<T>();
         }
-        
+
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
         /// </summary>
@@ -117,6 +104,11 @@
 
             // map the properties
             foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
+        }
+
+        public static T FromJsonString<T>(this string source)
+        {
+            return source == null ? default(T) : JsonConvert.DeserializeObject<T>(source, DeSerialisationSettings);
         }
 
         /// <summary>
@@ -226,6 +218,11 @@
             genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
             var genericArgs = string.Join(",", t.GetGenericArguments().Select(ta => ToGenericTypeString(ta)).ToArray());
             return genericTypeName + "<" + genericArgs + ">";
+        }
+
+        public static string ToJsonString(this object source, Formatting formatting = Formatting.None)
+        {
+            return source == null ? null : JsonConvert.SerializeObject(source, formatting, SerialisationSettings);
         }
 
         private static string GetPropertyNameCore(Expression propertyRefExpr)
