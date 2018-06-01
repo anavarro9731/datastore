@@ -33,13 +33,13 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
         {
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
-            Assert.Equal(0, this.testHarness.QueryDatabase<Car>().Count());
+            Assert.Empty(this.testHarness.QueryDatabase<Car>());
         }
 
         [Fact]
         public void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
         {
-            Assert.Equal(1, this.testHarness.DataStore.ReadActive<Car>().Result.Count());
+            Assert.Single(this.testHarness.DataStore.ReadActive<Car>().Result);
             Assert.True(this.result.Active);
         }
     }

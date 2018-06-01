@@ -12,10 +12,10 @@
     {
         private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
 
-        private InMemoryTestHarness()
+        private InMemoryTestHarness(DataStoreOptions dataStoreOptions)
         {
             DocumentRepository = new InMemoryDocumentRepository();
-            DataStore = new DataStore(DocumentRepository, this.messageAggregator);
+            DataStore = new DataStore(DocumentRepository, this.messageAggregator, dataStoreOptions);
         }
 
         public List<IMessage> AllMessages => this.messageAggregator.AllMessages.ToList();
@@ -24,9 +24,9 @@
 
         private InMemoryDocumentRepository DocumentRepository { get; }
 
-        public static ITestHarness Create()
+        public static ITestHarness Create(DataStoreOptions dataStoreOptions)
         {
-            return new InMemoryTestHarness();
+            return new InMemoryTestHarness(dataStoreOptions);
         }
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()

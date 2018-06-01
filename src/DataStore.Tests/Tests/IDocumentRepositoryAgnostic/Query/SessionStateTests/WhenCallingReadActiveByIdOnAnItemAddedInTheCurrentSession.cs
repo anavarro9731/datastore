@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
         [Fact]
         public void ItShouldNotHaveAddedThatItemToTheDatabaseYet()
         {
-            Assert.Equal(1, this.testHarness.QueryDatabase<Car>().Count());
+            Assert.Single(this.testHarness.QueryDatabase<Car>());
             Assert.Equal(2, this.testHarness.DataStore.ReadActive<Car>().Result.Count());
         }
 

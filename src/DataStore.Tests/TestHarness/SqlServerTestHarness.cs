@@ -17,21 +17,21 @@
 
         private readonly SqlServerRepository sqlServerRepository;
 
-        private SqlServerTestHarness(SqlServerRepository sqlServerRepository)
+        private SqlServerTestHarness(SqlServerRepository sqlServerRepository, DataStoreOptions dataStoreOptions)
         {
             this.sqlServerRepository = sqlServerRepository;
-            DataStore = new DataStore(this.sqlServerRepository, this.messageAggregator);
+            DataStore = new DataStore(this.sqlServerRepository, this.messageAggregator, dataStoreOptions);
         }
 
         public List<IMessage> AllMessages => this.messageAggregator.AllMessages.ToList();
 
         public DataStore DataStore { get; }
 
-        public static ITestHarness Create(SqlServerDbSettings dbConfig)
+        public static ITestHarness Create(SqlServerDbSettings dbConfig, DataStoreOptions dataStoreOptions)
         {
             ClearTestDatabase(dbConfig);
 
-            return new SqlServerTestHarness(new SqlServerRepository(dbConfig));
+            return new SqlServerTestHarness(new SqlServerRepository(dbConfig), dataStoreOptions);
         }
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()

@@ -70,10 +70,10 @@
 
             this.messageAggregator.Collect(new QueuedSoftDeleteOperation<T>(nameof(DeleteSoftById), result, DsConnection, this.messageAggregator));
 
+           
             //clone otherwise its to easy to change the referenced object before committing
             return result.Clone();
         }
-
         // .. soft delete one or more DataObjects 
         public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
