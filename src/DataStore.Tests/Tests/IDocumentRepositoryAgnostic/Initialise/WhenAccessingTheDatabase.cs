@@ -19,7 +19,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Initialise
         public void ItShouldHaveCreatedTheCollection()
         {
             //Then
-            Assert.Equal(0, this.testHarness.QueryDatabase<Car>(query => query.Select(x => x)).Count());
+            Assert.Empty(this.testHarness.QueryDatabase<Car>(query => query.Select(x => x)));
         }
     }
 }

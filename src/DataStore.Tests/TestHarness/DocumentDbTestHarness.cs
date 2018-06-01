@@ -21,22 +21,22 @@
 
         private readonly DocumentDbSettings settings;
 
-        private DocumentDbTestHarness(DocumentDbSettings settings)
+        private DocumentDbTestHarness(DocumentDbSettings settings, DataStoreOptions dataStoreOptions)
         {
             this.settings = settings;
             this.documentDbRepository = new DocumentDbRepository(settings);
-            DataStore = new DataStore(this.documentDbRepository, this.messageAggregator);
+            DataStore = new DataStore(this.documentDbRepository, this.messageAggregator, dataStoreOptions);
         }
 
         public List<IMessage> AllMessages => this.messageAggregator.AllMessages.ToList();
 
         public DataStore DataStore { get; }
 
-        public static ITestHarness Create(DocumentDbSettings dbConfig)
+        public static ITestHarness Create(DocumentDbSettings dbConfig, DataStoreOptions dataStoreOptions)
         {
             ClearTestDatabase(dbConfig);
 
-            return new DocumentDbTestHarness(dbConfig);
+            return new DocumentDbTestHarness(dbConfig, dataStoreOptions);
         }
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()

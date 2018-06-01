@@ -58,7 +58,7 @@ namespace DataStore.Tests.Tests.AzureOnly
             catch (Exception e)
             {
                 //consider aggregate exceptions
-                Assert.True(e.ToString().Contains("x-ms-documentdb-query-enablecrosspartition"));
+                Assert.Contains("x-ms-documentdb-query-enablecrosspartition", e.ToString());
             }
         }
     }

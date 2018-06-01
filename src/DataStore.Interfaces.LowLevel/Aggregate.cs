@@ -1,5 +1,6 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>

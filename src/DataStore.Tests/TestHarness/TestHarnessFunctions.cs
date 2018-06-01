@@ -8,14 +8,14 @@
 
     public static class TestHarnessFunctions
     {
-        public static ITestHarness GetTestHarness(string testName)
+        public static ITestHarness GetTestHarness(string testName, DataStoreOptions dataStoreOptions = null)
         {
-            //return GetDocumentDbTestHarness(testName);
-            //return GetSqlServerTestHarness(testName);
-            return GetInMemoryTestHarness();
+            //return GetDocumentDbTestHarness(testName, dataStoreOptions: dataStoreOptions);
+            return GetSqlServerTestHarness(testName, dataStoreOptions);
+            //return GetInMemoryTestHarness(dataStoreOptions);
         }
 
-        internal static ITestHarness GetDocumentDbTestHarness(string testName, DocDbCollectionSettings collectionSettings = null)
+        internal static ITestHarness GetDocumentDbTestHarness(string testName, DocDbCollectionSettings collectionSettings = null, DataStoreOptions dataStoreOptions = null)
         {
             var options = TestHarnessOptions.Create(collectionSettings ?? DocDbCollectionSettings.Create(testName));
 
@@ -35,22 +35,25 @@
 
             documentDbSettings.CollectionSettings = options.CollectionSettings;
 
-            return DocumentDbTestHarness.Create(documentDbSettings);
+            return DocumentDbTestHarness.Create(documentDbSettings, dataStoreOptions);
         }
 
-        internal static ITestHarness GetInMemoryTestHarness()
+        internal static ITestHarness GetInMemoryTestHarness(DataStoreOptions dataStoreOptions = null)
         {
-            return InMemoryTestHarness.Create();
+            return InMemoryTestHarness.Create(dataStoreOptions);
         }
 
-        internal static ITestHarness GetSqlServerTestHarness(string testName)
+        internal static ITestHarness GetSqlServerTestHarness(string testName, DataStoreOptions dataStoreOptions = null)
         {
             var sqlServerDbSettings = "SqlServerDbSettings.json";
             /*
             Create this file in your DataStore.Tests project root and set it's build output to "copy always"
             This file should always be .gitignore(d), don't want to expose this in your repo.
             {
-                "ConnectionString": "<connstring>"
+              "ServerInstance": "MyServer\\MyInstance",
+              "Database": "datastore",
+              "UserId": "aaron.navarro",
+              "Password": "mypassword"
             }
             */
             var location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, sqlServerDbSettings);
@@ -58,7 +61,7 @@
             var sqlServerSettings = JsonConvert.DeserializeObject<SqlServerDbSettings>(File.ReadAllText(location));
             sqlServerSettings.TableName = testName;
 
-            return SqlServerTestHarness.Create(sqlServerSettings);
+            return SqlServerTestHarness.Create(sqlServerSettings, dataStoreOptions);
         }
     }
 }

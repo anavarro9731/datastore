@@ -49,7 +49,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
         [Fact]
         public void ItShouldReturnOnlyOneItem()
         {
-            Assert.Equal(1, this.result.Count());
+            Assert.Single(this.result);
         }
     }
 }

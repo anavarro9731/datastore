@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
         public void ItShouldNotReturnThatItem()
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Equal(1, this.testHarness.QueryDatabase<Car>().Count());
+            Assert.Single(this.testHarness.QueryDatabase<Car>());
             Assert.Null(this.carFromSession);
         }
     }
