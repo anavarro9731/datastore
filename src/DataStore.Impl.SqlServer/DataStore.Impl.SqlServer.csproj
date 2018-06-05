@@ -7,7 +7,7 @@
     <TargetFrameworks>net461</TargetFrameworks>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>4.19.0</Version>
+    <Version>4.20.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
