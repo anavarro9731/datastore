@@ -11,8 +11,8 @@
         public static ITestHarness GetTestHarness(string testName, DataStoreOptions dataStoreOptions = null)
         {
             //return GetDocumentDbTestHarness(testName, dataStoreOptions: dataStoreOptions);
-            return GetSqlServerTestHarness(testName, dataStoreOptions);
-            //return GetInMemoryTestHarness(dataStoreOptions);
+            //return GetSqlServerTestHarness(testName, dataStoreOptions);
+            return GetInMemoryTestHarness(dataStoreOptions);
         }
 
         internal static ITestHarness GetDocumentDbTestHarness(string testName, DocDbCollectionSettings collectionSettings = null, DataStoreOptions dataStoreOptions = null)
