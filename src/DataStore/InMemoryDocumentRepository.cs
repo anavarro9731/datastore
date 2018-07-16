@@ -25,25 +25,13 @@
             return Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
         }
 
-        public Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
+        public Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
             return Task.CompletedTask;
         }
-
-        public Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
-        {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Single(a => a.id == aggregateSoftDeleted.Model.id);
-
-            var now = DateTime.UtcNow;
-            aggregate.Active = false;
-            aggregate.Modified = now;
-            aggregate.ModifiedAsMillisecondsEpochTime = now.ConvertToMillisecondsEpochTime();
-
-            return Task.CompletedTask;
-        }
-
+        
         public void Dispose()
         {
             Aggregates.Clear();

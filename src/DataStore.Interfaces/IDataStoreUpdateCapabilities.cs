@@ -8,11 +8,11 @@ namespace DataStore.Interfaces
 
     public interface IDataStoreUpdateCapabilities
     {
-        Task<T> Update<T>(T src, bool overwriteReadOnly = false) where T : class, IAggregate, new();
+        Task<T> Update<T>(T src, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new();
 
-        Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = false) where T : class, IAggregate, new();
+        Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new();
 
-        Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false)
+        Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
             where T : class, IAggregate, new();
     }
 }

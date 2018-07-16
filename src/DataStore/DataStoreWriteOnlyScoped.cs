@@ -2,13 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
-    using global::DataStore.MessageAggregator;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -16,75 +13,56 @@
     /// </summary>
     public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : class, IAggregate, new()
     {
-        private readonly IMessageAggregator messageAggregator;
+        private readonly IDataStore dataStore;
 
-        public DataStoreWriteOnly(IDocumentRepository documentRepository, IMessageAggregator messageAggregator = null)
+        public DataStoreWriteOnly(IDataStore dataStore)
         {
-            this.messageAggregator = messageAggregator ?? DataStoreMessageAggregator.Create();
-            DsConnection = documentRepository;
-            UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, messageAggregator);
-            DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, messageAggregator);
-            CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, messageAggregator);
+            this.dataStore = dataStore;
         }
-
-        public IDocumentRepository DsConnection { get; }
-
-        private DataStoreCreateCapabilities CreateCapabilities { get; }
-
-        private DataStoreDeleteCapabilities DeleteCapabilities { get; }
-
-        private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
         public async Task CommitChanges()
         {
-            var dataStoreEvents = this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>();
-
-            foreach (var dataStoreWriteEvent in dataStoreEvents) await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
+            await this.dataStore.CommitChanges();
         }
 
-        public Task<T> Create(T model, bool readOnly = false)
+        public Task<T> Create(T model, bool readOnly = false, string methodName = null)
         {
-            return CreateCapabilities.Create(model, readOnly);
+            return this.dataStore.Create(model, readOnly, methodName);
         }
 
-        public Task<T> DeleteHardById(Guid id)
+        public Task<T> DeleteHardById(Guid id, string methodName = null)
         {
-            return DeleteCapabilities.DeleteHardById<T>(id);
+            return this.dataStore.DeleteHardById<T>(id, methodName);
         }
 
-        public Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate)
+        public Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate, string methodName = null)
         {
-            return DeleteCapabilities.DeleteHardWhere(predicate);
+            return this.dataStore.DeleteHardWhere(predicate, methodName);
         }
 
-        public Task<T> DeleteSoftById(Guid id)
+        public Task<T> DeleteSoftById(Guid id, string methodName = null)
         {
-            return DeleteCapabilities.DeleteSoftById<T>(id);
+            return this.dataStore.DeleteSoftById<T>(id, methodName);
         }
 
-        public Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate)
+        public Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate, string methodName = null)
         {
-            return DeleteCapabilities.DeleteSoftWhere(predicate);
+            return this.dataStore.DeleteSoftWhere(predicate, methodName);
         }
 
-        public void Dispose()
+        public Task<T> Update(T src, bool overwriteReadOnly = true, string methodName = null)
         {
-            DsConnection.Dispose();
+            return this.dataStore.Update(src, overwriteReadOnly, methodName);
         }
 
-        public Task<T> Update(T src, bool overwriteReadOnly = true)
+        public Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null)
         {
-            return UpdateCapabilities.Update(src, overwriteReadOnly);
+            return this.dataStore.UpdateById(id, action, overwriteReadOnly, methodName);
         }
 
-        public Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true)
+        public Task<IEnumerable<T>> UpdateWhere(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
         {
-            return UpdateCapabilities.UpdateById(id, action, overwriteReadOnly);
-        }
-
-        public Task<IEnumerable<T>> UpdateWhere(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false)
-        {
-            return UpdateCapabilities.UpdateWhere(predicate, action);
+            return this.dataStore.UpdateWhere(predicate, action, overwriteReadOnly, methodName);
         }
     }
 }

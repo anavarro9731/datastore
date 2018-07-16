@@ -55,30 +55,12 @@
             return query;
         }
 
-        public async Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
+        public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
             var result = await DocumentDbUtils.ExecuteWithRetries(() => this.documentClient.DeleteDocumentAsync(docLink)).ConfigureAwait(false);
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
-        }
-
-        public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
-        {
-            //HACK: this call inside the doc repository is effectively duplicate [see callers] 
-            //and causes us to miss this query when profiling, arguably its cheap, but still
-            //if I can determine how to create an Azure Document from T we can ditch it.
-            var document = await GetItemAsync(new AggregateQueriedByIdOperation(nameof(DeleteSoftAsync), aggregateSoftDeleted.Model.id, typeof(T)))
-                               .ConfigureAwait(false);
-
-            var now = DateTime.UtcNow;
-            document.SetPropertyValue(nameof(IAggregate.Active), false);
-            document.SetPropertyValue(nameof(IAggregate.Modified), now);
-            document.SetPropertyValue(nameof(IAggregate.ModifiedAsMillisecondsEpochTime), now.ConvertToMillisecondsEpochTime());
-
-            var result = await DocumentDbUtils.ExecuteWithRetries(() => this.documentClient.ReplaceDocumentAsync(document.SelfLink, document)).ConfigureAwait(false);
-
-            aggregateSoftDeleted.StateOperationCost = result.RequestCharge;
         }
 
         public void Dispose()

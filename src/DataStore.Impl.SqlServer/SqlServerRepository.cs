@@ -70,7 +70,7 @@
             return query.AsQueryable();
         }
 
-        public async Task DeleteHardAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
+        public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             using (var con = this.clientFactory.OpenClient())
             {
@@ -82,31 +82,7 @@
                 }
             }
         }
-
-        public async Task DeleteSoftAsync<T>(IDataStoreWriteOperation<T> aggregateSoftDeleted) where T : class, IAggregate, new()
-        {
-            using (var connection = this.clientFactory.OpenClient())
-            {
-                using (var command = new SqlCommand(
-                    $"UPDATE {this.settings.TableName} SET Json = @Json WHERE AggregateId = CONVERT(uniqueidentifier, @AggregateId)",
-                    connection))
-                {
-                    command.Parameters.Add(new SqlParameter("AggregateId", aggregateSoftDeleted.Model.id));
-
-                    var now = DateTime.UtcNow;
-                    aggregateSoftDeleted.Model.Modified = now;
-                    aggregateSoftDeleted.Model.ModifiedAsMillisecondsEpochTime = now.ConvertToMillisecondsEpochTime();
-                    aggregateSoftDeleted.Model.Active = false;
-
-                    var json = aggregateSoftDeleted.Model.ToJsonString();
-
-                    command.Parameters.Add(new SqlParameter("Json", json));
-
-                    await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-                }
-            }
-        }
-
+        
         public void Dispose()
         {
             //nothing to dispose

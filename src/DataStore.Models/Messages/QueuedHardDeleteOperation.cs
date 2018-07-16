@@ -19,7 +19,7 @@
                         MethodCalled = methodCalled,
                         Created = DateTime.UtcNow,
                         Model = model
-                    }).To(repo.DeleteHardAsync).ConfigureAwait(false);
+                    }).To(repo.DeleteAsync).ConfigureAwait(false);
 
                 Committed = true;
                 };

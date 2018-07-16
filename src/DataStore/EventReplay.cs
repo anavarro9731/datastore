@@ -56,15 +56,7 @@ namespace DataStore
                     }
                 }
 
-                if (previousUncommittedOperation is QueuedSoftDeleteOperation<T>)
-                {
-                    if (requestingOnlyReadActive)
-                    {
-                        var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);
-                        results.Remove(itemToRemove);
-                    }
-                }
-
+                
                 if (previousUncommittedOperation is QueuedHardDeleteOperation<T>)
                 {
                     var itemToRemove = results.Single(i => i.id == previousUncommittedOperation.Model.id);

@@ -8,12 +8,12 @@ namespace DataStore.Interfaces
 
     public interface IDataStoreDeleteCapabilitiesScoped<T> where T : class, IAggregate, new()
     {
-        Task<T> DeleteHardById(Guid id);
+        Task<T> DeleteHardById(Guid id, string methodName = null);
 
-        Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate, string methodName = null);
 
-        Task<T> DeleteSoftById(Guid id);
+        Task<T> DeleteSoftById(Guid id, string methodName = null);
 
-        Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate, string methodName = null);
     }
 }

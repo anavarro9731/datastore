@@ -8,10 +8,10 @@ namespace DataStore.Interfaces
 
     public interface IDataStoreUpdateCapabilitiesScoped<T> where T : class, IAggregate, new()
     {
-        Task<T> Update(T src, bool overwriteReadOnly = false);
+        Task<T> Update(T src, bool overwriteReadOnly = false, string methodName = null);
 
-        Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = false);
+        Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = false, string methodName = null);
 
-        Task<IEnumerable<T>> UpdateWhere(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false);
+        Task<IEnumerable<T>> UpdateWhere(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null);
     }
 }
