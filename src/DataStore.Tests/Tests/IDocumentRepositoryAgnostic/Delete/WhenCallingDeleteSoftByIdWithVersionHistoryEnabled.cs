@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             this.unitOfWorkId = Guid.NewGuid();
 
             this.testHarness = TestHarnessFunctions.GetTestHarness(
-                nameof(WhenCallingDeleteHardByIdWithVersionHistoryEnabled),
+                nameof(WhenCallingDeleteSoftByIdWithVersionHistoryEnabled),
                 new DataStoreOptions
                 {
                     UnitOfWorkId = this.unitOfWorkId,
