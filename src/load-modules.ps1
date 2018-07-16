@@ -80,7 +80,6 @@ function global:Run {
             "DataStore.Models"       	         	    			
         ) -unlistedProjects @(
             "DataStore.Impl.SqlServer",
-            "DataStore.Interfaces",
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models" 
         ) `
