@@ -30,7 +30,7 @@
         private IDocumentRepository DsConnection { get; }
 
         // .. update using id; get values from another instance
-        public Task<T> Update<T>(T src, bool overwriteReadOnly = true) where T : class, IAggregate, new()
+        public Task<T> Update<T>(T src,  bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
             var cloned = src.Clone();
@@ -47,31 +47,32 @@
             };
 
              return UpdateByIdInternal<T>(src.id, model => 
-                cloned.CopyProperties(model, excludedParameters), overwriteReadOnly);
+                 cloned.CopyProperties(model, excludedParameters), overwriteReadOnly,
+                 methodName);
         }
 
-        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : class, IAggregate, new()
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
-            return UpdateByIdInternal(id, action, overwriteReadOnly);
+            return UpdateByIdInternal(id, action, overwriteReadOnly, methodName);
         }
 
         // update a DataObject selected with a singular predicate
-        public async Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false)
+        public async Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action,  bool overwriteReadOnly = false, string methodName = null)
             where T : class, IAggregate, new()
         {
             var objectsToUpdate =
                 await this.eventAggregator.CollectAndForward(
-                              new AggregatesQueriedOperation<T>(nameof(UpdateWhere), DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                              new AggregatesQueriedOperation<T>(methodName, DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                           .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
             var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, false).AsEnumerable();
 
-            return UpdateInternal(action, overwriteReadOnly, dataObjects);
+            return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName);
         }
 
-        private async Task<T> UpdateByIdInternal<T>(Guid id, Action<T> action, bool overwriteReadOnly) where T : class, IAggregate, new()
+        private async Task<T> UpdateByIdInternal<T>(Guid id, Action<T> action, bool overwriteReadOnly, string methodName) where T : class, IAggregate, new()
         {
-            var objectToUpdate = await this.eventAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(UpdateById), id, typeof(T)))
+            var objectToUpdate = await this.eventAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, id, typeof(T)))
                                            .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             var list = new List<T>().Op(
@@ -87,10 +88,10 @@
             //remove any items added by replaying events which are not the object we want to update
             dataObjects = dataObjects.Where(x => x.id == id).ToList();
             
-            return UpdateInternal(action, overwriteReadOnly, dataObjects).SingleOrDefault();
+            return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName).SingleOrDefault();
         }
 
-        private IEnumerable<T> UpdateInternal<T>(Action<T> action, bool overwriteReadOnly, IEnumerable<T> dataObjects) where T : class, IAggregate, new()
+        private IEnumerable<T> UpdateInternal<T>(Action<T> action, IEnumerable<T> dataObjects, bool overwriteReadOnly, string methodName) where T : class, IAggregate, new()
         {
             Guard.Against(dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly), "Cannot update read-only items");
 
@@ -110,7 +111,7 @@
                     restrictedProperties2 != restrictedProperties,
                     "Cannot change restricted properties [id, schema, Created, CreatedAsMillisecondsEpochTime on entity " + originalId);
 
-                this.eventAggregator.Collect(new QueuedUpdateOperation<T>(nameof(UpdateWhere), dataObject, DsConnection, this.eventAggregator));
+                this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, dataObject, DsConnection, this.eventAggregator));
             }
 
             //clone otherwise its to easy to change the referenced object before committing

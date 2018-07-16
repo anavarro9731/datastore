@@ -44,7 +44,7 @@
 
             if (predicate != null) queryable = queryable.Where(predicate);
 
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
             return this.eventReplay.ApplyAggregateEvents(results, false);
@@ -57,7 +57,7 @@
 
             if (predicate != null) queryable = queryable.Where(predicate);
 
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActiveById), queryable))
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
             return this.eventReplay.ApplyAggregateEvents(results, true);

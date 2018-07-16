@@ -1,6 +1,6 @@
 namespace DataStore.Interfaces.LowLevel
 {
-    public interface IEntity : IHaveAUniqueId, IRememberWhenIWasCreated, IRememberWhenIWasModified
+    public interface IEntity : IHaveAUniqueId, IRememberWhenIWasCreated
     {
     }
 }

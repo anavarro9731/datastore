@@ -5,6 +5,6 @@ namespace DataStore.Interfaces
 
     public interface IDataStoreCreateCapabilities
     {
-        Task<T> Create<T>(T model, bool readOnly = false) where T : class, IAggregate, new();
+        Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new();
     }
 }

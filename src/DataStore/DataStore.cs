@@ -9,8 +9,6 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
-    using global::DataStore.Models.Messages;
-    using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
 
     /// <summary>
@@ -22,15 +20,15 @@
         private readonly DataStoreOptions dataStoreOptions;
 
         private readonly IMessageAggregator messageAggregator;
-        
-        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, 
-            DataStoreOptions dataStoreOptions = null)
+
+        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, DataStoreOptions dataStoreOptions = null)
         {
             {
                 ValidateOptions(dataStoreOptions);
 
-                { // init vars
-                    this.messageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();                    
+                {
+                    // init vars
+                    this.messageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
                     this.dataStoreOptions = dataStoreOptions ?? new DataStoreOptions();
                     DsConnection = documentRepository;
 
@@ -45,15 +43,14 @@
             {
                 //not sure how to handle disabling version history when its already been enabled??
             }
-
         }
 
         public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, this.messageAggregator);
 
         public IDocumentRepository DsConnection { get; }
 
-        public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations => new ReadOnlyCapableList<IDataStoreOperation>().Op(
-            l => l.AddRange(this.messageAggregator.AllMessages.OfType<IDataStoreOperation>()));
+        public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
+            new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.messageAggregator.AllMessages.OfType<IDataStoreOperation>()));
 
         public CircuitBoard.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
             new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
@@ -74,7 +71,7 @@
 
         public IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new()
         {
-            return new DataStoreWriteOnly<T>(DsConnection, this.messageAggregator);
+            return new DataStoreWriteOnly<T>(this);
         }
 
         public async Task CommitChanges()
@@ -90,49 +87,59 @@
             }
         }
 
-        public async Task<T> Create<T>(T model, bool readOnly = false) where T : class, IAggregate, new()
+        public async Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
         {
-           var result = await CreateCapabilities.Create(model, readOnly).ConfigureAwait(false);
+            methodName += '.' + nameof(Create);
 
-           await IncrementAggregateHistoryIfEnabled(nameof(Create), result).ConfigureAwait(false); ;
+            var result = await CreateCapabilities.Create(model, readOnly, methodName).ConfigureAwait(false);
+
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<T> DeleteHardById<T>(Guid id) where T : class, IAggregate, new()
+        public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            var result =  await DeleteCapabilities.DeleteHardById<T>(id).ConfigureAwait(false); ;
+            methodName += '.'+ nameof(DeleteHardById);
 
-            await IncrementAggregateHistoryIfEnabled(nameof(DeleteHardById), result).ConfigureAwait(false); ;
+            var result = await DeleteCapabilities.DeleteHardById<T>(id, methodName).ConfigureAwait(false);
+
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            var results = await DeleteCapabilities.DeleteHardWhere(predicate).ConfigureAwait(false); ;
+            methodName += '.' + nameof(DeleteHardWhere);
 
-            foreach  (var result in results) 
-                await IncrementAggregateHistoryIfEnabled(nameof(DeleteHardWhere), result).ConfigureAwait(false); ;
-            
+            var results = await DeleteCapabilities.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
+
+            foreach (var result in results)
+                await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+
             return results;
         }
 
-        public async Task<T> DeleteSoftById<T>(Guid id) where T : class, IAggregate, new()
+        public async Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            var result = await DeleteCapabilities.DeleteSoftById<T>(id).ConfigureAwait(false); ;
+            methodName += '.' + nameof(DeleteSoftById);
 
-            await IncrementAggregateHistoryIfEnabled(nameof(DeleteSoftById), result).ConfigureAwait(false); ;
+            var result = await DeleteCapabilities.DeleteSoftById<T>(id, methodName).ConfigureAwait(false);
+
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            var results = await DeleteCapabilities.DeleteSoftWhere(predicate).ConfigureAwait(false); ;
+            methodName += '.' + nameof(DeleteSoftWhere);
+
+            var results = await DeleteCapabilities.DeleteSoftWhere(predicate, methodName).ConfigureAwait(false);
 
             foreach (var result in results)
-                await IncrementAggregateHistoryIfEnabled(nameof(DeleteSoftWhere), result).ConfigureAwait(false); ;
+                await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return results;
         }
@@ -145,6 +152,56 @@
         public Task<bool> Exists(Guid id)
         {
             return QueryCapabilities.Exists(id);
+        }
+
+        private async Task IncrementAggregateHistory<T>(T model, string methodName) where T : class, IAggregate, new()
+        {
+            //create the new history record
+            Guid historyItemId;
+
+            await CreateCapabilities.Create(
+                new AggregateHistoryItem<T>
+                {
+                    id = historyItemId = Guid.NewGuid(),
+                    AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
+                    UnitOfWorkResponsibleForStateChange = this.dataStoreOptions.UnitOfWorkId
+                }, methodName: methodName);
+
+            //get the history index record
+            var historyIndexRecord = (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id)).SingleOrDefault();
+
+            //prepare the new header record
+            var historyItemHeader = new AggregateHistoryItemHeader
+            {
+                AssemblyQualifiedTypeName = model.GetType().AssemblyQualifiedName,
+                UnitWorkId = this.dataStoreOptions.UnitOfWorkId.GetValueOrDefault(),
+                VersionedAt = DateTime.UtcNow,
+                VersionId = historyIndexRecord?.Version + 1 ?? 1,
+                AggegateHistoryItemId = historyItemId
+            };
+
+            if (historyIndexRecord == null)
+            {
+                //create index record
+                await CreateCapabilities.Create(
+                    new AggregateHistory<T>
+                    {
+                        Version = 1,
+                        AggregateVersions = new List<IAggregateHistoryItemHeader>
+                        {
+                            historyItemHeader
+                        },
+                        AggregateId = model.id
+                    }, methodName: methodName);
+            }
+            else
+            {
+                //add header to existing record
+                historyIndexRecord.AggregateVersions.Add(historyItemHeader);
+                historyIndexRecord.Version = historyIndexRecord.AggregateVersions.Count;
+                //and update
+                await UpdateCapabilities.Update(historyIndexRecord, methodName: methodName);
+            }
         }
 
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
@@ -162,119 +219,56 @@
             return QueryCapabilities.ReadActiveById<T>(modelId);
         }
 
-        public async Task<T> Update<T>(T src, bool overwriteReadOnly = true) where T : class, IAggregate, new()
+        public async Task<T> Update<T>(T src,  bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
-            var result = await UpdateCapabilities.Update(src, overwriteReadOnly).ConfigureAwait(false); ;
+            methodName += '.' + nameof(Update);
 
-            await IncrementAggregateHistoryIfEnabled(nameof(Update), result).ConfigureAwait(false); ;
+            var result = await UpdateCapabilities.Update(src, overwriteReadOnly, methodName).ConfigureAwait(false);
+            
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+            
+            return result;
+        }
+
+        public async Task<T> UpdateById<T>(Guid id, Action<T> action,  bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName += '.' + nameof(UpdateById);
+
+            var result = await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly, methodName).ConfigureAwait(false);
+
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true) where T : class, IAggregate, new()
-        {
-            var result = await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly).ConfigureAwait(false); ;
-
-            await IncrementAggregateHistoryIfEnabled(nameof(UpdateById), result).ConfigureAwait(false); ;
-
-            return result;
-        }
-
-        public async Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false)
+        public async Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
             where T : class, IAggregate, new()
         {
-            var results = await UpdateCapabilities.UpdateWhere(predicate, action).ConfigureAwait(false); ;
+            methodName += '.' + nameof(UpdateWhere);
+
+            var results = await UpdateCapabilities.UpdateWhere(predicate, action, overwriteReadOnly, methodName).ConfigureAwait(false);
 
             foreach (var result in results)
-                await IncrementAggregateHistoryIfEnabled(nameof(UpdateWhere), result).ConfigureAwait(false); ;
+                await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return results;
         }
 
-        private Task IncrementAggregateHistoryIfEnabled<T>(string methodName, T model)
-            where T : class, IAggregate, new()
+        private Task IncrementAggregateHistoryIfEnabled<T>(T model, string methodName) where T : class, IAggregate, new()
         {
             if (this.dataStoreOptions.UseVersionHistory)
             {
-                return IncrementAggregateHistory(this.messageAggregator, this.DsConnection, methodName, this.dataStoreOptions.UnitOfWorkId, model);
+                return IncrementAggregateHistory(model, methodName);
             }
 
             return Task.CompletedTask;
-        }
-
-        public static async Task IncrementAggregateHistory<T>(IMessageAggregator messageAggregator, IDocumentRepository DsConnection,
-            string methodName, Guid? uowId, T model) where T : class, IAggregate, new()
-        {
-            //create the new history record
-            Guid historyItemId;
-            messageAggregator.Collect(
-                new QueuedCreateOperation<AggregateHistoryItem<T>>(
-                    methodName,
-                    new AggregateHistoryItem<T>()
-                    {
-                        id = historyItemId = Guid.NewGuid(),
-                        AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
-                        UnitOfWorkResponsibleForStateChange = uowId
-                    },
-                    DsConnection,
-                    messageAggregator));
-
-            //get the history index record
-            var historyIndexRecord = (await messageAggregator
-                                           .CollectAndForward(
-                                               new AggregatesQueriedOperation<AggregateHistory<T>>(
-                                                   methodName,
-                                                   DsConnection.CreateDocumentQuery<AggregateHistory<T>>().AsQueryable().Where(h => h.AggregateId == model.id)))
-                                           .To(DsConnection.ExecuteQuery).ConfigureAwait(false)).SingleOrDefault();
-
-
-            //prepare the new header record
-            var historyItemHeader = new AggregateHistoryItemHeader()
-            {
-                AssemblyQualifiedTypeName = model.GetType().AssemblyQualifiedName,
-                UnitWorkId = uowId.GetValueOrDefault(),
-                VersionedAt = DateTime.UtcNow,
-                VersionId = historyIndexRecord?.Version + 1 ?? 1,
-                AggegateHistoryItemId = historyItemId
-            };
-
-            if (historyIndexRecord == null)
-            {
-                //create index record
-                messageAggregator.Collect(
-                    new QueuedCreateOperation<AggregateHistory<T>>(
-                        methodName,
-                        new AggregateHistory<T>()
-                        {
-                            Version = 1,
-                            AggregateVersions = new List<IAggregateHistoryItemHeader>()
-                            {
-                                historyItemHeader
-                            },
-                            AggregateId = model.id
-                           
-                        },
-                        DsConnection,
-                        messageAggregator));
-
-            }
-            else
-            {
-                //add header to existing record
-                historyIndexRecord.AggregateVersions.Add(historyItemHeader);
-                //and update
-                messageAggregator.Collect(new QueuedUpdateOperation<AggregateHistory<T>>(
-                    methodName, historyIndexRecord, DsConnection, messageAggregator));
-
-            }
-
         }
     }
 
     public class DataStoreOptions
     {
-        public Boolean UseVersionHistory { get; set; }
-
         public Guid? UnitOfWorkId { get; set; }
+
+        public bool UseVersionHistory { get; set; }
     }
 }

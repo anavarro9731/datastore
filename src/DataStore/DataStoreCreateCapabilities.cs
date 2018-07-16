@@ -28,7 +28,7 @@ namespace DataStore
 
         private IDocumentRepository DsConnection { get; }
 
-        public Task<T> Create<T>(T model, bool readOnly = false) where T : class, IAggregate, new()
+        public Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
         {
             //create a new one, we definately don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
@@ -36,7 +36,7 @@ namespace DataStore
 
             ForceProperties(readOnly, newObject);
 
-            this.messageAggregator.Collect(new QueuedCreateOperation<T>(nameof(Create), newObject, DsConnection, this.messageAggregator));
+            this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally
@@ -90,7 +90,7 @@ namespace DataStore
                             p.SetValue(current, DateTime.UtcNow.ConvertToSecondsEpochTime(), null);
                         }
                     }
-                    else if (p.Name == nameof(IEntity.Modified))
+                    else if (p.Name == nameof(IRememberWhenIWasModified.Modified))
                     {
                         //set modified if this is the root model
                         if (current is Aggregate)
@@ -98,7 +98,7 @@ namespace DataStore
                             p.SetValue(current, DateTime.UtcNow, null);
                         }
                     }
-                    else if (p.Name == nameof(IEntity.ModifiedAsMillisecondsEpochTime))
+                    else if (p.Name == nameof(IRememberWhenIWasModified.ModifiedAsMillisecondsEpochTime))
                     {
                         //set modified if this is the root model
                         if (current is Aggregate)
