@@ -33,5 +33,9 @@
         public string schema { get; set; }
 
         public List<IScopeReference> ScopeReferences { get; set; }
+
+        public DateTime Modified { get; set; }
+
+        public double ModifiedAsMillisecondsEpochTime { get; set; }
     }
 }

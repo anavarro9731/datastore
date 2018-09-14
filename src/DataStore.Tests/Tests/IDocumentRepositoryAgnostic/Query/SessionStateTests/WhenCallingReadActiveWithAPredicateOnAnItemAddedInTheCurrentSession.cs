@@ -8,21 +8,22 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
 
     public class WhenCallingReadActiveWithAPredicateOnAnItemAddedInTheCurrentSession
     {
-        private readonly ITestHarness testHarness;
-
         private readonly Guid fordId;
+
+        private readonly ITestHarness testHarness;
 
         public WhenCallingReadActiveWithAPredicateOnAnItemAddedInTheCurrentSession()
         {
             // Given
             this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
 
-            this.testHarness.AddToDatabase(new Car
-            {
-                id = Guid.NewGuid(),
-                Active = true,
-                Make = "Lambo"
-            });
+            this.testHarness.AddToDatabase(
+                new Car
+                {
+                    id = Guid.NewGuid(),
+                    Active = true,
+                    Make = "Lambo"
+                });
 
             this.testHarness.DataStore.Create(
                 new Car
@@ -54,7 +55,9 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
         [Fact]
         public void ItShouldNotHaveAddedTheFordToTheDatabaseYet()
         {
-            Assert.ThrowsAny<Exception>(() => this.testHarness.QueryDatabase<Car>().Single(x => x.id == this.fordId));
+            var result = this.testHarness.QueryDatabase<Car>(cars => cars.Where(x => x.id == this.fordId));
+
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -69,7 +72,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
         {
             var newCarFromSession = this.testHarness.DataStore.ReadActive<Car>(c => c.Make == "Ford").Result.SingleOrDefault();
             Assert.NotNull(newCarFromSession);
-            Assert.Equal(this.fordId, newCarFromSession.id);            
+            Assert.Equal(this.fordId, newCarFromSession.id);
         }
     }
 }

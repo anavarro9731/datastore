@@ -39,7 +39,7 @@ namespace DataStore
             ForceProperties(readOnly, newObject);
 
             Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.id)
-                              != null, "An item with the same ID is already queued to be created");
+                              != null, "An item with the same ID is already queued to be created", Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
             
             this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
 
@@ -56,10 +56,13 @@ namespace DataStore
                     //aggregate
                     e.schema = typeof(T).FullName; //should be defaulted by Aggregate but needs to be forced
                     e.ReadOnly = readOnly;
-                    e.ScopeReferences = e.ScopeReferences ?? new List<IScopeReference>();
+                    e.ScopeReferences = e.ScopeReferences ?? new List<IScopeReference>();                    
                     });
 
             WalkGraphAndUpdateEntityMeta(enriched);
+
+            enriched.Modified = enriched.Created;
+            enriched.ModifiedAsMillisecondsEpochTime = enriched.ModifiedAsMillisecondsEpochTime;
         }
 
         private static void WalkGraphAndUpdateEntityMeta(object current)
@@ -91,22 +94,6 @@ namespace DataStore
                     {
                         //set created datetime if this is null
                         if (p.GetValue(current, null) == null)
-                        {
-                            p.SetValue(current, DateTime.UtcNow.ConvertToSecondsEpochTime(), null);
-                        }
-                    }
-                    else if (p.Name == nameof(IRememberWhenIWasModified.Modified))
-                    {
-                        //set modified if this is the root model
-                        if (current is Aggregate)
-                        {
-                            p.SetValue(current, DateTime.UtcNow, null);
-                        }
-                    }
-                    else if (p.Name == nameof(IRememberWhenIWasModified.ModifiedAsMillisecondsEpochTime))
-                    {
-                        //set modified if this is the root model
-                        if (current is Aggregate)
                         {
                             p.SetValue(current, DateTime.UtcNow.ConvertToSecondsEpochTime(), null);
                         }

@@ -10,6 +10,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
 
@@ -41,7 +42,10 @@
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate, this.documentDbRepository, this.messageAggregator);
+
+            //clone aggregate to avoid modifying entries later when using inmemory db
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), this.documentDbRepository, this.messageAggregator);
+            
             newAggregate.CommitClosure().Wait();
         }
 

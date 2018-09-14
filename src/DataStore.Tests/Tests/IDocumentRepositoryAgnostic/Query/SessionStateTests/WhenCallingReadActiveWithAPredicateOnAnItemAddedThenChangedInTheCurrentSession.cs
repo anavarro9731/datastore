@@ -56,7 +56,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
         [Fact]
         public void ItShouldNotHaveAddedTheFordToTheDatabaseYet()
         {
-            Assert.ThrowsAny<Exception>(() => this.testHarness.QueryDatabase<Car>().Single(x => x.id == this.fordId));
+            var result = this.testHarness.QueryDatabase<Car>(cars => cars.Where(x => x.id == this.fordId));
+            Assert.Empty(result);
         }
 
         [Fact]

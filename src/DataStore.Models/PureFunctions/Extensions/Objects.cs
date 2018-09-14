@@ -18,7 +18,8 @@
 
         private static readonly JsonSerializerSettings SerialisationSettings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Objects //apply $type to only objects not collections
+            //apply $type to all objects where the class of the instance being stored != the class/interface of the property it is stored under
+            TypeNameHandling = TypeNameHandling.Auto 
         };
 
         private static readonly char[] SystemTypeChars =
@@ -205,20 +206,6 @@
             return obj;
         }
 
-        /// <summary>
-        ///     return a generic object type as a string in the format of Type<T1, T2>
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static string ToGenericTypeString(this Type t)
-        {
-            if (!t.IsGenericType) return t.Name;
-
-            var genericTypeName = t.GetGenericTypeDefinition().Name;
-            genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
-            var genericArgs = string.Join(",", t.GetGenericArguments().Select(ta => ToGenericTypeString(ta)).ToArray());
-            return genericTypeName + "<" + genericArgs + ">";
-        }
 
         public static string ToJsonString(this object source, Formatting formatting = Formatting.None)
         {

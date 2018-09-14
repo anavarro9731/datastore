@@ -98,14 +98,17 @@
             foreach (var dataObject in dataObjects)
             {
                 var originalId = dataObject.id;
-                var restrictedProperties = originalId + dataObject.schema + dataObject.Created + dataObject.CreatedAsMillisecondsEpochTime;
+                var restrictedProperties = originalId + dataObject.schema + dataObject.Created + dataObject.CreatedAsMillisecondsEpochTime + dataObject.Modified + dataObject.ModifiedAsMillisecondsEpochTime;
 
                 action(dataObject);
 
-                var restrictedProperties2 = dataObject.id + dataObject.schema + dataObject.Created + dataObject.CreatedAsMillisecondsEpochTime;
+                var restrictedProperties2 = dataObject.id + dataObject.schema + dataObject.Created + dataObject.CreatedAsMillisecondsEpochTime + dataObject.Modified + dataObject.ModifiedAsMillisecondsEpochTime;
 
                 //don't allow this to be set to null
                 dataObject.ScopeReferences = dataObject.ScopeReferences ?? new List<IScopeReference>();
+
+                dataObject.Modified = DateTime.UtcNow;
+                dataObject.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();
 
                 Guard.Against(
                     restrictedProperties2 != restrictedProperties,
