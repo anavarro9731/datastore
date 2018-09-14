@@ -4,8 +4,8 @@
 
     public interface IRememberWhenIWasModified
     {
-        DateTime? Modified { get; set; }
+        DateTime Modified { get; set; }
 
-        double? ModifiedAsMillisecondsEpochTime { get; set; }
+        double ModifiedAsMillisecondsEpochTime { get; set; }
     }
 }

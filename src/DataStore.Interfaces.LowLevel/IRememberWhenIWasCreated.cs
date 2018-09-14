@@ -4,8 +4,8 @@
 
     public interface IRememberWhenIWasCreated
     {
-        DateTime? Created { get; set; }
+        DateTime Created { get; set; }
 
-        double? CreatedAsMillisecondsEpochTime { get; set; }
+        double CreatedAsMillisecondsEpochTime { get; set; }
     }
 }

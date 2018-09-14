@@ -16,10 +16,10 @@
     public abstract class Entity : IEntity
     {
         // apart from keeping an audit trail this is used for sorting 
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
 
         //here for easier comparison in some systems such as docdb
-        public double? CreatedAsMillisecondsEpochTime { get; set; }
+        public double CreatedAsMillisecondsEpochTime { get; set; }
 
         // this is here to give references which are stored in a models json a unique id which is necessary during updates to determines 
         // what changes have occurred. It can either be implemented as-is or the getter can be overridden to select another existing property as the key

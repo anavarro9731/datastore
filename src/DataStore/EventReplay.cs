@@ -44,7 +44,8 @@ namespace DataStore
                     //failing this guard is not the result of replay, but it is the first time we can perform this test
                     Guard.Against(
                         results.Exists(result => result.id == previousUncommittedOperation.Model.id),
-                        "Two or more items with the same id and type have been queued to be created.");
+                        $"Item {previousUncommittedOperation.Model.id} has been queued to be created but it already exists.", 
+                        Guid.Parse("bb0ddf49-ccce-4588-ae74-5724fcdb8638"));
 
                     if (predicate(previousUncommittedOperation.Model))
                     {

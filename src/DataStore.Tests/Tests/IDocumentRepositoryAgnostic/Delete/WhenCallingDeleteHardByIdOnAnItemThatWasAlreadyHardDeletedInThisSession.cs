@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             this.testHarness.DataStore.Create(
                 new Car()
                 {
-                    id = this.newCarId = Guid.Empty,
+                    id = this.newCarId = Guid.NewGuid(),
                     Make = "Ford"
                 }).Wait();
 
@@ -31,7 +31,10 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         [Fact]
         public void ItShouldErrorWhenYouDeleteTheSecondTime()
         {
-            Assert.ThrowsAny<Exception>(() => testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait());
+            var ex = Assert.ThrowsAny<Exception>(() => this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait());
+
+            Assert.Contains("c53bef0f-a462-49cc-8d73-04cdbb3ea81c", ex.InnerException.Message);
+            
         }
     }
 }

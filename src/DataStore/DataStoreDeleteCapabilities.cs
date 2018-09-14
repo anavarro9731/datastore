@@ -44,7 +44,9 @@
                     if (objectToDelete != null) l.Add(objectToDelete);
                     });
             //should only be one or none cause of the predicate so we can use SingleOrDefault
-            objectToDelete = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id).SingleOrDefault(); 
+            objectToDelete = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id).SingleOrDefault();
+
+            CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, id);
 
             if (objectToDelete == null) return null;
 
@@ -56,6 +58,7 @@
 
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
+
             var objectsToDelete = await this.messageAggregator
                                              .CollectAndForward(
                                                  new AggregatesQueriedOperation<T>(methodName, DsConnection.CreateDocumentQuery<T>().Where(predicate)))
@@ -64,7 +67,10 @@
             //can't just return null here if there are no matches because we need to replay previous events
             //a match might have been added previously in this session            
             objectsToDelete = this.eventReplay.ApplyAggregateEvents(objectsToDelete, predicate.Compile());
-            
+
+            foreach (var dataObject in objectsToDelete)
+                CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.id);
+
             if (!objectsToDelete.Any()) return objectsToDelete;
 
             foreach (var dataObject in objectsToDelete)
@@ -75,8 +81,7 @@
         }
 
         private void HardDeleteObject<T>(string methodName, T dataObject) where T : class, IAggregate, new()
-        {
-            CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.id);
+        {            
             this.messageAggregator.Collect(new QueuedHardDeleteOperation<T>(methodName, dataObject, DsConnection, this.messageAggregator));
         }
 
@@ -85,7 +90,7 @@
             var uncommittedEvents = messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed);
 
             Guard.Against(uncommittedEvents.ToList().Exists(e => e is QueuedHardDeleteOperation<T> && e.AggregateId == aggregateId),
-                "Object has already been hard deleted earlier in the session you cannot do this");
+                "Object has already been hard deleted earlier in the session you cannot do this", Guid.Parse("c53bef0f-a462-49cc-8d73-04cdbb3ea81c"));
         }
 
         public Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
