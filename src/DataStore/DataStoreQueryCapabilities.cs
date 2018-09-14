@@ -9,6 +9,7 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Models.PureFunctions;
 
     //methods return the latest version of an object including uncommitted session changes
 
@@ -40,27 +41,28 @@
         // get a filtered list of the models from set of DataObjects
         public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
         {
-            var queryable = DbConnection.CreateDocumentQuery<T>();
+            predicate = predicate ?? (a => true);
 
-            if (predicate != null) queryable = queryable.Where(predicate);
+            var queryable = DbConnection.CreateDocumentQuery<T>().Where(predicate);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
-            return this.eventReplay.ApplyAggregateEvents(results, false);
+            return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
         }
 
         // get a filtered list of the models from a set of active DataObjects
         public async Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
         {
-            var queryable = DbConnection.CreateDocumentQuery<T>().Where(a => a.Active);
+            predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
-            if (predicate != null) queryable = queryable.Where(predicate);
+            var queryable = DbConnection.CreateDocumentQuery<T>().Where(predicate);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
-            return this.eventReplay.ApplyAggregateEvents(results, true);
+            return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
+
         }
 
         // get a filtered list of the models from  a set of DataObjects
@@ -71,9 +73,11 @@
             var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadActiveById), modelId))
                                    .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
 
+            bool Predicate(T a) => a.Active && a.id == modelId;
+
             if (result == null || !result.Active)
             {
-                var replayResult = this.eventReplay.ApplyAggregateEvents(new List<T>(), true).SingleOrDefault();
+                var replayResult = this.eventReplay.ApplyAggregateEvents(new List<T>(), Predicate).SingleOrDefault();
                 return replayResult;
             }
 
@@ -82,7 +86,7 @@
                 {
                     result
                 },
-                true).SingleOrDefault();
+                Predicate).SingleOrDefault();
         }
 
         private bool HasBeenHardDeletedInThisSession(Guid id)

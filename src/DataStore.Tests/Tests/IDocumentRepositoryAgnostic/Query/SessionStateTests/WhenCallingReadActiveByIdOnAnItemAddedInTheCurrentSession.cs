@@ -13,36 +13,39 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
 
         private readonly ITestHarness testHarness;
 
+        private readonly Guid fordId;
+
         public WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession()
         {
             // Given
             this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
 
-            var carId = Guid.NewGuid();
-            var existingCar = new Car
-            {
-                id = carId,
-                Active = true,
-                Make = "Volvo"
-            };
-            this.testHarness.AddToDatabase(existingCar);
+            var volvoId = Guid.NewGuid();
+            
+            this.testHarness.DataStore.Create(new Car
+                {
+                    id = volvoId,
+                    Active = true,
+                    Make = "Volvo"
+                }).Wait();
 
-            var newCarId = Guid.NewGuid();
+            this.fordId = Guid.NewGuid();
+
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    id = newCarId,
+                    id = this.fordId,
                     Active = true,
                     Make = "Ford"
                 }).Wait();
 
-            this.newCarFromSession = this.testHarness.DataStore.ReadActiveById<Car>(newCarId).Result;
+            this.newCarFromSession = this.testHarness.DataStore.ReadActiveById<Car>(this.fordId).Result;
         }
 
         [Fact]
-        public void ItShouldNotHaveAddedThatItemToTheDatabaseYet()
+        public void ItShouldNotHaveAddedAnythingToTheDatabaseYet()
         {
-            Assert.Single(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryDatabase<Car>());
             Assert.Equal(2, this.testHarness.DataStore.ReadActive<Car>().Result.Count());
         }
 
@@ -51,6 +54,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));
             Assert.NotNull(this.newCarFromSession);
+            Assert.Equal(this.fordId, this.newCarFromSession.id);
         }
     }
 }

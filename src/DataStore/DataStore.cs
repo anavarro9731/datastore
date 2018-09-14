@@ -34,7 +34,7 @@
 
                     QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.messageAggregator);
                     UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.messageAggregator);
-                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, this.messageAggregator);
+                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, UpdateCapabilities, this.messageAggregator);
                     CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.messageAggregator);
                 }
             }
