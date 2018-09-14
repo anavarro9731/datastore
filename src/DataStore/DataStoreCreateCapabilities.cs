@@ -7,11 +7,13 @@ namespace DataStore
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
 
     //methods return the enriched object as it was added to the database
@@ -36,6 +38,9 @@ namespace DataStore
 
             ForceProperties(readOnly, newObject);
 
+            Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.id)
+                              != null, "An item with the same ID is already queued to be created");
+            
             this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
