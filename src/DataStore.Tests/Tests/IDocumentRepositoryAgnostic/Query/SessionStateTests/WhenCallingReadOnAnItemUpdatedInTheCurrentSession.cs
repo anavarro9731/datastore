@@ -32,15 +32,16 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
             this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford").Wait();
 
             // When
-            this.carFromSession = this.testHarness.DataStore.Read<Car>(car => car.id == this.carId).Result.Single();
+            this.carFromSession = this.testHarness.DataStore.Read<Car>(car => car.Make == "Ford").Result.Single();
         }
 
         [Fact]
-        public void ItShouldReturnTheItemWithTheUpdatesApplied()
+        public void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.carFromSession.Make);
+            Assert.Equal(this.carId, this.carFromSession.id);
         }
     }
 }
