@@ -65,7 +65,7 @@
                               new AggregatesQueriedOperation<T>(methodName, DsConnection.CreateDocumentQuery<T>().Where(predicate)))
                           .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
-            var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, false).AsEnumerable();
+            var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, predicate.Compile()).AsEnumerable();
 
             return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName);
         }
@@ -75,25 +75,25 @@
             var objectToUpdate = await this.eventAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, id, typeof(T)))
                                            .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
+            //can't just return null here if the object doesn't exist because we need to replay previous events
+            //the object might have been added previously in this session
             var list = new List<T>().Op(
                 l =>
                     {
                     if (objectToUpdate != null) l.Add(objectToUpdate);
                     });
-
-            //can't just return null here because we need to reply previous events
-            //the object might have been added previously in this session
-            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, false);
-            
-            //remove any items added by replaying events which are not the object we want to update
-            dataObjects = dataObjects.Where(x => x.id == id).ToList();
+            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id);
             
             return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName).SingleOrDefault();
         }
 
         private IEnumerable<T> UpdateInternal<T>(Action<T> action, IEnumerable<T> dataObjects, bool overwriteReadOnly, string methodName) where T : class, IAggregate, new()
         {
-            Guard.Against(dataObjects.Any(dataObject => dataObject.ReadOnly && !overwriteReadOnly), "Cannot update read-only items");
+            foreach (var dataObject in dataObjects)
+            {
+                Guard.Against(dataObject.ReadOnly && !overwriteReadOnly, "Cannot update read-only item " + dataObject.id);
+                DataStoreDeleteCapabilities.CheckWasObjectAlreadyHardDeleted<T>(this.eventAggregator, dataObject.id);
+            }
 
             foreach (var dataObject in dataObjects)
             {
