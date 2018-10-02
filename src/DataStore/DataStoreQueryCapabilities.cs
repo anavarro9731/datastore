@@ -41,10 +41,19 @@
         // get a filtered list of the models from set of DataObjects
         public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
         {
-            predicate = predicate ?? (a => true);
+            var queryable = DbConnection.CreateDocumentQuery<T>();
 
-            var queryable = DbConnection.CreateDocumentQuery<T>().Where(predicate);
-
+            if (predicate != null)
+            {
+                // Only pass non null and non constant predicts to Where
+                queryable = queryable.Where(predicate);
+            }
+            else
+            {
+                // Set predicate to a constant expression to satisfy EventReplay but do not use constant expressions against actual DB queries
+                predicate = a => true;
+            }
+            
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
