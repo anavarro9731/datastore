@@ -30,7 +30,7 @@ namespace DataStore
 
         private IDocumentRepository DsConnection { get; }
 
-        public Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
+        public async Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
         {
             //create a new one, we definately don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
@@ -40,12 +40,15 @@ namespace DataStore
 
             Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.id)
                               != null, "An item with the same ID is already queued to be created", Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
-            
+
+            bool existsAlready = (await this.DsConnection.Exists(new AggregateQueriedByIdOperation(methodName, model.id)));
+            Guard.Against(existsAlready, "An item with the same ID already exists", Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
+
             this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally
-            return Task.FromResult(newObject.Clone());
+            return newObject.Clone();
         }
 
         internal static void ForceProperties<T>(bool readOnly, T enriched) where T : class, IAggregate, new()
