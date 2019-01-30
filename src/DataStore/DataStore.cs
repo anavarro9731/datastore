@@ -104,7 +104,10 @@
 
             var result = await DeleteCapabilities.DeleteHardById<T>(id, methodName).ConfigureAwait(false);
 
-            await DeleteAggregateHistory<T>(result.id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
+            if (result != null)
+            {
+                await DeleteAggregateHistory<T>(result.id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
+            }
 
             return result;
         }

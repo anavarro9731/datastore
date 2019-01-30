@@ -41,6 +41,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
                 }).Wait();
 
             this.testHarness.DataStore.CommitChanges().Wait();
+            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
+            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
 
             //When
             this.result = this.testHarness.DataStore.DeleteHardById<Car>(this.carId).Result;
@@ -48,47 +50,11 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         }
 
         [Fact]
-        public void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
+        public void ItShouldDeleteAllTheHistory()
         {
-            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
-
-            Assert.Equal(2, aggregateHistory.AggregateVersions.Count);
-            Assert.Equal(2, aggregateHistory.AggregateVersions.ToList()[1].VersionId);
-            Assert.Equal(this.unitOfWorkId, aggregateHistory.AggregateVersions.ToList()[1].UnitWorkId);
-            Assert.Equal(
-                typeof(Car).AssemblyQualifiedName,
-                aggregateHistory.AggregateVersions.ToList()[1].AssemblyQualifiedTypeName);
+            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
+            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
         }
-
-        [Fact]
-        public void ItShouldCreateTheAggregateHistoryItemRecord()
-        {
-            Assert.Equal(2, this.testHarness.DataStore.ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
-
-            var aggregateHistoryItems = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList();
-
-            Assert.Equal(2, aggregateHistoryItems.Count());
-            Assert.True(aggregateHistoryItems.ToList()[0].AggregateVersion.Active);
-            Assert.True(aggregateHistoryItems.ToList()[1].AggregateVersion.Active);
-            Assert.NotEqual(Guid.Empty, aggregateHistoryItems.ToList()[1].id);
-        }
-
-        [Fact]
-        public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
-        {
-            Assert.Equal(
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].id,
-                this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.ToList()[1].AggegateHistoryItemId);
-        }
-
-        [Fact]
-        public void ItShouldUpdateTheAggregateHistoryRecord()
-        {
-            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
-
-            Assert.NotEqual(Guid.Empty, aggregateHistory.id);
-            Assert.Equal(this.carId, aggregateHistory.AggregateId);
-            Assert.Equal(2, aggregateHistory.Version);
-        }
+        
     }
 }
