@@ -3,6 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -19,15 +20,19 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         public WhenCallingDeleteHardWhere()
         {
             // Given
-            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDeleteHardWhere));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDeleteHardWhere), new DataStoreOptions() { UseVersionHistory = true});
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.DataStore.Create(
                 new Car
                 {
                     id = this.carId,
                     Make = "Volvo"
-                });
+                }).Wait();
+
+            this.testHarness.DataStore.CommitChanges().Wait();
+            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
+            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
 
             //When
             this.result = this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == this.carId).Result;
@@ -47,6 +52,13 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
         public void ItShouldReturnTheItemsDeleted()
         {
             Assert.Equal(this.carId, this.result.Single().id);
+        }
+
+        [Fact]
+        public void ItShouldRemoveAllHistoryItems()
+        {
+            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
+            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
         }
     }
 }

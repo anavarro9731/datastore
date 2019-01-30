@@ -104,7 +104,7 @@
 
             var result = await DeleteCapabilities.DeleteHardById<T>(id, methodName).ConfigureAwait(false);
 
-            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+            await DeleteAggregateHistory<T>(result.id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
 
             return result;
         }
@@ -116,7 +116,7 @@
             var results = await DeleteCapabilities.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
 
             foreach (var result in results)
-                await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+                await DeleteAggregateHistory<T>(result.id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
 
             return results;
         }
@@ -152,6 +152,15 @@
         public Task<bool> Exists(Guid id)
         {
             return QueryCapabilities.Exists(id);
+        }
+
+        private async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T: class, IAggregate, new()
+        {
+            //delete index record
+            await DeleteCapabilities.DeleteHardWhere<AggregateHistory<T>>(h => h.AggregateId == id, methodName);
+            //delete history records
+            await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, methodName);
+
         }
 
         private async Task IncrementAggregateHistory<T>(T model, string methodName) where T : class, IAggregate, new()
