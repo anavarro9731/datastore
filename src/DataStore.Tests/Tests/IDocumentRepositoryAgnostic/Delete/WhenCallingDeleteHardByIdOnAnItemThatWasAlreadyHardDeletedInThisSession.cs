@@ -7,8 +7,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
 
     public class WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession
     {
-
         private readonly Exception e;
+
         private readonly Guid newCarId;
 
         private readonly ITestHarness testHarness;
@@ -19,22 +19,20 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Delete
             this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession));
 
             this.testHarness.DataStore.Create(
-                new Car()
+                new Car
                 {
                     id = this.newCarId = Guid.NewGuid(),
                     Make = "Ford"
                 }).Wait();
 
             this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait();
+            this.e = Assert.ThrowsAny<Exception>(() => this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait());
         }
 
         [Fact]
         public void ItShouldErrorWhenYouDeleteTheSecondTime()
         {
-            var ex = Assert.ThrowsAny<Exception>(() => this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait());
-
-            Assert.Contains("c53bef0f-a462-49cc-8d73-04cdbb3ea81c", ex.InnerException.Message);
-            
+            Assert.Contains("c53bef0f-a462-49cc-8d73-04cdbb3ea81c", this.e.InnerException.Message);
         }
     }
 }

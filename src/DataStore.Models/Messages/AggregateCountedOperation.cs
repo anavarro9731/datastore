@@ -1,17 +1,16 @@
 ﻿namespace DataStore.Models.Messages
 {
     using System;
-    using System.Linq;
+    using System.Linq.Expressions;
     using DataStore.Interfaces;
 
-    public class TransformationQueriedOperation<T> : IDataStoreReadFromQueryable<T>
+    public class AggregateCountedOperation<T> : IDataStoreCountFromQueryable<T>
     {
-        public TransformationQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions queryOptions = null)
+        public AggregateCountedOperation(string methodCalled, Expression<Func<T, bool>> predicate = null)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;
-            Query = query;
-            QueryOptions = queryOptions;
+            Predicate = predicate;
             Created = DateTime.UtcNow;
         }
 
@@ -19,9 +18,7 @@
 
         public string MethodCalled { get; set; }
 
-        public IQueryable<T> Query { get; set; }
-
-        public IQueryOptions QueryOptions { get; set; }
+        public Expression<Func<T, bool>> Predicate { get; set; }
 
         public double StateOperationCost { get; set; }
 
