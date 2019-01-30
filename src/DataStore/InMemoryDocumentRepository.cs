@@ -1,6 +1,5 @@
 ﻿namespace DataStore
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -19,6 +18,15 @@
             return Task.CompletedTask;
         }
 
+        public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
+        {
+            var query = CreateDocumentQuery<T>();
+
+            var count = aggregatesCounted.Predicate == null ? query.Count() : query.Count(aggregatesCounted.Predicate);
+
+            return Task.FromResult(count);
+        }
+
         public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
@@ -31,7 +39,7 @@
 
             return Task.CompletedTask;
         }
-        
+
         public void Dispose()
         {
             Aggregates.Clear();
@@ -39,6 +47,19 @@
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
+            if (aggregatesQueried.QueryOptions is QueryOptions options)
+            {
+                if (options.Skip > 0)
+                {
+                    aggregatesQueried.Query = aggregatesQueried.Query.Skip(options.Skip);
+                }
+
+                if (options.Take > 0)
+                {
+                    aggregatesQueried.Query = aggregatesQueried.Query.Take(options.Take);
+                }
+            }
+
             //clone otherwise its to easy to change the referenced object in test code affecting results
             var result = aggregatesQueried.Query.ToList().Clone().AsEnumerable();
 
@@ -65,6 +86,24 @@
             aggregateUpdated.Model.CopyProperties(toUpdate);
 
             return Task.CompletedTask;
+        }
+
+        public class QueryOptions : IQueryOptions
+        {
+            private QueryOptions(int skip, int take)
+            {
+                Skip = skip;
+                Take = take;
+            }
+
+            public int Skip { get; set; }
+
+            public int Take { get; set; }
+
+            public static QueryOptions Create(int skip, int take)
+            {
+                return new QueryOptions(skip, take);
+            }
         }
     }
 }

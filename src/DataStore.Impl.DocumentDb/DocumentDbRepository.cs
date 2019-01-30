@@ -143,6 +143,11 @@
             aggregateUpdated.StateOperationCost = result.RequestCharge;
         }
 
+        public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
+        {
+            throw new NotImplementedException();
+        }
+
         private Uri CreateDocumentSelfLinkFromId(Guid id)
         {
             if (Guid.Empty == id)

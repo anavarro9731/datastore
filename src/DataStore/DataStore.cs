@@ -204,19 +204,29 @@
             }
         }
 
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Func<IQueryOptions> queryOptions = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.Read(predicate);
+            return QueryCapabilities.Read(predicate, queryOptions);
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Func<IQueryOptions> queryOptions = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.ReadActive(predicate);
+            return QueryCapabilities.ReadActive(predicate, queryOptions);
         }
 
         public Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()
         {
             return QueryCapabilities.ReadActiveById<T>(modelId);
+        }
+
+        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        {
+            return QueryCapabilities.Count(predicate);
+        }
+
+        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        {
+            return QueryCapabilities.CountActive(predicate);
         }
 
         public async Task<T> Update<T>(T src,  bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()

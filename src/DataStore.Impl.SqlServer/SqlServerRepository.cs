@@ -141,6 +141,20 @@
             }
         }
 
+        public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
+        {
+            int result;
+            using (var connection = this.clientFactory.OpenClient())
+            {
+                using (var command = new SqlCommand($"SELECT Count(*) FROM {this.settings.TableName} WHERE [Schema] = '{typeof(T).FullName}'", connection))
+                {
+                    result = (int)command.ExecuteScalar();
+                }
+            }
+
+            return Task.FromResult(result);
+        }
+
         private T GetItem<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var id = aggregateQueriedById.Id;
