@@ -52,11 +52,11 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             this.testHarness.AddToDatabase(fourthExistingCar);
 
             // When
-            this.carsFromDatabaseOrderedAscending =
-                this.testHarness.DataStore.Read<Car, DefaultQueryOptions<Car>>(o => o.OrderBy(c => c.id), car => car.Make == "Volvo").Result;
+            this.carsFromDatabaseOrderedAscending = this.testHarness.DataStore.WithoutEventReplay
+                                                        .Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id)).Result;
 
-            this.carsFromDatabaseOrderedDescending = this.testHarness.DataStore
-                                                         .Read<Car, DefaultQueryOptions<Car>>(o => o.OrderBy(c => c.id, true), car => car.Make == "Volvo").Result;
+            this.carsFromDatabaseOrderedDescending = this.testHarness.DataStore.WithoutEventReplay
+                                                         .Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id, true)).Result;
         }
 
         [Fact]

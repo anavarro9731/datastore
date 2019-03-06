@@ -8,7 +8,7 @@ namespace DataStore.Interfaces
     public interface IDataStore : IDisposable, IDataStoreCreateCapabilities, IDataStoreQueryCapabilities, IDataStoreDeleteCapabilities, IDataStoreUpdateCapabilities
 
     {
-        IDirectToDb DirectToDb { get; }
+        IWithoutEventReplay WithoutEventReplay { get; }
 
         IReadOnlyList<IDataStoreOperation> ExecutedOperations { get; }
 
