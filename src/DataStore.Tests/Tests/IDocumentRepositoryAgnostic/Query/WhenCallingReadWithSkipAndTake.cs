@@ -12,9 +12,9 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
     {
         private readonly IEnumerable<Car> carsFromDatabase;
 
-        private readonly ITestHarness testHarness;
-
         private readonly Guid fourthCarId;
+
+        private readonly ITestHarness testHarness;
 
         private readonly Guid thirdCarId;
 
@@ -60,8 +60,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             this.testHarness.AddToDatabase(fourthExistingCar);
 
             // When
-            this.carsFromDatabase = this.testHarness.DataStore.Read<Car>(car => car.Make == "Volvo", () => InMemoryDocumentRepository.QueryOptions.Create(1, 2))
-                                        .Result;
+            this.carsFromDatabase = this.testHarness.DataStore.Read<Car, DefaultQueryOptions<Car>>(o => o.Skip(1).Take(2), car => car.Make == "Volvo").Result;
         }
 
         [Fact]

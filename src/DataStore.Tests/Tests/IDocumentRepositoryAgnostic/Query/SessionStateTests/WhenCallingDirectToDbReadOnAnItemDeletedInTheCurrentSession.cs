@@ -7,16 +7,16 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession
+    public class WhenCallingDirectToDbReadOnAnItemDeletedInTheCurrentSession
     {
         private readonly Car carFromDatabase;
 
         private readonly ITestHarness testHarness;
 
-        public WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession()
+        public WhenCallingDirectToDbReadOnAnItemDeletedInTheCurrentSession()
         {
             // Given
-            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingReadCommittedOnAnItemDeletedInTheCurrentSession));
+            this.testHarness = TestHarnessFunctions.GetTestHarness(nameof(WhenCallingDirectToDbReadOnAnItemDeletedInTheCurrentSession));
 
             var carId = Guid.NewGuid();
             var existingCar = new Car
@@ -31,13 +31,13 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
             this.testHarness.DataStore.DeleteHardById<Car>(carId).Wait();
 
             // When
-            this.carFromDatabase = this.testHarness.DataStore.Advanced.ReadCommitted((IQueryable<Car> cars) => cars.Where(car => car.id == carId)).Result.Single();
+            this.carFromDatabase = this.testHarness.DataStore.DirectToDb.Read<Car>(car => car.id == carId).Result.Single();
         }
 
         [Fact]
         public void ItShouldReturnThatItem()
         {
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is TransformationQueriedOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.NotNull(this.carFromDatabase);
         }
     }

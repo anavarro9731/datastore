@@ -45,7 +45,7 @@
             }
         }
 
-        public IAdvancedCapabilities Advanced => new AdvancedCapabilities(DsConnection, this.messageAggregator);
+        public IDirectToDb DirectToDb => new DirectToDb(DsConnection, this.messageAggregator);
 
         public IDocumentRepository DsConnection { get; }
 
@@ -100,7 +100,7 @@
 
         public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.'+ nameof(DeleteHardById);
+            methodName += '.' + nameof(DeleteHardById);
 
             var result = await DeleteCapabilities.DeleteHardById<T>(id, methodName).ConfigureAwait(false);
 
@@ -157,13 +157,77 @@
             return QueryCapabilities.Exists(id);
         }
 
-        private async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T: class, IAggregate, new()
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        {
+            return QueryCapabilities.Read(predicate);
+        }
+
+        public Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions, Expression<Func<T, bool>> predicate = null)
+            where T : class, IAggregate, new() where O : class, IQueryOptions, new()
+        {
+            return QueryCapabilities.Read(setOptions, predicate);
+        }
+
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        {
+            return QueryCapabilities.ReadActive(predicate);
+        }
+
+        public Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions, Expression<Func<T, bool>> predicate = null)
+            where T : class, IAggregate, new() where O : class, IQueryOptions, new()
+        {
+            return QueryCapabilities.ReadActive(setOptions, predicate);
+        }
+
+        public Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()
+        {
+            return QueryCapabilities.ReadActiveById<T>(modelId);
+        }
+
+        public async Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName += '.' + nameof(Update);
+
+            var result = await UpdateCapabilities.Update(src, overwriteReadOnly, methodName).ConfigureAwait(false);
+
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName += '.' + nameof(UpdateById);
+
+            var result = await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly, methodName).ConfigureAwait(false);
+
+            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<IEnumerable<T>> UpdateWhere<T>(
+            Expression<Func<T, bool>> predicate,
+            Action<T> action,
+            bool overwriteReadOnly = false,
+            string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName += '.' + nameof(UpdateWhere);
+
+            var results = await UpdateCapabilities.UpdateWhere(predicate, action, overwriteReadOnly, methodName).ConfigureAwait(false);
+
+            foreach (var result in results)
+                await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
+
+            return results;
+        }
+
+        private async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T : class, IAggregate, new()
         {
             //delete index record
             await DeleteCapabilities.DeleteHardWhere<AggregateHistory<T>>(h => h.AggregateId == id, methodName);
             //delete history records
             await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, methodName);
-
         }
 
         private async Task IncrementAggregateHistory<T>(T model, string methodName) where T : class, IAggregate, new()
@@ -177,7 +241,8 @@
                     id = historyItemId = Guid.NewGuid(),
                     AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
                     UnitOfWorkResponsibleForStateChange = this.dataStoreOptions.UnitOfWorkId
-                }, methodName: methodName);
+                },
+                methodName: methodName);
 
             //get the history index record
             var historyIndexRecord = (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id)).SingleOrDefault();
@@ -204,7 +269,8 @@
                             historyItemHeader
                         },
                         AggregateId = model.id
-                    }, methodName: methodName);
+                    },
+                    methodName: methodName);
             }
             else
             {
@@ -214,66 +280,6 @@
                 //and update
                 await UpdateCapabilities.Update(historyIndexRecord, methodName: methodName);
             }
-        }
-
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Func<IQueryOptions> queryOptions = null) where T : class, IAggregate, new()
-        {
-            return QueryCapabilities.Read(predicate, queryOptions);
-        }
-
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Func<IQueryOptions> queryOptions = null) where T : class, IAggregate, new()
-        {
-            return QueryCapabilities.ReadActive(predicate, queryOptions);
-        }
-
-        public Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()
-        {
-            return QueryCapabilities.ReadActiveById<T>(modelId);
-        }
-
-        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
-        {
-            return QueryCapabilities.Count(predicate);
-        }
-
-        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
-        {
-            return QueryCapabilities.CountActive(predicate);
-        }
-
-        public async Task<T> Update<T>(T src,  bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName += '.' + nameof(Update);
-
-            var result = await UpdateCapabilities.Update(src, overwriteReadOnly, methodName).ConfigureAwait(false);
-            
-            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
-            
-            return result;
-        }
-
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action,  bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName += '.' + nameof(UpdateById);
-
-            var result = await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly, methodName).ConfigureAwait(false);
-
-            await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
-
-            return result;
-        }
-
-        public async Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
-            where T : class, IAggregate, new()
-        {
-            methodName += '.' + nameof(UpdateWhere);
-
-            var results = await UpdateCapabilities.UpdateWhere(predicate, action, overwriteReadOnly, methodName).ConfigureAwait(false);
-
-            foreach (var result in results)
-                await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
-
-            return results;
         }
 
         private Task IncrementAggregateHistoryIfEnabled<T>(T model, string methodName) where T : class, IAggregate, new()
