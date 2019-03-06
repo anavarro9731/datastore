@@ -47,17 +47,15 @@
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
-            if (aggregatesQueried.QueryOptions is QueryOptions options)
+            if (aggregatesQueried.QueryOptions is ISkipAndTake<T> skipAndTakeOptions)
             {
-                if (options.Skip > 0)
-                {
-                    aggregatesQueried.Query = aggregatesQueried.Query.Skip(options.Skip);
-                }
+                aggregatesQueried.Query = skipAndTakeOptions.AddSkip(aggregatesQueried.Query);
+                aggregatesQueried.Query = skipAndTakeOptions.AddTake(aggregatesQueried.Query);
+            }
 
-                if (options.Take > 0)
-                {
-                    aggregatesQueried.Query = aggregatesQueried.Query.Take(options.Take);
-                }
+            if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
+            {
+                aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
             }
 
             //clone otherwise its to easy to change the referenced object in test code affecting results
@@ -86,24 +84,6 @@
             aggregateUpdated.Model.CopyProperties(toUpdate);
 
             return Task.CompletedTask;
-        }
-
-        public class QueryOptions : IQueryOptions
-        {
-            private QueryOptions(int skip, int take)
-            {
-                Skip = skip;
-                Take = take;
-            }
-
-            public int Skip { get; set; }
-
-            public int Take { get; set; }
-
-            public static QueryOptions Create(int skip, int take)
-            {
-                return new QueryOptions(skip, take);
-            }
         }
     }
 }

@@ -148,37 +148,7 @@
             // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
             return GetPropertyNameCore(expression);
         }
-
-        /// <summary>
-        ///     checks if a class inherits from or implements a base class/interface.
-        ///     Superbly supports generic interfaces and types!
-        /// </summary>
-        /// <param name="child"></param>
-        /// <param name="parent"></param>
-        /// <returns></returns>
-        public static bool InheritsOrImplements(this Type child, Type parent)
-        {
-            parent = ResolveGenericTypeDefinition(parent);
-
-            var currentChild = child.IsGenericType ? child.GetGenericTypeDefinition() : child;
-
-            while (currentChild != typeof(object))
-            {
-                if (parent == currentChild || parent == currentChild.BaseType || HasAnyInterfaces(parent, currentChild))
-                {
-                    return true;
-                }
-
-                currentChild = currentChild.BaseType != null && currentChild.BaseType.IsGenericType
-                                   ? currentChild.BaseType.GetGenericTypeDefinition()
-                                   : currentChild.BaseType;
-
-                if (currentChild == null) return false;
-            }
-
-            return false;
-        }
-
+        
         public static bool IsAnonymousType(this Type type)
         {
             var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
@@ -231,25 +201,6 @@
             throw new ArgumentException("No property reference expression was found.", nameof(propertyRefExpr));
         }
 
-        private static bool HasAnyInterfaces(Type parent, Type child)
-        {
-            return child.GetInterfaces().Any(
-                childInterface =>
-                    {
-                    var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
-
-                    return currentInterface == parent;
-                    });
-        }
-
-        private static Type ResolveGenericTypeDefinition(Type parent)
-        {
-            var shouldUseGenericType = true;
-            if (parent.IsGenericType && parent.GetGenericTypeDefinition() != parent) shouldUseGenericType = false;
-
-            if (parent.IsGenericType && shouldUseGenericType) parent = parent.GetGenericTypeDefinition();
-
-            return parent;
-        }
+       
     }
 }

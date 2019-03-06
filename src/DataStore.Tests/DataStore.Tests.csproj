@@ -33,4 +33,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tests\IDocumentRepositoryAgnostic\Query\ProjectionTests\" />
+  </ItemGroup>
+
 </Project>

@@ -29,7 +29,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query.SessionStateTe
             testHarness.DataStore.DeleteHardById<Car>(this.carId).Wait();
 
             // When
-            var document = testHarness.DataStore.Advanced.ReadCommittedById<Car>(this.carId).Result;
+            var document = testHarness.DataStore.DirectToDb.ReadById<Car>(this.carId).Result;
             try
             {
                 this.carFromDatabase = document; //this approach is for Azure
