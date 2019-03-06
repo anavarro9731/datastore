@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            this.countOfCars = this.testHarness.DataStore.DirectToDb.CountActive<Car>(car => car.Make == "Volvo").Result;
+            this.countOfCars = this.testHarness.DataStore.WithoutEventReplay.CountActive<Car>(car => car.Make == "Volvo").Result;
         }
 
         [Fact]

@@ -1,11 +1,16 @@
 ﻿namespace DataStore.Interfaces
 {
     using System.Linq;
-    using DataStore.Interfaces.LowLevel;
 
     public interface IQueryOptions
     {
     }
+
+    public interface IWithoutReplayOptions : IQueryOptions
+    {
+
+    }
+
 
     public interface ISkipAndTake<T>
     {
@@ -14,7 +19,7 @@
         IQueryable<T> AddTake(IQueryable<T> queryable);
     }
 
-    public interface IOrderBy<T> 
+    public interface IOrderBy<T>
     {
         IQueryable<T> AddOrderBy(IQueryable<T> queryable);
     }

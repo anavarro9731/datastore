@@ -5,5 +5,6 @@
     public class Car : Aggregate
     {
         public string Make { get; set; }
+        public int Year { get; set; }
     }
 }

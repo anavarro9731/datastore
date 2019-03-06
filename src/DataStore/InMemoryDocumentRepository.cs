@@ -58,6 +58,8 @@
                 aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
             }
 
+         
+
             //clone otherwise its to easy to change the referenced object in test code affecting results
             var result = aggregatesQueried.Query.ToList().Clone().AsEnumerable();
 

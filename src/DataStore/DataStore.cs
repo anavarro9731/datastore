@@ -45,8 +45,6 @@
             }
         }
 
-        public IDirectToDb DirectToDb => new DirectToDb(DsConnection, this.messageAggregator);
-
         public IDocumentRepository DsConnection { get; }
 
         public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
@@ -55,6 +53,8 @@
         public CircuitBoard.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
             new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
                 l => l.AddRange(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
+
+        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DsConnection, this.messageAggregator);
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -157,26 +157,24 @@
             return QueryCapabilities.Exists(id);
         }
 
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return QueryCapabilities.Read(predicate);
         }
 
-        public Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions, Expression<Func<T, bool>> predicate = null)
-            where T : class, IAggregate, new() where O : class, IQueryOptions, new()
+        public Task<IEnumerable<T>> Read<T>() where T : class, IAggregate, new()
         {
-            return QueryCapabilities.Read(setOptions, predicate);
+            return QueryCapabilities.Read<T>();
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return QueryCapabilities.ReadActive(predicate);
         }
 
-        public Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions, Expression<Func<T, bool>> predicate = null)
-            where T : class, IAggregate, new() where O : class, IQueryOptions, new()
+        public Task<IEnumerable<T>> ReadActive<T>() where T : class, IAggregate, new()
         {
-            return QueryCapabilities.ReadActive(setOptions, predicate);
+            return QueryCapabilities.ReadActive<T>();
         }
 
         public Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()

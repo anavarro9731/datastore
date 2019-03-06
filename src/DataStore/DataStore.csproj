@@ -12,6 +12,9 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
   </ItemGroup>

@@ -39,66 +39,48 @@
         }
 
         // get a filtered list of the models from set of DataObjects
-        public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
-        {
-            return await Read<T, DefaultQueryOptions<T>>(null, predicate);
-        }
-
-        // get a filtered list of the models from set of DataObjects
-        public async Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions, Expression<Func<T, bool>> predicate = null)
-            where T : class, IAggregate, new() where O : class, IQueryOptions, new()
+        public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             var queryable = DbConnection.CreateDocumentQuery<T>();
 
             if (predicate != null)
             {
-                // Only pass non null and non constant predicts to Where
+                // Only pass non null and non constant predicts to the Where() method
                 queryable = queryable.Where(predicate);
             }
             else
             {
-                // Set predicate to a constant expression to satisfy EventReplay but do not use constant expressions against actual DB queries
+                // Set the predicate to a constant expression to satisfy EventReplay but do not use constant expressions against actual DB queries as some providers don't accept this
                 predicate = a => true;
             }
 
-            O options = null;
-            if (setOptions != null)
-            {
-                options = new O();
-                setOptions(options);
-            }
-
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable, options))
-                                    .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable)).To(DbConnection.ExecuteQuery)
+                                    .ConfigureAwait(false);
 
             return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
         }
 
-        // get a filtered list of the models from a set of active DataObjects
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> Read<T>() where T : class, IAggregate, new()
         {
-            return ReadActive<T, DefaultQueryOptions<T>>(null, predicate);
+            return Read<T>(null);
         }
 
         // get a filtered list of the models from a set of active DataObjects
-        public async Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions, Expression<Func<T, bool>> predicate = null)
-            where T : class, IAggregate, new() where O : class, IQueryOptions, new()
+        public async Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
             var queryable = DbConnection.CreateDocumentQuery<T>().Where(predicate);
 
-            O options = null;
-            if (setOptions != null)
-            {
-                options = new O();
-                setOptions(options);
-            }
-            
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable, options))
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
             return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
+        }
+
+        public Task<IEnumerable<T>> ReadActive<T>() where T : class, IAggregate, new()
+        {
+            return ReadActive<T>(null);
         }
 
         // get a filtered list of the models from  a set of DataObjects

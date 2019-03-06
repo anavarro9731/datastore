@@ -60,7 +60,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             this.testHarness.AddToDatabase(fourthExistingCar);
 
             // When
-            this.carsFromDatabase = this.testHarness.DataStore.Read<Car, DefaultQueryOptions<Car>>(o => o.Skip(1).Take(2), car => car.Make == "Volvo").Result;
+            this.carsFromDatabase = this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(1).Take(2)).Result;
         }
 
         [Fact]
