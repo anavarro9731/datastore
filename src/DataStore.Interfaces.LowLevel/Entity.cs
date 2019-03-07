@@ -15,6 +15,14 @@
     /// </summary>
     public abstract class Entity : IEntity
     {
+        public Entity()
+        {
+            //These properties are set here and inehrited by Aggregate when they could be set in Create because a lot of the tests which
+            //create classes without create depend on these defaults and it is a significant convenience for it
+            //to be set correctly by default.
+            schema = GetType().FullName;
+        }
+
         // apart from keeping an audit trail this is used for sorting 
         public DateTime Created { get; set; }
 
@@ -24,6 +32,7 @@
         // this is here to give references which are stored in a models json a unique id which is necessary during updates to determines 
         // what changes have occurred. It can either be implemented as-is or the getter can be overridden to select another existing property as the key
         public Guid id { get; set; }
-        
+
+        public string schema { get; set; }
     }
 }

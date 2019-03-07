@@ -18,19 +18,15 @@
     {
         protected Aggregate()
         {
-            //These defaults are here because alot of the tests depend on these defaults.
-            //If we refactor all the tests are you can remove it. 
-            //However, it is a significant convenience for it to be set correctly by default.
-            schema = GetType().FullName;
+            //These properties are set here when they could be set in Create because a lot of the tests which
+            //create classes without create depend on these defaults and it is a significant convenience for it
+            //to be set correctly by default.
             Active = true;
         }
 
         public bool Active { get; set; }
 
         public bool ReadOnly { get; set; }
-
-        //required lowercase when a docdb partitionkey
-        public string schema { get; set; }
 
         public List<IScopeReference> ScopeReferences { get; set; }
 
