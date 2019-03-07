@@ -45,7 +45,7 @@
             }
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
+        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
         {
             var schema = typeof(T).FullName;
 
@@ -69,6 +69,8 @@
             }
             return query.AsQueryable();
         }
+
+    
 
         public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {

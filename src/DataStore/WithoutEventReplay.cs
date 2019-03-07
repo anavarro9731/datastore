@@ -51,12 +51,12 @@ namespace DataStore
             return results;
         }
 
-        public async Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions) where T : class, IAggregate, new() where O : class, IWithoutReplayOptions, new()
+        public async Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions) where T : class, IEntity, new() where O : class, IWithoutReplayOptions<T>, new()
         {
-            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>();
-
             var options = new O();
             setOptions(options);
+
+            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>(options);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable, options))
                                     .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);
@@ -76,13 +76,13 @@ namespace DataStore
         }
 
         public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IAggregate, new() where O : class, IWithoutReplayOptions, new()
+            where T : class, IEntity, new() where O : class, IWithoutReplayOptions<T>, new()
         {
-            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>();
-            queryable = queryable.Where(predicate);
-
             var options = new O();
             setOptions(options);
+
+            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>(options);
+            queryable = queryable.Where(predicate);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable, options))
                                     .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);
@@ -99,16 +99,16 @@ namespace DataStore
             return results;
         }
 
-        public async Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions) where T : class, IAggregate, new() where O : class, IWithoutReplayOptions, new()
+        public async Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions) where T : class, IAggregate, new() where O : class, IWithoutReplayOptions<T>, new()
         {
-            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>();
-
             O options = null;
             if (setOptions != null)
             {
                 options = new O();
                 setOptions(options);
             }
+
+            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>(options);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable, options))
                                     .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);
@@ -127,11 +127,9 @@ namespace DataStore
         }
 
         public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IAggregate, new() where O : class, IWithoutReplayOptions, new()
+            where T : class, IAggregate, new() where O : class, IWithoutReplayOptions<T>, new()
         {
             predicate = predicate.And(a => a.Active);
-
-            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>().Where(predicate);
 
             O options = null;
             if (setOptions != null)
@@ -139,6 +137,8 @@ namespace DataStore
                 options = new O();
                 setOptions(options);
             }
+
+            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>(options).Where(predicate);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable, options))
                                     .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);

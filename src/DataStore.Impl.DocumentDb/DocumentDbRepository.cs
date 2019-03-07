@@ -41,19 +41,21 @@
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
+        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
         {
-            var name = typeof(T).FullName;
-            var query = this.documentClient.CreateDocumentQuery<T>(
-                this.config.CollectionSelfLink(),
-                new FeedOptions
-                {
-                    EnableCrossPartitionQuery = this.config.CollectionSettings.EnableCrossParitionQueries,
-                    MaxDegreeOfParallelism = -1,
-                    MaxBufferedItemCount = -1
-                }).Where(item => item.schema == name);
-            return query;
+            //var name = typeof(T).FullName;
+            //var query = this.documentClient.CreateDocumentQuery<T>(
+            //    this.config.CollectionSelfLink(),
+            //    new FeedOptions
+            //    {
+            //        EnableCrossPartitionQuery = this.config.CollectionSettings.EnableCrossParitionQueries,
+            //        MaxDegreeOfParallelism = -1,
+            //        MaxBufferedItemCount = -1
+            //    }).Where(item => item.schema == name);
+            //return query;
+            return null;
         }
+
 
         public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {

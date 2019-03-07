@@ -8,7 +8,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PureFunctions.Extensions;
 
-    public class WithoutReplayOptions<T> : IWithoutReplayOptions, ISkipAndTake<T>, IOrderBy<T> where T : class, IAggregate, new()
+    public class WithoutReplayOptions<T> : IWithoutReplayOptions<T> where T : class, IAggregate, new()
     {
         private readonly Queue<(string, bool)> thenBys = new Queue<(string, bool)>();
 
@@ -55,7 +55,7 @@
                 {
                     var thenBy = this.thenBys.Dequeue();
 
-                   queryable = ThenBy(queryable, thenBy.Item1, thenBy.Item2);
+                    queryable = ThenBy(queryable, thenBy.Item1, thenBy.Item2);
                 }
             }
 

@@ -7,7 +7,7 @@
     public interface IDataStoreReadFromQueryable<T> : IDataStoreReadOperation
     {
         IQueryable<T> Query { get; set; }
-        IQueryOptions QueryOptions { get; set; }
+        IQueryOptions<T> QueryOptions { get; set; }
     }
 
     public interface IDataStoreReadById : IDataStoreReadOperation
