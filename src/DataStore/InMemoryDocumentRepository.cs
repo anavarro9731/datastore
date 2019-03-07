@@ -27,7 +27,7 @@
             return Task.FromResult(count);
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new()
+        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();

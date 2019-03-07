@@ -10,7 +10,7 @@ namespace DataStore.Interfaces
     {
         Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new();
 
-        IQueryable<T> CreateDocumentQuery<T>() where T : class, IAggregate, new();
+        IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new();
 
         Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new();
 
@@ -19,8 +19,6 @@ namespace DataStore.Interfaces
         Task<bool> Exists(IDataStoreReadById aggregateQueriedById);
 
         Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new();
-
-       
 
         Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new();
 

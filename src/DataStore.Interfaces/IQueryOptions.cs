@@ -2,15 +2,13 @@
 {
     using System.Linq;
 
-    public interface IQueryOptions
+    public interface IQueryOptions<T>
     {
     }
 
-    public interface IWithoutReplayOptions : IQueryOptions
+    public interface IWithoutReplayOptions<T> : IQueryOptions<T>, ISkipAndTake<T>, IOrderBy<T>
     {
-
     }
-
 
     public interface ISkipAndTake<T>
     {

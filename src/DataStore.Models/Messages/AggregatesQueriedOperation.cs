@@ -6,7 +6,7 @@
 
     public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T>
     {
-        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions queryOptions = null)
+        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions<T> queryOptions = null)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;
@@ -21,7 +21,7 @@
 
         public IQueryable<T> Query { get; set; }
 
-        public IQueryOptions QueryOptions { get; set; }
+        public IQueryOptions<T> QueryOptions { get; set; }
 
         public double StateOperationCost { get; set; }
 
