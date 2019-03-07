@@ -9,11 +9,9 @@
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Models;
-    using DataStore.Models.Messages;
-    using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
-    using Microsoft.Azure.Documents.Linq; 
+    using Microsoft.Azure.Documents.Linq;
 
     public class DocumentDbRepository : IDocumentRepository
     {
@@ -35,27 +33,30 @@
             }
 
             var result = await DocumentDbUtils
-                             .ExecuteWithRetries(() => this.documentClient.CreateDocumentAsync(this.config.CollectionSelfLink(), aggregateAdded.Model))
-                             .ConfigureAwait(false);
+                               .ExecuteWithRetries(() => this.documentClient.CreateDocumentAsync(this.config.CollectionSelfLink(), aggregateAdded.Model))
+                               .ConfigureAwait(false);
 
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
+        public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
         {
-            //var name = typeof(T).FullName;
-            //var query = this.documentClient.CreateDocumentQuery<T>(
-            //    this.config.CollectionSelfLink(),
-            //    new FeedOptions
-            //    {
-            //        EnableCrossPartitionQuery = this.config.CollectionSettings.EnableCrossParitionQueries,
-            //        MaxDegreeOfParallelism = -1,
-            //        MaxBufferedItemCount = -1
-            //    }).Where(item => item.schema == name);
-            //return query;
-            return null;
+            throw new NotImplementedException();
         }
 
+        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
+        {
+            var name = typeof(T).FullName;
+            var query = this.documentClient.CreateDocumentQuery<T>(
+                this.config.CollectionSelfLink(),
+                new FeedOptions
+                {
+                    EnableCrossPartitionQuery = this.config.CollectionSettings.EnableCrossParitionQueries,
+                    MaxDegreeOfParallelism = -1,
+                    MaxBufferedItemCount = -1
+                }).Where(item => item.schema == name);
+            return query;
+        }
 
         public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
@@ -127,6 +128,7 @@
                 {
                     return null;
                 }
+
                 throw new DatabaseException($"Failed to retrieve record with id {aggregateQueriedById.Id}: {de.Message}", de);
             }
             catch (Exception e)
@@ -143,11 +145,6 @@
                                  aggregateUpdated.Model)).ConfigureAwait(false);
 
             aggregateUpdated.StateOperationCost = result.RequestCharge;
-        }
-
-        public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
-        {
-            throw new NotImplementedException();
         }
 
         private Uri CreateDocumentSelfLinkFromId(Guid id)
