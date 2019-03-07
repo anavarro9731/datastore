@@ -8,7 +8,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PureFunctions.Extensions;
 
-    public class WithoutReplayOptions<T> : IWithoutReplayOptions<T> where T : class, IAggregate, new()
+    public class WithoutReplayOptions<T> : IWithoutReplayOptions<T> where T : class, IEntity, new()
     {
         private readonly Queue<(string, bool)> thenBys = new Queue<(string, bool)>();
 
