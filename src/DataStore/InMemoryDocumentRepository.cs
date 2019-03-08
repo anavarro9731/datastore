@@ -47,21 +47,28 @@
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
-            if (aggregatesQueried.QueryOptions is ISkipAndTake<T> skipAndTakeOptions)
-            {
-                aggregatesQueried.Query = skipAndTakeOptions.AddSkip(aggregatesQueried.Query);
-                aggregatesQueried.Query = skipAndTakeOptions.AddTake(aggregatesQueried.Query);
-            }
+            List<T> results = new List<T>();
 
             if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
             {
                 aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
             }
-
-         
-
+            
+            if (aggregatesQueried.QueryOptions is ISkipAndTake<T> skipAndTakeOptions)
+            {                
+                var queriesToExecute = skipAndTakeOptions.AddSkipAndTake(aggregatesQueried.Query, 1000);
+                while (queriesToExecute.Count > 0)
+                {
+                     results.AddRange(queriesToExecute.Dequeue().ToList());
+                }                
+            }
+            else
+            {
+                results.AddRange(aggregatesQueried.Query.ToList());
+            }
+            
             //clone otherwise its to easy to change the referenced object in test code affecting results
-            var result = aggregatesQueried.Query.ToList().Clone().AsEnumerable();
+            var result = results.Clone().AsEnumerable();
 
             return Task.FromResult(result);
         }

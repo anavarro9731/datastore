@@ -104,14 +104,36 @@
             }
         }
 
-        IQueryable<T> ISkipAndTake<T>.AddSkip(IQueryable<T> queryable)
+        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable, int? maxTake)
         {
-            return this.skip > 0 ? queryable.Skip(this.skip) : queryable;
+            var result = new Queue<IQueryable<T>>();
+
+            if (maxTake.HasValue && this.take > maxTake.Value)
+            {
+                var quotient = this.take / maxTake.Value;
+                if (this.take %maxTake.Value != 0) quotient++; //add one more round to pickup the remainder
+
+                for (var counter = 0; counter < quotient; counter++)
+                {
+                    var iteralSkip = this.skip + (counter * maxTake.Value);
+                    result.Enqueue(queryable.Skip(iteralSkip).Take(maxTake.Value));
+                }
+            }
+            else
+            {
+                queryable = queryable.Skip(this.skip);
+
+                if (this.take > 0) queryable = queryable.Take(this.take);
+
+                result.Enqueue(queryable);
+            }
+
+            return result;
         }
 
-        IQueryable<T> ISkipAndTake<T>.AddTake(IQueryable<T> queryable)
+        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable)
         {
-            return this.take > 0 ? queryable.Take(this.take) : queryable;
+            return (this as ISkipAndTake<T>).AddSkipAndTake(queryable, null);
         }
     }
 }
