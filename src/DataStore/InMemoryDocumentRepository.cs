@@ -56,7 +56,7 @@
             
             if (aggregatesQueried.QueryOptions is ISkipAndTake<T> skipAndTakeOptions)
             {                
-                var queriesToExecute = skipAndTakeOptions.AddSkipAndTake(aggregatesQueried.Query, 1000);
+                var queriesToExecute = skipAndTakeOptions.AddSkipAndTake(aggregatesQueried.Query, 1000, out int skipped, out int took);
                 while (queriesToExecute.Count > 0)
                 {
                      results.AddRange(queriesToExecute.Dequeue().ToList());
