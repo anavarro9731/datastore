@@ -65,7 +65,7 @@ namespace DataStore
             WalkGraphAndUpdateEntityMeta(enriched);
 
             enriched.Modified = enriched.Created;
-            enriched.ModifiedAsMillisecondsEpochTime = enriched.ModifiedAsMillisecondsEpochTime;
+            enriched.ModifiedAsMillisecondsEpochTime = enriched.CreatedAsMillisecondsEpochTime;
         }
 
         private static void WalkGraphAndUpdateEntityMeta(object current)
