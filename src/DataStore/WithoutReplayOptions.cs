@@ -108,15 +108,22 @@
         {
             var result = new Queue<IQueryable<T>>();
 
+            
             if (maxTake.HasValue && this.take > maxTake.Value)
             {
-                var quotient = this.take / maxTake.Value;
-                if (this.take %maxTake.Value != 0) quotient++; //add one more round to pickup the remainder
+                var rounds = this.take / maxTake.Value;
 
-                for (var counter = 0; counter < quotient; counter++)
+                if (this.take % maxTake.Value != 0) rounds++; //add one more round to pickup the remainder
+
+                for (var counter = 0; counter < rounds; counter++)
                 {
                     var iteralSkip = this.skip + (counter * maxTake.Value);
-                    result.Enqueue(queryable.Skip(iteralSkip).Take(maxTake.Value));
+
+                    var amountTaken = (counter * maxTake.Value);
+                    var amountRemaining = this.take - amountTaken;
+                    var iteralTake = amountRemaining > maxTake.Value ? maxTake.Value : amountRemaining;
+
+                    result.Enqueue(queryable.Skip(iteralSkip).Take(iteralTake));
                 }
             }
             else
