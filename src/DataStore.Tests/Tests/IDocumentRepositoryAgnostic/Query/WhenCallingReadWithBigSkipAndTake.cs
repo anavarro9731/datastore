@@ -13,6 +13,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         private readonly IEnumerable<Car> carsFromDatabaseWithFilter1;
         private readonly IEnumerable<Car> carsFromDatabaseWithFilter2;
         private readonly IEnumerable<Car> carsFromDatabaseWithFilter3;
+        private readonly IEnumerable<Car> carsFromDatabaseWithFilter4;
 
         private readonly IEnumerable<Car> carsInDatabase;
 
@@ -77,6 +78,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             this.carsFromDatabaseWithFilter1 = this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(2101)).Result;
             this.carsFromDatabaseWithFilter2 = this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(3000)).Result;
             this.carsFromDatabaseWithFilter3 = this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(2500)).Result;
+            this.carsFromDatabaseWithFilter4 = this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(1500)).Result;
+
         }
 
         [Fact]
@@ -102,6 +105,13 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter3.Count());
             Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
+        }
+        [Fact]
+        public void ItShouldReturnTheCorrectAmountOfVolvosWhenTakeIsLessThanAmountOfVolvosAvailableAfterSKip()
+        {
+            Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal(2202, this.carsInDatabase.Count());
+            Assert.Equal(1500, this.carsFromDatabaseWithFilter4.Count()); //this fails and due to 2000 items being returned
         }
     }
 }
