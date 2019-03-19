@@ -111,7 +111,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Query
         {
             Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
-            Assert.Equal(1500, this.carsFromDatabaseWithFilter4.Count()); //this fails and due to 2000 items being returned
+            Assert.Equal(1500, this.carsFromDatabaseWithFilter4.Count()); 
         }
     }
 }

@@ -13,8 +13,8 @@
 
     public interface ISkipAndTake<T>
     {
-        Queue<IQueryable<T>> AddSkipAndTake(IQueryable<T> queryable, int? maxTake);
-        Queue<IQueryable<T>> AddSkipAndTake(IQueryable<T> queryable);
+        Queue<IQueryable<T>> AddSkipAndTake(IQueryable<T> queryable, int? maxTake, out int skipped, out int took);
+        Queue<IQueryable<T>> AddSkipAndTake(IQueryable<T> queryable, out int skipped, out int took);
     }
 
     public interface IOrderBy<T>

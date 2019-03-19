@@ -104,7 +104,7 @@
             }
         }
 
-        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable, int? maxTake)
+        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable, int? maxTake,  out int skipped, out int took)
         {
             var result = new Queue<IQueryable<T>>();
 
@@ -135,12 +135,14 @@
                 result.Enqueue(queryable);
             }
 
+            skipped = this.skip;
+            took = this.take;
             return result;
         }
 
-        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable)
+        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable, out int skipped, out int took)
         {
-            return (this as ISkipAndTake<T>).AddSkipAndTake(queryable, null);
+            return (this as ISkipAndTake<T>).AddSkipAndTake(queryable, null, out skipped, out took);
         }
     }
 }
