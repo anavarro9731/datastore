@@ -80,7 +80,7 @@ namespace DataStore
                         //set an id for any entity in the tree if it doesn't have one
                         //regardless of whether it is the aggregate or a child entity
                         //in many cases this will already be done in the app code
-                        if ((Guid)p.GetValue(current, null) == Guid.Empty)
+                        if ((Guid)p.GetValue(current, null) == default(Guid))
                         {
                             p.SetValue(current, Guid.NewGuid(), null);
                         }
@@ -88,7 +88,7 @@ namespace DataStore
                     else if (p.Name == nameof(IEntity.Created))
                     {
                         //set created datetime if this is null
-                        if ((DateTime?)p.GetValue(current, null) == null)
+                        if ((DateTime)p.GetValue(current, null) == default(DateTime))
                         {
                             p.SetValue(current, DateTime.UtcNow, null);
                         }
@@ -96,7 +96,7 @@ namespace DataStore
                     else if (p.Name == nameof(IEntity.CreatedAsMillisecondsEpochTime))
                     {
                         //set created datetime if this is null
-                        if (p.GetValue(current, null) == null)
+                        if (((double)p.GetValue(current, null)).Equals(default(double)))
                         {
                             p.SetValue(current, DateTime.UtcNow.ConvertToSecondsEpochTime(), null);
                         }
