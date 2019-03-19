@@ -13,6 +13,8 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
 
         private readonly ITestHarness testHarness;
 
+        private Car result;
+
         public WhenCallingCreate()
         {
             // Given
@@ -26,7 +28,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
             };
 
             //When
-            this.testHarness.DataStore.Create(newCar).Wait();
+            this.result = this.testHarness.DataStore.Create(newCar).Result;
             this.testHarness.DataStore.CommitChanges().Wait();
         }
 
@@ -34,6 +36,16 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Create
         public void ItShouldFlushTheQueue()
         {
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
+        }
+
+        [Fact]
+        public void ItShouldSetTheTimeStamps()
+        {
+            Assert.NotEqual(default(DateTime), this.result.Created);
+            Assert.NotEqual(default(DateTime), this.result.Modified);
+            Assert.NotEqual(default(double), this.result.CreatedAsMillisecondsEpochTime);
+            Assert.NotEqual(default(double), this.result.ModifiedAsMillisecondsEpochTime);
+
         }
 
         [Fact]

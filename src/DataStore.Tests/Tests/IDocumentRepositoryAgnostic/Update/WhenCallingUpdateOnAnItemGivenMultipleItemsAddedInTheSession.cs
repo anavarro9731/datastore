@@ -32,7 +32,7 @@ namespace DataStore.Tests.Tests.IDocumentRepositoryAgnostic.Update
                 id = this.car2Id,
                 Make = "Saab"
             };
-
+            
             this.testHarness.DataStore.Create(car1).Wait();
             this.testHarness.DataStore.Create(car2).Wait();
             car2.Make = "BMW";
