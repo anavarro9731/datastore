@@ -5,19 +5,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="DocumentDbSettings.json" />
+    <None Remove="CosmosDbSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.13.1" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataStore.Impl.DocumentDb\DataStore.Impl.DocumentDb.csproj" />
-    <ProjectReference Include="..\DataStore.Impl.SqlServer\DataStore.Impl.SqlServer.csproj" />
+    <ProjectReference Include="..\DataStore.Providers.CosmosDb\DataStore.Providers.CosmosDb.csproj" />
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
     <ProjectReference Include="..\DataStore\DataStore.csproj" />
@@ -25,16 +24,6 @@
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="SqlServerDbSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Tests\IDocumentRepositoryAgnostic\Query\ProjectionTests\" />
   </ItemGroup>
 
 </Project>
