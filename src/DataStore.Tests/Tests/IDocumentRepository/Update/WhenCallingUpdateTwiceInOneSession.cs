@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = this.carId,
+                Id = this.carId,
                 Make = "Volvo"
             };
             this.testHarness.AddToDatabase(existingCar);

@@ -32,7 +32,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = this.newCarId,
+                Id = this.newCarId,
                 Make = "Volvo"
             };
 
@@ -58,9 +58,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             var aggregateHistoryItem = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single();
 
-            Assert.NotEqual(Guid.Empty, aggregateHistoryItem.id);
+            Assert.NotEqual(Guid.Empty, aggregateHistoryItem.Id);
             Assert.True(aggregateHistoryItem.UnitOfWorkResponsibleForStateChange == this.unitOfWorkId);
-            Assert.True(aggregateHistoryItem.AggregateVersion.id == this.newCarId);
+            Assert.True(aggregateHistoryItem.AggregateVersion.Id == this.newCarId);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
 
-            Assert.NotEqual(Guid.Empty, aggregateHistory.id);
+            Assert.NotEqual(Guid.Empty, aggregateHistory.Id);
             Assert.Equal(this.newCarId, aggregateHistory.AggregateId);
             Assert.Equal(1, aggregateHistory.Version);
         }
@@ -79,7 +79,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
             Assert.Equal(
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id,
+                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().Id,
                 this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single().AggegateHistoryItemId);
         }
     }

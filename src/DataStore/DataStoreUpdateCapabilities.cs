@@ -30,7 +30,7 @@
 
         private IDocumentRepository DsConnection { get; }
 
-        // .. update using id; get values from another instance of the same aggregate
+        // .. update using Id; get values from another instance of the same aggregate
         public Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
@@ -50,7 +50,7 @@
 
             };
 
-            return UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model, excludedParameters), overwriteReadOnly, methodName);
+            return UpdateByIdInternal<T>(src.Id, model => cloned.CopyProperties(model, excludedParameters), overwriteReadOnly, methodName);
         }
 
         public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
@@ -86,7 +86,7 @@
                     {
                         if (objectToUpdate != null) l.Add(objectToUpdate);
                     });
-            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id);
+            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, a => a.Id == id);
 
             return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName).SingleOrDefault();
         }
@@ -96,22 +96,22 @@
         {
             foreach (var dataObject in dataObjects)
             {
-                Guard.Against(dataObject.ReadOnly && !overwriteReadOnly, "Cannot update read-only item " + dataObject.id);
-                DataStoreDeleteCapabilities.CheckWasObjectAlreadyHardDeleted<T>(this.eventAggregator, dataObject.id);
+                Guard.Against(dataObject.ReadOnly && !overwriteReadOnly, "Cannot update read-only item " + dataObject.Id);
+                DataStoreDeleteCapabilities.CheckWasObjectAlreadyHardDeleted<T>(this.eventAggregator, dataObject.Id);
             }
 
             foreach (var dataObject in dataObjects)
             {
-                var originalId = dataObject.id;
+                var originalId = dataObject.Id;
 
-                var restrictedPropertiesBefore = originalId + dataObject.schema;
+                var restrictedPropertiesBefore = originalId + dataObject.Schema;
                 var restrictedCreatedBefore = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedBefore = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
                 restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore;
 
                 action(dataObject);
 
-                var restrictedPropertiesAfter = originalId + dataObject.schema;
+                var restrictedPropertiesAfter = originalId + dataObject.Schema;
                 var restrictedCreatedAfter = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedAfter = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
                 restrictedPropertiesAfter = restrictedPropertiesAfter + restrictedCreatedAfter + restrictedModifiedAfter;
@@ -119,7 +119,7 @@
 
                 Guard.Against(
                     restrictedPropertiesBefore != restrictedPropertiesAfter,
-                    "Cannot change restricted properties [id, schema, Created, CreatedAsMillisecondsEpochTime, Modified, ModifiedAsMillisecondsEpochTime on Aggregate "
+                    "Cannot change restricted properties [Id, Schema, Created, CreatedAsMillisecondsEpochTime, Modified, ModifiedAsMillisecondsEpochTime on Aggregate "
                     + originalId);
 
                 //don't allow this to be set to null by client

@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = this.newCarId,
+                Id = this.newCarId,
                 Make = "Volvo"
             };
 

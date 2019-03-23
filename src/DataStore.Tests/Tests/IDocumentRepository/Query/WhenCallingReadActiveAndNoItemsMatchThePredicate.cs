@@ -16,7 +16,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var testHarness = TestHarness.Create(nameof(WhenCallingReadActiveAndNoItemsMatchThePredicate));
 
             // When
-            this.carsFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == Guid.NewGuid()).Result;
+            this.carsFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.Id == Guid.NewGuid()).Result;
         }
 
         [Fact]

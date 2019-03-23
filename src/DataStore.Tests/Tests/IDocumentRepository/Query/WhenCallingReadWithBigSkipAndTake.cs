@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                             var activeCarId = Guid.NewGuid();
                             var activeExistingCar = new Car
                             {
-                                id = activeCarId,
+                                Id = activeCarId,
                                 Make = "Volvo"
                             };
                             this.testHarness.AddToDatabase(activeExistingCar);
@@ -47,7 +47,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                         var inactiveCarId = Guid.NewGuid();
                         var inactiveExistingCar = new Car
                         {
-                            id = inactiveCarId,
+                            Id = inactiveCarId,
                             Active = false,
                             Make = "Volvo"
                         };
@@ -57,7 +57,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.thirdCarId = Guid.NewGuid();
             var thirdExistingCar = new Car
             {
-                id = this.thirdCarId,
+                Id = this.thirdCarId,
                 Active = true,
                 Make = "Ford"
             };
@@ -65,7 +65,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.fourthCarId = Guid.NewGuid();
             var fourthExistingCar = new Car
             {
-                id = this.fourthCarId,
+                Id = this.fourthCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -88,7 +88,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter1.Count());
-            Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
+            Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().Id);
         }
         [Fact]
         public void ItShouldReturnAllVolvosWhenTakeExceedsMaximumResultsWithNoRemainderFrom1000MaxTakeInRepo()
@@ -96,7 +96,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter2.Count());
-            Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
+            Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().Id);
         }
         [Fact]
         public void ItShouldReturnAllVolvosWhenTakeExceedsMaximumResultsWithRemainderFrom1000MaxTakeInRepo()
@@ -104,7 +104,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter3.Count());
-            Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
+            Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().Id);
         }
         [Fact]
         public void ItShouldReturnTheCorrectAmountOfVolvosWhenTakeIsLessThanAmountOfVolvosAvailableAfterSKip()

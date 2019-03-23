@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             var newCar = new Car
             {
-                id = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Make = "Volvo"
             };
 

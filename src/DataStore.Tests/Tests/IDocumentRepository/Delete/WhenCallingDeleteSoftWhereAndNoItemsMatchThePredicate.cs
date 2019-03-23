@@ -16,7 +16,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             var testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhereAndNoItemsMatchThePredicate));
 
             //When
-            this.result = testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == Guid.NewGuid()).Result;
+            this.result = testHarness.DataStore.DeleteSoftWhere<Car>(car => car.Id == Guid.NewGuid()).Result;
             testHarness.DataStore.CommitChanges().Wait();
         }
 

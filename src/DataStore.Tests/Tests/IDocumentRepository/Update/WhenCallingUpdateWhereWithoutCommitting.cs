@@ -22,12 +22,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    id = this.carId,
+                    Id = this.carId,
                     Make = "Volvo"
                 });
 
             //When
-            this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford").Wait();
+            this.testHarness.DataStore.UpdateWhere<Car>(car => car.Id == this.carId, car => car.Make = "Ford").Wait();
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }

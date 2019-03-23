@@ -30,12 +30,12 @@
         public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
-            return Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
+            return Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
         }
 
         public Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
+            Aggregates.RemoveAll(a => a.Id == aggregateHardDeleted.Model.Id);
 
             return Task.CompletedTask;
         }
@@ -75,12 +75,12 @@
 
         public Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
         {
-            return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedById.Id));
+            return Task.FromResult(Aggregates.Exists(a => a.Id == aggregateQueriedById.Id));
         }
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().SingleOrDefault(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().SingleOrDefault(a => a.Id == aggregateQueriedById.Id);
 
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Task.FromResult(aggregate?.Clone());
@@ -88,7 +88,7 @@
 
         public Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            var toUpdate = Aggregates.Single(x => x.id == aggregateUpdated.Model.id);
+            var toUpdate = Aggregates.Single(x => x.Id == aggregateUpdated.Model.Id);
 
             aggregateUpdated.Model.CopyProperties(toUpdate);
 

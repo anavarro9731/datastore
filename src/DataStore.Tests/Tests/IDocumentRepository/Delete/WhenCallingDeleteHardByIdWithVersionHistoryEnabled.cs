@@ -34,7 +34,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    id = this.carId,
+                    Id = this.carId,
                     Make = "Volvo"
                 }).Wait();
 

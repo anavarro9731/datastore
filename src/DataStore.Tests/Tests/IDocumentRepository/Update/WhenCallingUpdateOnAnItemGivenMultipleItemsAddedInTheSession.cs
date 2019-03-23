@@ -22,14 +22,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.car1Id = Guid.NewGuid();
             var car1 = new Car
             {
-                id = this.car1Id,
+                Id = this.car1Id,
                 Make = "Volvo"
             };
 
             this.car2Id = Guid.NewGuid();
             var car2 = new Car
             {
-                id = this.car2Id,
+                Id = this.car2Id,
                 Make = "Saab"
             };
             

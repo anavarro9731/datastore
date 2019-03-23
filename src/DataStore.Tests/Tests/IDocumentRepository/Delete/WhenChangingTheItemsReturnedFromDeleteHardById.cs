@@ -19,14 +19,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    id = carId,
+                    Id = carId,
                     Make = "Volvo"
                 });
 
             var result = this.testHarness.DataStore.DeleteHardById<Car>(carId).Result;
 
             //When
-            result.id = Guid.NewGuid(); //change in memory before commit
+            result.Id = Guid.NewGuid(); //change in memory before commit
             this.testHarness.DataStore.CommitChanges().Wait();
         }
 

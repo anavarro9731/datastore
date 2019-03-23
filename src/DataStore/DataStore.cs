@@ -106,7 +106,7 @@
 
             if (result != null)
             {
-                await DeleteAggregateHistory<T>(result.id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
+                await DeleteAggregateHistory<T>(result.Id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
             }
 
             return result;
@@ -119,7 +119,7 @@
             var results = await DeleteCapabilities.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
 
             foreach (var result in results)
-                await DeleteAggregateHistory<T>(result.id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
+                await DeleteAggregateHistory<T>(result.Id, $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
 
             return results;
         }
@@ -152,11 +152,7 @@
             DsConnection.Dispose();
         }
 
-        public Task<bool> Exists(Guid id)
-        {
-            return QueryCapabilities.Exists(id);
-        }
-
+ 
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return QueryCapabilities.Read(predicate);
@@ -225,7 +221,7 @@
             //delete index record
             await DeleteCapabilities.DeleteHardWhere<AggregateHistory<T>>(h => h.AggregateId == id, methodName);
             //delete history records
-            await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, methodName);
+            await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.Id == id, methodName);
         }
 
         private async Task IncrementAggregateHistory<T>(T model, string methodName) where T : class, IAggregate, new()
@@ -236,14 +232,14 @@
             await CreateCapabilities.Create(
                 new AggregateHistoryItem<T>
                 {
-                    id = historyItemId = Guid.NewGuid(),
+                    Id = historyItemId = Guid.NewGuid(),
                     AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
                     UnitOfWorkResponsibleForStateChange = this.dataStoreOptions.UnitOfWorkId
                 },
                 methodName: methodName);
 
             //get the history index record
-            var historyIndexRecord = (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id)).SingleOrDefault();
+            var historyIndexRecord = (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.Id)).SingleOrDefault();
 
             //prepare the new header record
             var historyItemHeader = new AggregateHistoryItemHeader
@@ -266,7 +262,7 @@
                         {
                             historyItemHeader
                         },
-                        AggregateId = model.id
+                        AggregateId = model.Id
                     },
                     methodName: methodName);
             }

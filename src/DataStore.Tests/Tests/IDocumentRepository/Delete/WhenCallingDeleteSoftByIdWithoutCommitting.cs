@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    id = carId,
+                    Id = carId,
                     Make = "Volvo"
                 });
 

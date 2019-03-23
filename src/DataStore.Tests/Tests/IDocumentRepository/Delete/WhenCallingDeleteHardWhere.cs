@@ -26,7 +26,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    id = this.carId,
+                    Id = this.carId,
                     Make = "Volvo"
                 }).Wait();
 
@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
 
             //When
-            this.result = this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == this.carId).Result;
+            this.result = this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.Id == this.carId).Result;
             this.testHarness.DataStore.CommitChanges().Wait();
         }
 
@@ -51,7 +51,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         [Fact]
         public void ItShouldReturnTheItemsDeleted()
         {
-            Assert.Equal(this.carId, this.result.Single().id);
+            Assert.Equal(this.carId, this.result.Single().Id);
         }
 
         [Fact]

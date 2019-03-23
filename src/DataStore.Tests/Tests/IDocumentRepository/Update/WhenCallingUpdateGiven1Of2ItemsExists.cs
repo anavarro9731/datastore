@@ -23,7 +23,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    id = volvoId,
+                    Id = volvoId,
                     Make = "Volvo"
                 });
 
@@ -31,7 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    id = fordId,
+                    Id = fordId,
                     Make = "Ford"
                 });
 

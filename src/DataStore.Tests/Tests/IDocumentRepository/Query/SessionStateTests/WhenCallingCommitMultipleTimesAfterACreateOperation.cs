@@ -23,7 +23,7 @@
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = this.newCarId,
+                Id = this.newCarId,
                 Make = "Volvo"
             };
 
@@ -39,14 +39,14 @@
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().Id == this.newCarId);
         }
 
         [Fact]
         public void ItShouldReturnTheNewCarFromTheDatabaseWithSomeUpdateProperties()
         {
             Assert.NotNull(this.car);
-            Assert.Equal(this.car.schema, typeof(Car).FullName);
+            Assert.Equal(this.car.Schema, typeof(Car).FullName);
             Assert.False(this.car.ReadOnly);
             Assert.NotNull(this.car.ScopeReferences);
         }

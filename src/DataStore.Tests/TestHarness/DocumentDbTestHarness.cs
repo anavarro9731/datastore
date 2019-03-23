@@ -104,11 +104,11 @@
 //                    var key = collection.PartitionKey.Paths[0];
 //                    PartitionKey partitionKey;
 //                    //NOTE: these values will always be cahnged to lowercase by docdb so must make them lowercase on model
-//                    if (key == "/schema")
+//                    if (key == "/Schema")
 //                    {
-//                        partitionKey = new PartitionKey(((dynamic)doc).schema);
+//                        partitionKey = new PartitionKey(((dynamic)doc).Schema);
 //                    }
-//                    else if (key == "/id")
+//                    else if (key == "/Id")
 //                    {
 //                        partitionKey = new PartitionKey(doc.Id);
 //                    }
