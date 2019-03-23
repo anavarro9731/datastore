@@ -92,7 +92,7 @@
         public static string PredicateToString(Expression expression)
         {
             var expBody = ((LambdaExpression)expression).Body.ToString();
-            // Gives: ((x.id > 5) AndAlso (x.Warranty != False))
+            // Gives: ((x.Id > 5) AndAlso (x.Warranty != False))
 
             return expBody;
         }

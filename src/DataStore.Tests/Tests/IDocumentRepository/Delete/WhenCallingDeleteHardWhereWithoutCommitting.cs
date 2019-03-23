@@ -20,12 +20,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    id = carId,
+                    Id = carId,
                     Make = "Volvo"
                 });
 
             //When
-            this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Wait();
+            this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.Id == carId).Wait();
         }
 
         [Fact]

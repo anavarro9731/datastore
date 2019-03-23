@@ -26,7 +26,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    id = this.carId,
+                    Id = this.carId,
                     Make = "Volvo"
                 }).Wait();
 
@@ -57,7 +57,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         [Fact]
         public void ItShouldReturnTheItemDeleted()
         {
-            Assert.Equal(this.carId, this.result.id);
+            Assert.Equal(this.carId, this.result.Id);
         }
 
         [Fact]

@@ -44,7 +44,7 @@
                     if (objectToDelete != null) l.Add(objectToDelete);
                     });
             //should only be one or none cause of the predicate so we can use SingleOrDefault
-            objectToDelete = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id).SingleOrDefault();
+            objectToDelete = this.eventReplay.ApplyAggregateEvents(list, a => a.Id == id).SingleOrDefault();
 
             CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, id);
 
@@ -69,7 +69,7 @@
             objectsToDelete = this.eventReplay.ApplyAggregateEvents(objectsToDelete, predicate.Compile());
 
             foreach (var dataObject in objectsToDelete)
-                CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.id);
+                CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.Id);
 
             if (!objectsToDelete.Any()) return objectsToDelete;
 

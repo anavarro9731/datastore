@@ -2,6 +2,6 @@
 {
     public interface IHaveSchema
     {
-        string schema { get; set; }
+        string Schema { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace DataStore.Models.Messages
 
             Created = DateTime.UtcNow;
             Model = model;
-            AggregateId = model.id;
+            AggregateId = model.Id;
         }
 
         public Guid AggregateId { get; set; }

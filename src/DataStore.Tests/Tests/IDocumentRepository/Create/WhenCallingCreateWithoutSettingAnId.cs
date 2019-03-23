@@ -30,20 +30,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldSetAnIdOnTheNewlyCreatedItemInTheDatabase()
         {
-            Assert.NotEqual(Guid.Empty, this.testHarness.QueryDatabase<Car>().Single().id);
+            Assert.NotEqual(Guid.Empty, this.testHarness.QueryDatabase<Car>().Single().Id);
         }
 
         [Fact]
         public void ItShouldSetAnIdOnTheReturnValue()
         {
-            Assert.NotEqual(Guid.Empty,this.newCar.id);
+            Assert.NotEqual(Guid.Empty,this.newCar.Id);
         }
 
         [Fact]
         public void ReturnValueIdAndDatabaseIdShouldMatch()
         {
-            Assert.Equal(this.testHarness.QueryDatabase<Car>().Single().id
-                , this.newCar.id);
+            Assert.Equal(this.testHarness.QueryDatabase<Car>().Single().Id
+                , this.newCar.Id);
         }
 
 

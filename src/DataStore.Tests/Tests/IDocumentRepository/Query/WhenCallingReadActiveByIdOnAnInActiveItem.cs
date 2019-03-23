@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
+                Id = activeCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -29,7 +29,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
+                Id = inactiveCarId,
                 Active = false,
                 Make = "Jeep"
             };
