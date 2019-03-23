@@ -50,7 +50,7 @@
 
             };
 
-            return UpdateByIdInternal<T>(src.Id, model => cloned.CopyProperties(model, excludedParameters), overwriteReadOnly, methodName);
+            return UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model, excludedParameters), overwriteReadOnly, methodName);
         }
 
         public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
@@ -86,7 +86,7 @@
                     {
                         if (objectToUpdate != null) l.Add(objectToUpdate);
                     });
-            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, a => a.Id == id);
+            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id);
 
             return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName).SingleOrDefault();
         }
@@ -96,13 +96,13 @@
         {
             foreach (var dataObject in dataObjects)
             {
-                Guard.Against(dataObject.ReadOnly && !overwriteReadOnly, "Cannot update read-only item " + dataObject.Id);
-                DataStoreDeleteCapabilities.CheckWasObjectAlreadyHardDeleted<T>(this.eventAggregator, dataObject.Id);
+                Guard.Against(dataObject.ReadOnly && !overwriteReadOnly, "Cannot update read-only item " + dataObject.id);
+                DataStoreDeleteCapabilities.CheckWasObjectAlreadyHardDeleted<T>(this.eventAggregator, dataObject.id);
             }
 
             foreach (var dataObject in dataObjects)
             {
-                var originalId = dataObject.Id;
+                var originalId = dataObject.id;
 
                 var restrictedPropertiesBefore = originalId + dataObject.Schema;
                 var restrictedCreatedBefore = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;

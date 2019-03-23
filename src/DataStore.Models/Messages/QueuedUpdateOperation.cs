@@ -26,7 +26,7 @@
 
             Created = DateTime.UtcNow;
             Model = model;
-            AggregateId = model.Id;
+            AggregateId = model.id;
         }
 
         public Guid AggregateId { get; set; }

@@ -25,7 +25,7 @@
 
         private InMemoryDocumentRepository DocumentRepository { get; }
 
-        public static ITestHarness Create(DataStoreOptions dataStoreOptions)
+        public static ITestHarness Create(DataStoreOptions dataStoreOptions = null)
         {
             return new InMemoryTestHarness(dataStoreOptions);
         }

@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             var deletedCar = new Car
             {
-                Id = Guid.NewGuid(),
+                id = Guid.NewGuid(),
                 Make = "Volvo"
             };
 

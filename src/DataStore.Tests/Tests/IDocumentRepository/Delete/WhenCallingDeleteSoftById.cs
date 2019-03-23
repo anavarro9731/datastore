@@ -22,7 +22,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    Id = this.carId,
+                    id = this.carId,
                     Make = "Volvo"
                 });
 
@@ -36,7 +36,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Active);
+            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }

@@ -19,7 +19,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 
             this.testHarness.AddToDatabase(new Car
             {
-                Id = Guid.NewGuid(),
+                id = Guid.NewGuid(),
                 Active = true,
                 Make = "Lambo"
             });
@@ -27,7 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    Id = Guid.NewGuid(),
+                    id = Guid.NewGuid(),
                     Active = true,
                     Make = "Volvo"
                 }).Wait();
@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    Id = Guid.NewGuid(),
+                    id = Guid.NewGuid(),
                     Active = true,
                     Make = "Mazda"
                 }).Wait();
@@ -45,7 +45,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    Id = this.fordId,
+                    id = this.fordId,
                     Active = true,
                     Make = "Ford"
                 }).Wait();
@@ -56,7 +56,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         [Fact]
         public void ItShouldNotHaveAddedTheFordToTheDatabaseYet()
         {
-            var result = this.testHarness.QueryDatabase<Car>(cars => cars.Where(x => x.Id == this.fordId));
+            var result = this.testHarness.QueryDatabase<Car>(cars => cars.Where(x => x.id == this.fordId));
             Assert.Empty(result);
         }
 
@@ -72,7 +72,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         {
             var newCarFromSession = this.testHarness.DataStore.ReadActive<Car>(c => c.Make == "Ford2").Result.SingleOrDefault();
             Assert.NotNull(newCarFromSession);
-            Assert.Equal(this.fordId, newCarFromSession.Id);            
+            Assert.Equal(this.fordId, newCarFromSession.id);            
         }
     }
 }

@@ -25,13 +25,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    Id = this.carId,
+                    id = this.carId,
                     Make = "Volvo"
                 });
             this.testHarness.DataStore.DeleteHardById<Car>(this.carId).Wait();
 
             //When
-            this.results = this.testHarness.DataStore.UpdateWhere<Car>(car => car.Id == this.carId, car => car.Make = "Ford").Result;
+            this.results = this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford").Result;
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             //nothing should have been updated because it was already deleted.
             Assert.Empty(this.results);
-            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Make);
+            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
         }
 
         [Fact]

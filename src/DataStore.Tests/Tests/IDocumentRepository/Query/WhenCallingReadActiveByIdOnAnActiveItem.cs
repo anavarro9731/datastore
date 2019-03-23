@@ -23,7 +23,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                Id = this.activeCarId,
+                id = this.activeCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -31,7 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                Id = inactiveCarId,
+                id = inactiveCarId,
                 Active = false,
                 Make = "Jeep"
             };
@@ -47,7 +47,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public void ItShouldReturnTheItem()
         {
             Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
-            Assert.Equal(this.activeCarId, this.activeCarFromDatabase.Id);
+            Assert.Equal(this.activeCarId, this.activeCarFromDatabase.id);
         }
     }
 }

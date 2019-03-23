@@ -23,7 +23,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                Id = this.carId,
+                id = this.carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -39,9 +39,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         public void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Make);
+            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.carFromSession.Make);
-            Assert.Equal(this.carId, this.carFromSession.Id);
+            Assert.Equal(this.carId, this.carFromSession.id);
         }
     }
 }

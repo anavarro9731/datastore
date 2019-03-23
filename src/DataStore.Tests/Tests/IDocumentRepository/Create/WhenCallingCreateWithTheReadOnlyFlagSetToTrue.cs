@@ -8,11 +8,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithTheReadOnlyFlagSetToTrue
     {
-        private readonly Guid newCarId;
+        private  Guid newCarId;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingCreateWithTheReadOnlyFlagSetToTrue()
+        void Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                Id = this.newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
 
@@ -32,12 +32,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldPersistChangesToTheDatabase()
         {
+            Setup();
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().ReadOnly);
         }
 
         [Fact]
         public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
+            Setup();
             Assert.True(this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId).Result.ReadOnly);
         }
     }

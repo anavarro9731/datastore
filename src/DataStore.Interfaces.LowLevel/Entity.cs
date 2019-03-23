@@ -1,6 +1,7 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
     using System;
+    using Newtonsoft.Json;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -29,9 +30,10 @@
         //here for easier comparison in some systems such as docdb
         public double CreatedAsMillisecondsEpochTime { get; set; }
 
-        // this is here to give references which are stored in a models json a unique Id which is necessary during updates to determines 
-        // what changes have occurred. It can either be implemented as-is or the getter can be overridden to select another existing property as the key
-        public virtual Guid Id { get; set; }
+        // this is here to give references which are stored in a models json a unique id which is necessary during updates to determines 
+        // what changes have occurred.
+        // It can either be implemented as-is or the getter can be overridden to select another existing property as the key
+        public virtual Guid id { get; set; }
 
         public string Schema { get; set; }
     }

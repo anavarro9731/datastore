@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                Id = this.carId,
+                id = this.carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -44,7 +44,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         public void ItShouldReturnTheItem()
         {
             Assert.Equal("Volvo", this.carFromDatabase.Make);
-            Assert.Equal(this.carId, this.carFromDatabase.Id);
+            Assert.Equal(this.carId, this.carFromDatabase.id);
         }
     }
 }

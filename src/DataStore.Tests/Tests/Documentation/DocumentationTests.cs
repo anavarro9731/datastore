@@ -21,7 +21,7 @@
             inMemoryDb.Add(
                 new Car
                 {
-                    Id = carId,
+                    id = carId,
                     Make = "Toyota"
                 });
 
@@ -54,7 +54,7 @@
             inMemoryDb.Add(
                 new Car
                 {
-                    Id = carId,
+                    id = carId,
                     Make = "Toyota"
                 });
 
@@ -71,7 +71,7 @@
             Assert.Null(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
 
             //The underlying database has NOT changed
-            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.Id == carId).Make);
+            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
 
             //The DataStore instance picks up the change, because it has applied
             //all the previous changes made during this session to any query.

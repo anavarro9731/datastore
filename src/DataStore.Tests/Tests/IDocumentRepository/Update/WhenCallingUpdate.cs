@@ -27,7 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             this.existingCar = new Car
             {
-                Id = this.carId,
+                id = this.carId,
                 Make = "Volvo",
                 Modified = DateTime.UtcNow.AddDays(-1),
                 ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
@@ -48,7 +48,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
 

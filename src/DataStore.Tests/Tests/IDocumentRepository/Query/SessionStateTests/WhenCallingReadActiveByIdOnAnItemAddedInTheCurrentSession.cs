@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             
             this.testHarness.DataStore.Create(new Car
                 {
-                    Id = volvoId,
+                    id = volvoId,
                     Active = true,
                     Make = "Volvo"
                 }).Wait();
@@ -34,7 +34,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    Id = this.fordId,
+                    id = this.fordId,
                     Active = true,
                     Make = "Ford"
                 }).Wait();
@@ -54,7 +54,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));
             Assert.NotNull(this.newCarFromSession);
-            Assert.Equal(this.fordId, this.newCarFromSession.Id);
+            Assert.Equal(this.fordId, this.newCarFromSession.id);
         }
     }
 }

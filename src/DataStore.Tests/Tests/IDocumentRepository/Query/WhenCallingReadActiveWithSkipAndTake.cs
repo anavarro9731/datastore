@@ -26,14 +26,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                Id = activeCarId,
+                id = activeCarId,
                 Make = "Ford"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                Id = inactiveCarId,
+                id = inactiveCarId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -41,7 +41,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.thirdCarId = Guid.NewGuid();
             var thirdExistingCar = new Car
             {
-                Id = this.thirdCarId,
+                id = this.thirdCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -49,7 +49,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.fourthCarId = Guid.NewGuid();
             var fourthExistingCar = new Car
             {
-                Id = this.fourthCarId,
+                id = this.fourthCarId,
                 Active = true,
                 Make = "Volvo"
             };
@@ -69,7 +69,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Single(this.carsFromDatabase);
-            Assert.Equal(this.fourthCarId, this.carsFromDatabase.Single().Id);
+            Assert.Equal(this.fourthCarId, this.carsFromDatabase.Single().id);
         }
     }
 }

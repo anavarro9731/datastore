@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                Id = carId,
+                id = carId,
                 Active = false,
                 Make = "Volvo"
             };
@@ -31,7 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             this.testHarness.DataStore.DeleteHardById<Car>(carId).Wait();
 
             // When
-            this.carFromDatabase = this.testHarness.DataStore.WithoutEventReplay.Read<Car>(car => car.Id == carId).Result.Single();
+            this.carFromDatabase = this.testHarness.DataStore.WithoutEventReplay.Read<Car>(car => car.id == carId).Result.Single();
         }
 
         [Fact]

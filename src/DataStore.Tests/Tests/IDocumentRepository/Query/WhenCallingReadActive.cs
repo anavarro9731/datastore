@@ -20,14 +20,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                Id = activeCarId,
+                id = activeCarId,
                 Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                Id = inactiveCarId,
+                id = inactiveCarId,
                 Active = false,
                 Make = "Jeep"
             };
@@ -35,8 +35,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            this.activeCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.Id == activeCarId).Result.SingleOrDefault();
-            this.inactiveCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.Id == inactiveCarId).Result.SingleOrDefault();
+            this.activeCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == activeCarId).Result.SingleOrDefault();
+            this.inactiveCarFromDatabase = testHarness.DataStore.ReadActive<Car>(car => car.id == inactiveCarId).Result.SingleOrDefault();
         }
 
         [Fact]

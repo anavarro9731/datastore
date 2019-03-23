@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                Id = this.carId,
+                id = this.carId,
                 Make = "Volvo"
             };
             this.testHarness.AddToDatabase(existingCar);
@@ -31,8 +31,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             this.testHarness.DataStore.Update(existingCarFromDb).Wait();
 
-            //change the Id before committing, if not cloned this would cause the item not to be found
-            existingCarFromDb.Id = Guid.NewGuid();
+            //change the id before committing, if not cloned this would cause the item not to be found
+            existingCarFromDb.id = Guid.NewGuid();
 
             //When
             this.testHarness.DataStore.CommitChanges().Wait();
@@ -41,7 +41,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         [Fact]
         public void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }
