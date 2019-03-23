@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
@@ -14,7 +15,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
         private  Car newCar;
 
-        void Setup()
+        async Task Setup()
         {
             
             // Given
@@ -26,28 +27,28 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             };
 
             //When
-            this.newCar = this.testHarness.DataStore.Create(this.newCar).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.newCar = await this.testHarness.DataStore.Create(this.newCar);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldSetAnIdOnTheNewlyCreatedItemInTheDatabase()
+        public async void ItShouldSetAnIdOnTheNewlyCreatedItemInTheDatabase()
         {
-            Setup();
+            await Setup();
             Assert.NotEqual(Guid.Empty, this.testHarness.QueryDatabase<Car>().Single().id);
         }
 
         [Fact]
-        public void ItShouldSetAnIdOnTheReturnValue()
+        public async void ItShouldSetAnIdOnTheReturnValue()
         {
-            Setup();
+            await Setup();
             Assert.NotEqual(Guid.Empty,this.newCar.id);
         }
 
         [Fact]
-        public void ReturnValueIdAndDatabaseIdShouldMatch()
+        public async void ReturnValueIdAndDatabaseIdShouldMatch()
         {
-            Setup();
+            await Setup();
             Assert.Equal(this.testHarness.QueryDatabase<Car>().Single().id
                 , this.newCar.id);
         }

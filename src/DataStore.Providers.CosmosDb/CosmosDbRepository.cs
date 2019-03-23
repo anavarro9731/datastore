@@ -29,9 +29,11 @@
 
         public async Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
         {
+
             await new SynchronizationContextRemover();
             var store = new CosmosStore<T>(this.cosmosStoreSettings);
             return await DocumentQueryable.CountAsync(store.Query().Where(aggregatesCounted.Predicate)).ConfigureAwait(false);
+
         }
 
         public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()

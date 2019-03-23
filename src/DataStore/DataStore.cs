@@ -19,7 +19,7 @@
     {
         private readonly DataStoreOptions dataStoreOptions;
 
-        private readonly IMessageAggregator messageAggregator;
+        public IMessageAggregator MessageAggregator { get; }
 
         public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, DataStoreOptions dataStoreOptions = null)
         {
@@ -28,14 +28,14 @@
 
                 {
                     // init vars
-                    this.messageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
+                    this.MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
                     this.dataStoreOptions = dataStoreOptions ?? new DataStoreOptions();
                     DsConnection = documentRepository;
 
-                    QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.messageAggregator);
-                    UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.messageAggregator);
-                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, UpdateCapabilities, this.messageAggregator);
-                    CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.messageAggregator);
+                    QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.MessageAggregator);
+                    UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.MessageAggregator);
+                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, UpdateCapabilities, this.MessageAggregator);
+                    CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.MessageAggregator);
                 }
             }
 
@@ -48,13 +48,13 @@
         public IDocumentRepository DsConnection { get; }
 
         public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
-            new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.messageAggregator.AllMessages.OfType<IDataStoreOperation>()));
+            new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IDataStoreOperation>()));
 
         public CircuitBoard.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
             new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
-                l => l.AddRange(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
+                l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
 
-        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DsConnection, this.messageAggregator);
+        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DsConnection, this.MessageAggregator);
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -80,7 +80,7 @@
 
             async Task CommittableEvents()
             {
-                var committableEvents = this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed).ToList();
+                var committableEvents = this.MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed).ToList();
 
                 foreach (var dataStoreWriteEvent in committableEvents)
                     await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
@@ -287,10 +287,5 @@
         }
     }
 
-    public class DataStoreOptions
-    {
-        public Guid? UnitOfWorkId { get; set; }
 
-        public bool UseVersionHistory { get; set; }
-    }
 }
