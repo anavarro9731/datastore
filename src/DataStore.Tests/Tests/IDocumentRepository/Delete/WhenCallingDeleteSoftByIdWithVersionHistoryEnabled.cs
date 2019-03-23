@@ -34,7 +34,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.DataStore.Create(
                 new Car
                 {
-                    Id = this.carId,
+                    id = this.carId,
                     Make = "Volvo"
                 }).Wait();
 
@@ -69,14 +69,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.Equal(2, aggregateHistoryItems.Count());
             Assert.True(aggregateHistoryItems.ToList()[0].AggregateVersion.Active);
             Assert.False(aggregateHistoryItems.ToList()[1].AggregateVersion.Active);
-            Assert.NotEqual(Guid.Empty, aggregateHistoryItems.ToList()[1].Id);
+            Assert.NotEqual(Guid.Empty, aggregateHistoryItems.ToList()[1].id);
         }
 
         [Fact]
         public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
             Assert.Equal(
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].Id,
+                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].id,
                 this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.ToList()[1].AggegateHistoryItemId);
         }
 
@@ -85,7 +85,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         {
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
 
-            Assert.NotEqual(Guid.Empty, aggregateHistory.Id);
+            Assert.NotEqual(Guid.Empty, aggregateHistory.id);
             Assert.Equal(this.carId, aggregateHistory.AggregateId);
             Assert.Equal(2, aggregateHistory.Version);
         }

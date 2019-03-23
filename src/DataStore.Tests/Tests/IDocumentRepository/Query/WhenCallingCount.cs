@@ -21,14 +21,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                Id = activeCarId,
+                id = activeCarId,
                 Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                Id = inactiveCarId,
+                id = inactiveCarId,
                 Active = false,
                 Make = "Volvo"
             };

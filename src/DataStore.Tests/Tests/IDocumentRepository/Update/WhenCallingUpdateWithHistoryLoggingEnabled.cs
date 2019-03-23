@@ -32,7 +32,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.carId = Guid.NewGuid();
             var car = new Car
             {
-                Id = this.carId,
+                id = this.carId,
                 Make = "Volvo"
             };
 
@@ -70,14 +70,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             Assert.Equal(2, aggregateHistoryItems.Count());
             Assert.Equal("Volvo", aggregateHistoryItems.ToList()[0].AggregateVersion.Make);
             Assert.Equal("Ford", aggregateHistoryItems.ToList()[1].AggregateVersion.Make);
-            Assert.NotEqual(Guid.Empty, aggregateHistoryItems.ToList()[1].Id);
+            Assert.NotEqual(Guid.Empty, aggregateHistoryItems.ToList()[1].id);
         }
 
         [Fact]
         public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
             Assert.Equal(
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].Id,
+                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].id,
                 this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.ToList()[1].AggegateHistoryItemId);
         }
 
@@ -86,7 +86,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
 
-            Assert.NotEqual(Guid.Empty, aggregateHistory.Id);
+            Assert.NotEqual(Guid.Empty, aggregateHistory.id);
             Assert.Equal(this.carId, aggregateHistory.AggregateId);
             Assert.Equal(2, aggregateHistory.Version);
         }

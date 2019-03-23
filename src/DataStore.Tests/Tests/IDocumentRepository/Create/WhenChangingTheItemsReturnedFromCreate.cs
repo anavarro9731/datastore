@@ -21,14 +21,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             var newCar = new Car
             {
-                Id = this.newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
 
             var result = this.testHarness.DataStore.Create(newCar).Result;
 
-            //change the Id before committing, if not cloned this would cause the item to be created with a different Id
-            result.Id = Guid.NewGuid();
+            //change the id before committing, if not cloned this would cause the item to be created with a different id
+            result.id = Guid.NewGuid();
 
             //When
             this.testHarness.DataStore.CommitChanges().Wait();
@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned()
         {
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().Id == this.newCarId);
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
             Assert.NotNull(this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId).Result);
         }
     }

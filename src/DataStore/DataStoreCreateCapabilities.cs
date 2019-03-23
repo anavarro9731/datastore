@@ -38,10 +38,11 @@ namespace DataStore
 
             ForceProperties(readOnly, newObject);
 
-            Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.Id)
+            Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.id)
                               != null, "An item with the same ID is already queued to be created", Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
 
-            int count = (await this.DsConnection.CountAsync(new AggregateCountedOperation<T>(methodName, t => t.Id == newObject.Id)));
+            int count = (await this.DsConnection.CountAsync(new AggregateCountedOperation<T>(methodName, t => t.id == newObject.id)).ConfigureAwait(false));
+
             bool existsAlready = count > 0;
             Guard.Against(existsAlready, "An item with the same ID already exists", Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
 
@@ -76,9 +77,9 @@ namespace DataStore
                 var t = current.GetType();
 
                 foreach (var p in t.GetProperties())
-                    if (p.Name == nameof(IEntity.Id))
+                    if (p.Name == nameof(IEntity.id))
                     {
-                        //set an Id for any entity in the tree if it doesn't have one
+                        //set an id for any entity in the tree if it doesn't have one
                         //regardless of whether it is the aggregate or a child entity
                         //in many cases this will already be done in the app code
                         if ((Guid)p.GetValue(current, null) == default(Guid))

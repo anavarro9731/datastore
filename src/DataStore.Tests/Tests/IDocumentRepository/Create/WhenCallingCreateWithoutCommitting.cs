@@ -9,18 +9,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithoutCommitting
     {
-        private readonly Car result;
+        private  Car result;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingCreateWithoutCommitting()
+        void Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithoutCommitting));
 
             var newCar = new Car
             {
-                Id = Guid.NewGuid(),
+                id = Guid.NewGuid(),
                 Make = "Volvo"
             };
 
@@ -31,6 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldNotWriteToTheDatabase()
         {
+            Setup();
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
             Assert.Empty(this.testHarness.QueryDatabase<Car>());
@@ -39,6 +40,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
         {
+            Setup();
             Assert.Single(this.testHarness.DataStore.ReadActive<Car>().Result);
             Assert.True(this.result.Active);
         }

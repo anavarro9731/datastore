@@ -21,21 +21,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    Id = this.carId,
+                    id = this.carId,
                     Make = "Volvo"
                 });
 
-            var results = this.testHarness.DataStore.UpdateWhere<Car>(car => car.Id == this.carId, car => car.Make = "Ford").Result;
+            var results = this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford").Result;
 
             //When
-            foreach (var car in results) car.Id = Guid.NewGuid();
+            foreach (var car in results) car.id = Guid.NewGuid();
             this.testHarness.DataStore.CommitChanges().Wait();
         }
 
         [Fact]
         public void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
         }
     }

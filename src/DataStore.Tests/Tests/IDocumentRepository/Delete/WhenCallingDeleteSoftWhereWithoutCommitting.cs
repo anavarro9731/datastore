@@ -16,16 +16,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhereWithoutCommitting));
 
-            var carId = Guid.NewGuid();
+            var carId = Guid.Parse("0ec06a89-308b-4a3e-9cfb-d223ff4cdc67");
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    Id = carId,
+                    id = carId,
                     Make = "Volvo"
                 });
 
             //When
-            this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.Id == carId).Wait();
+            this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId).Wait();
         }
 
         [Fact]

@@ -21,8 +21,7 @@
          properties could be interchangeable should they need to be*/
         public string CosmosEntityName { get; set; }
 
-        [CosmosPartitionKey]
-        [JsonProperty("id")]
-        public new Guid Id { get; set; }
+        [CosmosPartitionKey]        
+        public override Guid id { get; set; }
     }
 }

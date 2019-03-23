@@ -19,7 +19,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                Id = this.activeCarId,
+                id = this.activeCarId,
                 Make = "Volvo"
             };
             this.testHarness.AddToDatabase(activeExistingCar);

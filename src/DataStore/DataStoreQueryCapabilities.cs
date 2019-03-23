@@ -83,7 +83,7 @@
 
             bool Predicate(T a)
             {
-                return a.Active && a.Id == modelId;
+                return a.Active && a.id == modelId;
             }
 
             if (result == null || !result.Active)

@@ -10,13 +10,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithHistoryLoggingEnabled
     {
-        private readonly Guid newCarId;
+        private  Guid newCarId;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        private readonly Guid unitOfWorkId;
+        private  Guid unitOfWorkId;
 
-        public WhenCallingCreateWithHistoryLoggingEnabled()
+        void Setup()
         {
             // Given
             this.unitOfWorkId = Guid.NewGuid();
@@ -32,7 +32,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                Id = this.newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
 
@@ -44,6 +44,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
         {
+            Setup();
             var aggregateHistoryItemHeader = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single();
 
             Assert.Equal(1, aggregateHistoryItemHeader.VersionId);
@@ -54,23 +55,25 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldCreateAnAggregateHistoryItemRecord()
         {
+            Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var aggregateHistoryItem = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single();
 
-            Assert.NotEqual(Guid.Empty, aggregateHistoryItem.Id);
+            Assert.NotEqual(Guid.Empty, aggregateHistoryItem.id);
             Assert.True(aggregateHistoryItem.UnitOfWorkResponsibleForStateChange == this.unitOfWorkId);
-            Assert.True(aggregateHistoryItem.AggregateVersion.Id == this.newCarId);
+            Assert.True(aggregateHistoryItem.AggregateVersion.id == this.newCarId);
         }
 
         [Fact]
         public void ItShouldCreateAnAggregateHistoryRecord()
         {
+            Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistory<Car>>));
 
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
 
-            Assert.NotEqual(Guid.Empty, aggregateHistory.Id);
+            Assert.NotEqual(Guid.Empty, aggregateHistory.id);
             Assert.Equal(this.newCarId, aggregateHistory.AggregateId);
             Assert.Equal(1, aggregateHistory.Version);
         }
@@ -78,8 +81,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
+            Setup();
             Assert.Equal(
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().Id,
+                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id,
                 this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single().AggegateHistoryItemId);
         }
     }

@@ -21,21 +21,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.AddToDatabase(
                 new Car
                 {
-                    Id = this.carId,
+                    id = this.carId,
                     Make = "Volvo"
                 });
 
-            var result = this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.Id == this.carId).Result;
+            var result = this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == this.carId).Result;
 
             //When
-            result.Single().Id = Guid.NewGuid(); //change in memory before commit
+            result.Single().id = Guid.NewGuid(); //change in memory before commit
             this.testHarness.DataStore.CommitChanges().Wait();
         }
 
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
-            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.Id == this.carId)).Single().Active);
+            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }

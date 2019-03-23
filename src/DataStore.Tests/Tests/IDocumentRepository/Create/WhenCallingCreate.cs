@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -23,10 +24,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                Id = this.newCarId,
+                id = this.newCarId,
                 Make = "Volvo"
             };
-
+                
             //When
             this.result = this.testHarness.DataStore.Create(newCar).Result;
             this.testHarness.DataStore.CommitChanges().Wait();
@@ -53,7 +54,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         {
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().Id == this.newCarId);
+            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
         }
 
         [Fact]

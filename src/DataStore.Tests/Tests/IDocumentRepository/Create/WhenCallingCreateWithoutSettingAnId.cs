@@ -2,21 +2,24 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 {
     using System;
     using System.Linq;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingCreateWithoutSettingAnId
     {
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        private readonly Car newCar;
+        private  Car newCar;
 
-        public WhenCallingCreateWithoutSettingAnId()
+        void Setup()
         {
+            
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithoutSettingAnId));
-
+            
             this.newCar = new Car
             {
                 Make = "Volvo"
@@ -30,20 +33,23 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         [Fact]
         public void ItShouldSetAnIdOnTheNewlyCreatedItemInTheDatabase()
         {
-            Assert.NotEqual(Guid.Empty, this.testHarness.QueryDatabase<Car>().Single().Id);
+            Setup();
+            Assert.NotEqual(Guid.Empty, this.testHarness.QueryDatabase<Car>().Single().id);
         }
 
         [Fact]
         public void ItShouldSetAnIdOnTheReturnValue()
         {
-            Assert.NotEqual(Guid.Empty,this.newCar.Id);
+            Setup();
+            Assert.NotEqual(Guid.Empty,this.newCar.id);
         }
 
         [Fact]
         public void ReturnValueIdAndDatabaseIdShouldMatch()
         {
-            Assert.Equal(this.testHarness.QueryDatabase<Car>().Single().Id
-                , this.newCar.Id);
+            Setup();
+            Assert.Equal(this.testHarness.QueryDatabase<Car>().Single().id
+                , this.newCar.id);
         }
 
 
