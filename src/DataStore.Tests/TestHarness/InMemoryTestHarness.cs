@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using CircuitBoard.MessageAggregator;
-    using CircuitBoard.Messages;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.PureFunctions.Extensions;
@@ -19,9 +19,7 @@
             DataStore = new DataStore(DocumentRepository, this.messageAggregator, dataStoreOptions);
         }
 
-        public List<IMessage> AllMessages => this.messageAggregator.AllMessages.ToList();
-
-        public DataStore DataStore { get; }
+        public IDataStore DataStore { get; }
 
         private InMemoryDocumentRepository DocumentRepository { get; }
 

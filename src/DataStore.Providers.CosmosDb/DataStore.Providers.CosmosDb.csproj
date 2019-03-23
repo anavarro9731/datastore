@@ -4,7 +4,7 @@
     <Authors>Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2019 Aaron Navarro, Frans Lytzen</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DataStore.Providers.CosmosDb</AssemblyName>
     <PackageId>DataStore.Providers.CosmosDb</PackageId>
     <PackageTags>CosmosDb;DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>

@@ -2,6 +2,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
@@ -10,41 +12,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithHistoryLoggingEnabled
     {
-        private  Guid newCarId;
+        private Guid newCarId;
 
-        private  ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        private  Guid unitOfWorkId;
-
-        void Setup()
-        {
-            // Given
-            this.unitOfWorkId = Guid.NewGuid();
-
-            this.testHarness = TestHarness.Create(
-                nameof(WhenCallingCreateWithHistoryLoggingEnabled),
-                new DataStoreOptions
-                {
-                    UnitOfWorkId = this.unitOfWorkId,
-                    UseVersionHistory = true
-                });
-
-            this.newCarId = Guid.NewGuid();
-            var newCar = new Car
-            {
-                id = this.newCarId,
-                Make = "Volvo"
-            };
-
-            //When
-            this.testHarness.DataStore.Create(newCar).Wait();
-            this.testHarness.DataStore.CommitChanges().Wait();
-        }
+        private Guid unitOfWorkId;
 
         [Fact]
-        public void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
+        public async void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
         {
-            Setup();
+            await Setup();
             var aggregateHistoryItemHeader = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single();
 
             Assert.Equal(1, aggregateHistoryItemHeader.VersionId);
@@ -53,9 +30,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         }
 
         [Fact]
-        public void ItShouldCreateAnAggregateHistoryItemRecord()
+        public async void ItShouldCreateAnAggregateHistoryItemRecord()
         {
-            Setup();
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var aggregateHistoryItem = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single();
@@ -66,9 +43,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         }
 
         [Fact]
-        public void ItShouldCreateAnAggregateHistoryRecord()
+        public async void ItShouldCreateAnAggregateHistoryRecord()
         {
-            Setup();
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistory<Car>>));
 
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
@@ -79,12 +56,35 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         }
 
         [Fact]
-        public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
+        public async void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
-            Setup();
+            await Setup();
             Assert.Equal(
                 this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id,
                 this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single().AggegateHistoryItemId);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.unitOfWorkId = Guid.NewGuid();
+
+            this.testHarness = TestHarness.Create(
+                nameof(WhenCallingCreateWithHistoryLoggingEnabled),
+                new DataStoreOptions
+                {
+                    UnitOfWorkId = this.unitOfWorkId, UseVersionHistory = true
+                });
+
+            this.newCarId = Guid.NewGuid();
+            var newCar = new Car
+            {
+                id = this.newCarId, Make = "Volvo"
+            };
+
+            //When
+            await this.testHarness.DataStore.Create(newCar);
+            await this.testHarness.DataStore.CommitChanges();
         }
     }
 }

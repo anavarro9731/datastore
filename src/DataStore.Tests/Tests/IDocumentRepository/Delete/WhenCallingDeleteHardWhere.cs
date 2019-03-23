@@ -3,6 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;

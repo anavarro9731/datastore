@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
@@ -12,7 +13,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
         private  ITestHarness testHarness;
 
-        void Setup()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
@@ -25,21 +26,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             };
 
             //When
-            this.testHarness.DataStore.Create(newCar, true).Wait();
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.Create(newCar, true);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldPersistChangesToTheDatabase()
+        public async void ItShouldPersistChangesToTheDatabase()
         {
-            Setup();
+            await Setup();
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().ReadOnly);
         }
 
         [Fact]
-        public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
+        public async void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
-            Setup();
+            await Setup();
             Assert.True(this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId).Result.ReadOnly);
         }
     }
