@@ -13,7 +13,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
         private  ITestHarness testHarness;
 
-        async Task Setup()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
@@ -41,7 +41,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
             await Setup();
-            Assert.True(this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId).Result.ReadOnly);
+            Assert.True((await this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId)).ReadOnly);
         }
     }
 }

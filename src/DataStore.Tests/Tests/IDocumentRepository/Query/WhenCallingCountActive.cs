@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,11 +10,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingCountActive
     {
-        private readonly int countOfCars;
+        private  int countOfCars;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingCountActive()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCountActive));
@@ -36,12 +37,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            this.countOfCars = this.testHarness.DataStore.WithoutEventReplay.CountActive<Car>(car => car.Make == "Volvo").Result;
+            this.countOfCars = await this.testHarness.DataStore.WithoutEventReplay.CountActive<Car>(car => car.Make == "Volvo");
         }
 
         [Fact]
-        public void ItShouldReturnACountOf1()
+        public async void ItShouldReturnACountOf1()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateCountedOperation<Car>));
             Assert.Equal(1, this.countOfCars);
         }

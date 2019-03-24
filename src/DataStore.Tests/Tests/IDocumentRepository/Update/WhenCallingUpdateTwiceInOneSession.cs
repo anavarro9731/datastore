@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,11 +10,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateTwiceInOneSession
     {
-        private readonly Guid carId;
+        private Guid carId;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingUpdateTwiceInOneSession()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateTwiceInOneSession));
@@ -27,21 +28,23 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(existingCar);
 
             //When
-            this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota").Wait();
-            this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda").Wait();
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
+            await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda");
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldCallUpdateTwice()
+        public async void ItShouldCallUpdateTwice()
         {
+            await Setup();
             Assert.Equal(2, this.testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
         }
 
         [Fact]
-        public void ItShouldPersistTheLastChangeToTheDatabase()
+        public async void ItShouldPersistTheLastChangeToTheDatabase()
         {
-            Assert.Equal("Honda", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
+            await Setup();
+            Assert.Equal("Honda", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }
 }

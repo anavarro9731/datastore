@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,13 +10,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 
     public class WhenCallingReadOnAnItemUpdatedInTheCurrentSession
     {
-        private readonly Car carFromSession;
+        private  Car carFromSession;
 
-        private readonly Guid carId;
+        private  Guid carId;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingReadOnAnItemUpdatedInTheCurrentSession()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadOnAnItemUpdatedInTheCurrentSession));
@@ -29,15 +30,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             };
             this.testHarness.AddToDatabase(existingCar);
 
-            this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford").Wait();
+            await this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford");
 
             // When
-            this.carFromSession = this.testHarness.DataStore.Read<Car>(car => car.Make == "Ford").Result.Single();
+            this.carFromSession = (await this.testHarness.DataStore.Read<Car>(car => car.Make == "Ford")).Single();
         }
 
         [Fact]
-        public void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
+        public async void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.carFromSession.Make);

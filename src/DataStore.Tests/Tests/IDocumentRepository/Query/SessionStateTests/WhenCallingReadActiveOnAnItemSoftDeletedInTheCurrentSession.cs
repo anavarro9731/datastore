@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,11 +10,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 
     public class WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession
     {
-        private readonly Car carFromSession;
+        private Car carFromSession;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveOnAnItemSoftDeletedInTheCurrentSession));
@@ -27,15 +28,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             };
             this.testHarness.AddToDatabase(existingCar);
 
-            this.testHarness.DataStore.DeleteSoftById<Car>(carId).Wait();
+            await this.testHarness.DataStore.DeleteSoftById<Car>(carId);
 
             // When
-            this.carFromSession = this.testHarness.DataStore.ReadActive<Car>(car => car.id == carId).Result.SingleOrDefault();
+            this.carFromSession = (await this.testHarness.DataStore.ReadActive<Car>(car => car.id == carId)).SingleOrDefault();
         }
 
         [Fact]
-        public void ItShouldNotReturnThatItem()
+        public async void ItShouldNotReturnThatItem()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Single(this.testHarness.QueryDatabase<Car>());
             Assert.Null(this.carFromSession);

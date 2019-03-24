@@ -1,17 +1,18 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession
     {
-        private readonly Guid activeCarId;
+        private  Guid activeCarId;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession));
@@ -25,13 +26,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(activeExistingCar);
 
             // When
-            this.testHarness.DataStore.DeleteHardById<Car>(this.activeCarId).Wait();
+            await this.testHarness.DataStore.DeleteHardById<Car>(this.activeCarId);
         }
 
         [Fact]
-        public void ItShouldReturnNull()
+        public async void ItShouldReturnNull()
         {
-            Assert.Null(this.testHarness.DataStore.ReadActiveById<Car>(this.activeCarId).Result);
+            await Setup();
+            Assert.Null(await this.testHarness.DataStore.ReadActiveById<Car>(this.activeCarId));
         }
     }
 }

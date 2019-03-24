@@ -1,38 +1,41 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession
     {
-        private readonly Exception e;
+        private Exception e;
 
-        private readonly Guid newCarId;
+        private Guid newCarId;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession()
+        [Fact]
+        public async void ItShouldErrorWhenYouDeleteTheSecondTime()
+        {
+            await Setup();
+
+            Assert.Contains("c53bef0f-a462-49cc-8d73-04cdbb3ea81c", this.e.Message);
+        }
+
+         async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession));
 
-            this.testHarness.DataStore.Create(
+            await this.testHarness.DataStore.Create(
                 new Car
                 {
-                    id = this.newCarId = Guid.NewGuid(),
-                    Make = "Ford"
-                }).Wait();
+                    id = this.newCarId = Guid.NewGuid(), Make = "Ford"
+                });
 
-            this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait();
-            this.e = Assert.ThrowsAny<Exception>(() => this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId).Wait());
-        }
+            await this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId);
 
-        [Fact]
-        public void ItShouldErrorWhenYouDeleteTheSecondTime()
-        {
-            Assert.Contains("c53bef0f-a462-49cc-8d73-04cdbb3ea81c", this.e.InnerException.Message);
+            this.e = await Assert.ThrowsAnyAsync<Exception>(async ()=> await this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId));
         }
     }
 }

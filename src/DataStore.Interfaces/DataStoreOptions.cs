@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces
 {
+    using System;
+
     public class DataStoreOptions
     {
         public Guid? UnitOfWorkId { get; set; }

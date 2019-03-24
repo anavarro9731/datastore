@@ -3,6 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
@@ -12,37 +13,38 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteHardWhere
     {
-        private readonly Guid carId;
+        private  Guid carId;
 
-        private readonly IEnumerable<Car> result;
+        private  IEnumerable<Car> result;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingDeleteHardWhere()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardWhere), new DataStoreOptions() { UseVersionHistory = true});
 
             this.carId = Guid.NewGuid();
-            this.testHarness.DataStore.Create(
+            await this.testHarness.DataStore.Create(
                 new Car
                 {
                     id = this.carId,
                     Make = "Volvo"
-                }).Wait();
+                });
 
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.CommitChanges();
             Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
             Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
 
             //When
-            this.result = this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == this.carId).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.result = await this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == this.carId);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
         public async void ItShouldPersistChangesToTheDatabase()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(this.testHarness.QueryDatabase<Car>());
@@ -50,14 +52,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         }
 
         [Fact]
-        public void ItShouldReturnTheItemsDeleted()
+        public async void ItShouldReturnTheItemsDeleted()
         {
+            await Setup();
             Assert.Equal(this.carId, this.result.Single().id);
         }
 
         [Fact]
-        public void ItShouldRemoveAllHistoryItems()
+        public async void ItShouldRemoveAllHistoryItems()
         {
+            await Setup();
             Assert.Empty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
             Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
         }

@@ -1,6 +1,7 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
+    using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Tests.Models;
@@ -9,15 +10,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteHardByIdWithVersionHistoryEnabled
     {
-        private readonly Guid carId;
+        private Guid carId;
 
-        private readonly Car result;
+        private Car result;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        private readonly Guid unitOfWorkId;
+        private Guid unitOfWorkId;
 
-        public WhenCallingDeleteHardByIdWithVersionHistoryEnabled()
+         async  Task Setup()
         {
             // Given
             this.carId = Guid.NewGuid();
@@ -32,25 +33,26 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                     UseVersionHistory = true
                 });
 
-            this.testHarness.DataStore.Create(
+            await this.testHarness.DataStore.Create(
                 new Car
                 {
                     id = this.carId,
                     Make = "Volvo"
-                }).Wait();
+                });
 
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.CommitChanges();
             Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
             Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
 
             //When
-            this.result = this.testHarness.DataStore.DeleteHardById<Car>(this.carId).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.result = await this.testHarness.DataStore.DeleteHardById<Car>(this.carId);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldDeleteAllTheHistory()
+        public async void ItShouldDeleteAllTheHistory()
         {
+            await Setup();
             Assert.Empty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
             Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
         }

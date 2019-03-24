@@ -1,6 +1,7 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 {
     using System;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Newtonsoft.Json;
@@ -8,11 +9,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 
     public class WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession
     {
-        private readonly Car carFromDatabase;
+        private  Car carFromDatabase;
 
-        private readonly Guid carId;
+        private  Guid carId;
 
-        public WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession()
+        async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession));
@@ -26,10 +27,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
             };
             testHarness.AddToDatabase(existingCar);
 
-            testHarness.DataStore.DeleteHardById<Car>(this.carId).Wait();
+            await testHarness.DataStore.DeleteHardById<Car>(this.carId);
 
             // When
-            var document = testHarness.DataStore.WithoutEventReplay.ReadById<Car>(this.carId).Result;
+            var document = await testHarness.DataStore.WithoutEventReplay.ReadById<Car>(this.carId);
             try
             {
                 this.carFromDatabase = document; //this approach is for Azure
@@ -41,8 +42,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         }
 
         [Fact]
-        public void ItShouldReturnTheItem()
+        public async void ItShouldReturnTheItem()
         {
+            await Setup();
             Assert.Equal("Volvo", this.carFromDatabase.Make);
             Assert.Equal(this.carId, this.carFromDatabase.id);
         }

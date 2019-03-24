@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,11 +10,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingReadActiveByIdOnAnInactiveItem
     {
-        private readonly Car inactiveCarFromDatabase;
+        private Car inactiveCarFromDatabase;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingReadActiveByIdOnAnInactiveItem()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnInactiveItem));
@@ -38,12 +39,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
-            this.inactiveCarFromDatabase = this.testHarness.DataStore.ReadActiveById<Car>(inactiveCarId).Result;
+            this.inactiveCarFromDatabase = await this.testHarness.DataStore.ReadActiveById<Car>(inactiveCarId);
         }
 
         [Fact]
-        public void ItShouldNotReturnTheItem()
+        public async void ItShouldNotReturnTheItem()
         {
+            await Setup();
             Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
             Assert.Null(this.inactiveCarFromDatabase);
         }

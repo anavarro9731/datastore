@@ -2,17 +2,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenChangingTheItemsReturnedFromUpdateById
     {
-        private readonly Guid carId;
+        private Guid carId;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenChangingTheItemsReturnedFromUpdateById()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromUpdateById));
@@ -25,18 +26,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                     Make = "Volvo"
                 });
 
-            var result = this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford").Result;
+            var result = await this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford");
 
             //When
             result.id = Guid.NewGuid();
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
+        public async void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
+            await Setup();
             Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
-            Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
+            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }
 }

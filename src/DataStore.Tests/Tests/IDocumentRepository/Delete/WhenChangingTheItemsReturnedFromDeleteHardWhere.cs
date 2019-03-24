@@ -2,15 +2,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenChangingTheItemsReturnedFromDeleteHardWhere
     {
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenChangingTheItemsReturnedFromDeleteHardWhere()
+         async  Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteHardWhere));
@@ -23,16 +24,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                     Make = "Volvo"
                 });
 
-            var result = this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId).Result;
+            var result = await this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == carId);
 
             //When
             result.Single().id = Guid.NewGuid(); //change in memory before commit
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
+            await Setup();
             Assert.Empty(this.testHarness.QueryDatabase<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }

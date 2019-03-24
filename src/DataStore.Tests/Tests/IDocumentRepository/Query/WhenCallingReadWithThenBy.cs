@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
@@ -9,17 +10,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     public class WhenCallingReadWithThenBy
     {
 
-        private readonly Guid firstCarId;
+        private Guid firstCarId;
 
-        private readonly Guid secondCarId;
+        private Guid secondCarId;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        private readonly Guid thirdCarId;
+        private Guid thirdCarId;
 
-        private readonly Guid fourthCarId;
+        private Guid fourthCarId;
 
-        public WhenCallingReadWithThenBy()
+        void Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadWithThenBy));
@@ -71,12 +72,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         }
 
         [Fact]
-        public void ItShouldReturnTheCarsInTheRightOrderForStringsAndIntsAndGuids()
+        public async void ItShouldReturnTheCarsInTheRightOrderForStringsAndIntsAndGuids()
         {
+            Setup();
             // When
-            var carsFromDatabase = this.testHarness.DataStore.WithoutEventReplay
-                                        .Read<Car, WithoutReplayOptions<Car>>(o => o.OrderBy(c => c.Make)
-                                                                                   .ThenBy(c => c.Active, true).ThenBy(c => c.id)).Result;
+            var carsFromDatabase =
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(
+                    o => o.OrderBy(c => c.Make).ThenBy(c => c.Active, true).ThenBy(c => c.id));
 
             Assert.Equal(4, carsFromDatabase.Count());
             Assert.Equal(this.thirdCarId, carsFromDatabase.First().id);
@@ -86,12 +88,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         }
 
         [Fact]
-        public void ItShouldReturnTheCarsInTheRightOrderForStringsAndBooleansAndGuids()
+        public async void ItShouldReturnTheCarsInTheRightOrderForStringsAndBooleansAndGuids()
         {
+            Setup();
             // When
-            var carsFromDatabase = this.testHarness.DataStore.WithoutEventReplay
-                                       .Read<Car, WithoutReplayOptions<Car>>(o => o.OrderBy(c => c.Make)
-                                                                                  .ThenBy(c => c.Active, true).ThenBy(c => c.id)).Result;
+            var carsFromDatabase =await 
+                this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(
+                    o => o.OrderBy(c => c.Make).ThenBy(c => c.Active, true).ThenBy(c => c.id));
 
             Assert.Equal(4, carsFromDatabase.Count());
             Assert.Equal(this.thirdCarId, carsFromDatabase.First().id);
