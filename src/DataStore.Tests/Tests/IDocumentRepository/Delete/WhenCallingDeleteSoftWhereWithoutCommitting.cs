@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,9 +10,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteSoftWhereWithoutCommitting
     {
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingDeleteSoftWhereWithoutCommitting()
+         async  Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhereWithoutCommitting));
@@ -25,12 +26,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 });
 
             //When
-            this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId).Wait();
+            await this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == carId);
         }
 
         [Fact]
         public async void ItShouldOnlyMakeTheChangesInSession()
         {
+            await Setup();
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.NotEmpty(this.testHarness.QueryDatabase<Car>());

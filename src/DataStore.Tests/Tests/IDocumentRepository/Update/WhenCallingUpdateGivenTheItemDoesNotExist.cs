@@ -1,6 +1,7 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -8,29 +9,31 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateGivenTheItemDoesNotExist
     {
-        private readonly Car result;
+        private Car result;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingUpdateGivenTheItemDoesNotExist()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGivenTheItemDoesNotExist));
 
             //When
-            this.result = this.testHarness.DataStore.Update(new Car()).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.result = await this.testHarness.DataStore.Update(new Car());
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldNotExecuteAnyUpdateOperation()
+        public async void ItShouldNotExecuteAnyUpdateOperation()
         {
+            await Setup();
             Assert.Equal(0, this.testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
         }
 
         [Fact]
-        public void ItShouldReturnNull()
+        public async void ItShouldReturnNull()
         {
+            await Setup();
             Assert.Null(this.result);
         }
     }

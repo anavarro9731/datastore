@@ -152,7 +152,6 @@
             DsConnection.Dispose();
         }
 
- 
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return QueryCapabilities.Read(predicate);
@@ -236,10 +235,11 @@
                     AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
                     UnitOfWorkResponsibleForStateChange = this.dataStoreOptions.UnitOfWorkId
                 },
-                methodName: methodName);
+                methodName: methodName).ConfigureAwait(false);
 
             //get the history index record
-            var historyIndexRecord = (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id).ConfigureAwait(false)).SingleOrDefault();
+            var historyIndexRecord =
+                (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id).ConfigureAwait(false)).SingleOrDefault();
 
             //prepare the new header record
             var historyItemHeader = new AggregateHistoryItemHeader
@@ -286,6 +286,4 @@
             return Task.CompletedTask;
         }
     }
-
-
 }

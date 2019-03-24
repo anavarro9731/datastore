@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Tests.Models;
@@ -10,15 +11,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdate
     {
-        private readonly Guid carId;
+        private Guid carId;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        private readonly Car udpatedCar;
+        private Car udpatedCar;
 
-        private readonly Car existingCar;
+        private Car existingCar;
 
-        public WhenCallingUpdate()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdate));
@@ -34,30 +35,32 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             };
             this.testHarness.AddToDatabase(this.existingCar);
 
-            var existingCarFromDb = this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result;
+            var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
 
             existingCarFromDb.Make = "Ford";
 
             //When
-            this.udpatedCar = this.testHarness.DataStore.Update(existingCarFromDb).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldPersistChangesToTheDatabase()
+        public async void ItShouldPersistChangesToTheDatabase()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
-            Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
+            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
 
         [Fact]
-        public void ItShouldUpdateTheModifiedDate()
+        public async void ItShouldUpdateTheModifiedDate()
         {
+            await Setup();
             Assert.NotEqual(this.existingCar.Modified.Date, this.udpatedCar.Modified.Date);
             Assert.NotEqual(this.existingCar.ModifiedAsMillisecondsEpochTime, this.udpatedCar.ModifiedAsMillisecondsEpochTime);
-            Assert.Equal("Ford", this.testHarness.DataStore.ReadActiveById<Car>(this.carId).Result.Make);
+            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }
 }

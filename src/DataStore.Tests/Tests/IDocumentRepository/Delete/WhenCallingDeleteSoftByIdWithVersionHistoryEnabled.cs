@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
@@ -11,13 +12,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteSoftByIdWithVersionHistoryEnabled
     {
-        private readonly Guid carId;
+        private  Guid carId;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        private readonly Guid unitOfWorkId;
+        private  Guid unitOfWorkId;
 
-        public WhenCallingDeleteSoftByIdWithVersionHistoryEnabled()
+        async Task Setup()
         {
             // Given
             this.carId = Guid.NewGuid();
@@ -32,24 +33,25 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                     UseVersionHistory = true
                 });
 
-            this.testHarness.DataStore.Create(
+            await this.testHarness.DataStore.Create(
                 new Car
                 {
                     id = this.carId,
                     Make = "Volvo"
-                }).Wait();
+                });
 
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.CommitChanges();
 
             //When
-            this.testHarness.DataStore.DeleteSoftById<Car>(this.carId).Wait();
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.DeleteSoftById<Car>(this.carId);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
 
         [Fact]
-        public void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
+        public async void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
         {
+            await Setup();
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
 
             Assert.Equal(2, aggregateHistory.AggregateVersions.Count);
@@ -61,8 +63,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         }
 
         [Fact]
-        public void ItShouldCreateTheAggregateHistoryItemRecord()
+        public async void ItShouldCreateTheAggregateHistoryItemRecord()
         {
+            await Setup();
             Assert.Equal(2, this.testHarness.DataStore.ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var aggregateHistoryItems = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList();
@@ -74,16 +77,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         }
 
         [Fact]
-        public void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
+        public async void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
+            await Setup();
             Assert.Equal(
                 this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].id,
                 this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.ToList()[1].AggegateHistoryItemId);
         }
 
         [Fact]
-        public void ItShouldUpdateTheAggregateHistoryRecord()
+        public async void ItShouldUpdateTheAggregateHistoryRecord()
         {
+            await Setup();
             var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
 
             Assert.NotEqual(Guid.Empty, aggregateHistory.id);

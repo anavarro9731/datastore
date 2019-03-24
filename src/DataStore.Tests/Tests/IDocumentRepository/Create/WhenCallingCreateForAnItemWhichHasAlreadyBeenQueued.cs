@@ -1,19 +1,27 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Create
 {
     using System;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingCreateForAnItemWhichHasAlreadyBeenQueued
     {
-        private readonly Guid newCarId;
+        private Exception exception;
 
-        private readonly ITestHarness testHarness;
+        private Guid newCarId;
 
-        private readonly Exception exception;
+        private ITestHarness testHarness;
 
-        public WhenCallingCreateForAnItemWhichHasAlreadyBeenQueued()
+        [Fact]
+        public async void ItShouldErrorWhenYouCreateTheSecondTime()
+        {
+            await Setup();
+            Assert.Contains("63328bcd-d58d-446a-bc85-fedfde43d2e2", this.exception.Message);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreateForAnItemWhichHasAlreadyBeenQueued));
@@ -21,20 +29,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = this.newCarId,
-                Make = "Volvo"
+                id = this.newCarId, Make = "Volvo"
             };
 
-            this.testHarness.DataStore.Create(newCar).Wait();
+            await this.testHarness.DataStore.Create(newCar);
 
             //When
-            this.exception = Assert.ThrowsAny<Exception>(() => this.testHarness.DataStore.Create(newCar).Wait());
-        }
-
-        [Fact]
-        public void ItShouldErrorWhenYouCreateTheSecondTime()
-        {
-           Assert.Contains("63328bcd-d58d-446a-bc85-fedfde43d2e2", this.exception.InnerException.Message);
+            this.exception = await Assert.ThrowsAnyAsync<Exception>(async () => await this.testHarness.DataStore.Create(newCar));
         }
     }
 }

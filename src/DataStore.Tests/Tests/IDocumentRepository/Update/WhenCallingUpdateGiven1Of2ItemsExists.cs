@@ -3,6 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -10,11 +11,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateGiven1Of2ItemsExists
     {
-        private readonly IEnumerable<Car> result;
+        private  IEnumerable<Car> result;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingUpdateGiven1Of2ItemsExists()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGiven1Of2ItemsExists));
@@ -36,19 +37,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 });
 
             //When
-            this.result = this.testHarness.DataStore.UpdateWhere<Car>(c => c.Make == "Volvo", car => { }).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.result = await this.testHarness.DataStore.UpdateWhere<Car>(c => c.Make == "Volvo", car => car.Year = 2000);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldExecuteOnlyOneUpdate()
+        public async void ItShouldExecuteOnlyOneUpdate()
         {
+            await Setup();
             Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
         }
 
         [Fact]
-        public void ItShouldReturnOnlyOneItem()
+        public async void ItShouldReturnOnlyOneItem()
         {
+            await Setup();
             Assert.Single(this.result);
         }
     }

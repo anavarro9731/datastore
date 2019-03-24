@@ -3,23 +3,24 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingReadWithOrderBy
     {
-        private readonly IEnumerable<Car> carsFromDatabaseOrderedAscending;
+        private IEnumerable<Car> carsFromDatabaseOrderedAscending;
 
-        private readonly IEnumerable<Car> carsFromDatabaseOrderedDescending;
+        private IEnumerable<Car> carsFromDatabaseOrderedDescending;
 
-        private readonly Guid secondCarId;
+        private Guid secondCarId;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        private readonly Guid thirdCarId;
+        private Guid thirdCarId;
 
-        public WhenCallingReadWithOrderBy()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadWithOrderBy));
@@ -52,16 +53,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(fourthExistingCar);
 
             // When
-            this.carsFromDatabaseOrderedAscending = this.testHarness.DataStore.WithoutEventReplay
-                                                        .Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id)).Result;
+            this.carsFromDatabaseOrderedAscending =
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id));
 
-            this.carsFromDatabaseOrderedDescending = this.testHarness.DataStore.WithoutEventReplay
-                                                         .Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id, true)).Result;
+            this.carsFromDatabaseOrderedDescending =
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(
+                    car => car.Make == "Volvo",
+                    o => o.OrderBy(c => c.id, true));
         }
 
         [Fact]
-        public void ItShouldReturnTheCarsInTheOppositeOrderOfWhenTheyAreOrderedDescending()
+        public async void ItShouldReturnTheCarsInTheOppositeOrderOfWhenTheyAreOrderedDescending()
         {
+            await Setup();
             Assert.Equal(3, this.carsFromDatabaseOrderedAscending.Count());
             Assert.Equal(3, this.carsFromDatabaseOrderedDescending.Count());
             Assert.Equal(this.secondCarId, this.carsFromDatabaseOrderedDescending.Last().id);

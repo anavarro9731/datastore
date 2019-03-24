@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -9,12 +10,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateOnAnItemGivenMultipleItemsAddedInTheSession
     {
-        private readonly Guid car1Id;
-        private readonly Guid car2Id;
+        private Guid car1Id;
+        private Guid car2Id;
 
-        private readonly ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        public WhenCallingUpdateOnAnItemGivenMultipleItemsAddedInTheSession()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateOnAnItemGivenMultipleItemsAddedInTheSession));
@@ -32,23 +33,24 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 id = this.car2Id,
                 Make = "Saab"
             };
-            
-            this.testHarness.DataStore.Create(car1).Wait();
-            this.testHarness.DataStore.Create(car2).Wait();
+
+            await this.testHarness.DataStore.Create(car1);
+            await this.testHarness.DataStore.Create(car2);
             car2.Make = "BMW";
-            this.testHarness.DataStore.Update(car2).Wait();
+            await this.testHarness.DataStore.Update(car2);
 
             Assert.Equal(1, this.testHarness.DataStore.QueuedOperations.Count(x => x is QueuedUpdateOperation<Car>));
             
             //When
-            this.testHarness.DataStore.CommitChanges().Wait();
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldChangeOnlyTheItemUpdated()
-        {        
-            Assert.Equal("Volvo", this.testHarness.DataStore.ReadActiveById<Car>(this.car1Id).Result.Make);
-            Assert.Equal("BMW", this.testHarness.DataStore.ReadActiveById<Car>(this.car2Id).Result.Make);
+        public async void ItShouldChangeOnlyTheItemUpdated()
+        {
+            await Setup();
+            Assert.Equal("Volvo", (await this.testHarness.DataStore.ReadActiveById<Car>(this.car1Id)).Make);
+            Assert.Equal("BMW", (await this.testHarness.DataStore.ReadActiveById<Car>(this.car2Id)).Make);
         }
     }
 }

@@ -10,13 +10,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreate
     {
-        private readonly Guid newCarId;
-
-        private readonly ITestHarness testHarness;
+        private Guid newCarId;
+                
+        private ITestHarness testHarness;
 
         private Car result;
 
-        public WhenCallingCreate()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingCreate));
@@ -29,19 +29,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             };
                 
             //When
-            this.result = this.testHarness.DataStore.Create(newCar).Result;
-            this.testHarness.DataStore.CommitChanges().Wait();
+            this.result = await this.testHarness.DataStore.Create(newCar);
+            await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldFlushTheQueue()
+        public async void ItShouldFlushTheQueue()
         {
+            await Setup();
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
         }
 
         [Fact]
-        public void ItShouldSetTheTimeStamps()
+        public async void ItShouldSetTheTimeStamps()
         {
+            await Setup();
             Assert.NotEqual(default(DateTime), this.result.Created);
             Assert.NotEqual(default(DateTime), this.result.Modified);
             Assert.NotEqual(default(double), this.result.CreatedAsMillisecondsEpochTime);
@@ -50,17 +52,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         }
 
         [Fact]
-        public void ItShouldPersistChangesToTheDatabase()
+        public async void ItShouldPersistChangesToTheDatabase()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
         }
 
         [Fact]
-        public void ItShouldReflectTheChangeInAQueryFromTheSameSession()
+        public async void ItShouldReflectTheChangeInAQueryFromTheSameSession()
         {
-            Assert.Single(this.testHarness.DataStore.ReadActive<Car>().Result);
+            await Setup();
+            Assert.Single(await this.testHarness.DataStore.ReadActive<Car>());
         }
     }
 }

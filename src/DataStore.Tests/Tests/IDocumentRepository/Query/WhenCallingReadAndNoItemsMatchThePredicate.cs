@@ -1,26 +1,28 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingReadAndNoItemsMatchThePredicate
     {
-        private readonly IEnumerable<Car> carsFromDatabase;
+        private IEnumerable<Car> carsFromDatabase;
 
-        public WhenCallingReadAndNoItemsMatchThePredicate()
+        async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingReadAndNoItemsMatchThePredicate));
 
             // When
-            this.carsFromDatabase = testHarness.DataStore.Read<Car>(car => car.Make == "None").Result;
+            this.carsFromDatabase = await testHarness.DataStore.Read<Car>(car => car.Make == "None");
         }
 
         [Fact]
-        public void ItShouldReturnAnEmptyList()
+        public async void ItShouldReturnAnEmptyList()
         {
+            await Setup();
             Assert.Empty(this.carsFromDatabase);
         }
     }

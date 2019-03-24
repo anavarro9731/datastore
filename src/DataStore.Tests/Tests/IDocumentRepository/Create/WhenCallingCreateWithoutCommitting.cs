@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
         {
             await Setup();
-            Assert.Single(this.testHarness.DataStore.ReadActive<Car>().Result);
+            Assert.Single(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.True(this.result.Active);
         }
     }

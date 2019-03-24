@@ -3,6 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -10,13 +11,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateWhereOnAnItemDeletedInThisSession
     {
-        private readonly Guid carId;
+        private  Guid carId;
 
-        private readonly IEnumerable<Car> results;
+        private  IEnumerable<Car> results;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        public WhenCallingUpdateWhereOnAnItemDeletedInThisSession()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWhereOnAnItemDeletedInThisSession));
@@ -28,15 +29,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                     id = this.carId,
                     Make = "Volvo"
                 });
-            this.testHarness.DataStore.DeleteHardById<Car>(this.carId).Wait();
+            await this.testHarness.DataStore.DeleteHardById<Car>(this.carId);
 
             //When
-            this.results = this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford").Result;
+            this.results = await this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford");
         }
 
         [Fact]
-        public void ItShouldConsiderThePreviousDeleteInAnyFutureQueriesInSession()
+        public async void ItShouldConsiderThePreviousDeleteInAnyFutureQueriesInSession()
         {
+            await Setup();
             //in this circumstance we have deleted the only thing we updated so there is no update required
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
@@ -46,8 +48,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         }
 
         [Fact]
-        public void ItShouldDeleteTheItemInSession()
+        public async void ItShouldDeleteTheItemInSession()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
         }
     }

@@ -2,15 +2,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingDeleteHardWhereAndNoItemsMatchThePredicate
     {
-        private readonly IEnumerable<Car> result;
+        private IEnumerable<Car> result;
 
-        public WhenCallingDeleteHardWhereAndNoItemsMatchThePredicate()
+        async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardWhereAndNoItemsMatchThePredicate));
@@ -24,13 +25,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 });
 
             //When
-            this.result = testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == Guid.NewGuid()).Result;
-            testHarness.DataStore.CommitChanges().Wait();
+            this.result = await testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == Guid.NewGuid());
+            await testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public void ItShouldReturnAnEmptyList()
+        public async void ItShouldReturnAnEmptyList()
         {
+            await Setup();
             Assert.Empty(this.result);
         }
     }

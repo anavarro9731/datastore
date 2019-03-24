@@ -3,6 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -10,15 +11,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingReadWithSkipAndTake
     {
-        private readonly IEnumerable<Car> carsFromDatabase;
+        private  IEnumerable<Car> carsFromDatabase;
 
-        private readonly Guid fourthCarId;
+        private  Guid fourthCarId;
 
-        private readonly ITestHarness testHarness;
+        private  ITestHarness testHarness;
 
-        private readonly Guid thirdCarId;
+        private  Guid thirdCarId;
 
-        public WhenCallingReadWithSkipAndTake()
+        async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadWithSkipAndTake));
@@ -60,12 +61,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(fourthExistingCar);
 
             // When
-            this.carsFromDatabase = this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(1).Take(2)).Result;
+            this.carsFromDatabase =
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(1).Take(2));
         }
 
         [Fact]
-        public void ItShouldReturnTheLastTwoVolvos()
+        public async void ItShouldReturnTheLastTwoVolvos()
         {
+            await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2, this.carsFromDatabase.Count());
             Assert.Equal(this.thirdCarId, this.carsFromDatabase.First().id);

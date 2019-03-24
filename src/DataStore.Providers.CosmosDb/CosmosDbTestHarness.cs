@@ -4,20 +4,18 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Threading.Tasks;
-    using Cosmonaut;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
-    using DataStore.Providers.CosmosDb.ExtremeConfigAwait;
-    using Microsoft.Azure.Documents;
+    using DataStore.Providers.CosmosDb;
+    using Microsoft.Azure.Cosmos;
     using Newtonsoft.Json;
 
     public class CosmosDbTestHarness : ITestHarness
     {
-        private CosmosDbTestHarness(CosmosStoreSettings settings, IDataStore dataStore)
+        private CosmosDbTestHarness(IDataStore dataStore)
         {
             DataStore = dataStore;
         }
@@ -26,16 +24,14 @@
 
         public static async Task<ITestHarness> Create(string testName, IDataStore dataStore)
         {
-            await new SynchronizationContextRemover();
-
             var cosmosStoreSettings = GetCosmosStoreSettings(testName);
 
             await ReadyTestDatabase(cosmosStoreSettings, testName).ConfigureAwait(false);
 
-            return new CosmosDbTestHarness(cosmosStoreSettings, dataStore);
+            return new CosmosDbTestHarness(dataStore);
         }
 
-        public static CosmosStoreSettings GetCosmosStoreSettings(string testName)
+        public static CosmosSettings GetCosmosStoreSettings(string testName)
         {
             var settingsFile = "CosmosDbSettings.json";
             /*
@@ -51,7 +47,7 @@
 
             var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
 
-            var cosmosStoreSettings = new CosmosStoreSettings(cosmosSettings.DatabaseName + testName, cosmosSettings.EndpointUrl, cosmosSettings.AuthKey);
+            var cosmosStoreSettings = new CosmosSettings(cosmosSettings.AuthKey, cosmosSettings.DatabaseName + testName, cosmosSettings.EndpointUrl);
             return cosmosStoreSettings;
         }
 
@@ -59,8 +55,9 @@
         {
             //clone aggregate to avoid modifying entries later when using inmemory db
             var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), DataStore.DsConnection, DataStore.MessageAggregator);
-
-            newAggregate.CommitClosure().Wait();
+            
+            Task.Run(async () => await newAggregate.CommitClosure().ConfigureAwait(false)).Wait();
+            
         }
 
         public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
@@ -68,48 +65,46 @@
             var query = DataStore.DsConnection.CreateDocumentQuery<T>();
             extendQueryable?.Invoke(query);
 
-            var results = DataStore.DsConnection.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).Result;
+            var results = 
+                Task.Run(async () => await DataStore.DsConnection.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).ConfigureAwait(false)).Result;
             return results;
         }
 
-        private static async Task ReadyTestDatabase(CosmosStoreSettings cosmosStoreSettings, string testName)
+        private static async Task ReadyTestDatabase(CosmosSettings cosmosStoreSettings, string testName)
         {
             {
-                CreateCosmonautClient(out var cosmosClient);
+                CreateClient(out var cosmosClient);
                 await DeleteDbIfExists(cosmosClient).ConfigureAwait(false);
                 await CreateDb(cosmosClient).ConfigureAwait(false);
             }
 
-            void CreateCosmonautClient(out CosmonautClient cosmosClient)
+            void CreateClient(out CosmosClient client)
             {
-                var pi = typeof(CosmosStoreSettings).GetProperty("AuthKey", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new NullReferenceException();
-                var authKey = pi.GetValue(cosmosStoreSettings).ToString();
-                cosmosClient = new CosmonautClient(cosmosStoreSettings.EndpointUrl, authKey);
+                client = new CosmosClient(cosmosStoreSettings.EndpointUrl, cosmosStoreSettings.AuthKey);
             }
 
-            async Task DeleteDbIfExists(CosmonautClient cosmonautClient)
+            async Task DeleteDbIfExists(CosmosClient client)
             {
-                await cosmonautClient.DeleteDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
+                await client.Databases[cosmosStoreSettings.DatabaseName].DeleteAsync().ConfigureAwait(false);
             }
 
-            async Task CreateDb(CosmonautClient cosmonautClient)
+            async Task CreateDb(CosmosClient client)
             {
-                await cosmonautClient.CreateDatabaseAsync(
-                    new Database
+                var db = await client.Databases.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
+
+                await db.Database.Containers.CreateContainerIfNotExistsAsync(
+                    new CosmosContainerSettings
                     {
-                        Id = cosmosStoreSettings.DatabaseName
+                        Id = cosmosStoreSettings.DatabaseName,
+                        PartitionKey = new PartitionKeyDefinition
+                        {
+                            Paths =
+                            {
+                                "/PartitionKey"
+                            }
+                        }
                     }).ConfigureAwait(false);
             }
-        }
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class CosmosSettings
-        {
-            public string AuthKey { get; set; }
-
-            public string DatabaseName { get; set; }
-
-            public string EndpointUrl { get; set; }
         }
     }
 }

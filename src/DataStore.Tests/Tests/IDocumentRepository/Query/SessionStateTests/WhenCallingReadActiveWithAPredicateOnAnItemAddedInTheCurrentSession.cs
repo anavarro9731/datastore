@@ -2,77 +2,73 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingReadActiveWithAPredicateOnAnItemAddedInTheCurrentSession
     {
-        private readonly Guid fordId;
+        private Guid fordId;
 
-        private readonly ITestHarness testHarness;
-
-        public WhenCallingReadActiveWithAPredicateOnAnItemAddedInTheCurrentSession()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
-
-            this.testHarness.AddToDatabase(
-                new Car
-                {
-                    id = Guid.NewGuid(),
-                    Active = true,
-                    Make = "Lambo"
-                });
-
-            this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = Guid.NewGuid(),
-                    Active = true,
-                    Make = "Volvo"
-                }).Wait();
-
-            this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = Guid.NewGuid(),
-                    Active = true,
-                    Make = "Mazda"
-                }).Wait();
-
-            this.fordId = Guid.NewGuid();
-
-            this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = this.fordId,
-                    Active = true,
-                    Make = "Ford"
-                }).Wait();
-        }
+        private ITestHarness testHarness;
 
         [Fact]
-        public void ItShouldNotHaveAddedTheFordToTheDatabaseYet()
+        public async void ItShouldNotHaveAddedTheFordToTheDatabaseYet()
         {
+            await Setup();
             var result = this.testHarness.QueryDatabase<Car>(cars => cars.Where(x => x.id == this.fordId));
 
             Assert.Empty(result);
         }
 
         [Fact]
-        public void ItShouldNotReturnThatItemIfThePredicateDoesntMatch()
+        public async void ItShouldNotReturnThatItemIfThePredicateDoesntMatch()
         {
-            var newCarFromSession = this.testHarness.DataStore.ReadActive<Car>(c => c.Make == "NonExistantMake").Result.SingleOrDefault();
+            await Setup();
+            var newCarFromSession = (await this.testHarness.DataStore.ReadActive<Car>(c => c.Make == "NonExistantMake")).SingleOrDefault();
             Assert.Null(newCarFromSession);
         }
 
         [Fact]
-        public void ItShouldReturnThatItemIfThePredicateMatches()
+        public async void ItShouldReturnThatItemIfThePredicateMatches()
         {
-            var newCarFromSession = this.testHarness.DataStore.ReadActive<Car>(c => c.Make == "Ford").Result.SingleOrDefault();
+            await Setup();
+            var newCarFromSession = (await this.testHarness.DataStore.ReadActive<Car>(c => c.Make == "Ford")).SingleOrDefault();
             Assert.NotNull(newCarFromSession);
             Assert.Equal(this.fordId, newCarFromSession.id);
+        }
+
+        async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveWithAPredicateOnAnItemAddedInTheCurrentSession));
+
+            this.testHarness.AddToDatabase(
+                new Car
+                {
+                    id = Guid.NewGuid(), Active = true, Make = "Lambo"
+                });
+
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = Guid.NewGuid(), Active = true, Make = "Volvo"
+                });
+
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = Guid.NewGuid(), Active = true, Make = "Mazda"
+                });
+
+            this.fordId = Guid.NewGuid();
+
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = this.fordId, Active = true, Make = "Ford"
+                });
         }
     }
 }
