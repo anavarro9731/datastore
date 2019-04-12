@@ -1,8 +1,8 @@
 ﻿namespace DataStore.Tests.Models
 {
-    using global::DataStore.Providers.CosmosDb;
+    using global::DataStore.Interfaces.LowLevel;
 
-    public class Car : CosmosAggregate
+    public class Car : Aggregate
     {
         public string Make { get; set; }
 

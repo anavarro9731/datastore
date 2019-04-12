@@ -55,7 +55,7 @@
                 {
                     ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
                     EnableCrossPartitionQuery = true,
-                    PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
+                    PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                 }).Where(i => i.Schema == schema);
 
             return query;
@@ -68,7 +68,7 @@
             var result = await this.client.DeleteDocumentAsync(docLink,
                              new RequestOptions()
                              {
-                                 PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
+                                 PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                              }).ConfigureAwait(false);
 
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
@@ -107,7 +107,7 @@
                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
                              new RequestOptions
                              {
-                                 PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
+                                 PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                              }).ConfigureAwait(false);
             return result;
         }
@@ -116,7 +116,7 @@
         {
             var result = await this.client.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model, new RequestOptions()
             {
-                PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
+                PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
             })
                                    .ConfigureAwait(false);
 

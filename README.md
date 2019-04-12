@@ -19,7 +19,7 @@ It supports basic CRUD operations on any C# object, with some additional feature
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 
-DataStore is built with .NET Core SDK v.1.1.0 but is backwards compatible with the .NET Framework 4.5.2 platform and does not require .NET Core.
+DataStore is built with .NET Core but it is compatible with the all NetStandard2.0 platforms including .NET Framework 4.6.1 and does not require .NET Core.
 
 ## Roadmap
 
@@ -30,9 +30,9 @@ DataStore is built with .NET Core SDK v.1.1.0 but is backwards compatible with t
 ## Usage
 
 Import the Nuget Package *DataStore*.
-Import the Nuget Package *DataStore.Impl.DocumentDb*
+Import the Nuget Package *DataStore.Providers.CosmosDb*
 
-Create a C# class which inherits `DataStore.DataAccess.Models.Aggregate`.
+Create a C# class which inherits `DataStore.Interfaces.LowLevel.Aggregate`.
 ```
 class Car : Aggregate {
 	public string Make { get; set; }
@@ -41,11 +41,10 @@ class Car : Aggregate {
 ```
 Create a new `DataStore` object.
 ```
-var d = new DataStore.DataStore(new DocumentRepository(
-			DocumentDbSettings.Create(
+var d = new DataStore.DataStore(new CosmosDbRepository(
+			new CosmosSettings(
 				authorizationKey, 
 				databaseName, 
-				DocDbCollectionSettings.Create(collectionName), 
 				endpointUrl)
 			));
 ```
@@ -78,7 +77,7 @@ d.Update(car);
 
 ##### Retrieve It
 
-`var toyotaCars = d.Read<Car>(query => query.Where(c => c.Model = "Toyota"));`
+`var toyotaCars = d.Read<Car>(c => c.Model = "Toyota"));`
 
 or
 

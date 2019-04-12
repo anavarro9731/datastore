@@ -8,13 +8,13 @@
     {
         public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null)
         {
-            /*return Task.Run(async () => await CosmosDbTestHarness.Create(
+            return Task.Run(async () => await CosmosDbTestHarness.Create(
                 testName,
                 new DataStore(
                     new CosmosDbRepository(CosmosDbTestHarness.GetCosmosStoreSettings(testName)),
                     dataStoreOptions: dataStoreOptions)).ConfigureAwait(false)).Result;
-                    */
-            return InMemoryTestHarness.Create(dataStoreOptions);
+                    
+            //return InMemoryTestHarness.Create(dataStoreOptions);
         }
     }
 }
