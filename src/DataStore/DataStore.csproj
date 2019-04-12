@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <Description>A Document-Centric Data Access Framework</Description>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
@@ -8,7 +8,7 @@
     <PackageId>DataStore</PackageId>
     <PackageTags>CosmosDb;DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>6.0.2</Version>
+    <Version>6.1.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
