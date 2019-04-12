@@ -62,7 +62,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
                     id = Guid.NewGuid(), Active = true, Make = "Mazda"
                 });
 
-            this.fordId = Guid.NewGuid();
+            this.fordId = Guid.Parse("1677696a-01e5-4f71-ada4-3ea26b25f95e");
 
             await this.testHarness.DataStore.Create(
                 new Car
