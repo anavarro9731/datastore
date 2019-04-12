@@ -41,7 +41,9 @@ namespace DataStore
             Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.id)
                               != null, "An item with the same ID is already queued to be created", Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
 
-            bool existsAlready = (await this.DsConnection.Exists(new AggregateQueriedByIdOperation(methodName, newObject.id)));
+            int count = (await this.DsConnection.CountAsync(new AggregateCountedOperation<T>(methodName, t => t.id == newObject.id)).ConfigureAwait(false));
+
+            bool existsAlready = count > 0;
             Guard.Against(existsAlready, "An item with the same ID already exists", Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
 
             this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
@@ -57,7 +59,7 @@ namespace DataStore
                 e =>
                     {
                     //aggregate
-                    e.schema = typeof(T).FullName; //should be defaulted by Aggregate but needs to be forced as it is open to change
+                    e.Schema = typeof(T).FullName; //should be defaulted by Aggregate but needs to be forced as it is open to change
                     e.ReadOnly = readOnly;
                     e.ScopeReferences = e.ScopeReferences ?? new List<IScopeReference>();                    
                     });

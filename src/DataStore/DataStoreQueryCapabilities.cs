@@ -28,16 +28,6 @@
 
         private IDocumentRepository DbConnection { get; }
 
-        public async Task<bool> Exists(Guid id)
-        {
-            if (id == Guid.Empty) return false;
-
-            if (HasBeenHardDeletedInThisSession(id)) return false;
-
-            return await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(Exists), id)).To(DbConnection.Exists)
-                             .ConfigureAwait(false);
-        }
-
         // get a filtered list of the models from set of DataObjects
         public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
@@ -110,16 +100,5 @@
                 Predicate).SingleOrDefault();
         }
 
-        private bool HasBeenHardDeletedInThisSession(Guid id)
-        {
-            //if its been deleted in this session (this takes the place of eventReplay for this function)
-            if (this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList()
-                    .Exists(e => e.AggregateId == id && e.GetType() == typeof(QueuedHardDeleteOperation<>)))
-            {
-                return true;
-            }
-
-            return false;
-        }
     }
 }

@@ -22,7 +22,7 @@
 
         public async Task CommitChanges()
         {
-            await this.dataStore.CommitChanges();
+            await this.dataStore.CommitChanges().ConfigureAwait(false);
         }
 
         public Task<T> Create(T model, bool readOnly = false, string methodName = null)

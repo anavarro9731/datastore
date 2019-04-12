@@ -19,7 +19,7 @@
     {
         private readonly DataStoreOptions dataStoreOptions;
 
-        private readonly IMessageAggregator messageAggregator;
+        public IMessageAggregator MessageAggregator { get; }
 
         public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, DataStoreOptions dataStoreOptions = null)
         {
@@ -28,14 +28,14 @@
 
                 {
                     // init vars
-                    this.messageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
+                    this.MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
                     this.dataStoreOptions = dataStoreOptions ?? new DataStoreOptions();
                     DsConnection = documentRepository;
 
-                    QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.messageAggregator);
-                    UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.messageAggregator);
-                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, UpdateCapabilities, this.messageAggregator);
-                    CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.messageAggregator);
+                    QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.MessageAggregator);
+                    UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.MessageAggregator);
+                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, UpdateCapabilities, this.MessageAggregator);
+                    CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.MessageAggregator);
                 }
             }
 
@@ -48,13 +48,13 @@
         public IDocumentRepository DsConnection { get; }
 
         public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
-            new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.messageAggregator.AllMessages.OfType<IDataStoreOperation>()));
+            new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IDataStoreOperation>()));
 
         public CircuitBoard.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
             new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
-                l => l.AddRange(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
+                l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
 
-        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DsConnection, this.messageAggregator);
+        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DsConnection, this.MessageAggregator);
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -80,7 +80,7 @@
 
             async Task CommittableEvents()
             {
-                var committableEvents = this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed).ToList();
+                var committableEvents = this.MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed).ToList();
 
                 foreach (var dataStoreWriteEvent in committableEvents)
                     await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
@@ -152,11 +152,6 @@
             DsConnection.Dispose();
         }
 
-        public Task<bool> Exists(Guid id)
-        {
-            return QueryCapabilities.Exists(id);
-        }
-
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
         {
             return QueryCapabilities.Read(predicate);
@@ -223,9 +218,9 @@
         private async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T : class, IAggregate, new()
         {
             //delete index record
-            await DeleteCapabilities.DeleteHardWhere<AggregateHistory<T>>(h => h.AggregateId == id, methodName);
+            await DeleteCapabilities.DeleteHardWhere<AggregateHistory<T>>(h => h.AggregateId == id, methodName).ConfigureAwait(false);
             //delete history records
-            await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, methodName);
+            await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, methodName).ConfigureAwait(false);
         }
 
         private async Task IncrementAggregateHistory<T>(T model, string methodName) where T : class, IAggregate, new()
@@ -240,10 +235,11 @@
                     AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
                     UnitOfWorkResponsibleForStateChange = this.dataStoreOptions.UnitOfWorkId
                 },
-                methodName: methodName);
+                methodName: methodName).ConfigureAwait(false);
 
             //get the history index record
-            var historyIndexRecord = (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id)).SingleOrDefault();
+            var historyIndexRecord =
+                (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id).ConfigureAwait(false)).SingleOrDefault();
 
             //prepare the new header record
             var historyItemHeader = new AggregateHistoryItemHeader
@@ -262,13 +258,13 @@
                     new AggregateHistory<T>
                     {
                         Version = 1,
-                        AggregateVersions = new List<IAggregateHistoryItemHeader>
+                        AggregateVersions = new List<AggregateHistoryItemHeader>
                         {
                             historyItemHeader
                         },
                         AggregateId = model.id
                     },
-                    methodName: methodName);
+                    methodName: methodName).ConfigureAwait(false);
             }
             else
             {
@@ -276,7 +272,7 @@
                 historyIndexRecord.AggregateVersions.Add(historyItemHeader);
                 historyIndexRecord.Version = historyIndexRecord.AggregateVersions.Count;
                 //and update
-                await UpdateCapabilities.Update(historyIndexRecord, methodName: methodName);
+                await UpdateCapabilities.Update(historyIndexRecord, methodName: methodName).ConfigureAwait(false);
             }
         }
 
@@ -289,12 +285,5 @@
 
             return Task.CompletedTask;
         }
-    }
-
-    public class DataStoreOptions
-    {
-        public Guid? UnitOfWorkId { get; set; }
-
-        public bool UseVersionHistory { get; set; }
     }
 }

@@ -38,7 +38,7 @@
             Assert.Null(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
             //The dataStore reads the changes correctly
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+            Assert.Equal("Ford", (await dataStore.ReadActiveById<Car>(carId)).Make);
         }
 
         [Fact]
@@ -75,7 +75,7 @@
 
             //The DataStore instance picks up the change, because it has applied
             //all the previous changes made during this session to any query.
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+            Assert.Equal("Ford", (await dataStore.ReadActiveById<Car>(carId)).Make);
         }
     }
 }

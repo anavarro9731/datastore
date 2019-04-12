@@ -1,12 +1,12 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
     using System;
+    using Newtonsoft.Json;
 
-    //this must remain as lowercase until such a time as documentdb linq provider
-    //can translate Id to id for its DocDb SQL-esque query syntax which requires the
-    //query to be written using id to match the mandatory id field
     public interface IHaveAUniqueId
     {
+        //using lowercase "id" exactly as spelled because CosmosDb must have it this way
+        //persistence can be overcome with a JsonProperty("id") but this does nothing for LINQ translation
         Guid id { get; set; }
     }
 }
