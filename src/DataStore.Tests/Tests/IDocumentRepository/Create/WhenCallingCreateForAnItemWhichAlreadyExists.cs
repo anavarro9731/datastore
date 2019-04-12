@@ -17,7 +17,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCreate));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCreateForAnItemWhichAlreadyExists));
 
             this.newCarId = Guid.NewGuid();
             var newCar = new Car

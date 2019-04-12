@@ -53,6 +53,7 @@
                 this.collectionUri,
                 new FeedOptions
                 {
+                    ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
                     EnableCrossPartitionQuery = true,
                     PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
                 }).Where(i => i.Schema == schema);
@@ -114,9 +115,9 @@
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             var result = await this.client.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model, new RequestOptions()
-                                   {
-                                       PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
-                                   })
+            {
+                PartitionKey = new PartitionKey(CosmosAggregate.PartitionKeyValue)
+            })
                                    .ConfigureAwait(false);
 
             aggregateUpdated.StateOperationCost = result.RequestCharge;

@@ -63,10 +63,10 @@
         public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
         {
             var query = DataStore.DsConnection.CreateDocumentQuery<T>();
-            extendQueryable?.Invoke(query);
+            var updatedQuery = extendQueryable?.Invoke(query) ?? query;
 
             var results = 
-                Task.Run(async () => await DataStore.DsConnection.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), query.AsQueryable())).ConfigureAwait(false)).Result;
+                Task.Run(async () => await DataStore.DsConnection.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), updatedQuery)).ConfigureAwait(false)).Result;
             return results;
         }
 
@@ -104,6 +104,8 @@
                             }
                         }
                     }).ConfigureAwait(false);
+
+                await Task.Delay(2000);  //this call seems to be fire-and-forget and i need it complete reliably
             }
         }
     }
