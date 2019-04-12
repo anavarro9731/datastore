@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>DataStore.Interfaces.LowLevel Class Library</Description>
     <Authors>Aaron Navarro</Authors>
@@ -7,12 +7,11 @@
     <AssemblyName>DataStore.Interfaces.LowLevel</AssemblyName>
     <PackageId>DataStore.Interfaces.LowLevel</PackageId>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>6.0.2</Version>
+    <Version>6.1.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="CircuitBoard" Version="1.0.2" />
-
   </ItemGroup>
 </Project>
