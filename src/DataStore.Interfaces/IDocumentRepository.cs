@@ -16,8 +16,6 @@ namespace DataStore.Interfaces
 
         Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried);
 
-        Task<bool> Exists(IDataStoreReadById aggregateQueriedById);
-
         Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new();
 
         Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new();

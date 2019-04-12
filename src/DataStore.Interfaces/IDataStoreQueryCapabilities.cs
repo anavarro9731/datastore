@@ -8,8 +8,6 @@
 
     public interface IDataStoreQueryCapabilities
     {
-        Task<bool> Exists(Guid id);
-
         Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new();
 
         Task<IEnumerable<T>> Read<T>() where T : class, IAggregate, new();

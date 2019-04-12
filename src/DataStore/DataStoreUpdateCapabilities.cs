@@ -30,7 +30,7 @@
 
         private IDocumentRepository DsConnection { get; }
 
-        // .. update using id; get values from another instance of the same aggregate
+        // .. update using Id; get values from another instance of the same aggregate
         public Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
@@ -104,14 +104,14 @@
             {
                 var originalId = dataObject.id;
 
-                var restrictedPropertiesBefore = originalId + dataObject.schema;
+                var restrictedPropertiesBefore = originalId + dataObject.Schema;
                 var restrictedCreatedBefore = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedBefore = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
                 restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore;
 
                 action(dataObject);
 
-                var restrictedPropertiesAfter = originalId + dataObject.schema;
+                var restrictedPropertiesAfter = originalId + dataObject.Schema;
                 var restrictedCreatedAfter = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedAfter = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
                 restrictedPropertiesAfter = restrictedPropertiesAfter + restrictedCreatedAfter + restrictedModifiedAfter;
@@ -119,7 +119,7 @@
 
                 Guard.Against(
                     restrictedPropertiesBefore != restrictedPropertiesAfter,
-                    "Cannot change restricted properties [id, schema, Created, CreatedAsMillisecondsEpochTime, Modified, ModifiedAsMillisecondsEpochTime on Aggregate "
+                    "Cannot change restricted properties [Id, Schema, Created, CreatedAsMillisecondsEpochTime, Modified, ModifiedAsMillisecondsEpochTime on Aggregate "
                     + originalId);
 
                 //don't allow this to be set to null by client

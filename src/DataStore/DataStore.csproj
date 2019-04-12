@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <Description>A Document-Centric Data Access Framework</Description>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DataStore</AssemblyName>
     <PackageId>DataStore</PackageId>
     <PackageTags>CosmosDb;DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
@@ -12,6 +12,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="CircuitBoard" Version="1.0.2" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>

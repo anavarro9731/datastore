@@ -56,8 +56,7 @@ function global:Run {
 	if ($PrepareNewVersion) {
         Prepare-NewVersion -projects @(
             "DataStore",		      
-            "DataStore.Impl.DocumentDb",
-            "DataStore.Impl.SqlServer",
+            "DataStore.Providers.CosmosDb",
             "DataStore.Interfaces",
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models"
@@ -73,13 +72,11 @@ function global:Run {
     if ($PackAndPublish) {
         Pack-And-Publish -projectsToPublish @(
             "DataStore",		      
-            "DataStore.Impl.DocumentDb",
-            "DataStore.Impl.SqlServer",
+            "DataStore.Providers.CosmosDb",
             "DataStore.Interfaces",
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models"       	         	    			
         ) -unlistedProjects @(
-            "DataStore.Impl.SqlServer",
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models" 
         ) `

@@ -30,7 +30,7 @@
         public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
-            return Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
+            return Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
         }
 
         public Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
@@ -80,7 +80,7 @@
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.schema == typeof(T).FullName).Cast<T>().SingleOrDefault(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().SingleOrDefault(a => a.id == aggregateQueriedById.Id);
 
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Task.FromResult(aggregate?.Clone());

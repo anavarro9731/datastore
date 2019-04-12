@@ -5,7 +5,7 @@
 
     public interface IAggregateHistory<TAggregate> where TAggregate : IAggregate
     {
-        List<IAggregateHistoryItemHeader> AggregateVersions { get; set; }
+        List<AggregateHistoryItemHeader> AggregateVersions { get; set; }
 
         Guid AggregateId { get; set; }
 
@@ -14,7 +14,7 @@
 
     public class AggregateHistory<TAggregate> : Aggregate, IAggregateHistory<TAggregate> where TAggregate : IAggregate
     {
-        public List<IAggregateHistoryItemHeader> AggregateVersions { get; set; }
+        public List<AggregateHistoryItemHeader> AggregateVersions { get; set; }
 
         public Guid AggregateId { get; set; }
 

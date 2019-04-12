@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <Description>DataStore.Models Class Library</Description>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DataStore.Models</AssemblyName>
     <PackageId>DataStore.Models</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
@@ -15,7 +15,7 @@
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="6.0.8" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 </Project>

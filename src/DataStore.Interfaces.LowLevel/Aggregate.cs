@@ -33,5 +33,9 @@
         public DateTime Modified { get; set; }
 
         public double ModifiedAsMillisecondsEpochTime { get; set; }
+
+        public const string PartitionKeyValue = "shared";
+
+        public string PartitionKey { get; set; } = PartitionKeyValue;
     }
 }
