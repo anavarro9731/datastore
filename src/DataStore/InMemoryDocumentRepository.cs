@@ -7,7 +7,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PureFunctions.Extensions;
 
-    public class InMemoryDocumentRepository : IDocumentRepository
+    public class InMemoryDocumentRepository : IDocumentRepository, IResetData
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
 
@@ -47,26 +47,23 @@
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
-            List<T> results = new List<T>();
+            var results = new List<T>();
 
             if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
             {
                 aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
             }
-            
+
             if (aggregatesQueried.QueryOptions is ISkipAndTake<T> skipAndTakeOptions)
-            {                
-                var queriesToExecute = skipAndTakeOptions.AddSkipAndTake(aggregatesQueried.Query, 1000, out int skipped, out int took);
-                while (queriesToExecute.Count > 0)
-                {
-                     results.AddRange(queriesToExecute.Dequeue().ToList());
-                }                
+            {
+                var queriesToExecute = skipAndTakeOptions.AddSkipAndTake(aggregatesQueried.Query, 1000, out var skipped, out var took);
+                while (queriesToExecute.Count > 0) results.AddRange(queriesToExecute.Dequeue().ToList());
             }
             else
             {
                 results.AddRange(aggregatesQueried.Query.ToList());
             }
-            
+
             //clone otherwise its to easy to change the referenced object in test code affecting results
             var result = results.Clone().AsEnumerable();
 
@@ -91,6 +88,13 @@
             var toUpdate = Aggregates.Single(x => x.id == aggregateUpdated.Model.id);
 
             aggregateUpdated.Model.CopyProperties(toUpdate);
+
+            return Task.CompletedTask;
+        }
+
+        Task IResetData.NonTransactionalReset()
+        {
+            Aggregates.Clear();
 
             return Task.CompletedTask;
         }
