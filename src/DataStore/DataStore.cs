@@ -30,12 +30,12 @@
                     // init vars
                     this.MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
                     this.dataStoreOptions = dataStoreOptions ?? new DataStoreOptions();
-                    DsConnection = documentRepository;
+                    DocumentRepository = documentRepository;
 
-                    QueryCapabilities = new DataStoreQueryCapabilities(DsConnection, this.MessageAggregator);
-                    UpdateCapabilities = new DataStoreUpdateCapabilities(DsConnection, this.MessageAggregator);
-                    DeleteCapabilities = new DataStoreDeleteCapabilities(DsConnection, UpdateCapabilities, this.MessageAggregator);
-                    CreateCapabilities = new DataStoreCreateCapabilities(DsConnection, this.MessageAggregator);
+                    QueryCapabilities = new DataStoreQueryCapabilities(DocumentRepository, this.MessageAggregator);
+                    UpdateCapabilities = new DataStoreUpdateCapabilities(DocumentRepository, this.MessageAggregator);
+                    DeleteCapabilities = new DataStoreDeleteCapabilities(DocumentRepository, UpdateCapabilities, this.MessageAggregator);
+                    CreateCapabilities = new DataStoreCreateCapabilities(DocumentRepository, this.MessageAggregator);
                 }
             }
 
@@ -45,7 +45,7 @@
             }
         }
 
-        public IDocumentRepository DsConnection { get; }
+        public IDocumentRepository DocumentRepository { get; }
 
         public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
             new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IDataStoreOperation>()));
@@ -54,7 +54,7 @@
             new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
                 l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
 
-        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DsConnection, this.MessageAggregator);
+        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DocumentRepository, this.MessageAggregator);
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -149,7 +149,7 @@
 
         public void Dispose()
         {
-            DsConnection.Dispose();
+            DocumentRepository.Dispose();
         }
 
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()

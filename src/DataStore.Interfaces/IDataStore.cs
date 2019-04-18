@@ -9,16 +9,15 @@ namespace DataStore.Interfaces
     public interface IDataStore : IDisposable, IDataStoreCreateCapabilities, IDataStoreQueryCapabilities, IDataStoreDeleteCapabilities, IDataStoreUpdateCapabilities
 
     {
-
-        IDocumentRepository DsConnection { get; }
-
-        IMessageAggregator MessageAggregator { get; }
-
-        IWithoutEventReplay WithoutEventReplay { get; }
+        IDocumentRepository DocumentRepository { get; }
 
         IReadOnlyList<IDataStoreOperation> ExecutedOperations { get; }
 
+        IMessageAggregator MessageAggregator { get; }
+
         IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations { get; }
+
+        IWithoutEventReplay WithoutEventReplay { get; }
 
         IDataStoreQueryCapabilities AsReadOnly();
 

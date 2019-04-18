@@ -10,7 +10,7 @@
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
 
-    public class CosmosDbRepository : IDocumentRepository
+    public class CosmosDbRepository : IDocumentRepository, IResetData
     {
         private readonly DocumentClient client;
 
@@ -65,8 +65,9 @@
         {
             var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
 
-            var result = await this.client.DeleteDocumentAsync(docLink,
-                             new RequestOptions()
+            var result = await this.client.DeleteDocumentAsync(
+                             docLink,
+                             new RequestOptions
                              {
                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                              }).ConfigureAwait(false);
@@ -101,7 +102,7 @@
         {
             var query = CreateDocumentQuery<T>();
             var count = await query.Where(d => d.id == aggregateQueriedById.Id).CountAsync().ConfigureAwait(false);
-            if (count == 0) return default(T);
+            if (count == 0) return default;
 
             var result = await this.client.ReadDocumentAsync<T>(
                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
@@ -114,11 +115,13 @@
 
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            var result = await this.client.ReplaceDocumentAsync(CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id), aggregateUpdated.Model, new RequestOptions()
-            {
-                PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-            })
-                                   .ConfigureAwait(false);
+            var result = await this.client.ReplaceDocumentAsync(
+                             CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
+                             aggregateUpdated.Model,
+                             new RequestOptions
+                             {
+                                 PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                             }).ConfigureAwait(false);
 
             aggregateUpdated.StateOperationCost = result.RequestCharge;
         }
@@ -132,6 +135,11 @@
 
             var docLink = UriFactory.CreateDocumentUri(this.settings.DatabaseName, this.settings.DatabaseName, id.ToString());
             return docLink;
+        }
+
+        async Task IResetData.NonTransactionalReset()
+        {
+            await CosmosDbUtilities.ResetDatabase(this.settings);
         }
     }
 }
