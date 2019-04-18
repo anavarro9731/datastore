@@ -102,7 +102,7 @@
         {
             var query = CreateDocumentQuery<T>();
             var count = await query.Where(d => d.id == aggregateQueriedById.Id).CountAsync().ConfigureAwait(false);
-            if (count == 0) return default;
+            if (count == 0) return default(T);
 
             var result = await this.client.ReadDocumentAsync<T>(
                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
