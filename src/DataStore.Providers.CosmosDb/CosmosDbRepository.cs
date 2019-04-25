@@ -12,7 +12,7 @@
 
     public class CosmosDbRepository : IDocumentRepository, IResetData
     {
-        private readonly DocumentClient client;
+        private DocumentClient client;
 
         private readonly Uri collectionUri;
 
@@ -21,8 +21,13 @@
         public CosmosDbRepository(CosmosSettings settings)
         {
             this.collectionUri = UriFactory.CreateDocumentCollectionUri(settings.DatabaseName, settings.DatabaseName);
-            this.client = new DocumentClient(new Uri(settings.EndpointUrl), settings.AuthKey);
             this.settings = settings;
+            ResetClient();            
+        }
+
+        private void ResetClient()
+        {
+            this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
         }
 
         public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
@@ -140,6 +145,7 @@
         async Task IResetData.NonTransactionalReset()
         {
             await CosmosDbUtilities.ResetDatabase(this.settings);
+            ResetClient();
         }
     }
 }
