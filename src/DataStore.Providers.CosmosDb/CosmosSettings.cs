@@ -1,6 +1,8 @@
 ﻿namespace DataStore.Providers.CosmosDb
 {
-    public class CosmosSettings
+    using DataStore.Interfaces;
+
+    public class CosmosSettings : IDatabaseSettings
     {
         public CosmosSettings(string authKey, string databaseName, string endpointUrl)
         {
@@ -14,5 +16,10 @@
         public string DatabaseName { get; set; }
 
         public string EndpointUrl { get; set; }
+
+        public IDocumentRepository CreateRepository()
+        {
+            return new CosmosDbRepository(this);
+        }
     }
 }
