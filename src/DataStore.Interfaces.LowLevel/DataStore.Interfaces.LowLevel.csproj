@@ -7,7 +7,7 @@
     <AssemblyName>DataStore.Interfaces.LowLevel</AssemblyName>
     <PackageId>DataStore.Interfaces.LowLevel</PackageId>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>6.14.0</Version>
+    <Version>6.15.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
