@@ -22,7 +22,8 @@ function global:Run {
             "DataStore.Providers.CosmosDb",
             "DataStore.Interfaces",
             "DataStore.Interfaces.LowLevel",
-            "DataStore.Models"
+            "DataStore.Models",
+			"DataStore.Tests"
         )
 	}
 
