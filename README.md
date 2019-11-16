@@ -6,18 +6,23 @@ A Document-Centric Data Access Framework for Azure CosmosDb (DocumentDB client)
 
 DataStore is an easy-to-use, data-access framework, which maps POCO C# classes to documents. 
 
-Currently supported dbs are :Azure DocumentDb (via DataStore.Impl.DocumentDb package).
+Currently the only supported database is Azure CosmosDb (via DataStore.Providers.CosmosDb package).
 
 It supports basic CRUD operations on any C# object, with some additional features such as:
 
 * Strongly typed mapping between documents and C# class types with generics
-* Generic Repository with support for LINQ queries against objects and their children (where the DocumentDB client supports it)
+* Generic Repository with support for LINQ queries against objects and their children 
+	(where the CosmosDB client supports it, including paging with continuation tokens)
 * Limited cross-document transactional support
 * Limited Partitioned Collection Support (partition on Id or ClassName)
 * In-memory database, and event history for testing
 * Profiling (e.g. Duration and Query Cost in Request Units)
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
+* Session vs Direct-to-Database view of data. 
+Using a feature called "Event Replay" queries by default will reflect all previous changes made in the session. 
+This is can be circumnvented by choosing to use the "WithoutEventReplay" option on all Reads.
+Some features such as OrderBy are available only WithoutEventReplay for obvious reasons.
 
 DataStore is built with .NET Core but it is compatible with the all NetStandard2.0 platforms including .NET Framework 4.6.1 and does not require .NET Core.
 
