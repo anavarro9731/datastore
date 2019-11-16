@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
@@ -22,7 +24,7 @@
         {
             this.collectionUri = UriFactory.CreateDocumentCollectionUri(settings.DatabaseName, settings.DatabaseName);
             this.settings = settings;
-            ResetClient();            
+            ResetClient();
         }
 
         private void ResetClient()
@@ -32,7 +34,7 @@
 
         public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
-            if (aggregateAdded == null || aggregateAdded.Model == null)
+            if (aggregateAdded?.Model == null)
             {
                 throw new ArgumentNullException(nameof(aggregateAdded));
             }
@@ -58,6 +60,8 @@
                 this.collectionUri,
                 new FeedOptions
                 {
+                    RequestContinuation = (queryOptions as IContinueAndTake<T>)?.CurrentContinuationToken?.ToString(),
+                    MaxItemCount = (queryOptions as IContinueAndTake<T>)?.MaxTake,
                     ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
                     EnableCrossPartitionQuery = true,
                     PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
@@ -89,18 +93,86 @@
         {
             var results = new List<T>();
 
-            var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
-
-            while (documentQuery.HasMoreResults)
             {
-                var result = await documentQuery.ExecuteNextAsync<T>().ConfigureAwait(false);
+                if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
+                {
+                    aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
+                    if (orderByOptions.OrderByParameters.Count > 1)
+                    {
+                        await CreateIndexes(orderByOptions.OrderByParameters);
+                    }
+                }
 
-                aggregatesQueried.StateOperationCost += result.RequestCharge;
+                var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
 
-                results.AddRange(result);
+                while (HaveLessRecordsThanUserRequested() && documentQuery.HasMoreResults)
+                {
+                    var result = await documentQuery.ExecuteNextAsync<T>().ConfigureAwait(false);
+
+                    aggregatesQueried.StateOperationCost += result.RequestCharge;
+
+                    if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
+                        throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
+
+                    results.AddRange(result);
+
+                    SetContinuationToken(result);  
+                }
+
+                return results;
             }
 
-            return results;
+            bool HaveLessRecordsThanUserRequested()
+            {
+                var userRequestedLimit = (aggregatesQueried.QueryOptions as IContinueAndTake<T>)?.MaxTake;
+
+                return userRequestedLimit == null || results.Count < userRequestedLimit;
+            }
+
+            void SetContinuationToken(FeedResponse<T> result)
+            {
+                if (aggregatesQueried.QueryOptions is IContinueAndTake<T> continueAndTakeOptions && continueAndTakeOptions.MaxTake != null)
+                {
+                    continueAndTakeOptions.NextContinuationToken = new ContinuationToken(result.ResponseContinuation);
+                }
+            }
+
+            async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
+            {
+                // Retrieve the container's details
+                ResourceResponse<DocumentCollection> containerResponse = await client.ReadDocumentCollectionAsync(this.collectionUri);
+                // Add a composite index
+                var compositePaths = new Collection<CompositePath>();
+
+                foreach (var valueTuple in fieldName_IsDescending)
+                {
+                    compositePaths.Add(new CompositePath()
+                    {
+                        Path = $"/{valueTuple.Item1}",
+                        Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
+                    });
+                }
+
+                containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
+                // Update container with changes
+                await client.ReplaceDocumentCollectionAsync(containerResponse.Resource);
+
+                long indexTransformationProgress;
+                do
+                {
+                    // retrieve the container's details
+                    ResourceResponse<DocumentCollection> container = await client.ReadDocumentCollectionAsync(
+                                                                         this.collectionUri,
+                                                                         new RequestOptions
+                                                                         {
+                                                                             PopulateQuotaInfo = true
+                                                                         });
+                    // retrieve the index transformation progress from the result
+                    indexTransformationProgress = container.IndexTransformationProgress;
+                }
+                while (indexTransformationProgress < 100);
+
+            }
         }
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()

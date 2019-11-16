@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.IDocumentRepository.Query
+        namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Threading.Tasks;

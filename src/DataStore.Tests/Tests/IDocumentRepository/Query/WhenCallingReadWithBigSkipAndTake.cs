@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
@@ -11,18 +12,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingReadWithBigSkipAndTake
     {
-        private  IEnumerable<Car> carsFromDatabaseWithFilter1;
-        private  IEnumerable<Car> carsFromDatabaseWithFilter2;
-        private  IEnumerable<Car> carsFromDatabaseWithFilter3;
-        private  IEnumerable<Car> carsFromDatabaseWithFilter4;
+        private IEnumerable<Car> carsFromDatabaseWithFilter1;
+        private IEnumerable<Car> carsFromDatabaseWithFilter2;
+        private IEnumerable<Car> carsFromDatabaseWithFilter3;
+        private IEnumerable<Car> carsFromDatabaseWithFilter4;
 
-        private  IEnumerable<Car> carsInDatabase;
+        private IEnumerable<Car> carsInDatabase;
 
-        private  Guid fourthCarId;
+        private Guid fourthCarId;
 
-        private  ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        private  Guid thirdCarId;
+        private Guid thirdCarId;
 
         async Task Setup()
         {
@@ -74,16 +75,28 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(thirdExistingCar);
             this.testHarness.AddToDatabase(fourthExistingCar);
 
+            var c = new ContinuationToken();
+            await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Take(100, ref c));
+
+
             // When
             this.carsInDatabase = this.testHarness.QueryDatabase<Car>();
+
+            var c1 = new ContinuationToken();
             this.carsFromDatabaseWithFilter1 =
-                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(2101));
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.ContinueFrom(c).Take(2101, ref c1));
+
+            var c2 = new ContinuationToken();
             this.carsFromDatabaseWithFilter2 =
-                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(3000));
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.ContinueFrom(c).Take(3000, ref c2));
+
+            var c3 = new ContinuationToken();
             this.carsFromDatabaseWithFilter3 =
-                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(2500));
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.ContinueFrom(c).Take(2500, ref c3));
+            
+            var c4 = new ContinuationToken();
             this.carsFromDatabaseWithFilter4 =
-                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(100).Take(1500));
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.ContinueFrom(c).Take(1500, ref c4));
 
         }
 
@@ -91,7 +104,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public async void ItShouldReturnAllVolvosWhenTakeMatchesMaximumResults()
         {
             await Setup();
-            Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter1.Count());
             Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
@@ -100,7 +112,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public async void ItShouldReturnAllVolvosWhenTakeExceedsMaximumResultsWithNoRemainderFrom1000MaxTakeInRepo()
         {
             await Setup();
-            Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter2.Count());
             Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
@@ -109,7 +120,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public async void ItShouldReturnAllVolvosWhenTakeExceedsMaximumResultsWithRemainderFrom1000MaxTakeInRepo()
         {
             await Setup();
-            Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
             Assert.Equal(2101, this.carsFromDatabaseWithFilter3.Count());
             Assert.Equal(this.fourthCarId, this.carsFromDatabaseWithFilter1.Last().id);
@@ -118,9 +128,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public async void ItShouldReturnTheCorrectAmountOfVolvosWhenTakeIsLessThanAmountOfVolvosAvailableAfterSKip()
         {
             await Setup();
-            Assert.True(this.testHarness.DataStore.ExecutedOperations.All(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2202, this.carsInDatabase.Count());
-            Assert.Equal(1500, this.carsFromDatabaseWithFilter4.Count()); 
+            Assert.Equal(1500, this.carsFromDatabaseWithFilter4.Count());
         }
     }
 }

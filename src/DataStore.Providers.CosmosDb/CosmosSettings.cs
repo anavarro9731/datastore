@@ -11,11 +11,17 @@
             EndpointUrl = endpointUrl;
         }
 
-        public string AuthKey { get; set; }
+        public string AuthKey { get; private set; }
 
-        public string DatabaseName { get; set; }
+        public string DatabaseName { get; private set; }
 
-        public string EndpointUrl { get; set; }
+        public string EndpointUrl { get; private set; }
+
+        public int MaxQueryCostInRus { get; set; } = 400;
+
+        public int MaxItemsPerBatchServerLimit => 1000;
+
+        public int MaxItemsPerBatchClientDefault => 100;
 
         public IDocumentRepository CreateRepository()
         {
