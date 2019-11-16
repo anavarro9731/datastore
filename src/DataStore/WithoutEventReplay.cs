@@ -138,7 +138,7 @@ namespace DataStore
                 setOptions(options);
             }
 
-            var queryable = this.dataStoreConnection.CreateDocumentQuery<T>(options).Where(predicate);
+                var queryable = this.dataStoreConnection.CreateDocumentQuery<T>(options).Where(predicate);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable, options))
                                     .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);

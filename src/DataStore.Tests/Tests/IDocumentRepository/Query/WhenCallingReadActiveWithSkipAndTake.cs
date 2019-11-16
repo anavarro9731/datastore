@@ -4,7 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using global::DataStore.Models.Messages;
+    using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.TestHarness;
     using Xunit;
@@ -19,7 +19,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
         private Guid thirdCarId;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnTheLastVolvo()
+        {
+            await Setup();
+            Assert.Single(this.carsFromDatabase);
+            Assert.Equal(this.fourthCarId, this.carsFromDatabase.Single().id);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveWithSkipAndTake));
@@ -61,17 +69,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(fourthExistingCar);
 
             // When
-            this.carsFromDatabase =
-                await this.testHarness.DataStore.WithoutEventReplay.ReadActive<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Skip(1).Take(2));
-        }
+            var firstContinuationToken = new ContinuationToken();
 
-        [Fact]
-        public async void ItShouldReturnTheLastTwoVolvos()
-        {
-            await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
-            Assert.Single(this.carsFromDatabase);
-            Assert.Equal(this.fourthCarId, this.carsFromDatabase.Single().id);
+            await this.testHarness.DataStore.WithoutEventReplay.ReadActive<Car, WithoutReplayOptions<Car>>(
+                car => car.Make == "Volvo",
+                o => o.Take(1, ref firstContinuationToken));
+
+            var secondContinuationToken = new ContinuationToken();
+            this.carsFromDatabase = await this.testHarness.DataStore.WithoutEventReplay.ReadActive<Car, WithoutReplayOptions<Car>>(
+                                        car => car.Make == "Volvo",
+                                        o => o.ContinueFrom(firstContinuationToken).Take(2, ref secondContinuationToken));
         }
     }
 }

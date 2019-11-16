@@ -10,52 +10,78 @@
 
     public class WithoutReplayOptions<T> : IWithoutReplayOptions<T> where T : class, IEntity, new()
     {
-        private readonly Queue<(string, bool)> thenBys = new Queue<(string, bool)>();
 
-        private bool orderByDirection;
+        private readonly List<(string, bool)> orderByParameterList = new List<(string, bool)>();
+
+        private readonly Queue<(string, bool)> thenByQueue = new Queue<(string, bool)>();
+
+        private ContinuationToken currentContinuationToken;
+
+        private ContinuationToken nextContinuationToken;
+
+        private int? maxTake;
 
         private string orderByProperty;
 
-        private int skip;
+        private bool orderDescending;
 
-        private int take;
+        public WithoutReplayOptions<T> ContinueFrom(ContinuationToken currentContinuationToken)
+        {
+            if (currentContinuationToken?.Value == null)
+            {
+                throw new Exception("The continuation token provided cannot be used since it's value is null");
+            }
+
+            this.currentContinuationToken = currentContinuationToken;
+
+            return this;
+        }
+
+        public WithoutReplayOptions<T> Take(int take, ref ContinuationToken newContinuationToken)
+        {
+            this.maxTake = take;
+            this.nextContinuationToken = newContinuationToken ?? throw new Exception("ContinuationToken cannot be null");
+
+            return this;
+        }
 
         public WithoutReplayOptions<T> OrderBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
         {
             this.orderByProperty = Objects.GetPropertyName(propertyRefExpr);
-            this.orderByDirection = descending;
-            return this;
-        }
-
-        public WithoutReplayOptions<T> Skip(int skip)
-        {
-            this.skip = skip;
-            return this;
-        }
-
-        public WithoutReplayOptions<T> Take(int take)
-        {
-            this.take = take;
+            this.orderDescending = descending;
             return this;
         }
 
         public WithoutReplayOptions<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
         {
-            this.thenBys.Enqueue((Objects.GetPropertyName(propertyRefExpr), descending));
+            var propertyName = Objects.GetPropertyName(propertyRefExpr);
+            this.thenByQueue.Enqueue((propertyName, descending));
             return this;
         }
+
+        ContinuationToken IContinueAndTake<T>.CurrentContinuationToken => this.currentContinuationToken;
+
+        int? IContinueAndTake<T>.MaxTake => this.maxTake;
+
+        ContinuationToken IContinueAndTake<T>.NextContinuationToken { set => this.nextContinuationToken.Value = value.Value; }
+
+        List<(string, bool)> IOrderBy<T>.OrderByParameters => this.orderByParameterList;
 
         IQueryable<T> IOrderBy<T>.AddOrderBy(IQueryable<T> queryable)
         {
             if (!string.IsNullOrEmpty(this.orderByProperty))
             {
-                queryable = OrderBy(queryable, this.orderByProperty, this.orderByDirection);
+                queryable = OrderBy(queryable, this.orderByProperty, this.orderDescending);
 
-                while (this.thenBys.Count > 0)
+                this.orderByParameterList.Add((this.orderByProperty, this.orderDescending));
+
+                while (this.thenByQueue.Count > 0)
                 {
-                    var thenBy = this.thenBys.Dequeue();
+                    var thenBy = this.thenByQueue.Dequeue();
 
                     queryable = ThenBy(queryable, thenBy.Item1, thenBy.Item2);
+
+                    this.orderByParameterList.Add(thenBy);
                 }
             }
 
@@ -74,8 +100,7 @@
                     command,
                     new[]
                     {
-                        type,
-                        property.PropertyType
+                        type, property.PropertyType
                     },
                     source.Expression,
                     Expression.Quote(orderByExpression));
@@ -95,54 +120,12 @@
                     command,
                     new[]
                     {
-                        type,
-                        property.PropertyType
+                        type, property.PropertyType
                     },
                     source.Expression,
                     Expression.Quote(orderByExpression));
                 return (IOrderedQueryable<TEntity>)source.Provider.CreateQuery<TEntity>(resultExpression);
             }
-        }
-
-        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable, int? maxTake,  out int skipped, out int took)
-        {
-            var result = new Queue<IQueryable<T>>();
-
-            
-            if (maxTake.HasValue && this.take > maxTake.Value)
-            {
-                var rounds = this.take / maxTake.Value;
-
-                if (this.take % maxTake.Value != 0) rounds++; //add one more round to pickup the remainder
-
-                for (var counter = 0; counter < rounds; counter++)
-                {
-                    var iteralSkip = this.skip + (counter * maxTake.Value);
-
-                    var amountTaken = (counter * maxTake.Value);
-                    var amountRemaining = this.take - amountTaken;
-                    var iteralTake = amountRemaining > maxTake.Value ? maxTake.Value : amountRemaining;
-
-                    result.Enqueue(queryable.Skip(iteralSkip).Take(iteralTake));
-                }
-            }
-            else
-            {
-                queryable = queryable.Skip(this.skip);
-
-                if (this.take > 0) queryable = queryable.Take(this.take);
-
-                result.Enqueue(queryable);
-            }
-
-            skipped = this.skip;
-            took = this.take;
-            return result;
-        }
-
-        Queue<IQueryable<T>> ISkipAndTake<T>.AddSkipAndTake(IQueryable<T> queryable, out int skipped, out int took)
-        {
-            return (this as ISkipAndTake<T>).AddSkipAndTake(queryable, null, out skipped, out took);
         }
     }
 }

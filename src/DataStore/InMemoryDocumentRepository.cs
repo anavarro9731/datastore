@@ -1,5 +1,6 @@
 ﻿namespace DataStore
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -54,17 +55,43 @@
                 aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
             }
 
-            if (aggregatesQueried.QueryOptions is ISkipAndTake<T> skipAndTakeOptions)
+            if (aggregatesQueried.QueryOptions is IContinueAndTake<T> skipAndTakeOptions)
             {
-                var queriesToExecute = skipAndTakeOptions.AddSkipAndTake(aggregatesQueried.Query, 1000, out var skipped, out var took);
-                while (queriesToExecute.Count > 0) results.AddRange(queriesToExecute.Dequeue().ToList());
-            }
-            else
-            {
-                results.AddRange(aggregatesQueried.Query.ToList());
+                {
+                    AddSkipIfExists(out int skip);
+
+                    AddTakeIfExists(out int take);
+
+                    if (take < int.MaxValue)
+                    {
+                        skipAndTakeOptions.NextContinuationToken = new ContinuationToken(skip + take);
+                    }
+                }
+
+                void AddSkipIfExists(out int skip)
+                {
+                    skip = skipAndTakeOptions.CurrentContinuationToken?.ToInt() ?? 0;
+                    if (skip > 0)
+                    {
+                        aggregatesQueried.Query = aggregatesQueried.Query.Skip(skip);
+                    }
+                }
+
+                void AddTakeIfExists(out int take)
+                {
+                    take = skipAndTakeOptions.MaxTake ?? int.MaxValue;
+                    if (take < int.MaxValue)
+                    {
+                        aggregatesQueried.Query = aggregatesQueried.Query.Take(take);
+                    }
+                }
             }
 
-            //clone otherwise its to easy to change the referenced object in test code affecting results
+            //.. execute query
+            results.AddRange(aggregatesQueried.Query.ToList());
+
+            /* clone otherwise its to easy to change the referenced
+             object in test code affecting results */
             var result = results.Clone().AsEnumerable();
 
             return Task.FromResult(result);

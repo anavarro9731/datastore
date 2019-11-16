@@ -3,6 +3,9 @@ using Microsoft.Azure.Cosmos;
 
 namespace DataStore.Providers.CosmosDb
 {
+    using System;
+    using System.Collections;
+
     internal static class CosmosDbUtilities
     {
         public static async Task ResetDatabase(CosmosSettings cosmosStoreSettings)
@@ -20,24 +23,33 @@ namespace DataStore.Providers.CosmosDb
 
             async Task DeleteDbIfExists(CosmosClient client)
             {
-                await client.Databases[cosmosStoreSettings.DatabaseName].DeleteAsync().ConfigureAwait(false);
+                var databases = new ArrayList();
+
+                var iterator = client.GetDatabaseQueryIterator<DatabaseProperties>();
+                do
+                {
+                    foreach (DatabaseProperties db in await iterator.ReadNextAsync())
+                    {
+                        databases.Add(db.Id);
+                    }
+                }
+                while (iterator.HasMoreResults);
+
+                if (databases.Contains(cosmosStoreSettings.DatabaseName))
+                {
+                    await client.GetDatabase(cosmosStoreSettings.DatabaseName).DeleteAsync().ConfigureAwait(false);
+                }
             }
 
             async Task CreateDb(CosmosClient client)
             {
-                var db = await client.Databases.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
+                var db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
 
-                await db.Database.Containers.CreateContainerIfNotExistsAsync(
-                    new CosmosContainerSettings
+                await db.Database.CreateContainerIfNotExistsAsync(
+                    new ContainerProperties()
                     {
-                        Id = cosmosStoreSettings.DatabaseName,
-                        PartitionKey = new PartitionKeyDefinition
-                        {
-                            Paths =
-                            {
-                                "/PartitionKey"
-                            }
-                        }
+                        PartitionKeyPath = "/PartitionKey",
+                        Id = cosmosStoreSettings.DatabaseName
                     }).ConfigureAwait(false);
 
                 await Task.Delay(2000);  //the above call seems to be fire-and-forget and i need it complete reliably

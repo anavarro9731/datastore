@@ -7,18 +7,21 @@
     {
     }
 
-    public interface IWithoutReplayOptions<T> : IQueryOptions<T>, ISkipAndTake<T>, IOrderBy<T>
+    public interface IWithoutReplayOptions<T> : IQueryOptions<T>, IContinueAndTake<T>, IOrderBy<T>
     {
     }
 
-    public interface ISkipAndTake<T>
+    public interface IContinueAndTake<T>
     {
-        Queue<IQueryable<T>> AddSkipAndTake(IQueryable<T> queryable, int? maxTake, out int skipped, out int took);
-        Queue<IQueryable<T>> AddSkipAndTake(IQueryable<T> queryable, out int skipped, out int took);
+        int? MaxTake { get; }
+        ContinuationToken CurrentContinuationToken { get; }
+        ContinuationToken NextContinuationToken { set; }
     }
 
     public interface IOrderBy<T>
     {
         IQueryable<T> AddOrderBy(IQueryable<T> queryable);
+
+        List<(string, bool)> OrderByParameters { get; }
     }
 }

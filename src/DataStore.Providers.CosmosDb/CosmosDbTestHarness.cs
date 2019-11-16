@@ -16,30 +16,31 @@
     {
         public static async Task<ITestHarness> Create(string testName, IDataStore dataStore)
         {
-            var cosmosStoreSettings = GetCosmosStoreSettings();
+            var cosmosStoreSettings = GetCosmosStoreSettings(testName);
 
             await CosmosDbUtilities.ResetDatabase(cosmosStoreSettings/**/).ConfigureAwait(false);
 
             return new CosmosDbTestHarness(dataStore);
 
-            CosmosSettings GetCosmosStoreSettings()
+        }
+
+        public static CosmosSettings GetCosmosStoreSettings(string testName)
+        {
+            var settingsFile = "CosmosDbSettings.json";
+            /*
+            Create this file in your DataStore.Tests project root and set it's build output to "copy always"
+            This file should always be .gitignore(d), don't want to expose this in your repo.
             {
-                var settingsFile = "CosmosDbSettings.json";
-                /*
-                Create this file in your DataStore.Tests project root and set it's build output to "copy always"
-                This file should always be .gitignore(d), don't want to expose this in your repo.
-                {
-                    "AuthKey": "<authkey>",
-                    "DatabaseName": "<dbname>",
-                    "EndpointUrl": "<endpointurl>"
-                }
-                */
-                var location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settingsFile);
-
-                var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
-
-                return new CosmosSettings(cosmosSettings.AuthKey, cosmosSettings.DatabaseName + testName, cosmosSettings.EndpointUrl);
+                "AuthKey": "<authkey>",
+                "DatabaseName": "<dbname>",
+                "EndpointUrl": "<endpointurl>"
             }
+            */
+            var location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settingsFile);
+
+            var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
+
+            return new CosmosSettings(cosmosSettings.AuthKey, cosmosSettings.DatabaseName + testName, cosmosSettings.EndpointUrl);
         }
 
         private CosmosDbTestHarness(IDataStore dataStore)
