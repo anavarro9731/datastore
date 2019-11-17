@@ -10,25 +10,26 @@ Currently the only supported database is Azure CosmosDb (via DataStore.Providers
 
 It supports basic CRUD operations on any C# object, with some additional features such as:
 
-* Strongly typed mapping between documents and C# class types with generics
-* Generic Repository with support for LINQ queries against objects and their children 
-	(where the CosmosDB client supports it, including paging with continuation tokens)
-* Limited cross-document transactional support
+
+* Generic Repository with IQueryable<T> support for LINQ queries against objects and their children 
+	(limited by CosmosDB .NET client support, does include paging with continuation tokens)
+* Increased transactional consistency with re-usable Sessions (i.e. Unit of Work pattern)
 * Limited Partitioned Collection Support (partition on Id or ClassName)
 * In-memory database, and event history for testing
+(e.g. DataStore.ExecutedOperations.Where(o => o...))
 * Profiling (e.g. Duration and Query Cost in Request Units)
 * Automatic Id and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
-* Session vs Direct-to-Database view of data. 
+* Session-based vs Direct-to-Database views of data. 
 Using a feature called "Event Replay" queries by default will reflect all previous changes made in the session. 
-This is can be circumnvented by choosing to use the "WithoutEventReplay" option on all Reads.
-Some features such as OrderBy are available only WithoutEventReplay for obvious reasons.
+This is can be circumnvented by choosing to use the "WithoutEventReplay" option on any call.
+Some features such as Continue/Take, and OrderBy/ThenBy are available only WithoutEventReplay for obvious reasons.
 
 DataStore is built with .NET Core but it is compatible with the all NetStandard2.0 platforms including .NET Framework 4.6.1 and does not require .NET Core.
 
 ## Roadmap
 
-* Better documentation of API features (paritions, profiling, advanced queries)
+* Better documentation of API features
 * Optimistic Concurrency Support
 * Document-level security
 
