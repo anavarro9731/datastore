@@ -27,11 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
             this.testHarness = TestHarness.Create(
                 nameof(WhenCallingDeleteHardByIdWithVersionHistoryEnabled),
-                new DataStoreOptions
-                {
-                    UnitOfWorkId = this.unitOfWorkId,
-                    UseVersionHistory = true
-                });
+                DataStoreOptions.Create().WithVersionHistory(this.unitOfWorkId));
 
             await this.testHarness.DataStore.Create(
                 new Car

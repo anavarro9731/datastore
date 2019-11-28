@@ -6,7 +6,7 @@
 
     public static class TestHarness
     {
-        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.InMemory;
+        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.CosmosDb;
 
         public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null)
         {
@@ -18,8 +18,7 @@
                         async () => await CosmosDbTestHarness.Create(
                                         testName,
                                         new DataStore(
-                                            new CosmosDbRepository(CosmosDbTestHarness.GetCosmosStoreSettings(testName)),
-                                            dataStoreOptions: dataStoreOptions)).ConfigureAwait(false)).Result;
+                                            new CosmosDbRepository(CosmosDbTestHarness.GetCosmosStoreSettings(testName)), dataStoreOptions: dataStoreOptions)).ConfigureAwait(false)).Result;
 
                 case TestHarnessBackingStore.InMemory:
                 default:

@@ -1,6 +1,7 @@
 namespace DataStore.Interfaces
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;

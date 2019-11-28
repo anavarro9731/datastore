@@ -71,10 +71,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             this.testHarness = TestHarness.Create(
                 nameof(WhenCallingCreateWithHistoryLoggingEnabled),
-                new DataStoreOptions
-                {
-                    UnitOfWorkId = this.unitOfWorkId, UseVersionHistory = true
-                });
+                DataStoreOptions.Create().WithVersionHistory(this.unitOfWorkId));
 
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
