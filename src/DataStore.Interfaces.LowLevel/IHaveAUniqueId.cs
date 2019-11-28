@@ -1,7 +1,6 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
     using System;
-    using Newtonsoft.Json;
 
     public interface IHaveAUniqueId
     {

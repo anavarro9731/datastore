@@ -1,7 +1,6 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
     using System;
-    using Newtonsoft.Json;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up

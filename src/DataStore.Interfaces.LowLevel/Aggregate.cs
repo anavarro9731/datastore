@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using CircuitBoard.Permissions;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -18,8 +19,8 @@
     {
         protected Aggregate()
         {
-            //These properties are set here when they could be set in Create because a lot of the tests which
-            //create classes without create depend on these defaults and it is a significant convenience for it
+            //Properties are set here (or as defaults) when they could be set in Create because a lot of the tests which
+            //create classes without create() depend on these defaults and it is a significant convenience for it
             //to be set correctly by default.
             Active = true;
         }
@@ -28,7 +29,7 @@
 
         public bool ReadOnly { get; set; }
 
-        public List<IScopeReference> ScopeReferences { get; set; }
+        public List<ScopeReference> ScopeReferences { get; set; } = new List<ScopeReference>();
 
         public DateTime Modified { get; set; }
 

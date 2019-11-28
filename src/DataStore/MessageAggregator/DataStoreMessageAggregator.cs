@@ -10,7 +10,7 @@
 
         private readonly ReadOnlyCapableList<IMessage> allMessages = new ReadOnlyCapableList<IMessage>();
 
-        public CircuitBoard.IReadOnlyList<IMessage> AllMessages => this.allMessages;
+        public IReadOnlyList<IMessage> AllMessages => this.allMessages;
 
         public static IMessageAggregator Create()
         {

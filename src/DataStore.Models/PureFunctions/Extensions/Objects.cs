@@ -5,22 +5,12 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-    using Newtonsoft.Json.Serialization;
+    using System.Text.Json;
 
     public static class Objects
     {
-        private static readonly JsonSerializerSettings DeSerialisationSettings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.Auto //for things with $type use that type when deserializing
-        };
 
-        private static readonly JsonSerializerSettings SerialisationSettings = new JsonSerializerSettings
-        {
-            //apply $type to all objects where the class of the instance being stored != the class/interface of the property it is stored under
-            TypeNameHandling = TypeNameHandling.Auto 
-        };
+
 
         private static readonly char[] SystemTypeChars =
         {
@@ -38,27 +28,6 @@
         public static T As<T>(this object obj) where T : class
         {
             return obj as T;
-        }
-
-        public static JToken AsJson(this object value)
-        {
-            JToken json = null;
-            if (value != null)
-            {
-                json = JToken.FromObject(
-                    value,
-                    new JsonSerializer
-                    {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    });
-            }
-
-            return json;
-        }
-
-        public static T AsJson<T>(this object value) where T : JToken
-        {
-            return (T)AsJson(value);
         }
 
         public static T Cast<T>(this object o)
@@ -109,7 +78,7 @@
 
         public static T FromJsonString<T>(this string source)
         {
-            return source == null ? default(T) : JsonConvert.DeserializeObject<T>(source, DeSerialisationSettings);
+            return source == null ? default(T) : JsonSerializer.Deserialize<T>(source);
         }
 
         /// <summary>
@@ -148,7 +117,7 @@
             // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
             return GetPropertyNameCore(expression);
         }
-        
+
         public static bool IsAnonymousType(this Type type)
         {
             var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
@@ -177,9 +146,9 @@
         }
 
 
-        public static string ToJsonString(this object source, Formatting formatting = Formatting.None)
+        public static string ToJsonString(this object source)
         {
-            return source == null ? null : JsonConvert.SerializeObject(source, formatting, SerialisationSettings);
+            return source == null ? null : JsonSerializer.Serialize(source);
         }
 
         private static string GetPropertyNameCore(Expression propertyRefExpr)
@@ -201,6 +170,6 @@
             throw new ArgumentException("No property reference expression was found.", nameof(propertyRefExpr));
         }
 
-       
+
     }
 }

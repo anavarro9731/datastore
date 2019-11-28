@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
@@ -123,7 +124,7 @@
                     + originalId);
 
                 //don't allow this to be set to null by client
-                dataObject.ScopeReferences = dataObject.ScopeReferences ?? new List<IScopeReference>();
+                dataObject.ScopeReferences = dataObject.ScopeReferences ?? new List<ScopeReference>();
 
                 dataObject.Modified = DateTime.UtcNow;
                 dataObject.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();

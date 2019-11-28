@@ -17,7 +17,7 @@
     /// </summary>
     public class DataStore : IDataStore
     {
-        private readonly DataStoreOptions dataStoreOptions;
+        public DataStoreOptions DataStoreOptions { get; }
 
         public IMessageAggregator MessageAggregator { get; }
 
@@ -29,7 +29,7 @@
                 {
                     // init vars
                     this.MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
-                    this.dataStoreOptions = dataStoreOptions ?? new DataStoreOptions();
+                    this.DataStoreOptions = dataStoreOptions ?? DataStoreOptions.Create();
                     DocumentRepository = documentRepository;
 
                     QueryCapabilities = new DataStoreQueryCapabilities(DocumentRepository, this.MessageAggregator);
@@ -47,10 +47,10 @@
 
         public IDocumentRepository DocumentRepository { get; }
 
-        public CircuitBoard.IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
+        public IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
             new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IDataStoreOperation>()));
 
-        public CircuitBoard.IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
+        public IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations =>
             new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
                 l => l.AddRange(this.MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
 
@@ -233,7 +233,7 @@
                 {
                     id = historyItemId = Guid.NewGuid(),
                     AggregateVersion = model, //perhaps this needs to be cloned but i am not sure yet the consequence of not doing which would yield better perf
-                    UnitOfWorkResponsibleForStateChange = this.dataStoreOptions.UnitOfWorkId
+                    UnitOfWorkResponsibleForStateChange = this.DataStoreOptions.VersionHistory.UnitOfWorkId
                 },
                 methodName: methodName).ConfigureAwait(false);
 
@@ -245,7 +245,7 @@
             var historyItemHeader = new AggregateHistoryItemHeader
             {
                 AssemblyQualifiedTypeName = model.GetType().AssemblyQualifiedName,
-                UnitWorkId = this.dataStoreOptions.UnitOfWorkId.GetValueOrDefault(),
+                UnitWorkId = this.DataStoreOptions.VersionHistory.UnitOfWorkId.GetValueOrDefault(),
                 VersionedAt = DateTime.UtcNow,
                 VersionId = historyIndexRecord?.Version + 1 ?? 1,
                 AggegateHistoryItemId = historyItemId
@@ -278,7 +278,7 @@
 
         private Task IncrementAggregateHistoryIfEnabled<T>(T model, string methodName) where T : class, IAggregate, new()
         {
-            if (this.dataStoreOptions.UseVersionHistory)
+            if (this.DataStoreOptions.VersionHistory != null)
             {
                 return IncrementAggregateHistory(model, methodName);
             }

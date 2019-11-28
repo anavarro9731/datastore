@@ -32,17 +32,17 @@
         {
             //create a new one, we definately don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
-            aggregate = aggregate.Clone();
-
+            var clone = aggregate.Clone();
+            
             //copied from datastore create capabilities, may get out of date
-            DataStoreCreateCapabilities.ForceProperties(aggregate.ReadOnly, aggregate);
+            DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
 
-            aggregate.Created = DateTime.UtcNow.AddDays(-1);
-            aggregate.CreatedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime();
-            aggregate.Modified = aggregate.Created;
-            aggregate.ModifiedAsMillisecondsEpochTime = aggregate.ModifiedAsMillisecondsEpochTime;
+            clone.Created = DateTime.UtcNow.AddDays(-1);
+            clone.CreatedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime();
+            clone.Modified = clone.Created;
+            clone.ModifiedAsMillisecondsEpochTime = clone.ModifiedAsMillisecondsEpochTime;
 
-            DocumentRepository.Aggregates.Add(aggregate);
+            DocumentRepository.Aggregates.Add(clone);
         }
 
         public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()

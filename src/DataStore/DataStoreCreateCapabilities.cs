@@ -10,6 +10,7 @@ namespace DataStore
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
@@ -58,10 +59,9 @@ namespace DataStore
             enriched.Op(
                 e =>
                     {
-                    //aggregate
-                    e.Schema = typeof(T).FullName; //should be defaulted by Aggregate but needs to be forced as it is open to change
-                    e.ReadOnly = readOnly;
-                    e.ScopeReferences = e.ScopeReferences ?? new List<IScopeReference>();                    
+                        e.Schema = typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
+                        e.ReadOnly = readOnly;
+                        e.ScopeReferences = e.ScopeReferences ?? new List<ScopeReference>(); //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
                     });
 
             WalkGraphAndUpdateEntityMeta(enriched);

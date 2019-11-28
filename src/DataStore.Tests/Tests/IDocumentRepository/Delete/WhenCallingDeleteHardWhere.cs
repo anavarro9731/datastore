@@ -22,7 +22,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardWhere), new DataStoreOptions() { UseVersionHistory = true});
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardWhere), DataStoreOptions.Create().WithVersionHistory(null));
 
             this.carId = Guid.NewGuid();
             await this.testHarness.DataStore.Create(

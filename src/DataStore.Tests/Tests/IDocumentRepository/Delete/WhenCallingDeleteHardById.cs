@@ -21,8 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
          async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardById),
-                new DataStoreOptions() { UseVersionHistory = true });
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardById), DataStoreOptions.Create().WithVersionHistory(null));
 
             this.carId = Guid.NewGuid();
             await this.testHarness.DataStore.Create(
