@@ -6,13 +6,13 @@
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
-    using IPermission = System.Security.IPermission;
+    using IPermission = CircuitBoard.Permissions.IPermission;
 
-    internal class AuthorisationFunctions
+    public class ControlFunctions
     {
-        public static async Task Authorise(
+        public static async Task<List<IHaveScope>> Authorise(
             IIdentityWithPermissions user,
-            CircuitBoard.Permissions.IPermission requiredPermission,
+            IPermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
             IDataStore dataStore)
@@ -21,11 +21,11 @@
             {
                 //all data will be returned if the scoped data passes or if there is no scoped data, see below
 
-                var scopedData = dataBeingQueried.Where(/* if an underlying provider should
+                var scopedData = dataBeingQueried.Where( /* if an underlying provider should
                     return null for an empty list you would need to add x.ScopeReferences != null || */
                     x => x.ScopeReferences.Any()).ToList();
 
-                if (scopedData.Count == 0) return;
+                if (scopedData.Count == 0) return dataBeingQueried;
 
                 /*
                 we could add a .Where clause to the query itself but this would mask the filter and make it harder during
@@ -43,7 +43,7 @@
                 */
 
                 var userPermission = user.Permissions.Single(x => x.Id == requiredPermission.Id);
-                 if (scopedData.All(sd => sd.ScopeReferences.Intersect(userPermission.ScopeReferences).Any())) return;
+                if (scopedData.All(sd => sd.ScopeReferences.Intersect(userPermission.ScopeReferences).Any())) return dataBeingQueried;
 
                 /*
                 If there is not a direct intersection between all of the data and the users' permissions there may be an indirect match
@@ -51,14 +51,47 @@
                 to this approach.
                  */
 
-                if (await settings.ScopeHierarchy.ExtrapolatedIntersection(
-                        dataBeingQueried,
-                        userPermission.ScopeReferences,
-                        dataStore)) return;
+                if ((await settings.ScopeHierarchy.ExtrapolatedIntersection(scopedData, userPermission.ScopeReferences, dataStore))
+                    .Count() == dataBeingQueried.Count)
+                {
+                    return dataBeingQueried;
+                }
             }
 
             throw new SecurityException(
                 "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission with the appropriate scope.");
         }
+
+        public static async Task<List<IHaveScope>> Filter(
+            IIdentityWithPermissions user,
+            IPermission requiredPermission,
+            List<IHaveScope> dataBeingQueried,
+            DataStoreOptions.SecuritySettings settings,
+            IDataStore dataStore)
+        {
+            if (user.HasPermission(requiredPermission))
+            {
+                var scopedData = dataBeingQueried.Where( /* if an underlying provider should
+                    return null for an empty list you would need to add x.ScopeReferences != null || */
+                    x => x.ScopeReferences.Any()).ToList();
+
+                var userPermission = user.Permissions.Single(x => x.Id == requiredPermission.Id);
+
+                /* Extrapolate all indirect scopes and check against this. 
+                 */
+
+                return (await settings.ScopeHierarchy.ExtrapolatedIntersection(scopedData, userPermission.ScopeReferences, dataStore)).ToList();
+            }
+
+            throw new SecurityException(
+                "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission.");
+        }
+
+        public delegate Task<List<IHaveScope>> ControlDataDelegate(
+            IIdentityWithPermissions user,
+            IPermission requiredPermission,
+            List<IHaveScope> dataBeingQueried,
+            DataStoreOptions.SecuritySettings settings,
+            IDataStore dataStore);
     }
 }
