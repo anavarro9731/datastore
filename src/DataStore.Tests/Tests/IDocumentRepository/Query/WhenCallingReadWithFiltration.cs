@@ -11,7 +11,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using global::DataStore.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingReadSecurely
+    public class WhenCallingReadWithFiltration
     {
         private Guid volvo1Id, volvo2Id;
 
@@ -25,25 +25,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         private Permission permission2 = new Permission(Guid.NewGuid(), "Perm 2");
 
         [Fact]
-        public async void ItShouldFailWhenAllVolvosAreRequested()
+        public async void ItShouldReturnOnlyVolvosWhichTheUserHasPermissionTo()
         {
             await Setup();
-
-            await Assert.ThrowsAsync<SecurityException>(
-               async () =>
-                    {
-                        // When
-                        await this.testHarness.DataStore.RequirePermission(this.permission1, user).Read<Car>(car => car.Make == "Volvo");
-                    });
-        }
-        [Fact]
-        public async void ItShouldSucceedWhenRequestingOnlyVolvosMatchingTheUsersPermissionsAreRequested()
-        {
-            await Setup();
-
-            // When
-            this.carsFromDatabase = await this.testHarness.DataStore.RequirePermission(this.permission1, user).Read<Car>(car => 
-                                        car.id == this.volvo1Id || car.id == this.volvo2Id);
 
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
             Assert.Equal(2, this.carsFromDatabase.Count());
@@ -59,7 +43,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
             var dataStoreOptions = DataStoreOptions.Create().WithSecurity(scopeHierarchy);
 
-            this.testHarness = TestHarness.Create(nameof(WhenCallingReadSecurely), dataStoreOptions);
+            this.testHarness = TestHarness.Create(nameof(WhenCallingReadWithFiltration), dataStoreOptions);
 
             var companyA = new Company("CompanyA", Guid.NewGuid());
             this.testHarness.AddToDatabase(companyA);
@@ -181,6 +165,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(volvo3);
             this.testHarness.AddToDatabase(volvo4);
 
+
+            // When
+            this.carsFromDatabase = await this.testHarness.DataStore.FilterByPermission(this.permission1, user).Read<Car>(car => car.Make == "Volvo");
 
         }
     }

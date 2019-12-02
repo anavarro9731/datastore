@@ -31,7 +31,8 @@
             string EntityTypeName { get; }
         }
 
-        public async Task<bool> ExtrapolatedIntersection(List<IHaveScope> dataWithScope, List<ScopeReference> userPermissionScopes, IDataStore dataStore)
+        
+        public async Task<IEnumerable<IHaveScope>> ExtrapolatedIntersection(List<IHaveScope> dataWithScope, List<ScopeReference> userPermissionScopes, IDataStore dataStore)
         {
             {
                 if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false); ;
@@ -45,7 +46,7 @@
                         RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
                     }
 
-                return dataWithScope.All(sd => sd.ScopeReferences.Intersect(extrapolatedScopes).Any());
+                return dataWithScope.Where(sd => sd.ScopeReferences.Intersect(extrapolatedScopes).Any());
             }
 
             void RecurseAndFindNewScopeReferences(EntityWithChildren referencedEntity, ref List<ScopeReference> extrapolatedScopesBuffer)
