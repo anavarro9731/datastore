@@ -123,8 +123,6 @@
                     "Cannot change restricted properties [Id, Schema, Created, CreatedAsMillisecondsEpochTime, Modified, ModifiedAsMillisecondsEpochTime on Aggregate "
                     + originalId);
 
-                //don't allow this to be set to null by client
-                dataObject.ScopeReferences = dataObject.ScopeReferences ?? new List<ScopeReference>();
 
                 dataObject.Modified = DateTime.UtcNow;
                 dataObject.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();

@@ -5,6 +5,7 @@
 
     public class CompanyOffice : Aggregate
     {
+        [ScopeObjectReference(typeof(CompanyDivision))]
         public Guid CompanyDivisionId { get; set; }
 
         public string Name { get; set; }

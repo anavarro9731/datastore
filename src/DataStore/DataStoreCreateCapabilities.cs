@@ -61,7 +61,6 @@ namespace DataStore
                     {
                         e.Schema = typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
                         e.ReadOnly = readOnly;
-                        e.ScopeReferences = e.ScopeReferences ?? new List<ScopeReference>(); //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
                     });
 
             WalkGraphAndUpdateEntityMeta(enriched);
