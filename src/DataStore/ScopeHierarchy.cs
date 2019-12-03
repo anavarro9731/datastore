@@ -40,9 +40,9 @@
                 var extrapolatedScopes = new List<ScopeReference>(userPermissionScopes);
 
                 foreach (var userPermissionScope in userPermissionScopes)
-                    if (this.scopeEntityLookup.ContainsKey(userPermissionScope.ScopeObjectObjectId))
+                    if (this.scopeEntityLookup.ContainsKey(userPermissionScope.ScopeObjectId))
                     {
-                        var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.ScopeObjectObjectId];
+                        var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.ScopeObjectId];
                         RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
                     }
 
@@ -53,7 +53,7 @@
             {
                 if (referencedEntity.Children.Any())
                 {
-                    extrapolatedScopesBuffer.AddRange(referencedEntity.Children.Select(c => new ScopeReference(c.id, c.EntityTypeName, referenceId: c.ScopeReferenceId)));
+                    extrapolatedScopesBuffer.AddRange(referencedEntity.Children.Select(c => new ScopeReference(c.id, c.EntityTypeName, scopeObjectDebugId: c.ScopeReferenceId)));
                     foreach (var referencedEntityChild in referencedEntity.Children)
                         RecurseAndFindNewScopeReferences(referencedEntityChild, ref extrapolatedScopesBuffer);
                 }

@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Setup();
 
             // When
-            this.carsFromDatabase = await this.testHarness.DataStore.RequirePermission(this.permission1, user).Read<Car>(car => 
+            this.carsFromDatabase = await this.testHarness.DataStore.RequirePermission(this.permission1, user).Read<Car>(car =>
                                         car.id == this.volvo1Id || car.id == this.volvo2Id);
 
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
@@ -112,8 +112,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 this.permission1,
                 new List<ScopeReference>
                 {
-                    new ScopeReference(pi1s1.id, pi1s1.GetType().FullName, referenceId: pi1s1.Name),
-                    new ScopeReference(pi1s2.id, pi1s2.GetType().FullName, referenceId:pi1s2.Name)
+                    new ScopeReference(pi1s1.id, pi1s1.GetType().FullName, scopeObjectDebugId: pi1s1.Name),
+                    new ScopeReference(pi1s2.id, pi1s2.GetType().FullName, scopeObjectDebugId:pi1s2.Name)
                 });
 
 
@@ -123,7 +123,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 this.permission2,
                 new List<ScopeReference>
                 {
-                    new ScopeReference(pi2s1.id, pi2s1.GetType().FullName, referenceId:pi2s1.Name)
+                    new ScopeReference(pi2s1.id, pi2s1.GetType().FullName, scopeObjectDebugId:pi2s1.Name)
                 });
 
             user.Permissions.Add(permission1Instance);
@@ -135,11 +135,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 id = this.volvo1Id,
                 Make = "Volvo",
                 FriendlyId = "Volvo 1",
-                ScopeReferences = new List<ScopeReference>(
-                    new[]
-                    {
-                        new ScopeReference(companyADivision1Office2.id, companyADivision1Office2.GetType().FullName, referenceId: companyADivision1Office2.Name)
-                    })
+                OfficeId = companyADivision1Office2.id
             };
 
             this.volvo2Id = Guid.NewGuid();
@@ -149,11 +145,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 Active = false,
                 Make = "Volvo",
                 FriendlyId = "Volvo 2",
-                ScopeReferences = new List<ScopeReference>(
-                    new[]
-                    {
-                        new ScopeReference(companyBDivision2Office1.id, companyBDivision2Office1.GetType().FullName, referenceId: companyBDivision2Office1.Name)
-                    })
+                OfficeId = companyBDivision2Office1.id
             };
 
             var volvo3Id = Guid.NewGuid();
@@ -170,11 +162,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 id = volvo4Id,
                 Make = "Volvo",
                 FriendlyId = "Volvo 4",
-                ScopeReferences = new List<ScopeReference>(
-                    new[]
-                    {
-                        new ScopeReference(companyADivision2Office1.id, companyADivision2Office1.GetType().FullName, referenceId: companyADivision2Office1.Name)
-                    })
+                OfficeId = companyADivision2Office1.id
             };
             this.testHarness.AddToDatabase(volvo1);
             this.testHarness.AddToDatabase(volvo2);
