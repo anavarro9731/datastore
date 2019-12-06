@@ -40,11 +40,6 @@
             return source.ToJsonString().FromJsonString<T>();
         }
 
-        public static T Clone<T>(this object source)
-        {
-            return source.ToJsonString().FromJsonString<T>();
-        }
-
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
         /// </summary>
