@@ -4,7 +4,7 @@ namespace DataStore.Providers.CosmosDb
     using System.Threading.Tasks;
     using Microsoft.Azure.Cosmos;
 
-    internal static class CosmosDbUtilities
+    public static class CosmosDbUtilities
     {
         public static async Task CreateDatabase(CosmosSettings cosmosStoreSettings)
         {
