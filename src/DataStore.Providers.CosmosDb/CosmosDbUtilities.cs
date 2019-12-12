@@ -2,33 +2,36 @@ namespace DataStore.Providers.CosmosDb
 {
     using System.Collections;
     using System.Threading.Tasks;
+    using DataStore.Interfaces;
     using Microsoft.Azure.Cosmos;
 
-    public static class CosmosDbUtilities
+    public class CosmosDbUtilities : IDatabaseUtilities
     {
-        public static async Task CreateDatabaseIfNotExists(CosmosSettings cosmosStoreSettings)
+        public  async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
         {
             {
-                CreateClient(cosmosStoreSettings, out var cosmosClient);
-                await CreateDb(cosmosClient, cosmosStoreSettings).ConfigureAwait(false);
+                CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);
+                await CreateDb(cosmosClient, (CosmosSettings)cosmosStoreSettings).ConfigureAwait(false);
             }
         }
 
-        public static async Task ResetDatabase(CosmosSettings cosmosStoreSettings)
+        public  async Task ResetDatabase(IDatabaseSettings cosmosStoreSettings)
         {
             {
-                CreateClient(cosmosStoreSettings, out var cosmosClient);
-                await DeleteDbIfExists(cosmosClient).ConfigureAwait(false);
-                await CreateDb(cosmosClient, cosmosStoreSettings).ConfigureAwait(false);
+                var cosmosSettings = (CosmosSettings)cosmosStoreSettings;
+
+                CreateClient(cosmosSettings, out var cosmosClient);
+                await DeleteDbIfExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
+                await CreateDb(cosmosClient, cosmosSettings).ConfigureAwait(false);
             }
 
-            async Task DeleteDbIfExists(CosmosClient client)
+            async Task DeleteDbIfExists(CosmosClient client, CosmosSettings cosmosSettings)
             {
                 var databases = await ListDatabases(client);
 
-                if (databases.Contains(cosmosStoreSettings.DatabaseName))
+                if (databases.Contains(cosmosSettings.DatabaseName))
                 {
-                    await client.GetDatabase(cosmosStoreSettings.DatabaseName).DeleteAsync().ConfigureAwait(false);
+                    await client.GetDatabase(cosmosSettings.DatabaseName).DeleteAsync().ConfigureAwait(false);
                 }
             }
         }

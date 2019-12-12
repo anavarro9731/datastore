@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
@@ -14,22 +13,17 @@
 
     public class CosmosDbRepository : IDocumentRepository, IResetData
     {
-        private DocumentClient client;
-
         private readonly Uri collectionUri;
 
         private readonly CosmosSettings settings;
+
+        private DocumentClient client;
 
         public CosmosDbRepository(CosmosSettings settings)
         {
             this.collectionUri = UriFactory.CreateDocumentCollectionUri(settings.DatabaseName, settings.DatabaseName);
             this.settings = settings;
             ResetClient();
-        }
-
-        private void ResetClient()
-        {
-            this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
         }
 
         public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
@@ -112,11 +106,13 @@
                     aggregatesQueried.StateOperationCost += result.RequestCharge;
 
                     if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
+                    {
                         throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
+                    }
 
                     results.AddRange(result);
 
-                    SetContinuationToken(result);  
+                    SetContinuationToken(result);
                 }
 
                 return results;
@@ -140,38 +136,36 @@
             async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
             {
                 // Retrieve the container's details
-                ResourceResponse<DocumentCollection> containerResponse = await client.ReadDocumentCollectionAsync(this.collectionUri);
+                var containerResponse = await this.client.ReadDocumentCollectionAsync(this.collectionUri);
                 // Add a composite index
                 var compositePaths = new Collection<CompositePath>();
 
                 foreach (var valueTuple in fieldName_IsDescending)
-                {
-                    compositePaths.Add(new CompositePath()
-                    {
-                        Path = $"/{valueTuple.Item1}",
-                        Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
-                    });
-                }
+                    compositePaths.Add(
+                        new CompositePath
+                        {
+                            Path = $"/{valueTuple.Item1}",
+                            Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
+                        });
 
                 containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
                 // Update container with changes
-                await client.ReplaceDocumentCollectionAsync(containerResponse.Resource);
+                await this.client.ReplaceDocumentCollectionAsync(containerResponse.Resource);
 
                 long indexTransformationProgress;
                 do
                 {
                     // retrieve the container's details
-                    ResourceResponse<DocumentCollection> container = await client.ReadDocumentCollectionAsync(
-                                                                         this.collectionUri,
-                                                                         new RequestOptions
-                                                                         {
-                                                                             PopulateQuotaInfo = true
-                                                                         });
+                    var container = await this.client.ReadDocumentCollectionAsync(
+                                        this.collectionUri,
+                                        new RequestOptions
+                                        {
+                                            PopulateQuotaInfo = true
+                                        });
                     // retrieve the index transformation progress from the result
                     indexTransformationProgress = container.IndexTransformationProgress;
                 }
                 while (indexTransformationProgress < 100);
-
             }
         }
 
@@ -179,7 +173,7 @@
         {
             var query = CreateDocumentQuery<T>();
             var count = await query.Where(d => d.id == aggregateQueriedById.Id).CountAsync().ConfigureAwait(false);
-            if (count == 0) return default(T);
+            if (count == 0) return default;
 
             var result = await this.client.ReadDocumentAsync<T>(
                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
@@ -203,6 +197,12 @@
             aggregateUpdated.StateOperationCost = result.RequestCharge;
         }
 
+        async Task IResetData.NonTransactionalReset()
+        {
+            await new CosmosDbUtilities().ResetDatabase(this.settings);
+            ResetClient();
+        }
+
         private Uri CreateDocumentSelfLinkFromId(Guid id)
         {
             if (Guid.Empty == id)
@@ -214,10 +214,9 @@
             return docLink;
         }
 
-        async Task IResetData.NonTransactionalReset()
+        private void ResetClient()
         {
-            await CosmosDbUtilities.ResetDatabase(this.settings);
-            ResetClient();
+            this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
         }
     }
 }
