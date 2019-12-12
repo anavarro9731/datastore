@@ -6,7 +6,7 @@ namespace DataStore.Providers.CosmosDb
 
     public static class CosmosDbUtilities
     {
-        public static async Task CreateDatabase(CosmosSettings cosmosStoreSettings)
+        public static async Task CreateDatabaseIfNotExists(CosmosSettings cosmosStoreSettings)
         {
             {
                 CreateClient(cosmosStoreSettings, out var cosmosClient);
@@ -24,14 +24,7 @@ namespace DataStore.Providers.CosmosDb
 
             async Task DeleteDbIfExists(CosmosClient client)
             {
-                var databases = new ArrayList();
-
-                var iterator = client.GetDatabaseQueryIterator<DatabaseProperties>();
-                do
-                {
-                    foreach (var db in await iterator.ReadNextAsync()) databases.Add(db.Id);
-                }
-                while (iterator.HasMoreResults);
+                var databases = await ListDatabases(client);
 
                 if (databases.Contains(cosmosStoreSettings.DatabaseName))
                 {
@@ -47,16 +40,38 @@ namespace DataStore.Providers.CosmosDb
 
         private static async Task CreateDb(CosmosClient client, CosmosSettings cosmosStoreSettings)
         {
-            var db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
 
-            await db.Database.CreateContainerIfNotExistsAsync(
-                new ContainerProperties
-                {
-                    PartitionKeyPath = "/PartitionKey",
-                    Id = cosmosStoreSettings.DatabaseName
-                }).ConfigureAwait(false);
 
-            await Task.Delay(2000); //the above call seems to be fire-and-forget and i need it complete reliably
+            var databases = await ListDatabases(client);
+
+            if (!databases.Contains(cosmosStoreSettings.DatabaseName))
+            {
+
+                var db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
+
+                await db.Database.CreateContainerIfNotExistsAsync(
+                    new ContainerProperties
+                    {
+                        PartitionKeyPath = "/PartitionKey",
+                        Id = cosmosStoreSettings.DatabaseName
+                    }).ConfigureAwait(false);
+
+                await Task.Delay(2000); //the above call seems to be fire-and-forget and i need it complete reliably
+            }
+        }
+
+        private static async Task<ArrayList> ListDatabases(CosmosClient client)
+        {
+            var databases = new ArrayList();
+
+            var iterator = client.GetDatabaseQueryIterator<DatabaseProperties>();
+            do
+            {
+                foreach (var db in await iterator.ReadNextAsync()) databases.Add(db.Id);
+            }
+            while (iterator.HasMoreResults);
+
+            return databases;
         }
     }
 }
