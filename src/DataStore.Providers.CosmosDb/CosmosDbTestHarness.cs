@@ -18,7 +18,7 @@
         {
             var cosmosStoreSettings = GetCosmosStoreSettings(testName);
 
-            await CosmosDbUtilities.ResetDatabase(cosmosStoreSettings/**/).ConfigureAwait(false);
+            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings/**/).ConfigureAwait(false);
 
             return new CosmosDbTestHarness(dataStore);
 
