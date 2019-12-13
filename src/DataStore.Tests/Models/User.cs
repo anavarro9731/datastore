@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using CircuitBoard.Permissions;
 
@@ -24,7 +25,7 @@
 
         public string UserName { get; set; }
 
-        public IList<IPermissionInstance> PermissionInstances { get; }
+        public IEnumerable<IPermissionInstance> PermissionInstances => Permissions;
 
         public bool HasPermission(IPermission permission)
         {
