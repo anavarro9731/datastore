@@ -13,11 +13,18 @@
             UserName = userName;
         }
 
+        public void RemovePermission(IPermissionInstance permissionInstance)
+        {
+            this.Permissions.Remove(permissionInstance);
+        }
+
         public Guid id { get; set; }
 
-        public List<IPermissionInstance> Permissions { get; set; } = new List<IPermissionInstance>();
+        private List<IPermissionInstance> Permissions { get; } = new List<IPermissionInstance>();
 
         public string UserName { get; set; }
+
+        public IList<IPermissionInstance> PermissionInstances { get; }
 
         public bool HasPermission(IPermission permission)
         {
@@ -33,6 +40,11 @@
             }
 
             return false;
+        }
+
+        public void AddPermission(IPermissionInstance permissionInstance)
+        {
+            this.Permissions.Add(permissionInstance);
         }
     }
 
