@@ -6,9 +6,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Security;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
+    using global::DataStore.Interfaces;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
-    using global::DataStore.Tests.TestHarness;
+    using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingReadWithAuthorisation

@@ -1,4 +1,4 @@
-﻿namespace DataStore.Tests.TestHarness
+﻿namespace DataStore.Tests.Tests.TestHarness
 {
     using System;
     using System.Collections.Generic;

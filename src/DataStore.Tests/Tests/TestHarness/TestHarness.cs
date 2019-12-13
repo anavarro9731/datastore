@@ -1,4 +1,4 @@
-﻿namespace DataStore.Tests.TestHarness
+﻿namespace DataStore.Tests.Tests.TestHarness
 {
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;

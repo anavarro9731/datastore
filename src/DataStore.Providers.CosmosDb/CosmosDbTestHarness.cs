@@ -1,4 +1,4 @@
-﻿namespace DataStore.Tests.TestHarness
+﻿namespace DataStore.Providers.CosmosDb
 {
     using System;
     using System.Collections.Generic;
@@ -9,7 +9,6 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
-    using DataStore.Providers.CosmosDb;
     using Newtonsoft.Json;
 
     public class CosmosDbTestHarness : ITestHarness

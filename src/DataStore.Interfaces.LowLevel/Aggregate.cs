@@ -5,7 +5,6 @@
     using System.Linq;
     using System.Reflection;
     using CircuitBoard.Permissions;
-    using DataStore.Tests.Models;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -51,7 +50,7 @@
                 {
                     var attribute = propertyInfo.GetCustomAttribute<ScopeObjectReferenceAttribute>();
                     if (attribute != null && propertyInfo.GetValue(this) != null)
-                        scopeReferences.Add(new ScopeReference((Guid)propertyInfo.GetValue(this), attribute.Type.FullName));
+                        scopeReferences.Add(new ScopeReference((Guid)propertyInfo.GetValue(this), attribute.FullTypeName));
                 }
 
                 return scopeReferences;
