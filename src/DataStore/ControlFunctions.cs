@@ -42,7 +42,7 @@
                 why things are not appearing.
                 */
 
-                var userPermission = user.Permissions.Single(x => x.Id == requiredPermission.Id);
+                var userPermission = user.PermissionInstances.Single(x => x.Id == requiredPermission.Id);
                 if (scopedData.All(sd => sd.ScopeReferences.Intersect(userPermission.ScopeReferences).Any())) return dataBeingQueried;
 
                 /*
@@ -75,7 +75,7 @@
                     return null for an empty list you would need to add x.ScopeReferences != null || */
                     x => x.ScopeReferences.Any()).ToList();
 
-                var userPermission = user.Permissions.Single(x => x.Id == requiredPermission.Id);
+                var userPermission = user.PermissionInstances.Single(x => x.Id == requiredPermission.Id);
 
                 /* Extrapolate all indirect scopes and check against this. 
                  */
