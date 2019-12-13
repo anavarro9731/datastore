@@ -4,8 +4,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models;
-    using global::DataStore.Tests.TestHarness;
+    using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
     public class WhenCallingReadWithOrderBy

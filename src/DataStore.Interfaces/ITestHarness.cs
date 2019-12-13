@@ -1,10 +1,8 @@
-namespace DataStore.Tests.TestHarness
+namespace DataStore.Interfaces
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using CircuitBoard.Messages;
-    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
 
     public interface ITestHarness

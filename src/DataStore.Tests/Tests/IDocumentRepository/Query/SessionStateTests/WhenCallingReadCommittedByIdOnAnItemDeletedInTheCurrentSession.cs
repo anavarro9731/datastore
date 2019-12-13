@@ -3,7 +3,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
     using System;
     using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
-    using global::DataStore.Tests.TestHarness;
+    using global::DataStore.Tests.Tests.TestHarness;
     using Newtonsoft.Json;
     using Xunit;
 
