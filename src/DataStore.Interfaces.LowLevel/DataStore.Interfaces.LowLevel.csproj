@@ -11,6 +11,6 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CircuitBoard" Version="1.14.0" />
+    <PackageReference Include="CircuitBoard" Version="1.15.0" />
   </ItemGroup>
 </Project>
