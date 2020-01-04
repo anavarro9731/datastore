@@ -51,7 +51,7 @@
                 to this approach.
                  */
 
-                if ((await settings.ScopeHierarchy.Expanded(scopedData, userPermission.ScopeReferences, dataStore))
+                if ((await settings.ScopeHierarchy.Expanded(scopedData, userPermission.ScopeReferences, dataStore).ConfigureAwait(false))
                     .Count() == dataBeingQueried.Count)
                 {
                     return dataBeingQueried;
@@ -80,7 +80,7 @@
                 /* Extrapolate all indirect scopes and check against this. 
                  */
 
-                return (await settings.ScopeHierarchy.Expanded(scopedData, userPermission.ScopeReferences, dataStore)).ToList();
+                return (await settings.ScopeHierarchy.Expanded(scopedData, userPermission.ScopeReferences, dataStore).ConfigureAwait(false)).ToList();
             }
 
             throw new SecurityException(

@@ -53,7 +53,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteHardById)));
             Assert.Empty(this.testHarness.QueryDatabase<Car>());
         }
 

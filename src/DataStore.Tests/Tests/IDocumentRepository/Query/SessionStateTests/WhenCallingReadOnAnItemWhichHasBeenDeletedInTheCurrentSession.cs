@@ -39,7 +39,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         public async void ItShouldNotReturnThatItem()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+
+            //really helpful to debugging even if it doesn't matter here too much
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
             Assert.Single(this.testHarness.QueryDatabase<Car>());
             Assert.Null(this.carFromSession);
         }

@@ -9,7 +9,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingDeleteSoftWhere
+    public class WhenCallingDeleteSoft
     {
         private  Guid carId;
 
@@ -18,26 +18,27 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhere));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoft));
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
-                new Car
-                {
-                    id = this.carId,
-                    Make = "Volvo"
-                });
+            var car = new Car
+            {
+                id = this.carId,
+                Make = "Volvo"
+            };
+
+            this.testHarness.AddToDatabase(car);
 
             //When
-            await this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == this.carId);
+            await this.testHarness.DataStore.DeleteSoft(car);
             await this.testHarness.DataStore.CommitChanges();
         }
 
         [Fact]
-        public async void ItShouldPersistTheChangesToTheDatabase()
+        public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteSoftWhere)));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteSoft)));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
