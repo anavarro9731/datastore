@@ -93,7 +93,7 @@
                     aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
                     if (orderByOptions.OrderByParameters.Count > 1)
                     {
-                        await CreateIndexes(orderByOptions.OrderByParameters);
+                        await CreateIndexes(orderByOptions.OrderByParameters).ConfigureAwait(false);
                     }
                 }
 
@@ -136,7 +136,7 @@
             async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
             {
                 // Retrieve the container's details
-                var containerResponse = await this.client.ReadDocumentCollectionAsync(this.collectionUri);
+                var containerResponse = await this.client.ReadDocumentCollectionAsync(this.collectionUri).ConfigureAwait(false);
                 // Add a composite index
                 var compositePaths = new Collection<CompositePath>();
 
@@ -150,7 +150,7 @@
 
                 containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
                 // Update container with changes
-                await this.client.ReplaceDocumentCollectionAsync(containerResponse.Resource);
+                await this.client.ReplaceDocumentCollectionAsync(containerResponse.Resource).ConfigureAwait(false);
 
                 long indexTransformationProgress;
                 do
@@ -161,7 +161,7 @@
                                         new RequestOptions
                                         {
                                             PopulateQuotaInfo = true
-                                        });
+                                        }).ConfigureAwait(false);
                     // retrieve the index transformation progress from the result
                     indexTransformationProgress = container.IndexTransformationProgress;
                 }
@@ -199,7 +199,7 @@
 
         async Task IResetData.NonTransactionalReset()
         {
-            await new CosmosDbUtilities().ResetDatabase(this.settings);
+            await new CosmosDbUtilities().ResetDatabase(this.settings).ConfigureAwait(false);
             ResetClient();
         }
 

@@ -33,27 +33,12 @@
 
         public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            var objectToDelete = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, id, typeof(T)))
-                                   .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
+            return (await DeleteHardWhere<T>(x => x.id == id, methodName).ConfigureAwait(false)).SingleOrDefault();
+        }
 
-            //can't just return null here if the object doesn't exist because we need to replay previous events
-            //the object might have been added previously in this session
-            var list = new List<T>().Op(
-                l =>
-                    {
-                    if (objectToDelete != null) l.Add(objectToDelete);
-                    });
-            //should only be one or none cause of the predicate so we can use SingleOrDefault
-            objectToDelete = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id).SingleOrDefault();
-
-            CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, id);
-
-            if (objectToDelete == null) return null;
-
-            HardDeleteObject(methodName, objectToDelete);
-            
-            //clone otherwise its to easy to change the referenced object before committing
-            return objectToDelete.Clone();
+        public Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+        {
+            return DeleteHardById<T>(instance.id, methodName);
         }
 
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
@@ -95,7 +80,12 @@
 
         public Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            return this.updateCapabilities.UpdateById<T>(id, MarkAsSoftDeleted, true, nameof(DeleteSoftById));
+            return this.updateCapabilities.UpdateById<T>(id, MarkAsSoftDeleted, true, methodName);
+        }
+
+        public Task<T> DeleteSoft<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+        {
+            return DeleteSoftById<T>(instance.id, methodName);
         }
 
         // .. soft delete one or more DataObjects 
