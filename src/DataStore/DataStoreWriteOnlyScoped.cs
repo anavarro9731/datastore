@@ -20,9 +20,9 @@
             this.dataStore = dataStore;
         }
 
-        public async Task CommitChanges()
+        public Task CommitChanges()
         {
-            await this.dataStore.CommitChanges().ConfigureAwait(false);
+            return this.dataStore.CommitChanges();
         }
 
         public Task<T> Create(T model, bool readOnly = false, string methodName = null)

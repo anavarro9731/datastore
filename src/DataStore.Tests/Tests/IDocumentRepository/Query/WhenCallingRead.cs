@@ -46,7 +46,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public async void ItShouldReturnAllItemsRegardlessOfActiveFlag()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
             Assert.Equal(2, this.carsFromDatabase.Count());
         }
     }

@@ -51,12 +51,12 @@
 
             };
 
-            return UpdateByIdInternal<T>(src.id, model => cloned.CopyProperties(model, excludedParameters), overwriteReadOnly, methodName);
+            return UpdateById<T>(src.id, model => cloned.CopyProperties(model, excludedParameters), overwriteReadOnly, methodName);
         }
 
-        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
+        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
-            return UpdateByIdInternal(id, action, overwriteReadOnly, methodName);
+            return (await UpdateWhere(x => x.id == id, action, overwriteReadOnly, methodName)).SingleOrDefault();
         }
 
         // update a DataObject selected with a singular predicate
@@ -73,23 +73,6 @@
             var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, predicate.Compile()).AsEnumerable();
 
             return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName);
-        }
-
-        private async Task<T> UpdateByIdInternal<T>(Guid id, Action<T> action, bool overwriteReadOnly, string methodName) where T : class, IAggregate, new()
-        {
-            var objectToUpdate = await this.eventAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, id, typeof(T)))
-                                           .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
-
-            //can't just return null here if the object doesn't exist because we need to replay previous events
-            //the object might have been added previously in this session
-            var list = new List<T>().Op(
-                l =>
-                    {
-                        if (objectToUpdate != null) l.Add(objectToUpdate);
-                    });
-            var dataObjects = this.eventReplay.ApplyAggregateEvents(list, a => a.id == id);
-
-            return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName).SingleOrDefault();
         }
 
         private IEnumerable<T> UpdateInternal<T>(Action<T> action, IEnumerable<T> dataObjects, bool overwriteReadOnly, string methodName)

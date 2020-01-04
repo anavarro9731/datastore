@@ -52,14 +52,14 @@ namespace DataStore.Providers.CosmosDb
 
                 var db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
 
-                await db.Database.CreateContainerIfNotExistsAsync(
+                var response = await db.Database.CreateContainerIfNotExistsAsync(
                     new ContainerProperties
                     {
                         PartitionKeyPath = "/PartitionKey",
                         Id = cosmosStoreSettings.DatabaseName
                     }).ConfigureAwait(false);
-
-                await Task.Delay(2000); //the above call seems to be fire-and-forget and i need it complete reliably
+                
+                await Task.Delay(5000); //the above call seems to be fire-and-forget and i need it complete reliably
             }
         }
 
