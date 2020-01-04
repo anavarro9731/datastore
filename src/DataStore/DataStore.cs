@@ -89,7 +89,7 @@
 
         public async Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(Create);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(Create);
 
             var result = await CreateCapabilities.Create(model, readOnly, methodName).ConfigureAwait(false);
 
@@ -100,7 +100,7 @@
 
         public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(DeleteHardById);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteHardById);
 
             var result = await DeleteCapabilities.DeleteHardById<T>(id, methodName).ConfigureAwait(false);
 
@@ -112,9 +112,27 @@
             return result;
         }
 
+        public async Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteHard);
+
+            var result = await DeleteCapabilities.DeleteHard(instance, methodName).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<T> DeleteSoft<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoft);
+
+            var result = await DeleteCapabilities.DeleteSoft(instance, methodName).ConfigureAwait(false);
+
+            return result;
+        }
+
         public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(DeleteHardWhere);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteHardWhere);
 
             var results = await DeleteCapabilities.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
 
@@ -126,7 +144,7 @@
 
         public async Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(DeleteSoftById);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoftById);
 
             var result = await DeleteCapabilities.DeleteSoftById<T>(id, methodName).ConfigureAwait(false);
 
@@ -137,10 +155,10 @@
 
         public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(DeleteSoftWhere);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoftWhere);
 
             var results = await DeleteCapabilities.DeleteSoftWhere(predicate, methodName).ConfigureAwait(false);
-
+                
             foreach (var result in results)
                 await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
@@ -152,34 +170,63 @@
             DocumentRepository.Dispose();
         }
 
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.Read(predicate);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(Read);
+
+            var result = await QueryCapabilities.Read(predicate, methodName).ConfigureAwait(false);
+
+            return result;
         }
 
-        public Task<IEnumerable<T>> Read<T>() where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> Read<T>(string methodName = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.Read<T>();
+            methodName = (methodName == null ? string.Empty : ".") + nameof(Read);
+
+            var result = await QueryCapabilities.Read<T>(methodName).ConfigureAwait(false);
+
+            return result;
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate) where T : class, IAggregate, new()
+        public async Task<T> ReadById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.ReadActive(predicate);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadById);
+
+            var result = await QueryCapabilities.ReadById<T>(modelId, methodName).ConfigureAwait(false);
+
+            return result;
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>() where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.ReadActive<T>();
+            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActive);
+
+            var result = await QueryCapabilities.ReadActive(predicate, methodName).ConfigureAwait(false);
+
+            return result;
         }
 
-        public Task<T> ReadActiveById<T>(Guid modelId) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> ReadActive<T>(string methodName = null) where T : class, IAggregate, new()
         {
-            return QueryCapabilities.ReadActiveById<T>(modelId);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActive);
+
+            var result = await QueryCapabilities.ReadActive<T>(methodName).ConfigureAwait(false);
+                
+            return result;
+        }
+
+        public async Task<T> ReadActiveById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
+        {
+            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActiveById);
+
+            var result = await QueryCapabilities.ReadActiveById<T>(modelId, methodName).ConfigureAwait(false);
+
+            return result;
         }
 
         public async Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(Update);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(Update);
 
             var result = await UpdateCapabilities.Update(src, overwriteReadOnly, methodName).ConfigureAwait(false);
 
@@ -190,7 +237,7 @@
 
         public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(UpdateById);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(UpdateById);
 
             var result = await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly, methodName).ConfigureAwait(false);
 
@@ -205,7 +252,7 @@
             bool overwriteReadOnly = false,
             string methodName = null) where T : class, IAggregate, new()
         {
-            methodName += '.' + nameof(UpdateWhere);
+            methodName = (methodName == null ? string.Empty : ".") + nameof(UpdateWhere);
 
             var results = await UpdateCapabilities.UpdateWhere(predicate, action, overwriteReadOnly, methodName).ConfigureAwait(false);
 

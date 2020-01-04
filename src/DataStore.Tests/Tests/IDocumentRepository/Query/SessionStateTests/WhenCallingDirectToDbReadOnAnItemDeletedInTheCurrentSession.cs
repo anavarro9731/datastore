@@ -40,7 +40,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         public async void ItShouldReturnThatItem()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.Where(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
             Assert.NotNull(this.carFromDatabase);
         }
     }

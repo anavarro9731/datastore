@@ -10,6 +10,10 @@ namespace DataStore.Interfaces
     {
         Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new();
 
+        Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new();
+        
+        Task<T> DeleteSoft<T>(T instance, string methodName = null) where T : class, IAggregate, new();
+
         Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new();
 
         Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new();

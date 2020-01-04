@@ -5,7 +5,7 @@
     <Copyright>Copyright (c) 2019 Aaron Navarro, Frans Lytzen</Copyright>
     <Authors>Aaron Navarro</Authors>
     <LangVersion>7.3</LangVersion>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <AssemblyName>DataStore.Providers.CosmosDb</AssemblyName>
     <PackageId>DataStore.Providers.CosmosDb</PackageId>
     <PackageTags>CosmosDb;DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
@@ -18,8 +18,8 @@
     <ProjectReference Include="..\DataStore.Models\DataStore.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.4.1" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.9.1" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.5.1" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.9.2" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 </Project>

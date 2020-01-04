@@ -86,7 +86,7 @@
                 var scopeEntities = await scopeLevel.HydrateScopeLevel(dataStore).ConfigureAwait(false);
                 ;
 
-                if (TheUserIsAddingAScopeLevelWhoseEntitiesCantBeTracedToAParent())
+                if (scopeEntities.Any() && TheUserIsAddingAScopeLevelWhoseEntitiesCantBeTracedToAParent())
                 {
                     throw new Exception(
                         $"Some of the entities in scope-level {scopeLevel.EntityTypeName} do not have links to a parent. This is only allowed for the first level.");

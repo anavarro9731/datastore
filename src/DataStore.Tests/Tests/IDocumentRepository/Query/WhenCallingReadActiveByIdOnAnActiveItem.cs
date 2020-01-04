@@ -49,7 +49,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         public async void ItShouldReturnTheItem()
         {
             await Setup();
-            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
+            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation && e.MethodCalled == nameof(DataStore.ReadActiveById)));
             Assert.Equal(this.activeCarId, this.activeCarFromDatabase.id);
         }
     }

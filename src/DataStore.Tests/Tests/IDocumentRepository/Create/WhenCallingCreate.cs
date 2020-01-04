@@ -56,7 +56,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car> && e.MethodCalled == nameof(DataStore.Create)));
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
             Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
         }

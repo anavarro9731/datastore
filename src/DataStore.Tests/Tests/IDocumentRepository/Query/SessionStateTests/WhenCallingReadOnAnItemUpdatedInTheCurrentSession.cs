@@ -41,7 +41,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
         public async void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.Where(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
             Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", this.carFromSession.Make);
             Assert.Equal(this.carId, this.carFromSession.id);
