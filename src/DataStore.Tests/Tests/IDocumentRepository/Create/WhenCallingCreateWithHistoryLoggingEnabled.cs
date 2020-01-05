@@ -22,7 +22,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
         {
             await Setup();
-            var aggregateHistoryItemHeader = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single();
+            var aggregateHistoryItemHeader = this.testHarness.QueryDatabase<AggregateHistory>().Single().AggregateVersions.Single();
 
             Assert.Equal(1, aggregateHistoryItemHeader.VersionId);
             Assert.Equal(this.unitOfWorkId, aggregateHistoryItemHeader.UnitWorkId);
@@ -46,9 +46,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldCreateAnAggregateHistoryRecord()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistory<Car>>));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistory>));
 
-            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
+            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory>().Single();
 
             Assert.NotEqual(Guid.Empty, aggregateHistory.id);
             Assert.Equal(this.newCarId, aggregateHistory.AggregateId);
@@ -61,7 +61,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             await Setup();
             Assert.Equal(
                 this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id,
-                this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.Single().AggegateHistoryItemId);
+                this.testHarness.QueryDatabase<AggregateHistory>().Single().AggregateVersions.Single().AggegateHistoryItemId);
         }
 
         private async Task Setup()

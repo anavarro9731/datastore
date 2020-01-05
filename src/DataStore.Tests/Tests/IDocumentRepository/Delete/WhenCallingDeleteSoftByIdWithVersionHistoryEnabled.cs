@@ -48,7 +48,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
         {
             await Setup();
-            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
+            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory>().Single();
 
             Assert.Equal(2, aggregateHistory.AggregateVersions.Count);
             Assert.Equal(2, aggregateHistory.AggregateVersions.ToList()[1].VersionId);
@@ -78,14 +78,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
             Assert.Equal(
                 this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().ToList()[1].id,
-                this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single().AggregateVersions.ToList()[1].AggegateHistoryItemId);
+                this.testHarness.QueryDatabase<AggregateHistory>().Single().AggregateVersions.ToList()[1].AggegateHistoryItemId);
         }
 
         [Fact]
         public async void ItShouldUpdateTheAggregateHistoryRecord()
         {
             await Setup();
-            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory<Car>>().Single();
+            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory>().Single();
 
             Assert.NotEqual(Guid.Empty, aggregateHistory.id);
             Assert.Equal(this.carId, aggregateHistory.AggregateId);

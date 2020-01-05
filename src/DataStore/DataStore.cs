@@ -265,7 +265,7 @@
         private async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T : class, IAggregate, new()
         {
             //delete index record
-            await DeleteCapabilities.DeleteHardWhere<AggregateHistory<T>>(h => h.AggregateId == id, methodName).ConfigureAwait(false);
+            await DeleteCapabilities.DeleteHardWhere<AggregateHistory>(h => h.AggregateId == id, methodName).ConfigureAwait(false);
             //delete history records
             await DeleteCapabilities.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, methodName).ConfigureAwait(false);
         }
@@ -286,7 +286,7 @@
 
             //get the history index record
             var historyIndexRecord =
-                (await QueryCapabilities.ReadActive<AggregateHistory<T>>(h => h.AggregateId == model.id).ConfigureAwait(false)).SingleOrDefault();
+                (await QueryCapabilities.ReadActive<AggregateHistory>(h => h.AggregateId == model.id).ConfigureAwait(false)).SingleOrDefault();
 
             //prepare the new header record
             var historyItemHeader = new AggregateHistoryItemHeader
@@ -302,7 +302,7 @@
             {
                 //create index record
                 await CreateCapabilities.Create(
-                    new AggregateHistory<T>
+                    new AggregateHistory
                     {
                         Version = 1,
                         AggregateVersions = new List<AggregateHistoryItemHeader>
