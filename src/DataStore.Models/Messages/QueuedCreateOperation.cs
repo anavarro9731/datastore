@@ -29,6 +29,8 @@ namespace DataStore.Models.Messages
             AggregateId = model.id;
         }
 
+        IHaveAUniqueId IQueuedDataStoreWriteOperation.Model { get; }
+
         public Guid AggregateId { get; set; }
 
         public Func<Task> CommitClosure { get; set; }

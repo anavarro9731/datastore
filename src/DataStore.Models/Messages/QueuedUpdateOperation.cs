@@ -29,6 +29,8 @@
             AggregateId = model.id;
         }
 
+        IHaveAUniqueId IQueuedDataStoreWriteOperation.Model => Model;
+
         public Guid AggregateId { get; set; }
 
         public Func<Task> CommitClosure { get; set; }
@@ -61,5 +63,6 @@
         public long? StateOperationStopTimestamp { get; set; }
 
         public string TypeName { get; set; }
+
     }
 }
