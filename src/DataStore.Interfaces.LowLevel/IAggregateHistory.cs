@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    public interface IAggregateHistory<TAggregate> where TAggregate : IAggregate
+    public interface IAggregateHistory
     {
         List<AggregateHistoryItemHeader> AggregateVersions { get; set; }
 
@@ -12,7 +12,7 @@
         int Version { get; set; }
     }
 
-    public class AggregateHistory<TAggregate> : Aggregate, IAggregateHistory<TAggregate> where TAggregate : IAggregate
+    public class AggregateHistory : Aggregate, IAggregateHistory
     {
         public List<AggregateHistoryItemHeader> AggregateVersions { get; set; }
 

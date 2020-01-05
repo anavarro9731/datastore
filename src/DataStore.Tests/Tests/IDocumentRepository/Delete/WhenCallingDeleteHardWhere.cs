@@ -33,7 +33,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 });
 
             await this.testHarness.DataStore.CommitChanges();
-            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
+            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistory>());
             Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
 
             //When
@@ -62,7 +62,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldRemoveAllHistoryItems()
         {
             await Setup();
-            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistory<Car>>());
+            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistory>());
             Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
         }
     }
