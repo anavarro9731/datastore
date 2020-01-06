@@ -109,7 +109,7 @@
 
                     var result = await documentQuery.ExecuteNextAsync<T>().ConfigureAwait(false);
                     
-                    CosmosDbUtilities.output.WriteLine($"ExecuteNextAsync call cost {stopwatch.ElapsedMilliseconds} milliseconds" + stopwatch.ElapsedMilliseconds);
+                    CosmosDbUtilities.Output.WriteLine($"ExecuteNextAsync call cost {stopwatch.ElapsedMilliseconds} milliseconds" + stopwatch.ElapsedMilliseconds);
                     
                     aggregatesQueried.StateOperationCost += result.RequestCharge;
 
