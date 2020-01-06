@@ -2,11 +2,13 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.PureFunctions.Extensions;
 
     public class ScopeHierarchy
     {
@@ -33,7 +35,6 @@
         public async Task<bool> ExpandedPermissionContains(IPermissionInstance permissionInstance, IDataStore dataStore, ScopeReference scopeToMatch)
         {
             if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
-            ;
 
             var extrapolatedScopes = new List<ScopeReference>();
             foreach (var userPermissionScope in permissionInstance.ScopeReferences)
@@ -62,21 +63,20 @@
 
         internal async Task<IEnumerable<IHaveScope>> Expanded(List<IHaveScope> dataWithScope, List<ScopeReference> userPermissionScopes, IDataStore dataStore)
         {
-            {
-                if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
-                ;
 
-                var extrapolatedScopes = new List<ScopeReference>(userPermissionScopes);
+            if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
 
-                foreach (var userPermissionScope in userPermissionScopes)
-                    if (this.scopeEntityLookup.ContainsKey(userPermissionScope.ScopeObjectId))
-                    {
-                        var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.ScopeObjectId];
-                        RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
-                    }
+            var extrapolatedScopes = new List<ScopeReference>(userPermissionScopes);
 
-                return dataWithScope.Where(sd => sd.ScopeReferences.Intersect(extrapolatedScopes).Any());
-            }
+            foreach (var userPermissionScope in userPermissionScopes)
+                if (this.scopeEntityLookup.ContainsKey(userPermissionScope.ScopeObjectId))
+                {
+                    var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.ScopeObjectId];
+                    RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
+                }
+
+            return dataWithScope.Where(sd => sd.ScopeReferences.Intersect(extrapolatedScopes).Any());
+
         }
 
         private async Task HydrateHierarchy(IDataStore dataStore)
@@ -84,7 +84,6 @@
             foreach (var scopeLevel in this.scopeLevels)
             {
                 var scopeEntities = await scopeLevel.HydrateScopeLevel(dataStore).ConfigureAwait(false);
-                ;
 
                 if (scopeEntities.Any() && TheUserIsAddingAScopeLevelWhoseEntitiesCantBeTracedToAParent())
                 {
@@ -112,6 +111,7 @@
                     return this.scopeEntityLookup.Count > 0 && AllEntitiesHaveParents() == false;
                 }
             }
+
         }
 
         private void RecurseAndFindNewScopeReferences(EntityWithChildren referencedEntity, ref List<ScopeReference> extrapolatedScopesBuffer)
@@ -166,8 +166,14 @@
 
             public async Task<List<EntityWithChildren>> HydrateScopeLevel(IDataStore dataStore)
             {
+                var stopWatch = new Stopwatch().Op(s => s.Start());
+
                 var aggregates = await dataStore.Read<T>().ConfigureAwait(false);
-                var projection = aggregates.Select(x => { return new EntityWithChildren(x, this.ParentIdSelector(x)); }).ToList();
+                
+                Debug.WriteLine($"Hydrating scope level {typeof(T).FullName} cost {stopWatch.ElapsedMilliseconds} milliseconds");
+                
+                var projection = aggregates.Select(x => new EntityWithChildren(x, this.ParentIdSelector(x))).ToList();
+                
                 return projection;
             }
         }

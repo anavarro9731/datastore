@@ -4,10 +4,13 @@ namespace DataStore.Providers.CosmosDb
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using Microsoft.Azure.Cosmos;
+    using Xunit.Abstractions;
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        public  async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
+        public static ITestOutputHelper Output = new ConsoleWriter();
+
+        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
         {
             {
                 CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);

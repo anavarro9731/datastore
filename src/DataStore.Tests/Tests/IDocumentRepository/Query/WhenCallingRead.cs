@@ -2,16 +2,25 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Providers.CosmosDb;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class WhenCallingRead
     {
+        public WhenCallingRead(ITestOutputHelper output)
+        {
+            CosmosDbUtilities.output = output;
+        }
+
         private IEnumerable<Car> carsFromDatabase;
 
         private ITestHarness testHarness;
@@ -39,7 +48,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness.AddToDatabase(inactiveExistingCar);
 
             // When
+    
+            var stopwatch = new Stopwatch().Op(s => s.Start());
             this.carsFromDatabase = await this.testHarness.DataStore.Read<Car>(car => car.Make == "Volvo");
+            CosmosDbUtilities.output.WriteLine("TimeRead" + stopwatch.ElapsedMilliseconds);
         }
 
         [Fact]
