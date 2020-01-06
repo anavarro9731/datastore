@@ -8,7 +8,7 @@ namespace DataStore.Providers.CosmosDb
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        public static ITestOutputHelper Output = new ConsoleWriter();
+        public static ITestOutputHelper Output = new TraceWriter();
 
         public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
         {
