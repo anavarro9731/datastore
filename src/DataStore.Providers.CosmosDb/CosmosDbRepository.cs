@@ -3,10 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
@@ -97,12 +99,18 @@
                     }
                 }
 
+   
                 var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
+       
 
                 while (HaveLessRecordsThanUserRequested() && documentQuery.HasMoreResults)
                 {
-                    var result = await documentQuery.ExecuteNextAsync<T>().ConfigureAwait(false);
+                    var stopwatch = new Stopwatch().Op(s => s.Start());
 
+                    var result = await documentQuery.ExecuteNextAsync<T>().ConfigureAwait(false);
+                    
+                    CosmosDbUtilities.output.WriteLine($"ExecuteNextAsync call cost {stopwatch.ElapsedMilliseconds} milliseconds" + stopwatch.ElapsedMilliseconds);
+                    
                     aggregatesQueried.StateOperationCost += result.RequestCharge;
 
                     if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
