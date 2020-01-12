@@ -30,13 +30,15 @@
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            //create a new one, we definately don't want to use the instance passed in, in the event it changes after this call
+            //- fake a new eTag 
+            aggregate.Etag = Guid.NewGuid().ToString();
+
+            //create a new one, we definitely don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
             var clone = aggregate.Clone();
-            
-            //copied from datastore create capabilities, may get out of date
-            DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
 
+            //copied from DataStore create capabilities, may get out of date
+            DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
             clone.Created = DateTime.UtcNow.AddDays(-1);
             clone.CreatedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime();
             clone.Modified = clone.Created;

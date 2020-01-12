@@ -13,6 +13,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     {
         private ITestHarness testHarness;
 
+        private Car result;
          async Task Setup()
         {
             // Given
@@ -27,7 +28,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 });
 
             //When
-            await this.testHarness.DataStore.DeleteHardById<Car>(carId);
+            this.result = await this.testHarness.DataStore.DeleteHardById<Car>(carId);
         }
 
         [Fact]
@@ -38,6 +39,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.NotEmpty(this.testHarness.QueryDatabase<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
+        }
+
+
+        [Fact]
+        public async void ItShouldSetTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.Equal("waiting to be committed", this.result.Etag);
         }
     }
 }

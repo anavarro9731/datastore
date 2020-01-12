@@ -8,7 +8,7 @@
 
     public class QueuedHardDeleteOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
-        public QueuedHardDeleteOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator)
+        public QueuedHardDeleteOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator, Action<string> updateEtag)
         {
             CommitClosure = async () =>
                 {
@@ -20,7 +20,7 @@
                         Created = DateTime.UtcNow,
                         Model = model
                     }).To(repo.DeleteAsync).ConfigureAwait(false);
-
+                updateEtag(model.Etag);
                 Committed = true;
                 };
 

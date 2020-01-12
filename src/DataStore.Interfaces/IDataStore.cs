@@ -7,7 +7,7 @@ namespace DataStore.Interfaces
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces.LowLevel;
 
-    public interface IDataStore : IDisposable, IDataStoreCreateCapabilities, IDataStoreQueryCapabilities, IDataStoreDeleteCapabilities, IDataStoreUpdateCapabilities
+    public interface IDataStore : IDataStoreCreateCapabilities, IDataStoreQueryCapabilities, IDataStoreDeleteCapabilities, IDataStoreUpdateCapabilities
 
     {
         IDocumentRepository DocumentRepository { get; }

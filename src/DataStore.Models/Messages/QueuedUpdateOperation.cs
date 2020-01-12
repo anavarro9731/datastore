@@ -8,7 +8,7 @@
 
     public class QueuedUpdateOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
-        public QueuedUpdateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator)
+        public QueuedUpdateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator, Action<string> updateEtag)
         {
             CommitClosure = async () =>
                 {
@@ -18,12 +18,12 @@
                         TypeName = typeof(T).FullName,
                         MethodCalled = methodCalled,
                         Created = DateTime.UtcNow,
-                        Model = model
+                        Model = model,
                     }).To(repo.UpdateAsync).ConfigureAwait(false);
-
+                updateEtag(model.Etag);
                 Committed = true;
                 };
-
+            
             Created = DateTime.UtcNow;
             Model = model;
             AggregateId = model.id;
