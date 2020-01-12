@@ -14,7 +14,6 @@ It supports basic CRUD operations on any C# object, with some additional feature
 * Generic Repository with IQueryable<T> support for LINQ queries against objects and their children 
 	(limited by CosmosDB .NET client support, does include paging with continuation tokens)
 * Increased transactional consistency with re-usable Sessions (i.e. Unit of Work pattern)
-* Limited Partitioned Collection Support (partition on Id or ClassName)
 * In-memory database, and event history for testing
 (e.g. DataStore.ExecutedOperations.Where(o => o...))
 * Profiling (e.g. Duration and Query Cost in Request Units)
@@ -31,7 +30,11 @@ DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and
 ## Roadmap
 
 * Better documentation of API features
-* Optimistic Concurrency Support (etag)
+* Add Etag to version history
+* Add Performance Tracing
+* Add Full Unit Of Work
+* Limited Partitioned Collection Support (partition on Id or ClassName)
+* Upgrade to v4 SDK
 
 ## Usage
 
