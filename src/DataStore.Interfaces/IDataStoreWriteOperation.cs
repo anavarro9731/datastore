@@ -11,6 +11,4 @@
     public interface IDataStoreWriteOperation : IDataStoreOperation, IChangeState
     {
     }
-
-    
 }

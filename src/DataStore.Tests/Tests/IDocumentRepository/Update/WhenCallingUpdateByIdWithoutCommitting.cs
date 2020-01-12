@@ -15,6 +15,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private ITestHarness testHarness;
 
+        private Car result;
+
         async Task Setup()
         {
             // Given
@@ -29,7 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 });
 
             //When
-            await this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford");
+            this.result = await this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford");
         }
 
         [Fact]
@@ -40,6 +42,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
             Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
+        }
+
+
+        [Fact]
+        public async void ItShouldSetTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.Equal("waiting to be committed", this.result.Etag);
         }
     }
 }

@@ -8,24 +8,31 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PureFunctions.Extensions;
 
-    public class WithoutReplayOptions<T> : IWithoutReplayOptions<T> where T : class, IEntity, new()
+    public class WithoutReplayOptions<T> : IWithoutReplayOptionsLibrarySide<T>, IWithoutReplayOptionsClientSide<T> where T : class, IEntity, new()
     {
-
         private readonly List<(string, bool)> orderByParameterList = new List<(string, bool)>();
 
         private readonly Queue<(string, bool)> thenByQueue = new Queue<(string, bool)>();
 
         private ContinuationToken currentContinuationToken;
 
-        private ContinuationToken nextContinuationToken;
-
         private int? maxTake;
+
+        private ContinuationToken nextContinuationToken;
 
         private string orderByProperty;
 
         private bool orderDescending;
 
-        public WithoutReplayOptions<T> ContinueFrom(ContinuationToken currentContinuationToken)
+        ContinuationToken IContinueAndTake<T>.CurrentContinuationToken => this.currentContinuationToken;
+
+        int? IContinueAndTake<T>.MaxTake => this.maxTake;
+
+        ContinuationToken IContinueAndTake<T>.NextContinuationToken { set => this.nextContinuationToken.Value = value.Value; }
+
+        List<(string, bool)> IOrderBy<T>.OrderByParameters => this.orderByParameterList;
+
+        public IWithoutReplayOptionsClientSide<T> ContinueFrom(ContinuationToken currentContinuationToken)
         {
             if (currentContinuationToken?.Value == null)
             {
@@ -37,7 +44,14 @@
             return this;
         }
 
-        public WithoutReplayOptions<T> Take(int take, ref ContinuationToken newContinuationToken)
+        public IWithoutReplayOptionsClientSide<T> OrderBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
+        {
+            this.orderByProperty = Objects.GetPropertyName(propertyRefExpr);
+            this.orderDescending = descending;
+            return this;
+        }
+
+        public IWithoutReplayOptionsClientSide<T> Take(int take, ref ContinuationToken newContinuationToken)
         {
             this.maxTake = take;
             this.nextContinuationToken = newContinuationToken ?? throw new Exception("ContinuationToken cannot be null");
@@ -45,27 +59,12 @@
             return this;
         }
 
-        public WithoutReplayOptions<T> OrderBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
-        {
-            this.orderByProperty = Objects.GetPropertyName(propertyRefExpr);
-            this.orderDescending = descending;
-            return this;
-        }
-
-        public WithoutReplayOptions<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
+        public IWithoutReplayOptionsClientSide<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
         {
             var propertyName = Objects.GetPropertyName(propertyRefExpr);
             this.thenByQueue.Enqueue((propertyName, descending));
             return this;
         }
-
-        ContinuationToken IContinueAndTake<T>.CurrentContinuationToken => this.currentContinuationToken;
-
-        int? IContinueAndTake<T>.MaxTake => this.maxTake;
-
-        ContinuationToken IContinueAndTake<T>.NextContinuationToken { set => this.nextContinuationToken.Value = value.Value; }
-
-        List<(string, bool)> IOrderBy<T>.OrderByParameters => this.orderByParameterList;
 
         IQueryable<T> IOrderBy<T>.AddOrderBy(IQueryable<T> queryable)
         {

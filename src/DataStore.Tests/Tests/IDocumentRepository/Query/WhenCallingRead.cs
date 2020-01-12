@@ -16,10 +16,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingRead
     {
-        public WhenCallingRead(ITestOutputHelper output)
-        {
-           CosmosDbUtilities.WriteLine = output.WriteLine;
-        }
+        //TODO fix
+        //public WhenCallingRead(ITestOutputHelper output)
+        //{
+        //   CosmosDbUtilities.WriteLine = output.WriteLine;
+        //}
 
         private IEnumerable<Car> carsFromDatabase;
 

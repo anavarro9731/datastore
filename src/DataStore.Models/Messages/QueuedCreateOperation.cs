@@ -8,7 +8,7 @@ namespace DataStore.Models.Messages
 
     public class QueuedCreateOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
-        public QueuedCreateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator)
+        public QueuedCreateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator, Action<string> updateEtag)
         {
             CommitClosure = async () =>
                 {
@@ -20,7 +20,7 @@ namespace DataStore.Models.Messages
                         Created = DateTime.UtcNow,
                         Model = model
                     }).To(repo.AddAsync).ConfigureAwait(false);
-
+                updateEtag(model.Etag);
                 Committed = true;
                 };
 

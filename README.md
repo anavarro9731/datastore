@@ -45,14 +45,23 @@ class Car : Aggregate {
 	public string Model { get; set; }
 }
 ```
-Create a new `DataStore` object.
+Create a new `DataStore` object in the following 3 steps:
 ```
-var d = new DataStore.DataStore(new CosmosDbRepository(
-			new CosmosSettings(
+var s = new CosmosSettings(
 				authorizationKey, 
 				databaseName, 
-				endpointUrl)
-			));
+				endpointUrl
+			);
+
+var r = s.CreateRespository();
+// The respository is an expensive item to initialise (1-2 seconds) and for all practical purposes stateless so you should probably have only one per process.
+// It is disposable, if you don't explicitly do so, the finaliser will for you.
+
+var d = new DataStore.DataStore(r);
+// The DataStore class is cheap to create, and it stores a record of both commmitted and uncommitted changes in its internal state.
+// The DataStore.CommitChanges() method can be called multiple times on the same instance without harm. 
+// This class is most suitable for use in handling a single message or API call, etc.
+
 ```
 ##### Save it to DocumentDb
 

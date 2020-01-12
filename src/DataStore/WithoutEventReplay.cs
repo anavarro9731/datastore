@@ -51,7 +51,7 @@ namespace DataStore
             return results;
         }
 
-        public async Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions) where T : class, IEntity, new() where O : class, IWithoutReplayOptions<T>, new()
+        public async Task<IEnumerable<T>> Read<T, O>(Action<O> setOptions) where T : class, IEntity, new() where O : class, IWithoutReplayOptionsLibrarySide<T>, new()
         {
             var options = new O();
             setOptions(options);
@@ -76,7 +76,7 @@ namespace DataStore
         }
 
         public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IEntity, new() where O : class, IWithoutReplayOptions<T>, new()
+            where T : class, IEntity, new() where O : class, IWithoutReplayOptionsLibrarySide<T>, new()
         {
             var options = new O();
             setOptions(options);
@@ -99,7 +99,7 @@ namespace DataStore
             return results;
         }
 
-        public async Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions) where T : class, IAggregate, new() where O : class, IWithoutReplayOptions<T>, new()
+        public async Task<IEnumerable<T>> ReadActive<T, O>(Action<O> setOptions) where T : class, IAggregate, new() where O : class, IWithoutReplayOptionsLibrarySide<T>, new()
         {
             O options = null;
             if (setOptions != null)
@@ -127,7 +127,7 @@ namespace DataStore
         }
 
         public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IAggregate, new() where O : class, IWithoutReplayOptions<T>, new()
+            where T : class, IAggregate, new() where O : class, IWithoutReplayOptionsLibrarySide<T>, new()
         {
             predicate = predicate.And(a => a.Active);
 

@@ -11,26 +11,27 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteSoft
     {
-        private  Guid carId;
+        private Car originalCar;
 
-        private  ITestHarness testHarness;
+        private Car updatedCar;
+
+        private ITestHarness testHarness;
 
         async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoft));
 
-            this.carId = Guid.NewGuid();
-            var car = new Car
+            this.originalCar = new Car
             {
-                id = this.carId,
+                id = Guid.NewGuid(),
                 Make = "Volvo"
             };
 
-            this.testHarness.AddToDatabase(car);
+            this.testHarness.AddToDatabase(this.originalCar);
 
             //When
-            await this.testHarness.DataStore.DeleteSoft(car);
+            this.updatedCar = await this.testHarness.DataStore.DeleteSoft(this.originalCar);
             await this.testHarness.DataStore.CommitChanges();
         }
 
@@ -38,11 +39,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteSoft)));
+            Assert.NotNull(
+                this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteSoft)));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
+            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.originalCar.id)).Single().Active);
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
+        }
+
+        [Fact]
+        public async void ItShouldUpdateTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.NotEmpty(this.originalCar.Etag); //- it was set using callback
+            Assert.NotEqual(this.originalCar.Etag, this.updatedCar.Etag);
         }
     }
 }

@@ -56,6 +56,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         }
 
         [Fact]
+        public async void ItShouldUpdateTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.NotEmpty(this.existingCar.Etag); //- it was set using callback
+            Assert.NotEqual(this.existingCar.Etag, this.udpatedCar.Etag);
+        }
+
+        [Fact]
         public async void ItShouldUpdateTheModifiedDate()
         {
             await Setup();
