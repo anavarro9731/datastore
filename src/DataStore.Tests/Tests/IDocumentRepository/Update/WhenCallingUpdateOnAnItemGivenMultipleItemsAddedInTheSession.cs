@@ -14,6 +14,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         private Guid car1Id;
         private Guid car2Id;
 
+        private string car2PreCreateEtag;
+        private string car2PostCreatePreUpdateEtag;
+        private string car2PostUpdateEtag;
+        private string car2PostCommitEtag;
+
         private ITestHarness testHarness;
 
         async Task Setup()
@@ -35,15 +40,22 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 Make = "Saab"
             };
 
+            car2PreCreateEtag = car2.Etag;
+
             await this.testHarness.DataStore.Create(car1);
-            await this.testHarness.DataStore.Create(car2);
+            
+            var r1 = await this.testHarness.DataStore.Create(car2);
+            this.car2PostCreatePreUpdateEtag = r1.Etag;
+
             car2.Make = "BMW";
-            await this.testHarness.DataStore.Update(car2);
+            var r2 = await this.testHarness.DataStore.Update(car2);
+            this.car2PostUpdateEtag = r2.Etag; 
 
             Assert.Equal(1, this.testHarness.DataStore.QueuedOperations.Count(x => x is QueuedUpdateOperation<Car>));
             
             //When
             await this.testHarness.DataStore.CommitChanges();
+            this.car2PostCommitEtag = r2.Etag;
         }
 
         [Fact]
@@ -53,5 +65,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             Assert.Equal("Volvo", (await this.testHarness.DataStore.ReadActiveById<Car>(this.car1Id)).Make);
             Assert.Equal("BMW", (await this.testHarness.DataStore.ReadActiveById<Car>(this.car2Id)).Make);
         }
+
+        [Fact]
+        public async void ItShouldSetTheCorrectEtags()
+        {
+            await Setup();
+            Assert.Null(this.car2PreCreateEtag);
+            Assert.Equal("waiting to be committed", this.car2PostCreatePreUpdateEtag);
+            Assert.Equal("waiting to be committed", this.car2PostUpdateEtag);
+            Assert.True(Guid.TryParse(this.car2PostCommitEtag.Trim('"'), out Guid result));
+        }
+
     }
 }

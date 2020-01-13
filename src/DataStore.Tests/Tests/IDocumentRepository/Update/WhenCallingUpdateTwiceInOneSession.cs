@@ -12,8 +12,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     public class WhenCallingUpdateTwiceInOneSession
     {
         private Guid carId;
+        private string firstEtag;
+        private string secondEtag;
 
         private ITestHarness testHarness;
+
+
 
         async Task Setup()
         {
@@ -29,9 +33,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddToDatabase(existingCar);
 
             //When
-            await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
-            await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda");
+            var update1 = (await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota"));
+            var update2 = (await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda"));
             await this.testHarness.DataStore.CommitChanges();
+            this.firstEtag = update1.Etag;
+            this.firstEtag = update2.Etag;
         }
 
         [Fact]
@@ -46,6 +52,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.Equal("Honda", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
+        }
+
+        [Fact]
+        public async void TheFirstAndSecondEtagShouldDiffer()
+        {
+            await Setup();
+            Assert.NotEqual(this.firstEtag, this.secondEtag);
         }
     }
 }

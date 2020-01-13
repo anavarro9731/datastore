@@ -8,20 +8,23 @@
 
     public class QueuedUpdateOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
-        public QueuedUpdateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator)
+        public QueuedUpdateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator, Action<string> updateEtag)
         {
             CommitClosure = async () =>
                 {
-                await messageAggregator.CollectAndForward(
-                    new UpdateOperation<T>
-                    {
-                        TypeName = typeof(T).FullName,
-                        MethodCalled = methodCalled,
-                        Created = DateTime.UtcNow,
-                        Model = model
-                    }).To(repo.UpdateAsync).ConfigureAwait(false);
-
-                Committed = true;
+                    await messageAggregator.CollectAndForward(
+                        new UpdateOperation<T>
+                        {
+                            TypeName = typeof(T).FullName,
+                            MethodCalled = methodCalled,
+                            Created = DateTime.UtcNow,
+                            Model = model,
+                        }).To(repo.UpdateAsync).ConfigureAwait(false);
+                    Committed = true;
+                    /* Committed=true has to happen before update eTag is called,
+                     there is logic that responds to updateEtag which expects the item causing the update
+                     to be committed */
+                    updateEtag(model.Etag);
                 };
 
             Created = DateTime.UtcNow;

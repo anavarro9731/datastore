@@ -9,12 +9,13 @@
     using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Options;
 
     public class ControlledStore : IDataStore
     {
-        private readonly DataStore dataStore;
-
         private readonly ControlFunctions.ControlDataDelegate dataController;
+
+        private readonly DataStore dataStore;
 
         private readonly IPermission requiredPermissionWithScopeToData;
 
@@ -65,6 +66,15 @@
             return data = await ControlData(data).ConfigureAwait(false);
         }
 
+        public async Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+        {
+            //- don't delegate calls even though you could since the methodname is set in the DataStore class
+
+            var data = await this.dataStore.DeleteHard(instance, methodName).ConfigureAwait(false);
+
+            return data = await ControlData(data).ConfigureAwait(false);
+        }
+
         public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
         {
             //- don't delegate calls even though you could since the methodname is set in the DataStore class
@@ -72,14 +82,12 @@
 
             return data = await ControlData(data).ConfigureAwait(false);
         }
-        
-        public async Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+
+        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
-            //- don't delegate calls even though you could since the methodname is set in the DataStore class
+            var data = await this.dataStore.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
 
-            var data = await this.dataStore.DeleteHard(instance, methodName).ConfigureAwait(false);
-
-            return data = await DeleteHard(instance, methodName);
+            return data = await ControlData(data).ConfigureAwait(false);
         }
 
         public async Task<T> DeleteSoft<T>(T instance, string methodName = null) where T : class, IAggregate, new()
@@ -87,13 +95,6 @@
             //- don't delegate calls even though you could since the methodname is set in the DataStore class
 
             var data = await this.dataStore.DeleteSoft(instance, methodName).ConfigureAwait(false);
-
-            return data = await ControlData(data).ConfigureAwait(false);
-        }
-
-        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
-        {
-            var data = await this.dataStore.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
 
             return data = await ControlData(data).ConfigureAwait(false);
         }
@@ -114,28 +115,16 @@
             return data = await ControlData(data).ConfigureAwait(false);
         }
 
-        public void Dispose()
-        {
-            this.dataStore.Dispose();
-        }
-
         public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
         {
             var data = await this.dataStore.Read(predicate, methodName).ConfigureAwait(false);
-            
+
             return data = await ControlData(data).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<T>> Read<T>(string methodName = null) where T : class, IAggregate, new()
         {
             var data = await this.dataStore.Read<T>(methodName).ConfigureAwait(false);
-
-            return data = await ControlData(data).ConfigureAwait(false);
-        }
-
-        public async Task<T> ReadById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
-        {
-            var data = await this.dataStore.ReadById<T>(modelId, methodName).ConfigureAwait(false);
 
             return data = await ControlData(data).ConfigureAwait(false);
         }
@@ -161,33 +150,59 @@
             return data = await ControlData(data).ConfigureAwait(false);
         }
 
-        public async Task<T> Update<T>(T src, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new()
+        public async Task<T> ReadById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
         {
-            //- don't delegate calls even though you could since the methodname is set in the DataStore class
-
-            var data = await this.dataStore.Update(src, overwriteReadOnly, methodName).ConfigureAwait(false);
+            var data = await this.dataStore.ReadById<T>(modelId, methodName).ConfigureAwait(false);
 
             return data = await ControlData(data).ConfigureAwait(false);
         }
 
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new()
+        public async Task<T> Update<T, O>(T src, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null)
+            where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
         {
-            //- don't delegate calls even though you could since the methodname is set in the DataStore class
+            //- don't delegate calls even though you could since the methodname is set in the DataStore class and not here because this is not always top of the callstack
 
-            var data = await this.dataStore.UpdateById(id, action, overwriteReadOnly, methodName).ConfigureAwait(false);
+            var data = await this.dataStore.Update(src, setOptions, overwriteReadOnly, methodName).ConfigureAwait(false);
 
             return data = await ControlData(data).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<T>> UpdateWhere<T>(
+        public Task<T> Update<T>(T src, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new()
+        {
+            return Update<T, UpdateOptions>(src, options => { }, overwriteReadOnly, methodName);
+        }
+
+        public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null)
+            where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
+        {
+            //- don't delegate calls even though you could since the methodname is set in the DataStore class
+
+            var data = await this.dataStore.UpdateById(id, action, setOptions, overwriteReadOnly, methodName).ConfigureAwait(false);
+
+            return data = await ControlData(data).ConfigureAwait(false);
+        }
+
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new()
+        {
+            return UpdateById<T, UpdateOptions>(id, action, options => { }, overwriteReadOnly, methodName);
+        }
+
+        public async Task<IEnumerable<T>> UpdateWhere<T, O>(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
+            Action<O> setOptions,
             bool overwriteReadOnly = false,
-            string methodName = null) where T : class, IAggregate, new()
+            string methodName = null) where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
         {
-            var data = await this.dataStore.UpdateWhere(predicate, action, overwriteReadOnly, methodName).ConfigureAwait(false);
+            var data = await this.dataStore.UpdateWhere(predicate, action, setOptions, overwriteReadOnly, methodName).ConfigureAwait(false);
 
             return data = await ControlData(data).ConfigureAwait(false);
+        }
+
+        public Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
+            where T : class, IAggregate, new()
+        {
+            return UpdateWhere<T, UpdateOptions>(predicate, action, options => { }, overwriteReadOnly, methodName);
         }
 
         private async Task<IEnumerable<T>> ControlData<T>(IEnumerable<T> data) where T : class, IAggregate, new()

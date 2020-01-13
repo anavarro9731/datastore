@@ -2,15 +2,21 @@ namespace DataStore.Providers.CosmosDb
 {
     using System;
     using System.Collections;
+    using System.Collections.Concurrent;
+    using System.Threading;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
+    using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Cosmos;
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        private static Action<string> writeLine;
+        private static readonly AsyncLocal<Action<string>> writeLine = new AsyncLocal<Action<string>>().Op(al => al.Value = (msg) => { });
 
-        public static Action<string> WriteLine { get => writeLine; set => writeLine = message => value?.Invoke(message); }
+        public static Action<string> WriteLine { 
+            get => writeLine.Value; 
+            set => writeLine.Value = message => value?.Invoke(message);
+        }
 
         private static void CreateClient(CosmosSettings cosmosStoreSettings, out CosmosClient client)
         {

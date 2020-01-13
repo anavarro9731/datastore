@@ -40,6 +40,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         }
 
         [Fact]
+        public async void ItShouldSetTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.Equal("waiting to be committed", this.result.Etag);
+        }
+
+        [Fact]
         public async void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
         {
             await Setup();

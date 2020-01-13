@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
@@ -14,7 +15,12 @@
 
         public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
-            Aggregates.Add(aggregateAdded.Model);
+            var toAdd = aggregateAdded.Model;
+
+            //- fake eTag change
+            toAdd.Etag = Guid.NewGuid().ToString();
+
+            Aggregates.Add(toAdd);
 
             return Task.CompletedTask;
         }
@@ -37,6 +43,8 @@
         public Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
             Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
+
+            aggregateHardDeleted.Model.Etag = "item was deleted";
 
             return Task.CompletedTask;
         }
@@ -112,9 +120,17 @@
 
         public Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            var toUpdate = Aggregates.Single(x => x.id == aggregateUpdated.Model.id);
+            var updatedRecord = aggregateUpdated.Model;
+            var existingRecord = Aggregates.Single(x => x.id == updatedRecord.id);
 
-            aggregateUpdated.Model.CopyProperties(toUpdate);
+            var optimisticConcurrencyDisabled = updatedRecord.Etag == null;
+            if (updatedRecord.Etag != existingRecord.Etag &&
+                !optimisticConcurrencyDisabled) throw new DBConcurrencyException($"Etag {updatedRecord.Etag} does not match current Etag {existingRecord.Etag}");
+
+            updatedRecord.CopyProperties(existingRecord);
+
+            //- fake eTag update
+            existingRecord.Etag = updatedRecord.Etag = Guid.NewGuid().ToString();
 
             return Task.CompletedTask;
         }

@@ -15,6 +15,8 @@
 
         public VersionHistorySettings VersionHistory { get; private set; }
 
+        public bool OptimisticConcurrency { get; private set; } = true;
+
         public DataStoreOptions WithSecurity(ScopeHierarchy scopeHierarchy)
         {
             Security = new SecuritySettings
@@ -22,6 +24,12 @@
                 ScopeHierarchy = scopeHierarchy
             };
 
+            return this;
+        }
+
+        public DataStoreOptions DisableOptimisticConcurrency()
+        {
+            OptimisticConcurrency = false;
             return this;
         }
 
@@ -45,4 +53,6 @@
             public Guid? UnitOfWorkId { get; set; }
         }
     }
+
+
 }

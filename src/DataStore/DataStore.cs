@@ -10,6 +10,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Options;
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities
@@ -33,7 +34,7 @@
                     DocumentRepository = documentRepository;
 
                     QueryCapabilities = new DataStoreQueryCapabilities(DocumentRepository, this.MessageAggregator);
-                    UpdateCapabilities = new DataStoreUpdateCapabilities(DocumentRepository, this.MessageAggregator);
+                    UpdateCapabilities = new DataStoreUpdateCapabilities(DocumentRepository, this.MessageAggregator, dataStoreOptions);
                     DeleteCapabilities = new DataStoreDeleteCapabilities(DocumentRepository, UpdateCapabilities, this.MessageAggregator);
                     CreateCapabilities = new DataStoreCreateCapabilities(DocumentRepository, this.MessageAggregator);
                 }
@@ -158,16 +159,11 @@
             methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoftWhere);
 
             var results = await DeleteCapabilities.DeleteSoftWhere(predicate, methodName).ConfigureAwait(false);
-                
+
             foreach (var result in results)
                 await IncrementAggregateHistoryIfEnabled(result, $"{methodName}.{nameof(IncrementAggregateHistory)}").ConfigureAwait(false);
 
             return results;
-        }
-
-        public void Dispose()
-        {
-            DocumentRepository.Dispose();
         }
 
         public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
@@ -211,7 +207,7 @@
             methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActive);
 
             var result = await QueryCapabilities.ReadActive<T>(methodName).ConfigureAwait(false);
-                
+
             return result;
         }
 
@@ -224,7 +220,7 @@
             return result;
         }
 
-        public async Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
+        public async Task<T> Update<T, O>(T src, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
         {
             methodName = (methodName == null ? string.Empty : ".") + nameof(Update);
 
@@ -235,7 +231,11 @@
             return result;
         }
 
-        public async Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null)
+            where T : class, IAggregate, new()
+            => Update<T, UpdateOptions>(src, options => { }, overwriteReadOnly, methodName);
+
+        public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
         {
             methodName = (methodName == null ? string.Empty : ".") + nameof(UpdateById);
 
@@ -246,11 +246,10 @@
             return result;
         }
 
-        public async Task<IEnumerable<T>> UpdateWhere<T>(
-            Expression<Func<T, bool>> predicate,
-            Action<T> action,
-            bool overwriteReadOnly = false,
-            string methodName = null) where T : class, IAggregate, new()
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new() =>
+            UpdateById<T, UpdateOptions>(id, action, options => { }, overwriteReadOnly, methodName);
+
+        public async Task<IEnumerable<T>> UpdateWhere<T, O>(Expression<Func<T, bool>> predicate, Action<T> action, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null) where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
         {
             methodName = (methodName == null ? string.Empty : ".") + nameof(UpdateWhere);
 
@@ -262,6 +261,10 @@
             return results;
         }
 
+        public Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
+            where T : class, IAggregate, new() =>
+            UpdateWhere<T, UpdateOptions>(predicate, action, options => { }, overwriteReadOnly, methodName);
+
         private async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T : class, IAggregate, new()
         {
             //delete index record
@@ -272,7 +275,7 @@
 
         private async Task IncrementAggregateHistory<T>(T model, string methodName) where T : class, IAggregate, new()
         {
-            //create the new history record
+            //- create the new history record (contains copy of aggregate)
             Guid historyItemId;
 
             await CreateCapabilities.Create(
@@ -284,11 +287,11 @@
                 },
                 methodName: methodName).ConfigureAwait(false);
 
-            //get the history index record
+            //- get the history index record (contains records of changes)
             var historyIndexRecord =
                 (await QueryCapabilities.ReadActive<AggregateHistory>(h => h.AggregateId == model.id).ConfigureAwait(false)).SingleOrDefault();
 
-            //prepare the new header record
+            //- prepare the new header record
             var historyItemHeader = new AggregateHistoryItemHeader
             {
                 AssemblyQualifiedTypeName = model.GetType().AssemblyQualifiedName,
@@ -300,7 +303,7 @@
 
             if (historyIndexRecord == null)
             {
-                //create index record
+                //- create index record
                 await CreateCapabilities.Create(
                     new AggregateHistory
                     {
@@ -315,10 +318,10 @@
             }
             else
             {
-                //add header to existing record
+                //- add header to existing record
                 historyIndexRecord.AggregateVersions.Add(historyItemHeader);
                 historyIndexRecord.Version = historyIndexRecord.AggregateVersions.Count;
-                //and update
+                //- and update
                 await UpdateCapabilities.Update(historyIndexRecord, methodName: methodName).ConfigureAwait(false);
             }
         }
