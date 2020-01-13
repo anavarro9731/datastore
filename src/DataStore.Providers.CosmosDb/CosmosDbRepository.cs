@@ -5,6 +5,7 @@
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -12,6 +13,7 @@
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
+    using Microsoft.CSharp.RuntimeBinder;
 
     public class CosmosDbRepository : IDocumentRepository, IResetData
     {
@@ -37,6 +39,8 @@
 
             var result = await this.client.CreateDocumentAsync(this.collectionUri, aggregateAdded.Model).ConfigureAwait(false);
 
+            aggregateAdded.Model.Etag = result.Resource.ETag; //- update it
+
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
 
@@ -60,7 +64,7 @@
                     MaxItemCount = (queryOptions as IContinueAndTake<T>)?.MaxTake,
                     ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
                     EnableCrossPartitionQuery = true,
-                    PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                    PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue),
                 }).Where(i => i.Schema == schema);
 
             return query;
@@ -74,21 +78,17 @@
                              docLink,
                              new RequestOptions
                              {
+
                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                              }).ConfigureAwait(false);
 
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
-        }
-
-        public void Dispose()
-        {
-            this.client.Dispose();
+            aggregateHardDeleted.Model.Etag = "item was deleted";
         }
 
         public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
         {
             var results = new List<T>();
-
             {
                 if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
                 {
@@ -99,28 +99,34 @@
                     }
                 }
 
-   
                 var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
-       
 
                 while (HaveLessRecordsThanUserRequested() && documentQuery.HasMoreResults)
                 {
-                    var stopwatch = new Stopwatch().Op(s => s.Start());
+                    //var stopwatch = new Stopwatch().Op(s => s.Start());
 
-                    var result = await documentQuery.ExecuteNextAsync<T>().ConfigureAwait(false);
-                    
-                    CosmosDbUtilities.WriteLine($"ExecuteNextAsync call for query {aggregatesQueried.Query} cost {stopwatch.ElapsedMilliseconds} milliseconds" + stopwatch.ElapsedMilliseconds);
-                    
-                    aggregatesQueried.StateOperationCost += result.RequestCharge;
+                    FeedResponse<Document> feedResponseEnumerable = await documentQuery.ExecuteNextAsync<Document>().ConfigureAwait(false);
+
+                    //TODO fix async
+                    //CosmosDbUtilities.WriteLine($"ExecuteNextAsync call for query {aggregatesQueried.Query} cost {stopwatch.ElapsedMilliseconds} milliseconds");
+
+                    aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
 
                     if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
                     {
                         throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
                     }
 
-                    results.AddRange(result);
+                    IEnumerable<T> typedResponses = feedResponseEnumerable.Select(feedItem =>
+                        {
+                            var asT = ((T)(dynamic)feedItem).Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
+                            return asT;
+                        });
 
-                    SetContinuationToken(result);
+                    results.AddRange(typedResponses);
+
+                    SetContinuationToken(feedResponseEnumerable);
+
                 }
 
                 return results;
@@ -133,7 +139,7 @@
                 return userRequestedLimit == null || results.Count < userRequestedLimit;
             }
 
-            void SetContinuationToken(FeedResponse<T> result)
+            void SetContinuationToken(FeedResponse<Document> result)
             {
                 if (aggregatesQueried.QueryOptions is IContinueAndTake<T> continueAndTakeOptions && continueAndTakeOptions.MaxTake != null)
                 {
@@ -183,26 +189,49 @@
             var count = await query.Where(d => d.id == aggregateQueriedById.Id).CountAsync().ConfigureAwait(false);
             if (count == 0) return default;
 
-            var result = await this.client.ReadDocumentAsync<T>(
+            var result = (await this.client.ReadDocumentAsync<Document>(
                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
                              new RequestOptions
                              {
                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                             }).ConfigureAwait(false);
-            return result;
+                             }).ConfigureAwait(false)).Document;
+
+            var asT = ((T)(dynamic)result).Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
+            return asT;
         }
 
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            var result = await this.client.ReplaceDocumentAsync(
-                             CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
-                             aggregateUpdated.Model,
-                             new RequestOptions
-                             {
-                                 PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                             }).ConfigureAwait(false);
+            PrepareAccessCondition(aggregateUpdated, out AccessCondition condition);
 
-            aggregateUpdated.StateOperationCost = result.RequestCharge;
+            {
+                var result = await this.client.ReplaceDocumentAsync(
+                                 CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
+                                 aggregateUpdated.Model,
+                                 new RequestOptions
+                                 {
+                                     AccessCondition = condition,
+                                     PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                                 }).ConfigureAwait(false);
+
+                aggregateUpdated.Model.Etag = result.Resource.ETag; //- update it
+                aggregateUpdated.StateOperationCost = result.RequestCharge;
+            }
+
+            void PrepareAccessCondition(IDataStoreWriteOperation<T> dataStoreWriteOperation, out AccessCondition accessCondition)
+            {
+                string eTag;
+                if (!string.IsNullOrEmpty(eTag = dataStoreWriteOperation.Model.Etag))
+                {
+                    accessCondition = new AccessCondition()
+                    {
+                        Condition = eTag,
+                        Type = AccessConditionType.IfMatch
+                    };
+                }
+                else accessCondition = null;
+            }
+
         }
 
         async Task IResetData.NonTransactionalReset()
@@ -226,5 +255,11 @@
         {
             this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
         }
+
+        public void Dispose()
+        {
+            this.client?.Dispose();
+        }
+
     }
 }

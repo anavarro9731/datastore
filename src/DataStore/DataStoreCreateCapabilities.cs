@@ -47,12 +47,17 @@ namespace DataStore
             bool existsAlready = count > 0;
             Guard.Against(existsAlready, "An item with the same ID already exists", Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
 
-            this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
+            var clone = newObject.Clone();
+            clone.Etag = "waiting to be committed";
+
+            void UpdateEtag(string newTag) => clone.Etag = newTag;
+            
+            this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator, UpdateEtag));
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally
-            return newObject.Clone();
-        }
+            return clone;
+        }   
 
         internal static void ForceProperties<T>(bool readOnly, T enriched) where T : class, IAggregate, new()
         {

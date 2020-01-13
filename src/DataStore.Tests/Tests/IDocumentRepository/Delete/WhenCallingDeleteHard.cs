@@ -56,5 +56,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.Equal(this.carId, this.result.id);
         }
 
+        [Fact]
+        public async void ItShouldSetTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.Equal("item was deleted", this.result.Etag);
+        }
+
+
+
     }
 }

@@ -51,8 +51,10 @@
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
+            void updateEtag(string newTag) => aggregate.Etag = newTag;
+
             //clone aggregate to avoid modifying entries later when using inmemory db
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), DataStore.DocumentRepository, DataStore.MessageAggregator);
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), DataStore.DocumentRepository, DataStore.MessageAggregator, updateEtag);
 
             Task.Run(async () => await newAggregate.CommitClosure().ConfigureAwait(false)).Wait();
         }
