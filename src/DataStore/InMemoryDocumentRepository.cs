@@ -16,7 +16,7 @@
         public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
             var toAdd = aggregateAdded.Model;
-            
+
             //- fake eTag change
             toAdd.Etag = Guid.NewGuid().ToString();
 
@@ -130,7 +130,7 @@
             updatedRecord.CopyProperties(existingRecord);
 
             //- fake eTag update
-            updatedRecord.Etag = Guid.NewGuid().ToString();
+            existingRecord.Etag = updatedRecord.Etag = Guid.NewGuid().ToString();
 
             return Task.CompletedTask;
         }

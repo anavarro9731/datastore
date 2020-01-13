@@ -256,25 +256,10 @@
             this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
         }
 
-        private void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this.client?.Dispose();
-            }
-        }
-
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            this.client?.Dispose();
         }
 
-        /* probably only one of these per app-domain in most cases, why not cleanup fo the developer
-        the cost is it lives to gen2 GC collection, but since its lifecycle is probably the app anyway who cares */
-        ~CosmosDbRepository()
-        {
-            Dispose(false);
-        }
     }
 }

@@ -13,8 +13,9 @@ It supports basic CRUD operations on any C# object, with some additional feature
 
 * Generic Repository with IQueryable<T> support for LINQ queries against objects and their children 
 	(limited by CosmosDB .NET client support, does include paging with continuation tokens)
-* Increased transactional consistency with re-usable Sessions (i.e. Unit of Work pattern)
+* Increased consistency with re-usable Sessions which commit only upon completion (i.e. Unit of Work pattern)
 * In-memory database, and event history for testing
+* Optimitic Concurrency supported by default with the ability to disable on a per-query basis
 (e.g. DataStore.ExecutedOperations.Where(o => o...))
 * Profiling (e.g. Duration and Query Cost in Request Units)
 * Automatic Id and timestamp management of object hierarchies 
@@ -32,8 +33,8 @@ DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and
 * Better documentation of API features
 * Add Etag to version history
 * Add Performance Tracing
-* Add Full Unit Of Work
-* Limited Partitioned Collection Support (partition on Id or ClassName)
+* Add Full Unit Of Work that can rollback on error and concurrencyexceptions
+* Partitioned Collection Support (partition on Id or ClassName)
 * Upgrade to v4 SDK
 
 ## Usage
@@ -58,7 +59,6 @@ var s = new CosmosSettings(
 
 var r = s.CreateRespository();
 // The respository is an expensive item to initialise (1-2 seconds) and for all practical purposes stateless so you should probably have only one per process.
-// It is disposable, if you don't explicitly do so, the finaliser will for you.
 
 var d = new DataStore.DataStore(r);
 // The DataStore class is cheap to create, and it stores a record of both commmitted and uncommitted changes in its internal state.
