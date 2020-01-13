@@ -12,18 +12,21 @@
         {
             CommitClosure = async () =>
                 {
-                await messageAggregator.CollectAndForward(
-                    new UpdateOperation<T>
-                    {
-                        TypeName = typeof(T).FullName,
-                        MethodCalled = methodCalled,
-                        Created = DateTime.UtcNow,
-                        Model = model,
-                    }).To(repo.UpdateAsync).ConfigureAwait(false);
-                updateEtag(model.Etag);
-                Committed = true;
+                    await messageAggregator.CollectAndForward(
+                        new UpdateOperation<T>
+                        {
+                            TypeName = typeof(T).FullName,
+                            MethodCalled = methodCalled,
+                            Created = DateTime.UtcNow,
+                            Model = model,
+                        }).To(repo.UpdateAsync).ConfigureAwait(false);
+                    Committed = true;
+                    /* Committed=true has to happen before update eTag is called,
+                     there is logic that responds to updateEtag which expects the item causing the update
+                     to be committed */
+                    updateEtag(model.Etag);
                 };
-            
+
             Created = DateTime.UtcNow;
             Model = model;
             AggregateId = model.id;

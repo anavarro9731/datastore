@@ -142,9 +142,21 @@
 
                 var clone = dataObject.Clone();
 
-                void UpdateEtag(string newTag) => clone.Etag = newTag;  
+                var updateEtag = new Action<string>(newTag => clone.Etag = newTag);
 
-                this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, dataObject, DsConnection, this.eventAggregator, UpdateEtag));
+                updateEtag += newTag =>
+                                      {
+                                          var previousMatches = this.eventAggregator.AllMessages.OfType<QueuedUpdateOperation<T>>().Where(q => q.Committed == false)
+                                                                    .ToList();
+                                          previousMatches.ForEach(
+                                              queuedUpdate =>
+                                                  {
+                                                      queuedUpdate.Model.Etag = newTag; /* update other queued updates */
+                                                  });
+                                      };
+
+
+                this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, dataObject, DsConnection, this.eventAggregator, updateEtag));
 
                 clone.Etag = "waiting to be committed";
                 clones.Add(clone);
@@ -157,8 +169,8 @@
             {
                 //- clearing eTag disables application in the repo's
                 var dsOptionsConcurrencySetting = (this.dataStoreOptions?.OptimisticConcurrency ?? true);
-                if (updateOptions.OptimisticConcurrency == false || 
-                    dsOptionsConcurrencySetting ==false || 
+                if (updateOptions.OptimisticConcurrency == false ||
+                    dsOptionsConcurrencySetting == false ||
                     string.IsNullOrWhiteSpace(dataObject.Etag)) dataObject.Etag = null;
             }
         }
