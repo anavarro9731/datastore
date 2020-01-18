@@ -103,12 +103,7 @@
 
                 while (HaveLessRecordsThanUserRequested() && documentQuery.HasMoreResults)
                 {
-                    //var stopwatch = new Stopwatch().Op(s => s.Start());
-
                     FeedResponse<Document> feedResponseEnumerable = await documentQuery.ExecuteNextAsync<Document>().ConfigureAwait(false);
-
-                    //TODO fix async
-                    //CosmosDbUtilities.WriteLine($"ExecuteNextAsync call for query {aggregatesQueried.Query} cost {stopwatch.ElapsedMilliseconds} milliseconds");
 
                     aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
 

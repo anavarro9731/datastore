@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             var update2 = (await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda"));
             await this.testHarness.DataStore.CommitChanges();
             this.firstEtag = update1.Etag;
-            this.firstEtag = update2.Etag;
+            this.secondEtag = update2.Etag;
         }
 
         [Fact]

@@ -16,12 +16,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingRead
     {
-        //TODO fix
-        //public WhenCallingRead(ITestOutputHelper output)
-        //{
-        //   CosmosDbUtilities.WriteLine = output.WriteLine;
-        //}
-
         private IEnumerable<Car> carsFromDatabase;
 
         private ITestHarness testHarness;
@@ -50,11 +44,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
             // When
     
-           var stopwatch = new Stopwatch().Op(s => s.Start());
-           
            this.carsFromDatabase = await this.testHarness.DataStore.Read<Car>(car => car.Make == "Volvo");
            
-           CosmosDbUtilities.WriteLine($"Time of Read {stopwatch.ElapsedMilliseconds}(ms)");
         }
 
         [Fact]
