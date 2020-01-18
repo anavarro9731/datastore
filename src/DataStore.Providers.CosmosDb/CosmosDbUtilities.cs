@@ -11,13 +11,7 @@ namespace DataStore.Providers.CosmosDb
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        private static readonly AsyncLocal<Action<string>> writeLine = new AsyncLocal<Action<string>>().Op(al => al.Value = (msg) => { });
-
-        public static Action<string> WriteLine { 
-            get => writeLine.Value; 
-            set => writeLine.Value = message => value?.Invoke(message);
-        }
-
+        
         private static void CreateClient(CosmosSettings cosmosStoreSettings, out CosmosClient client)
         {
             client = new CosmosClient(cosmosStoreSettings.EndpointUrl, cosmosStoreSettings.AuthKey);
