@@ -16,6 +16,7 @@ namespace DataStore
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Options;
 
     //methods return the enriched object as it was added to the database
 
@@ -23,9 +24,12 @@ namespace DataStore
     {
         private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreCreateCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
+        private readonly IncrementVersions incrementVersions;
+
+        public DataStoreCreateCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator, IncrementVersions incrementVersions)
         {
             this.messageAggregator = messageAggregator;
+            this.incrementVersions = incrementVersions;
             DsConnection = dataStoreConnection;
         }
 
@@ -33,7 +37,7 @@ namespace DataStore
 
         public async Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
         {
-            //create a new one, we definately don't want to use the instance passed in, in the event it changes after this call
+            //create a new one, we definitely don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
             var newObject = model.Clone();
 
@@ -50,9 +54,11 @@ namespace DataStore
             var clone = newObject.Clone();
             clone.Etag = "waiting to be committed";
 
-            void UpdateEtag(string newTag) => clone.Etag = newTag;
-            
-            this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator, UpdateEtag));
+            void EtagUpdated(string newTag) => clone.Etag = newTag;
+
+            this.messageAggregator.Collect(new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator, EtagUpdated));
+
+            await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(newObject, methodName);
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally
@@ -66,6 +72,7 @@ namespace DataStore
                     {
                         e.Schema = typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
                         e.ReadOnly = readOnly;
+                        e.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, best not to see any user mistakes in queue though
                     });
 
             WalkGraphAndUpdateEntityMeta(enriched);

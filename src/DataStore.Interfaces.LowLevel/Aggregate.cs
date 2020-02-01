@@ -19,6 +19,20 @@
     /// </summary>
     public abstract class Aggregate : Entity, IAggregate
     {
+        public List<AggregateVersionInfo> VersionHistory { get; set; } = new List<AggregateVersionInfo>();
+
+        public class AggregateVersionInfo
+        {
+            public string UnitOfWorkId { get; set; }
+
+            public int CommitBatch { get; set; }
+
+            public Guid? AggegateHistoryItemId { get; set; }
+
+            public string AssemblyQualifiedTypeName { get; set; }
+
+        }
+
         public const string PartitionKeyValue = "shared";
 
         protected Aggregate()

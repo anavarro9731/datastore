@@ -8,6 +8,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Options;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;

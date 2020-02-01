@@ -1,11 +1,14 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Options;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
@@ -20,10 +23,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private Car existingCar;
 
+        private List<Aggregate.AggregateVersionInfo> versionHistory;
+
+        private Guid unitOfWorkId = Guid.NewGuid();
+
         async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdate));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdate), DataStoreOptions.Create()
+                        .SpecifyUnitOfWorkId(this.unitOfWorkId));
 
             this.carId = Guid.NewGuid();
 
@@ -43,6 +51,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             //When
             this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
             await this.testHarness.DataStore.CommitChanges();
+
+            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars => 
+                cars.Where(c => c.id == this.carId)).Single().VersionHistory;
+        }
+
+        [Fact]
+        public async void ItShouldCreateAVersionHistoryRecordInTheAggregate()
+        {
+            await Setup();
+            Assert.Single(this.versionHistory);
+            Assert.Equal(this.unitOfWorkId.ToString(), this.versionHistory.Single().UnitOfWorkId);
         }
 
         [Fact]

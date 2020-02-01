@@ -8,6 +8,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Options;
 
     public class InMemoryTestHarness : ITestHarness
     {
@@ -47,12 +48,12 @@
             DocumentRepository.Aggregates.Add(clone);
         }
 
-        public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
+        public List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
         {
             var queryResult = extendQueryable == null
                                   ? DocumentRepository.Aggregates.OfType<T>()
                                   : extendQueryable(DocumentRepository.Aggregates.OfType<T>().AsQueryable());
-            return queryResult;
+            return queryResult.ToList();
         }
     }
 }

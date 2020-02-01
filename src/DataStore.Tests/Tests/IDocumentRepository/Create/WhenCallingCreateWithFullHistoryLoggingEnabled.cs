@@ -6,11 +6,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Options;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingCreateWithHistoryLoggingEnabled
+    public class WhenCallingCreateWithFullHistoryLoggingEnabled
     {
         private Guid newCarId;
 
@@ -18,15 +19,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
         private Guid unitOfWorkId;
 
+        private Car newCar;
+
         [Fact]
-        public async void ItShouldAddAHistoryIndexEntityToTheHistoryAggregate()
+        public async void ItShouldAddAHistoryIndexEntityToTheHistory()
         {
             await Setup();
-            var aggregateHistoryItemHeader = this.testHarness.QueryDatabase<AggregateHistory>().Single().AggregateVersions.Single();
 
-            Assert.Equal(1, aggregateHistoryItemHeader.VersionId);
-            Assert.Equal(this.unitOfWorkId, aggregateHistoryItemHeader.UnitWorkId);
-            Assert.Equal(typeof(Car).AssemblyQualifiedName, aggregateHistoryItemHeader.AssemblyQualifiedTypeName);
+            Assert.Single(newCar.VersionHistory);
+            var aggregateVersionInfo = this.newCar.VersionHistory.First();
+            Assert.Equal(this.unitOfWorkId.ToString(), aggregateVersionInfo.UnitOfWorkId);
+            Assert.Equal(typeof(Car).AssemblyQualifiedName, aggregateVersionInfo.AssemblyQualifiedTypeName);
+            Assert.Equal(1, aggregateVersionInfo.CommitBatch);
         }
 
         [Fact]
@@ -38,21 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             var aggregateHistoryItem = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single();
 
             Assert.NotEqual(Guid.Empty, aggregateHistoryItem.id);
-            Assert.True(aggregateHistoryItem.UnitOfWorkResponsibleForStateChange == this.unitOfWorkId);
             Assert.True(aggregateHistoryItem.AggregateVersion.id == this.newCarId);
-        }
-
-        [Fact]
-        public async void ItShouldCreateAnAggregateHistoryRecord()
-        {
-            await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistory>));
-
-            var aggregateHistory = this.testHarness.QueryDatabase<AggregateHistory>().Single();
-
-            Assert.NotEqual(Guid.Empty, aggregateHistory.id);
-            Assert.Equal(this.newCarId, aggregateHistory.AggregateId);
-            Assert.Equal(1, aggregateHistory.Version);
         }
 
         [Fact]
@@ -60,8 +50,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         {
             await Setup();
             Assert.Equal(
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id,
-                this.testHarness.QueryDatabase<AggregateHistory>().Single().AggregateVersions.Single().AggegateHistoryItemId);
+                this.newCar.VersionHistory.Last().AggegateHistoryItemId,
+                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id);
         }
 
         private async Task Setup()
@@ -70,8 +60,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             this.unitOfWorkId = Guid.NewGuid();
 
             this.testHarness = TestHarness.Create(
-                nameof(WhenCallingCreateWithHistoryLoggingEnabled),
-                DataStoreOptions.Create().WithVersionHistory(this.unitOfWorkId));
+                nameof(WhenCallingCreateWithFullHistoryLoggingEnabled),
+                DataStoreOptions.Create().EnableFullVersionHistory().SpecifyUnitOfWorkId(this.unitOfWorkId));
 
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
@@ -82,6 +72,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             //When
             await this.testHarness.DataStore.Create(newCar);
             await this.testHarness.DataStore.CommitChanges();
+            this.newCar = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.newCarId)).Single();
         }
     }
 }

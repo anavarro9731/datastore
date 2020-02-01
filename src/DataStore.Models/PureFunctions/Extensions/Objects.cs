@@ -9,9 +9,6 @@
 
     public static class Objects
     {
-
-
-
         private static readonly char[] SystemTypeChars =
         {
             '<',
@@ -71,7 +68,62 @@
             foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
-        public static T FromJsonString<T>(this string source)
+        /// <summary>
+        ///     checks if a class inherits from or implements a base class/interface.
+        ///     Superbly supports generic interfaces and types!
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static bool InheritsOrImplements(this Type child, Type parent)
+        {
+            parent = ResolveGenericTypeDefinition(parent);
+
+            var currentChild = child.IsGenericType ? child.GetGenericTypeDefinition() : child;
+
+            while (currentChild != typeof(object))
+            {
+                if (parent == currentChild || //this get a direct match 
+                    parent == currentChild.BaseType || //this gets a specific generic impl BaseType<SomeType>
+                    HasAnyInterfaces(parent, currentChild))
+                    //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
+                {
+                    return true;
+                }
+
+                currentChild = currentChild.BaseType != null && currentChild.BaseType.IsGenericType
+                                   ? currentChild.BaseType.GetGenericTypeDefinition() //this gets a generic impl BaseType<>
+                                   : currentChild.BaseType; //this just sets up the next child type
+
+                if (currentChild == null) return false;
+            }
+
+            return false;
+        }
+        private static bool HasAnyInterfaces(Type parent, Type child)
+        {
+            return child.GetInterfaces()
+                        .Any(
+                            childInterface =>
+                                {
+                                var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
+
+                                return currentInterface == parent;
+                                });
+        }
+
+        private static Type ResolveGenericTypeDefinition(Type parent)
+        {
+            var shouldUseGenericType = true;
+            if (parent.IsGenericType && parent.GetGenericTypeDefinition() != parent) shouldUseGenericType = false;
+
+            if (parent.IsGenericType && shouldUseGenericType) parent = parent.GetGenericTypeDefinition();
+
+            return parent;
+        }
+    
+
+    public static T FromJsonString<T>(this string source)
         {
             return source == null ? default(T) : JsonSerializer.Deserialize<T>(source);
         }

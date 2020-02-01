@@ -1,9 +1,11 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Create
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -16,7 +18,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         private ITestHarness testHarness;
 
         private Car result;
-
+        private List<Aggregate.AggregateVersionInfo> versionHistory;
+    
         private async Task Setup()
         {
             // Given
@@ -32,6 +35,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             //When
             this.result = await this.testHarness.DataStore.Create(newCar);
             await this.testHarness.DataStore.CommitChanges();
+
+            this.versionHistory = this.testHarness
+                                                      .QueryDatabase<Car>(cars => cars.Where(car => car.id == this.newCarId)).Single().VersionHistory;
+
         }
 
         [Fact]
@@ -66,6 +73,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         {
             await Setup();
             Assert.Single(await this.testHarness.DataStore.ReadActive<Car>());
+        }
+
+
+        [Fact]
+        public async void ItShouldCreateAVersionHistoryRecordInTheAggregate()
+        {
+            await Setup();
+            Assert.Single(this.versionHistory);
         }
     }
 }

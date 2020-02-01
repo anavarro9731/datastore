@@ -1,5 +1,6 @@
 ﻿namespace DataStore.Interfaces
 {
+    using System.Collections.Generic;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.LowLevel;
 
@@ -10,5 +11,6 @@
 
     public interface IDataStoreWriteOperation : IDataStoreOperation, IChangeState
     {
+        List<Aggregate.AggregateVersionInfo> GetHistoryItems { get; }
     }
 }
