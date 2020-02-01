@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.IDocumentRepository.Query.SessionStateTests
+namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 {
     using System;
     using System.Threading.Tasks;

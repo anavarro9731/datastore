@@ -26,7 +26,7 @@
 
                     AddHistoryRecordEntryToExistingIndexOfQueuedItem(model, historyRecordEntry);
 
-                    await CreateFullAggregateRecordIfEnabled(model, $"{methodName}.{nameof(IncrementAggregateVersionOfQueuedItem)}");
+                    await CreateFullAggregateRecordIfEnabled(model, historyRecordEntry, $"{methodName}.{nameof(IncrementAggregateVersionOfQueuedItem)}");
                     
                 }
             }
@@ -38,7 +38,7 @@
                     AssemblyQualifiedTypeName = model.GetType().AssemblyQualifiedName,
                     UnitOfWorkId = this.dataStore.DataStoreOptions.UnitOfWorkId,
                     AggegateHistoryItemId =
-                        this.dataStore.DataStoreOptions.VersionHistory.VersioningStyle == DataStoreOptions.VersioningStyle.CompleteCopyOfAllAggregateVersions
+                        VersioningStyleIsFull()
                             ? Guid.NewGuid()
                             : (Guid?)null,
                     CommitBatch = this.dataStore.ExecutedOperations.OfType<IDataStoreWriteOperation>().Any()
@@ -53,23 +53,21 @@
             {
                 aggregate.VersionHistory.Add(newVersion);
             }
+            bool VersioningStyleIsFull()
+            {
+                return this.dataStore.DataStoreOptions.VersionHistory.VersioningStyle == DataStoreOptions.VersioningStyle.CompleteCopyOfAllAggregateVersions;
+            }
 
-            async Task CreateFullAggregateRecordIfEnabled(T modelNested, string methodNameNested)
+            async Task CreateFullAggregateRecordIfEnabled(T modelNested, Aggregate.AggregateVersionInfo historyRecordEntry, string methodNameNested)
             {
                 {
                     if (VersioningStyleIsFull())
                     {
-                        var aggegateHistoryItemId =  Guid.NewGuid();
-                        modelNested.VersionHistory.Last().AggegateHistoryItemId = aggegateHistoryItemId;
-                        await CreateFullAggregateRecord(aggegateHistoryItemId).ConfigureAwait(false);
+                        await CreateFullAggregateRecord(historyRecordEntry.AggegateHistoryItemId.Value).ConfigureAwait(false);
                     }
                 }
 
-                bool VersioningStyleIsFull()
-                {
-                    return this.dataStore.DataStoreOptions.VersionHistory.VersioningStyle == DataStoreOptions.VersioningStyle.CompleteCopyOfAllAggregateVersions;
-                }
-
+      
                 async Task CreateFullAggregateRecord(Guid id)
                 {
                     await this.dataStore.Create(
