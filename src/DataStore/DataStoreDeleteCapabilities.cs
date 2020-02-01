@@ -20,6 +20,8 @@
 
         private readonly IMessageAggregator messageAggregator;
 
+        private readonly IncrementVersions incrementVersions;
+
         private readonly IDataStoreUpdateCapabilities updateCapabilities;
 
         public static void CheckWasObjectAlreadyHardDeleted<T>(IMessageAggregator messageAggregator, Guid aggregateId) where T : class, IAggregate, new()
@@ -40,10 +42,12 @@
         public DataStoreDeleteCapabilities(
             IDocumentRepository dataStoreConnection,
             IDataStoreUpdateCapabilities updateCapabilities,
-            IMessageAggregator messageAggregator)
+            IMessageAggregator messageAggregator,
+            IncrementVersions incrementVersions)
         {
             this.updateCapabilities = updateCapabilities;
             this.messageAggregator = messageAggregator;
+            this.incrementVersions = incrementVersions;
             DsConnection = dataStoreConnection;
             this.eventReplay = new EventReplay(messageAggregator);
         }
@@ -81,9 +85,12 @@
             {
                 var clone = dataObject.Clone();
 
-                void UpdateEtag(string newTag) => clone.Etag = newTag;
+                void EtagUpdated(string newTag) => clone.Etag = newTag;
 
-                HardDeleteObject(methodName, dataObject, UpdateEtag);
+                this.messageAggregator.Collect(new QueuedHardDeleteOperation<T>(methodName, dataObject, DsConnection, this.messageAggregator, EtagUpdated));
+
+                await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(dataObject, methodName);
+                await this.incrementVersions.DeleteAggregateHistory<T>(dataObject.id, methodName);
 
                 clone.Etag = "waiting to be committed";
                 clones.Add(clone);
@@ -114,9 +121,5 @@
                 nameof(DeleteSoftWhere));
         }
 
-        private void HardDeleteObject<T>(string methodName, T dataObject, Action<string> updateEtag) where T : class, IAggregate, new()
-        {
-            this.messageAggregator.Collect(new QueuedHardDeleteOperation<T>(methodName, dataObject, DsConnection, this.messageAggregator, updateEtag));
-        }
     }
 }

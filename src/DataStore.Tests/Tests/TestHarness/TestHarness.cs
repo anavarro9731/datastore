@@ -2,11 +2,12 @@
 {
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Options;
     using global::DataStore.Providers.CosmosDb;
 
     public static class TestHarness
     {
-        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.InMemory;
+        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.CosmosDb;
 
         public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null)
         {

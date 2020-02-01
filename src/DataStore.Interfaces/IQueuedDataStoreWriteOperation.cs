@@ -1,17 +1,20 @@
 ﻿namespace DataStore.Interfaces
 {
     using System;
+    using System.Collections.Generic;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.LowLevel;
 
     public interface IQueuedDataStoreWriteOperation<T> : IQueuedDataStoreWriteOperation where T : class, IAggregate, new()
     {
-        new T Model { get; set; }
+
+        T PreviousModel { get; set; }
+
+        T NewModel { get; set; }
     }
 
     public interface IQueuedDataStoreWriteOperation : IQueuedStateChange
     {
-        IHaveAUniqueId Model { get; }
 
         Guid AggregateId { get; set; }
 

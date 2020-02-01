@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
+    using global::DataStore.Options;
     using IPermission = CircuitBoard.Permissions.IPermission;
 
     public class ControlFunctions

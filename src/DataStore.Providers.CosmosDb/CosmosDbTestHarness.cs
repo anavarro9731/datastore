@@ -51,15 +51,15 @@
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            void updateEtag(string newTag) => aggregate.Etag = newTag;
+            void etagUpdated(string newTag) => aggregate.Etag = newTag;
 
             //clone aggregate to avoid modifying entries later when using inmemory db
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), DataStore.DocumentRepository, DataStore.MessageAggregator, updateEtag);
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), DataStore.DocumentRepository, DataStore.MessageAggregator, etagUpdated);
 
             Task.Run(async () => await newAggregate.CommitClosure().ConfigureAwait(false)).Wait();
         }
 
-        public IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
+        public List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
         {
             var query = DataStore.DocumentRepository.CreateDocumentQuery<T>();
             var updatedQuery = extendQueryable?.Invoke(query) ?? query;
@@ -67,7 +67,7 @@
             var results = Task.Run(
                 async () => await DataStore.DocumentRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), updatedQuery))
                                            .ConfigureAwait(false)).Result;
-            return results;
+            return results.ToList();
         }
     }
 }

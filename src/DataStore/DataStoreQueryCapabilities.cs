@@ -19,7 +19,9 @@
 
         private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
+        public DataStoreQueryCapabilities(
+            IDocumentRepository dataStoreConnection,
+            IMessageAggregator messageAggregator)
         {
             this.messageAggregator = messageAggregator;
             this.eventReplay = new EventReplay(messageAggregator);

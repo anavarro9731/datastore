@@ -5,6 +5,7 @@
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
@@ -20,14 +21,21 @@
     {
         private readonly DataStoreOptions dataStoreOptions;
 
+        private readonly IncrementVersions incrementVersions;
+
         private readonly IMessageAggregator eventAggregator;
 
         private readonly EventReplay eventReplay;
 
-        public DataStoreUpdateCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator eventAggregator, DataStoreOptions dataStoreOptions)
+        public DataStoreUpdateCapabilities(
+            IDocumentRepository dataStoreConnection,
+            IMessageAggregator eventAggregator,
+            DataStoreOptions dataStoreOptions,
+            IncrementVersions incrementVersions)
         {
             this.eventAggregator = eventAggregator;
             this.dataStoreOptions = dataStoreOptions;
+            this.incrementVersions = incrementVersions;
             this.eventReplay = new EventReplay(eventAggregator);
             DsConnection = dataStoreConnection;
         }
@@ -43,7 +51,7 @@
 
             //exclude these for the scenario where you try to update an object which
             //has been added in this session but has not yet been committed
-            //because timestamps are set AFTER you pass the object to the datastore
+            //because these values are set AFTER you pass the object to the datastore
             //if you passed to this function the original object you passed to the Create<T>() Function
             //it will attempt to overwrite the Created variables with NULL values from that instance
             var excludedParameters = new[]
@@ -51,7 +59,8 @@
                 nameof(IAggregate.Created),
                 nameof(IAggregate.CreatedAsMillisecondsEpochTime),
                 nameof(IAggregate.Modified),
-                nameof(IAggregate.ModifiedAsMillisecondsEpochTime)
+                nameof(IAggregate.ModifiedAsMillisecondsEpochTime),
+                nameof(IAggregate.VersionHistory)
             };
 
             return UpdateById<T, O>(src.id, model => cloned.CopyProperties(model, excludedParameters), setOptions, overwriteReadOnly, methodName);
@@ -96,10 +105,10 @@
 
             var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, predicate.Compile()).AsEnumerable();
 
-            return UpdateInternal(action, dataObjects, overwriteReadOnly, methodName, setOptions);
+            return await UpdateInternal(action, dataObjects, overwriteReadOnly, methodName, setOptions);
         }
 
-        private IEnumerable<T> UpdateInternal<T, O>(Action<T> action, IEnumerable<T> dataObjects, bool overwriteReadOnly, string methodName, Action<O> setOptions)
+        private async Task<IEnumerable<T>> UpdateInternal<T, O>(Action<T> action, IEnumerable<T> dataObjects, bool overwriteReadOnly, string methodName, Action<O> setOptions)
             where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
 
         {
@@ -117,49 +126,57 @@
 
             foreach (var dataObject in dataObjects)
             {
-                var originalId = dataObject.id;
+                var originalObject = dataObject.Clone();
 
-                var restrictedPropertiesBefore = originalId + dataObject.Schema;
+                var restrictedPropertiesBefore = originalObject.id + dataObject.Schema;
                 var restrictedCreatedBefore = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedBefore = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
-                restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore;
+                var restrictedVersionInfo = JsonSerializer.Serialize(dataObject.VersionHistory);
+                restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore + restrictedVersionInfo;
 
                 action(dataObject);
                 DisableOptimisticConcurrencyIfRequested(dataObject); //- has to happen after action
 
-                var restrictedPropertiesAfter = originalId + dataObject.Schema;
+                var restrictedPropertiesAfter = originalObject.id + dataObject.Schema;
                 var restrictedCreatedAfter = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedAfter = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
-                restrictedPropertiesAfter = restrictedPropertiesAfter + restrictedCreatedAfter + restrictedModifiedAfter;
+                var restrictedVersionInfoAfter = JsonSerializer.Serialize(dataObject.VersionHistory);
+                restrictedPropertiesAfter = restrictedPropertiesAfter + restrictedCreatedAfter + restrictedModifiedAfter + restrictedVersionInfoAfter;
 
                 Guard.Against(
                     restrictedPropertiesBefore != restrictedPropertiesAfter,
-                    "Cannot change restricted properties [Id, Schema, Created, CreatedAsMillisecondsEpochTime, Modified, ModifiedAsMillisecondsEpochTime on Aggregate "
-                    + originalId);
+                    $"Cannot change restricted properties ["
+                    + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, "
+                    + $"{nameof(Aggregate.Created)}, {nameof(Aggregate.CreatedAsMillisecondsEpochTime)}, "
+                    + $"{nameof(Aggregate.Modified)}, {nameof(Aggregate.ModifiedAsMillisecondsEpochTime)},  "
+                    + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObject.id}");
 
                 dataObject.Modified = DateTime.UtcNow;
                 dataObject.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();
 
                 var clone = dataObject.Clone();
 
-                var updateEtag = new Action<string>(newTag => clone.Etag = newTag);
+                var etagUpdated = new Action<string>(newTag => clone.Etag = newTag);
 
-                updateEtag += newTag =>
+                etagUpdated += newTag =>
                                       {
                                           var previousMatches = this.eventAggregator.AllMessages.OfType<QueuedUpdateOperation<T>>().Where(q => q.Committed == false)
                                                                     .ToList();
                                           previousMatches.ForEach(
                                               queuedUpdate =>
                                                   {
-                                                      queuedUpdate.Model.Etag = newTag; /* update other queued updates */
+                                                      queuedUpdate.NewModel.Etag = newTag; /* update other queued updates */
                                                   });
                                       };
 
 
-                this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, dataObject, DsConnection, this.eventAggregator, updateEtag));
+                this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, dataObject, originalObject, DsConnection, this.eventAggregator, etagUpdated));
+                
+                await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(dataObject, methodName);
 
                 clone.Etag = "waiting to be committed";
                 clones.Add(clone);
+
             }
 
             //- clone otherwise its to easy to change the referenced object before committing

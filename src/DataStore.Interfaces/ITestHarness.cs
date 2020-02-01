@@ -13,6 +13,6 @@ namespace DataStore.Interfaces
         void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new();
 
         //query the underlying db directly (i.e. not via datastore)
-        IEnumerable<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new();
+        List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new();
     }
 }

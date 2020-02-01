@@ -1,9 +1,11 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -16,6 +18,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         private Car updatedCar;
 
         private ITestHarness testHarness;
+
+        private List<Aggregate.AggregateVersionInfo> versionHistory;
 
         async Task Setup()
         {
@@ -33,6 +37,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             //When
             this.updatedCar = await this.testHarness.DataStore.DeleteSoft(this.originalCar);
             await this.testHarness.DataStore.CommitChanges();
+
+            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.originalCar.id)).Single().VersionHistory;
+
         }
 
         [Fact]
@@ -53,6 +60,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
             Assert.NotEmpty(this.originalCar.Etag); //- it was set using callback
             Assert.NotEqual(this.originalCar.Etag, this.updatedCar.Etag);
+        }
+
+
+        [Fact]
+        public async void ItShouldCreateAVersionHistoryRecordInTheAggregate()
+        {
+            await Setup();
+            Assert.Single(this.versionHistory);
+            Assert.Matches("^[0-9]*$", this.versionHistory.Single().UnitOfWorkId);
         }
     }
 }

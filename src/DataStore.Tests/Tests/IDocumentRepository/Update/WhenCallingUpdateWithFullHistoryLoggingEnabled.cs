@@ -1,7 +1,6 @@
-namespace DataStore.Tests.Tests.IDocumentRepository.Delete
+namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
-    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
@@ -12,37 +11,40 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingDeleteSoftByIdWithVersionHistoryEnabled
+    public class WhenCallingUpdateWithFullHistoryLoggingEnabled
     {
-        private  Guid carId;
+        private Guid carId;
 
-        private  ITestHarness testHarness;
+        private ITestHarness testHarness;
+
+        private Guid unitOfWorkId;
 
         async Task Setup()
         {
             // Given
+            this.unitOfWorkId = Guid.NewGuid();
+
+            this.testHarness = TestHarness.Create(
+                nameof(WhenCallingUpdateWithFullHistoryLoggingEnabled),
+                DataStoreOptions.Create().EnableFullVersionHistory().SpecifyUnitOfWorkId(this.unitOfWorkId));
+
             this.carId = Guid.NewGuid();
+            var car = new Car
+            {
+                id = this.carId,
+                Make = "Volvo"
+            };
 
-
-            this.testHarness = TestHarness
-                .Create(nameof(WhenCallingDeleteSoftByIdWithVersionHistoryEnabled), 
-                    DataStoreOptions.Create().EnableFullVersionHistory());
-
-            await this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = this.carId,
-                    Make = "Volvo"
-                });
-
+            await this.testHarness.DataStore.Create(car);
             await this.testHarness.DataStore.CommitChanges();
+
+            var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
+            existingCarFromDb.Make = "Ford";
 
             //When
-            await this.testHarness.DataStore.DeleteSoftById<Car>(this.carId);
+            await this.testHarness.DataStore.Update(existingCarFromDb);
             await this.testHarness.DataStore.CommitChanges();
         }
-
-
 
         [Fact]
         public async void ItShouldAddAHistoryIndexEntityToTheHistory()
@@ -52,7 +54,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             var car = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
             Assert.Equal(2, car.VersionHistory.Count);
             var aggregateVersionInfo = car.VersionHistory.Skip(1).First();
-            Assert.Matches("^[0-9]*$", aggregateVersionInfo.UnitOfWorkId);
+            Assert.Equal(this.unitOfWorkId.ToString(), aggregateVersionInfo.UnitOfWorkId);
             Assert.Equal(typeof(Car).AssemblyQualifiedName, aggregateVersionInfo.AssemblyQualifiedTypeName);
             Assert.Equal(2, aggregateVersionInfo.CommitBatch);
         }
@@ -62,7 +64,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         {
             await Setup();
 
-            //- create for create and update ops
+            //- one for create and one for update
             Assert.Equal(2, this.testHarness.DataStore
                                .ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
@@ -77,7 +79,5 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
             Assert.True(aggregateHistoryItem.AggregateVersion.id == this.carId);
         }
-
-
     }
 }
