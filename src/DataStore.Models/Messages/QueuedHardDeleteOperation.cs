@@ -30,7 +30,7 @@
 
             Created = DateTime.UtcNow;
             PreviousModel = model;
-            NewModel = model;
+            NewModel = null;
             AggregateId = model.id;
         }
 
