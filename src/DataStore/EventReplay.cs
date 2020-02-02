@@ -92,7 +92,7 @@ namespace DataStore
                 case QueuedHardDeleteOperation<T> _:
                     //remove it altogether as it has been hard deleted and would not be returned under any circumstance unless you added it again later
                     //in the session
-                    var itemToRemove2 = results.SingleOrDefault(i => i.id == previousUncommittedOperation.NewModel.id);
+                    var itemToRemove2 = results.SingleOrDefault(i => i.id == previousUncommittedOperation.PreviousModel.id);
                     //there is no reason that the item you deleted earlier in the session will meet this queries predicate so we need to check for null
                     if (itemToRemove2 != null) results.Remove(itemToRemove2);               
                     break;
