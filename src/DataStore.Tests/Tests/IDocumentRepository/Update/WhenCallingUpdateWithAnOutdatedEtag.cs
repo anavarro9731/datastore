@@ -48,7 +48,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         public async void ItShouldThrowAConcurrencyException()
         {
             await Setup(); 
-            await Assert.ThrowsAnyAsync<Exception>(async () => await this.testHarness.DataStore.CommitChanges());
+            await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
             
         }
 

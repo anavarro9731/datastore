@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Data;
     using System.Diagnostics;
     using System.Linq;
     using System.Runtime.CompilerServices;
@@ -78,7 +79,6 @@
                              docLink,
                              new RequestOptions
                              {
-
                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                              }).ConfigureAwait(false);
 
@@ -198,7 +198,8 @@
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             PrepareAccessCondition(aggregateUpdated, out AccessCondition condition);
-
+            
+            try
             {
                 var result = await this.client.ReplaceDocumentAsync(
                                  CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
@@ -211,6 +212,11 @@
 
                 aggregateUpdated.Model.Etag = result.Resource.ETag; //- update it
                 aggregateUpdated.StateOperationCost = result.RequestCharge;
+            }
+            catch (DocumentClientException e)
+            {
+                if (e.Error.Code == "PreconditionFailed") throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} is outdated", e);
+                else throw;
             }
 
             void PrepareAccessCondition(IDataStoreWriteOperation<T> dataStoreWriteOperation, out AccessCondition accessCondition)
