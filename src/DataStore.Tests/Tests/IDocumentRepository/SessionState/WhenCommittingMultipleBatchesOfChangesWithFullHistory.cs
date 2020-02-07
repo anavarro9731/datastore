@@ -54,9 +54,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
         public async void ItShouldIncrementTheVersionHistoryBatchIds()
         {
             await Setup();
-            Assert.Equal(1, this.versionHistory.First().CommitBatch);
+            Assert.Equal(1, this.versionHistory.Last().CommitBatch);
             Assert.Equal(2, this.versionHistory.Skip(1).First().CommitBatch);
-            Assert.Equal(3, this.versionHistory.Skip(2).First().CommitBatch);
+            Assert.Equal(3, this.versionHistory.First().CommitBatch);
             Assert.Equal(3, this.versionHistory.Count);
         }
 

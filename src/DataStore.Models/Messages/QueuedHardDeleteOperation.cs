@@ -34,6 +34,8 @@
             AggregateId = model.id;
         }
 
+        IAggregate IQueuedDataStoreWriteOperation.NewModel => NewModel;
+
         public Guid AggregateId { get; set; }
 
         public Func<Task> CommitClosure { get; set; }
@@ -43,6 +45,8 @@
         public DateTime Created { get; set; }
 
         public T PreviousModel { get; set; }
+
+        IAggregate IQueuedDataStoreWriteOperation.PreviousModel => PreviousModel;
 
         public T NewModel { get; set; }
     }

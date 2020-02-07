@@ -53,9 +53,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             var car = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
             Assert.Equal(2, car.VersionHistory.Count);
-            var aggregateVersionInfo = car.VersionHistory.Skip(1).First();
+            var aggregateVersionInfo = car.VersionHistory.First();
             Assert.Equal(this.unitOfWorkId.ToString(), aggregateVersionInfo.UnitOfWorkId);
-            Assert.Equal(typeof(Car).AssemblyQualifiedName, aggregateVersionInfo.AssemblyQualifiedTypeName);
             Assert.Equal(2, aggregateVersionInfo.CommitBatch);
         }
 
@@ -69,13 +68,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                                .ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var car = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
-            var aggregateVersionInfo = car.VersionHistory.Skip(1).First();
+            var aggregateVersionInfo = car.VersionHistory.First();
 
             var aggregateHistoryItem = this.testHarness
                                            .QueryDatabase<AggregateHistoryItem<Car>>(cars => cars.Where(x => x.id == aggregateVersionInfo.AggegateHistoryItemId))
                                            .SingleOrDefault();
 
             Assert.NotNull(aggregateHistoryItem);
+            Assert.Equal(typeof(Car).AssemblyQualifiedName, aggregateHistoryItem.AssemblyQualifiedTypeName);
 
             Assert.True(aggregateHistoryItem.AggregateVersion.id == this.carId);
         }
