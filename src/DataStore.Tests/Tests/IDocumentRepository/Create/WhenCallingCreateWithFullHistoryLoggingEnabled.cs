@@ -27,9 +27,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             await Setup();
 
             Assert.Single(newCar.VersionHistory);
-            var aggregateVersionInfo = this.newCar.VersionHistory.First();
+            var aggregateVersionInfo = this.newCar.VersionHistory.Single();
             Assert.Equal(this.unitOfWorkId.ToString(), aggregateVersionInfo.UnitOfWorkId);
-            Assert.Equal(typeof(Car).AssemblyQualifiedName, aggregateVersionInfo.AssemblyQualifiedTypeName);
             Assert.Equal(1, aggregateVersionInfo.CommitBatch);
         }
 
@@ -40,7 +39,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var aggregateHistoryItem = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single();
-
             Assert.NotEqual(Guid.Empty, aggregateHistoryItem.id);
             Assert.True(aggregateHistoryItem.AggregateVersion.id == this.newCarId);
         }
@@ -49,8 +47,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldCreateTheCorrectReferenceBetweenTheTwoRecords()
         {
             await Setup();
+
             Assert.Equal(
-                this.newCar.VersionHistory.Last().AggegateHistoryItemId,
+                this.newCar.VersionHistory.Single().AggegateHistoryItemId,
                 this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id);
         }
 

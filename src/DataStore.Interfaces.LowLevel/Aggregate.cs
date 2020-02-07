@@ -29,8 +29,9 @@
 
             public Guid? AggegateHistoryItemId { get; set; }
 
-            public string AssemblyQualifiedTypeName { get; set; }
+            public DateTime Timestamp { get; set; }
 
+            public int ChangeCount { get; set; }
         }
 
         public const string PartitionKeyValue = "shared";

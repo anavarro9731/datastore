@@ -8,13 +8,17 @@
     public interface IQueuedDataStoreWriteOperation<T> : IQueuedDataStoreWriteOperation where T : class, IAggregate, new()
     {
 
-        T PreviousModel { get; set; }
+        new T PreviousModel { get; set; }
 
-        T NewModel { get; set; }
+        new T NewModel { get; set; }
     }
 
     public interface IQueuedDataStoreWriteOperation : IQueuedStateChange
     {
+
+        IAggregate PreviousModel { get; }
+
+        IAggregate NewModel { get; }
 
         Guid AggregateId { get; set; }
 

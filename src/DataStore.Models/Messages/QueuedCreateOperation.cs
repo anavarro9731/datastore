@@ -34,7 +34,6 @@ namespace DataStore.Models.Messages
             AggregateId = model.id;
         }
 
-        
         public Guid AggregateId { get; set; }
 
         public Func<Task> CommitClosure { get; set; }
@@ -44,6 +43,9 @@ namespace DataStore.Models.Messages
         public DateTime Created { get; set; }
 
         public T PreviousModel { get; set; }
+
+        IAggregate IQueuedDataStoreWriteOperation.NewModel => NewModel;
+        IAggregate IQueuedDataStoreWriteOperation.PreviousModel => PreviousModel;
 
         public T NewModel { get; set; }
     }

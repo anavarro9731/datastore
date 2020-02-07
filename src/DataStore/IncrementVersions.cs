@@ -1,6 +1,7 @@
 ﻿namespace DataStore
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
@@ -22,7 +23,7 @@
             {
                 if (!typeof(T).InheritsOrImplements(typeof(AggregateHistoryItem<>))) //- without this check you'd get recursion to infinity
                 {
-                    PrepareNewHistoryRecordEntry(out var historyRecordEntry);
+                    PrepareNewHistoryRecordEntry(model.VersionHistory, out var historyRecordEntry);
 
                     AddHistoryRecordEntryToExistingIndexOfQueuedItem(model, historyRecordEntry);
 
@@ -31,27 +32,26 @@
                 }
             }
 
-            void PrepareNewHistoryRecordEntry(out Aggregate.AggregateVersionInfo historyRecordEntry)
+            void PrepareNewHistoryRecordEntry(List<Aggregate.AggregateVersionInfo> versionHistory, out Aggregate.AggregateVersionInfo historyRecordEntry)
             {
                 historyRecordEntry = new Aggregate.AggregateVersionInfo
                 {
-                    AssemblyQualifiedTypeName = model.GetType().AssemblyQualifiedName,
+                    Timestamp = DateTime.UtcNow,
                     UnitOfWorkId = this.dataStore.DataStoreOptions.UnitOfWorkId,
-                    AggegateHistoryItemId =
-                        VersioningStyleIsFull()
-                            ? Guid.NewGuid()
-                            : (Guid?)null,
+                    AggegateHistoryItemId = VersioningStyleIsFull() ? Guid.NewGuid() : (Guid?)null,
                     CommitBatch = this.dataStore.ExecutedOperations.OfType<IDataStoreWriteOperation>().Any()
-                                      ? this.dataStore.ExecutedOperations.OfType<IDataStoreWriteOperation>()
-                                            .Max(x => x.GetHistoryItems.Any() ? x.GetHistoryItems.Max(y => y.CommitBatch) : 0) + 1
+                                      ? this.dataStore.ExecutedOperations.OfType<IDataStoreWriteOperation>().Max(
+                                            x => x.GetHistoryItems.Any() ? x.GetHistoryItems.Max(y => y.CommitBatch) : 0) + 1
                                       : 1 /* this is rather confusing, the reason history items can sometimes be empty is that
-                                      if you are dealing with a historyitem itself there won't be any*/
+                                      if you are dealing with a historyitem itself there won't be any*/,
+                    ChangeCount = versionHistory.Any() ? versionHistory.First().ChangeCount + 1 : 1 
                 };
             }
 
             void AddHistoryRecordEntryToExistingIndexOfQueuedItem(T aggregate, Aggregate.AggregateVersionInfo newVersion)
             {
-                aggregate.VersionHistory.Add(newVersion);
+                aggregate.VersionHistory.Insert(0,newVersion);
+                if (aggregate.VersionHistory.Count > 10) aggregate.VersionHistory.RemoveAt(aggregate.VersionHistory.Count -1);
             }
             bool VersioningStyleIsFull()
             {
@@ -74,6 +74,7 @@
                         new AggregateHistoryItem<T>
                         {
                             id = id,
+                            AssemblyQualifiedTypeName = modelNested.GetType().AssemblyQualifiedName,
                             AggregateVersion = modelNested
                             /* this ref is shared with the actual write any changes will be synchronised
                              since this is precommit and that may be fine but worth remembering */
