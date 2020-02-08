@@ -99,16 +99,8 @@
 
             async Task CommitAllEvents(List<IQueuedDataStoreWriteOperation> committableEvents)
             {
-                /* use order least vulnerable to rollbacks,
-                 take updates which and prioritize those that are modified recently 
-                 then take creates, because deletes are always allowed through both physically
-                 and logically (I don't think we care about race condition when deleting) and if a create
-                 fails it means less to rollback if the deletes have not been done yet*/
-                var toCommit = committableEvents.OrderBy(c => c.Is(typeof(QueuedUpdateOperation<>)))
-                                                     .ThenBy(c => c.Is(typeof(QueuedCreateOperation<>)))
-                                                     .ThenByDescending(c => c.LastModified).ToList();
-
-                foreach (var dataStoreWriteEvent in toCommit)
+            
+                foreach (var dataStoreWriteEvent in committableEvents)
                     await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
             }
 
