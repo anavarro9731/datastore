@@ -45,6 +45,8 @@
 
         public DateTime Created { get; set; }
 
+        public long? LastModified => (int)PreviousModel.ModifiedAsMillisecondsEpochTime;
+
         public T PreviousModel { get; set; }
 
         IAggregate IQueuedDataStoreWriteOperation.PreviousModel => PreviousModel;

@@ -15,6 +15,7 @@
 
     public interface IQueuedDataStoreWriteOperation : IQueuedStateChange
     {
+        long? LastModified { get; }
 
         IAggregate PreviousModel { get; }
 

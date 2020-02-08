@@ -201,6 +201,7 @@
             
             try
             {
+                aggregateUpdated.Model.Etag = null; //- clear after copying to access condition, no reason to save and its confusing to see it
                 var result = await this.client.ReplaceDocumentAsync(
                                  CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
                                  aggregateUpdated.Model,
