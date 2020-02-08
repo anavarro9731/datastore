@@ -12,6 +12,7 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
+    using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
 
@@ -25,7 +26,7 @@
         {
             {
                 ValidateOptions(dataStoreOptions);
-                
+
                 {
                     // init vars
                     MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
@@ -93,12 +94,21 @@
                 FilterEvents(out var committableEvents, out var committedEvents);
 
                 await CommitAllEvents(committableEvents);
-                
+
             }
 
             async Task CommitAllEvents(List<IQueuedDataStoreWriteOperation> committableEvents)
             {
-                foreach (var dataStoreWriteEvent in committableEvents)
+                /* use order least vulnerable to rollbacks,
+                 take updates which and prioritize those that are modified recently 
+                 then take creates, because deletes are always allowed through both physically
+                 and logically (I don't think we care about race condition when deleting) and if a create
+                 fails it means less to rollback if the deletes have not been done yet*/
+                var toCommit = committableEvents.OrderBy(c => c.Is(typeof(QueuedUpdateOperation<>)))
+                                                     .ThenBy(c => c.Is(typeof(QueuedCreateOperation<>)))
+                                                     .ThenByDescending(c => c.LastModified).ToList();
+
+                foreach (var dataStoreWriteEvent in toCommit)
                     await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
             }
 
@@ -168,8 +178,8 @@
         {
             methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoftWhere);
 
-            var results = await DeleteCapabilities.DeleteSoftWhere(predicate, methodName).ConfigureAwait(false);               
-            
+            var results = await DeleteCapabilities.DeleteSoftWhere(predicate, methodName).ConfigureAwait(false);
+
             return results;
         }
 
@@ -277,6 +287,6 @@
             return UpdateWhere<T, UpdateOptions>(predicate, action, options => { }, overwriteReadOnly, methodName);
         }
 
-        
+
     }
 }

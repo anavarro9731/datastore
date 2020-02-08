@@ -42,6 +42,8 @@ namespace DataStore.Models.Messages
 
         public DateTime Created { get; set; }
 
+        public long? LastModified => null;
+
         public T PreviousModel { get; set; }
 
         IAggregate IQueuedDataStoreWriteOperation.NewModel => NewModel;

@@ -68,14 +68,19 @@
             foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
+        public static bool Is(this object child, Type t)
+        {
+            return child.GetType().InheritsOrImplements(t);
+        }
+
         /// <summary>
-        ///     checks if a class inherits from or implements a base class/interface.
-        ///     Superbly supports generic interfaces and types!
-        /// </summary>
-        /// <param name="child"></param>
-        /// <param name="parent"></param>
-        /// <returns></returns>
-        public static bool InheritsOrImplements(this Type child, Type parent)
+            ///     checks if a class inherits from or implements a base class/interface.
+            ///     Superbly supports generic interfaces and types!
+            /// </summary>
+            /// <param name="child"></param>
+            /// <param name="parent"></param>
+            /// <returns></returns>
+            public static bool InheritsOrImplements(this Type child, Type parent)
         {
             parent = ResolveGenericTypeDefinition(parent);
 
@@ -100,6 +105,7 @@
 
             return false;
         }
+
         private static bool HasAnyInterfaces(Type parent, Type child)
         {
             return child.GetInterfaces()

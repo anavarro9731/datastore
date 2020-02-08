@@ -35,6 +35,8 @@
         }
 
         IAggregate IQueuedDataStoreWriteOperation.NewModel => NewModel;
+        
+        public long? LastModified => (int)PreviousModel.ModifiedAsMillisecondsEpochTime;
 
         public Guid AggregateId { get; set; }
 
