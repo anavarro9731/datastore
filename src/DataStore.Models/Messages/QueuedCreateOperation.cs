@@ -6,6 +6,7 @@ namespace DataStore.Models.Messages
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Models.PureFunctions.Extensions;
 
     public class QueuedCreateOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
@@ -56,6 +57,8 @@ namespace DataStore.Models.Messages
     {
         public List<Aggregate.AggregateVersionInfo> GetHistoryItems => Model.VersionHistory;
 
+        IAggregate IDataStoreWriteOperation.Model { set => Model = value.As<T>(); }
+        
         public DateTime Created { get; set; }
 
         public string MethodCalled { get; set; }
