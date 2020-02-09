@@ -6,11 +6,13 @@
 
     public interface IDataStoreWriteOperation<T> : IDataStoreWriteOperation where T : class, IAggregate, new()
     {
-        T Model { get; set; }
+        new T Model { get; set; }
     }
 
     public interface IDataStoreWriteOperation : IDataStoreOperation, IChangeState
     {
         List<Aggregate.AggregateVersionInfo> GetHistoryItems { get; }
+
+        IAggregate Model { set; }
     }
 }

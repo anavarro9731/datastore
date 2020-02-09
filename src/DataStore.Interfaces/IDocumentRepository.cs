@@ -23,3 +23,5 @@ namespace DataStore.Interfaces
         Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new();
     }
 }
+
+    
