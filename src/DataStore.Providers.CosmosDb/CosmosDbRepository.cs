@@ -216,7 +216,7 @@
             }
             catch (DocumentClientException e)
             {
-                if (e.Error.Code == "PreconditionFailed") throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} is outdated", e);
+                if (e.Error.Code == "PreconditionFailed") throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated", e);
                 else throw;
             }
 

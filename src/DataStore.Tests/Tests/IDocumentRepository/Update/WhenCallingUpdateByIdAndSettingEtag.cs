@@ -1,6 +1,7 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
+    using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
@@ -38,7 +39,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         public async void ItShouldThrowAConcurrencyException()
         {
             await Setup();
-            await Assert.ThrowsAnyAsync<Exception>(async () => await this.testHarness.DataStore.CommitChanges());
+            var exception = await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
+            Assert.Contains(this.carId.ToString(), exception.Message);
+            Assert.Contains(typeof(Car).FullName, exception.Message);
         }
     }
 }
