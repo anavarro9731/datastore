@@ -125,8 +125,8 @@
 
             var optimisticConcurrencyDisabled = updatedRecord.Etag == null;
             if (updatedRecord.Etag != existingRecord.Etag &&
-                !optimisticConcurrencyDisabled) throw new DBConcurrencyException($"Etag {updatedRecord.Etag} does not match current Etag {existingRecord.Etag}");
-
+                !optimisticConcurrencyDisabled) throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated");
+            
             updatedRecord.CopyProperties(existingRecord);
 
             //- fake eTag update
