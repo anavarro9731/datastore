@@ -2,10 +2,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
     using System.Data;
-    using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
-    using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -15,13 +13,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     {
         private Guid carId;
 
+        private Car existingCar;
+
         private ITestHarness testHarness;
 
         private Car udpatedCar;
 
-        private Car existingCar;
+        [Fact]
+        public async void ItShouldThrowAConcurrencyException()
+        {
+            await Setup();
+            await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
+        }
 
-        async Task Setup()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWithAnOutdatedEtag));
@@ -43,14 +48,5 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
         }
-
-        [Fact]
-        public async void ItShouldThrowAConcurrencyException()
-        {
-            await Setup(); 
-            await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
-            
-        }
-
     }
 }

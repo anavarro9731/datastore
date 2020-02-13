@@ -43,7 +43,7 @@
         /// <param name="source"></param>
         /// <param name="destination"></param>
         /// <param name="exclude"></param>
-        public static void CopyProperties(this object source, object destination, params string[] exclude)
+        public static void CopyPropertiesTo(this object source, object destination, params string[] exclude)
         {
             // If any this null throw an exception
             if (source == null || destination == null) throw new Exception("Source or/and Destination Objects are null");

@@ -14,8 +14,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
     {
         private Guid newCarId;
 
-        private Car result;
-
         private ITestHarness testHarness;
 
         private List<Aggregate.AggregateVersionInfo> versionHistory;

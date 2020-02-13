@@ -12,8 +12,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
     {
         private Guid carId;
 
-        private Car result;
-
         private ITestHarness testHarness;
 
         async Task Setup()

@@ -34,7 +34,7 @@
             return Task.FromResult(count);
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
+        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IAggregate, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
@@ -55,6 +55,7 @@
         }
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
+            where T : class, IAggregate, new()
         {
             var results = new List<T>();
 
@@ -97,6 +98,7 @@
 
             //.. execute query
             results.AddRange(aggregatesQueried.Query.ToList());
+            //* no need to set the eTag value, it will already be correct unlike other providers where it has to be mapped from an underlying document
 
             /* clone otherwise its to easy to change the referenced
              object in test code affecting results */
@@ -126,11 +128,13 @@
             var optimisticConcurrencyDisabled = updatedRecord.Etag == null;
             if (updatedRecord.Etag != existingRecord.Etag &&
                 !optimisticConcurrencyDisabled) throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated");
-            
-            updatedRecord.CopyProperties(existingRecord);
 
-            //- fake eTag update
-            existingRecord.Etag = updatedRecord.Etag = Guid.NewGuid().ToString();
+            updatedRecord.CopyPropertiesTo(existingRecord);
+
+            //- fake eTag update, by updating aggregateUpdated.Model this is sent back to the client (see UpdateOperation class)
+            updatedRecord.Etag = Guid.NewGuid().ToString();
+            //* locally we have no underlying Document object so we save the updated Tag directly on the in-memory object
+            existingRecord.Etag = updatedRecord.Etag; 
 
             return Task.CompletedTask;
         }

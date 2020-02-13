@@ -3,8 +3,9 @@
     using System;
     using System.Linq;
     using CircuitBoard.Messages;
+    using DataStore.Interfaces.LowLevel;
 
-    public interface IDataStoreReadFromQueryable<T> : IDataStoreReadOperation
+    public interface IDataStoreReadFromQueryable<T> : IDataStoreReadOperation where T : class, IAggregate, new()
     {
         IQueryable<T> Query { get; set; }
         IQueryOptions<T> QueryOptions { get; set; }

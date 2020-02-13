@@ -54,7 +54,7 @@
             return count;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IEntity, new()
+        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IAggregate, new()
         {
             var schema = typeof(T).FullName;
             var query = this.client.CreateDocumentQuery<T>(
@@ -87,6 +87,7 @@
         }
 
         public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
+            where T : class, IAggregate, new()
         {
             var results = new List<T>();
             {
@@ -114,14 +115,15 @@
 
                     IEnumerable<T> typedResponses = feedResponseEnumerable.Select(feedItem =>
                         {
-                            var asT = ((T)(dynamic)feedItem).Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
+                            var asT = ((T)(dynamic)feedItem)
+                                /* set Etag */
+                                .Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
                             return asT;
                         });
 
                     results.AddRange(typedResponses);
 
                     SetContinuationToken(feedResponseEnumerable);
-
                 }
 
                 return results;
@@ -178,6 +180,8 @@
             }
         }
 
+
+
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var query = CreateDocumentQuery<T>();
@@ -191,17 +195,19 @@
                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                              }).ConfigureAwait(false)).Document;
 
-            var asT = ((T)(dynamic)result).Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
+            var asT = ((T)(dynamic)result)
+                /* set eTag */
+                .Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
             return asT;
         }
 
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
-            PrepareAccessCondition(aggregateUpdated, out AccessCondition condition);
-            
             try
             {
-                aggregateUpdated.Model.Etag = null; //- clear after copying to access condition, no reason to save and its confusing to see it
+                PrepareAccessCondition(aggregateUpdated, out AccessCondition condition);
+                aggregateUpdated.Model.Etag = null; //- clear after copying to access condition, no reason to save and its confusing to see it, this is our eTag property, not the underlying documents
+
                 var result = await this.client.ReplaceDocumentAsync(
                                  CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
                                  aggregateUpdated.Model,
@@ -211,7 +217,8 @@
                                      PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                                  }).ConfigureAwait(false);
 
-                aggregateUpdated.Model.Etag = result.Resource.ETag; //- update it
+                aggregateUpdated.Model.Etag = result.Resource.ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
+
                 aggregateUpdated.StateOperationCost = result.RequestCharge;
             }
             catch (DocumentClientException e)

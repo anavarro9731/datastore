@@ -73,12 +73,12 @@ namespace DataStore
                         e.Schema = typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
                         e.ReadOnly = readOnly;
                         e.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, still best not to allow any invalid state
+
+                        WalkGraphAndUpdateEntityMeta(e);
+
+                        e.Modified = e.Created;
+                        e.ModifiedAsMillisecondsEpochTime = e.CreatedAsMillisecondsEpochTime;
                     });
-
-            WalkGraphAndUpdateEntityMeta(enriched);
-
-            enriched.Modified = enriched.Created;
-            enriched.ModifiedAsMillisecondsEpochTime = enriched.CreatedAsMillisecondsEpochTime;
         }
 
         private static void WalkGraphAndUpdateEntityMeta(object current)
