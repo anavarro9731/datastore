@@ -160,7 +160,8 @@
 
                 etagUpdated += newTag =>
                                       {
-                                          var previousMatches = this.eventAggregator.AllMessages.OfType<QueuedUpdateOperation<T>>().Where(q => q.Committed == false)
+                                          var previousMatches = this.eventAggregator.AllMessages.OfType<QueuedUpdateOperation<T>>().Where(q => q.Committed == false &&
+                                                                                                                                               q.AggregateId == dataObject.id)
                                                                     .ToList();
                                           previousMatches.ForEach(
                                               queuedUpdate =>

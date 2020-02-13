@@ -30,9 +30,8 @@ DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and
 ## Roadmap
 
 * Better documentation of API features
-* Add Etag to version history
+* Update Version History on active instances post-commit
 * Add Performance Tracing
-* Add Full Unit Of Work that can rollback on error and concurrencyexceptions
 * Partitioned Collection Support (partition on Id or ClassName)
 * Upgrade to v4 SDK
 
