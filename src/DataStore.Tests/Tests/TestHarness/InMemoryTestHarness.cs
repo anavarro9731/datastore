@@ -31,7 +31,6 @@
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-
             //create a new one, we definitely don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
             var clone = aggregate.Clone();
@@ -40,8 +39,8 @@
             DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
 
             DocumentRepository.Aggregates.Add(clone);
-
-            clone.Etag = Guid.NewGuid().ToString(); //fake etag update
+            clone.Etag = Guid.NewGuid().ToString(); //fake etag update internally
+            aggregate.Etag = clone.Etag; //fake etag update externally
         }
 
         public List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
