@@ -79,6 +79,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.NotEmpty(this.existingCar.Etag); //- it was set using callback
+            Assert.NotEmpty(this.udpatedCar.Etag); //- it was set using callback
             Assert.NotEqual(this.existingCar.Etag, this.udpatedCar.Etag);
         }
 

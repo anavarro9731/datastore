@@ -59,6 +59,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         {
             await Setup();
             Assert.NotEmpty(this.originalCar.Etag); //- it was set using callback
+            Assert.NotEmpty(this.updatedCar.Etag); //- it was set using callback
             Assert.NotEqual(this.originalCar.Etag, this.updatedCar.Etag);
         }
 
