@@ -8,7 +8,7 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PureFunctions.Extensions;
 
-    public class WithoutReplayOptions<T> : IWithoutReplayOptionsLibrarySide<T>, IWithoutReplayOptionsClientSide<T> where T : class, IEntity, new()
+    public class WithoutReplayOptions<T> : IWithoutReplayOptionsLibrarySide<T>, IWithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
     {
         private readonly List<(string, bool)> orderByParameterList = new List<(string, bool)>();
 

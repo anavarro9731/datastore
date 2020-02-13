@@ -19,8 +19,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
 
         private ITestHarness testHarness;
 
-        private Car udpatedCar;
-
         private Car existingCar;
 
         private List<Aggregate.AggregateVersionInfo> versionHistory;

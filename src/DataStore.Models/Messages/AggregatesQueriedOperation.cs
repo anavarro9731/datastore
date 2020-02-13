@@ -3,8 +3,9 @@
     using System;
     using System.Linq;
     using DataStore.Interfaces;
+    using DataStore.Interfaces.LowLevel;
 
-    public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T>
+    public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T> where T : class, IAggregate, new()
     {
         public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions<T> queryOptions = null)
         {
@@ -12,7 +13,7 @@
             TypeName = typeof(T).FullName;
             Query = query;
             QueryOptions = queryOptions;
-            Created = DateTime.UtcNow;
+            Created = DateTime.UtcNow;  
         }
 
         public DateTime Created { get; set; }

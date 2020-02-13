@@ -74,7 +74,7 @@ namespace DataStore
                     {
                         //update it
                         var itemToUpdate = results.Single(i => i.id == previousUncommittedOperation.NewModel.id);
-                        previousUncommittedOperation.NewModel.CopyProperties(itemToUpdate);
+                        previousUncommittedOperation.NewModel.CopyPropertiesTo(itemToUpdate);
                         break;
                     }
 

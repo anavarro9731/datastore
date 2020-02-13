@@ -31,8 +31,6 @@
 
         public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
         {
-            //- fake a new eTag 
-            aggregate.Etag = Guid.NewGuid().ToString();
 
             //create a new one, we definitely don't want to use the instance passed in, in the event it changes after this call
             //and affects the commit and/or the resulting events
@@ -40,12 +38,10 @@
 
             //copied from DataStore create capabilities, may get out of date
             DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
-            clone.Created = DateTime.UtcNow.AddDays(-1);
-            clone.CreatedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime();
-            clone.Modified = clone.Created;
-            clone.ModifiedAsMillisecondsEpochTime = clone.ModifiedAsMillisecondsEpochTime;
 
             DocumentRepository.Aggregates.Add(clone);
+
+            clone.Etag = Guid.NewGuid().ToString(); //fake etag update
         }
 
         public List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()

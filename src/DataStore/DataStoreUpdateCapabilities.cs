@@ -63,7 +63,7 @@
                 nameof(IAggregate.VersionHistory)
             };
 
-            return UpdateById<T, O>(src.id, model => cloned.CopyProperties(model, excludedParameters), setOptions, overwriteReadOnly, methodName);
+            return UpdateById<T, O>(src.id, model => cloned.CopyPropertiesTo(model, excludedParameters), setOptions, overwriteReadOnly, methodName);
         }
 
         // .. update using Id; get values from another instance of the same aggregate

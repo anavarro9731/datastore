@@ -27,7 +27,7 @@
                     /* Committed=true has to happen before update eTag is called,
                      there is logic that responds to etagUpdated which expects the item causing the update
                      to be committed */
-                    etagUpdated(newModel.Etag);
+                    etagUpdated(newModel.Etag);  //* newModel = Model on UpdateOperation which is updated via interface in the repo
                 };
 
             Created = DateTime.UtcNow;

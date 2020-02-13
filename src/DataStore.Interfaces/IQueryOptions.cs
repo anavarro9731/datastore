@@ -10,7 +10,7 @@
     {
     }
 
-    public interface IWithoutReplayOptionsClientSide<T> where T : class, IEntity, new()
+    public interface IWithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
     {
         IWithoutReplayOptionsClientSide<T> ContinueFrom(ContinuationToken currentContinuationToken);
 
@@ -22,6 +22,7 @@
     }
 
     public interface IWithoutReplayOptionsLibrarySide<T> : IQueryOptions<T>, IContinueAndTake<T>, IOrderBy<T>
+        where T : class, IAggregate, new()
     {
     }
 
