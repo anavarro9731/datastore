@@ -203,6 +203,8 @@
 
         public async Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
+            var preSaveTag = aggregateUpdated.Model.Etag;
+
             try
             {
                 PrepareAccessCondition(aggregateUpdated, out AccessCondition condition);
@@ -223,7 +225,7 @@
             }
             catch (DocumentClientException e)
             {
-                if (e.Error.Code == "PreconditionFailed") throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated", e);
+                if (e.Error.Code == "PreconditionFailed") throw new DBConcurrencyException($"Etag {preSaveTag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated", e);
                 else throw;
             }
 
