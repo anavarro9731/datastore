@@ -44,12 +44,12 @@ namespace DataStore
             ForceProperties(readOnly, newObject);
 
             Guard.Against(this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>().SingleOrDefault(e => !e.Committed && e.AggregateId == newObject.id)
-                              != null, "An item with the same ID is already queued to be created", Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
+                              != null, $"An item with the same ID of {newObject.id} is already queued to be created", Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
 
             int count = (await this.DsConnection.CountAsync(new AggregateCountedOperation<T>(methodName, t => t.id == newObject.id)).ConfigureAwait(false));
 
             bool existsAlready = count > 0;
-            Guard.Against(existsAlready, "An item with the same ID already exists", Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
+            Guard.Against(existsAlready, $"An item with the same ID of {newObject.id} already exists", Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
 
             var clone = newObject.Clone();
             clone.Etag = "waiting to be committed";
@@ -63,22 +63,18 @@ namespace DataStore
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally
             return clone;
-        }   
+        }
 
-        internal static void ForceProperties<T>(bool readOnly, T enriched) where T : class, IAggregate, new()
+        internal static void ForceProperties<T>(bool readOnly, T newObject) where T : class, IAggregate, new()
         {
-            enriched.Op(
-                e =>
-                    {
-                        e.Schema = typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
-                        e.ReadOnly = readOnly;
-                        e.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, still best not to allow any invalid state
+            newObject.Schema = typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is open to change because of serialisation opening the property setter
+            newObject.ReadOnly = readOnly;
+            newObject.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, still best not to allow any invalid state
 
-                        WalkGraphAndUpdateEntityMeta(e);
+            WalkGraphAndUpdateEntityMeta(newObject);
 
-                        e.Modified = e.Created;
-                        e.ModifiedAsMillisecondsEpochTime = e.CreatedAsMillisecondsEpochTime;
-                    });
+            newObject.Modified = newObject.Created;
+            newObject.ModifiedAsMillisecondsEpochTime = newObject.CreatedAsMillisecondsEpochTime;
         }
 
         private static void WalkGraphAndUpdateEntityMeta(object current)
