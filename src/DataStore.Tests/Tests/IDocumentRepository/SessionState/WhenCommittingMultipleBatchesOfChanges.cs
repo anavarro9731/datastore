@@ -44,7 +44,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             await this.testHarness.DataStore.CommitChanges();
 
             //When
-            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars => 
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => 
                 cars.Where(c => c.id == this.carId)).Single().VersionHistory;
         }
 

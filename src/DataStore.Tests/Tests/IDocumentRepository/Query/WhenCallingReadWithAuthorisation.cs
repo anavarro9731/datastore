@@ -64,46 +64,46 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadWithAuthorisation), dataStoreOptions);
 
             var companyA = new Company("CompanyA", Guid.NewGuid());
-            this.testHarness.AddToDatabase(companyA);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyA);
 
             var companyADivision1 = new CompanyDivision("CompanyA_D1", Guid.NewGuid(), companyA.id);
-            this.testHarness.AddToDatabase(companyADivision1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyADivision1);
 
             var companyADivision1Office1 = new CompanyOffice("CompanyA_D1_O1", Guid.NewGuid(), companyADivision1.id);
-            this.testHarness.AddToDatabase(companyADivision1Office1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyADivision1Office1);
 
             var companyADivision1Office2 = new CompanyOffice("CompanyA_D1_O2", Guid.NewGuid(), companyADivision1.id);
-            this.testHarness.AddToDatabase(companyADivision1Office2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyADivision1Office2);
 
             var companyADivision2 = new CompanyDivision("CompanyA_D2", Guid.NewGuid(), companyA.id);
-            this.testHarness.AddToDatabase(companyADivision2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyADivision2);
 
             var companyADivision2Office1 = new CompanyOffice("CompanyA_D2_O1", Guid.NewGuid(), companyADivision2.id);
-            this.testHarness.AddToDatabase(companyADivision2Office1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyADivision2Office1);
 
             var companyADivision2Office2 = new CompanyOffice("CompanyA_D2_O2", Guid.NewGuid(), companyADivision2.id);
-            this.testHarness.AddToDatabase(companyADivision2Office2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyADivision2Office2);
 
             var companyB = new Company("companyB", Guid.NewGuid());
-            this.testHarness.AddToDatabase(companyB);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyB);
 
             var companyBDivision1 = new CompanyDivision("companyB_D1", Guid.NewGuid(), companyB.id);
-            this.testHarness.AddToDatabase(companyBDivision1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision1);
 
             var companyBDivision1Office1 = new CompanyOffice("companyB_D1_O1", Guid.NewGuid(), companyBDivision1.id);
-            this.testHarness.AddToDatabase(companyBDivision1Office1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision1Office1);
 
             var companyBDivision1Office2 = new CompanyOffice("companyB_D1_O2", Guid.NewGuid(), companyBDivision1.id);
-            this.testHarness.AddToDatabase(companyBDivision1Office2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision1Office2);
 
             var companyBDivision2 = new CompanyDivision("companyB_D2", Guid.NewGuid(), companyB.id);
-            this.testHarness.AddToDatabase(companyBDivision2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision2);
 
             var companyBDivision2Office1 = new CompanyOffice("companyB_D2_O1", Guid.NewGuid(), companyBDivision2.id);
-            this.testHarness.AddToDatabase(companyBDivision2Office1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision2Office1);
 
             var companyBDivision2Office2 = new CompanyOffice("companyB_D2_O2", Guid.NewGuid(), companyBDivision2.id);
-            this.testHarness.AddToDatabase(companyBDivision2Office2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision2Office2);
 
             var userId = Guid.NewGuid();
             this.user = new User(userId, "dr.who");
@@ -166,10 +166,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 FriendlyId = "Volvo 4",
                 OfficeId = companyADivision2Office1.id
             };
-            this.testHarness.AddToDatabase(volvo1);
-            this.testHarness.AddToDatabase(volvo2);
-            this.testHarness.AddToDatabase(volvo3);
-            this.testHarness.AddToDatabase(volvo4);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(volvo1);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(volvo2);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(volvo3);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(volvo4);
 
 
         }

@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdWithoutCommitting));
 
             var carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = carId,
@@ -37,7 +37,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car>));
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
-            Assert.NotEmpty(this.testHarness.QueryDatabase<Car>());
+            Assert.NotEmpty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
 

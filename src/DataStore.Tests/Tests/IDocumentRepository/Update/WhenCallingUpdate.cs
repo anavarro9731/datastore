@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 Modified = DateTime.UtcNow.AddDays(-1),
                 ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
             };
-            this.testHarness.AddToDatabase(this.existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(this.existingCar);
 
             var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
 
@@ -52,7 +52,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
             await this.testHarness.DataStore.CommitChanges();
 
-            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars => 
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => 
                 cars.Where(c => c.id == this.carId)).Single().VersionHistory;
         }
 
@@ -70,7 +70,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car> && e.MethodCalled == nameof(DataStore.Update)));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
 

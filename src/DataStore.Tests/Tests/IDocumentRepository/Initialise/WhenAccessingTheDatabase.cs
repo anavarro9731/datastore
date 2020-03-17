@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Initialise
         public void ItShouldHaveCreatedTheCollection()
         {
             //Then
-            Assert.Empty(this.testHarness.QueryDatabase<Car>(query => query.Select(x => x)));
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>(query => query.Select(x => x)));
         }
     }
 }

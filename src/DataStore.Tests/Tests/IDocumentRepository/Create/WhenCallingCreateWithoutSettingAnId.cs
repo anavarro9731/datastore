@@ -24,7 +24,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             
             this.newCar = new Car
             {
-                Make = "Volvo"
+                Make = "Volvo",
+                Wheels = new [] {
+                    new Car.Wheel(), new Car.Wheel(), new Car.Wheel(), new Car.Wheel()
+                }.ToList()
             };
 
             //When
@@ -36,8 +39,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldSetAnIdOnTheNewlyCreatedItemInTheDatabase()
         {
             await Setup();
-            Assert.NotEqual(Guid.Empty, this.testHarness.QueryDatabase<Car>().Single().id);
+            Assert.NotEqual(Guid.Empty, this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id);
         }
+
+        [Fact]
+        public async void ItShouldSetAnIdOnTheNewlyCreatedItemsChildEntitiesInTheDatabase()
+        {
+            await Setup();
+            var result = this.testHarness.QueryUnderlyingDbDirectly<Car>().Single();
+            Assert.NotEqual(Guid.Empty, result.Wheels.First().id);
+        }
+
 
         [Fact]
         public async void ItShouldSetAnIdOnTheReturnValue()
@@ -50,7 +62,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ReturnValueIdAndDatabaseIdShouldMatch()
         {
             await Setup();
-            Assert.Equal(this.testHarness.QueryDatabase<Car>().Single().id
+            Assert.Equal(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id
                 , this.newCar.id);
         }
 

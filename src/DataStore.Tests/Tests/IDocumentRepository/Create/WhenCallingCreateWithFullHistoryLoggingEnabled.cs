@@ -38,7 +38,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
-            var aggregateHistoryItem = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single();
+            var aggregateHistoryItem = this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>().Single();
             Assert.NotEqual(Guid.Empty, aggregateHistoryItem.id);
             Assert.True(aggregateHistoryItem.AggregateVersion.id == this.newCarId);
         }
@@ -50,7 +50,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             Assert.Equal(
                 this.newCar.VersionHistory.Single().AggegateHistoryItemId,
-                this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>().Single().id);
+                this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>().Single().id);
         }
 
         private async Task Setup()
@@ -71,7 +71,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             //When
             await this.testHarness.DataStore.Create(newCar);
             await this.testHarness.DataStore.CommitChanges();
-            this.newCar = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.newCarId)).Single();
+            this.newCar = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.newCarId)).Single();
         }
     }
 }

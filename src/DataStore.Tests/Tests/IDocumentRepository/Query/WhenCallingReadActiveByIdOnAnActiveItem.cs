@@ -38,8 +38,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 Make = "Jeep"
             };
 
-            this.testHarness.AddToDatabase(activeExistingCar);
-            this.testHarness.AddToDatabase(inactiveExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
 
             // When
             this.activeCarFromDatabase = await this.testHarness.DataStore.ReadActiveById<Car>(this.activeCarId);

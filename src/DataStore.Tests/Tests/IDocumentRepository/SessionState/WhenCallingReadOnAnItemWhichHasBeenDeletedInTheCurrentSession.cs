@@ -27,7 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
                 Active = false,
                 Make = "Volvo"
             };
-            this.testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
             await this.testHarness.DataStore.DeleteHardById<Car>(carId);
 
@@ -42,7 +42,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
             //really helpful to debugging even if it doesn't matter here too much
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
-            Assert.Single(this.testHarness.QueryDatabase<Car>());
+            Assert.Single(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Null(this.carFromSession);
         }
     }

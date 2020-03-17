@@ -40,7 +40,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned()
         {
             await Setup();
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id == this.newCarId);
             Assert.NotNull(await this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId));
         }
     }

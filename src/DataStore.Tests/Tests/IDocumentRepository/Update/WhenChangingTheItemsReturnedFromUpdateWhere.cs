@@ -20,7 +20,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromUpdateWhere));
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = this.carId,
@@ -38,7 +38,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         public async void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
             await Setup();
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }

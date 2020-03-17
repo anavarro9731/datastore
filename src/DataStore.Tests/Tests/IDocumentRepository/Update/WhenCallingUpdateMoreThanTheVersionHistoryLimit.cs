@@ -46,7 +46,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 Modified = DateTime.UtcNow.AddDays(-1),
                 ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
             };
-            this.testHarness.AddToDatabase(this.existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(this.existingCar);
             for (int i = 0; i < Iterations; i++)
             {
                 var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
@@ -58,7 +58,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 this.testHarness.DataStore.MessageAggregator.Clear(); //-fake reset to clear commitbatch
             }
 
-            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars =>
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars =>
                 cars.Where(c => c.id == this.carId)).Single().VersionHistory;
         }
 

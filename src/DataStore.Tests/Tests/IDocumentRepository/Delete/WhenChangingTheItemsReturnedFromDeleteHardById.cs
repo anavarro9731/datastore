@@ -18,7 +18,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteHardById));
 
             var carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = carId,
@@ -36,7 +36,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
             await Setup();
-            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
     }

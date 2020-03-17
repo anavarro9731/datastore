@@ -46,7 +46,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             await this.testHarness.DataStore.CommitChanges();
 
             //When
-            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars => 
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => 
                 cars.Where(c => c.id == this.carId)).Single().VersionHistory;
         }
 
@@ -66,7 +66,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
         {
             await Setup();
             Assert.True(this.versionHistory.All(x => x.AggegateHistoryItemId != null));
-            var aggregateHistoryItems = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>();
+            var aggregateHistoryItems = this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>();
             Assert.True(this.versionHistory.All(v => aggregateHistoryItems
                 .Count(i => i.id == v.AggegateHistoryItemId) == 1));
             Assert.True(aggregateHistoryItems.All(x => x.VersionHistory.Count == 0));

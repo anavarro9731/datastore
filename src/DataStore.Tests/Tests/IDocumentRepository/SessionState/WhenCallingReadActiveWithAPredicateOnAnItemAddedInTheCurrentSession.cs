@@ -18,7 +18,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
         public async void ItShouldNotHaveAddedTheFordToTheDatabaseYet()
         {
             await Setup();
-            var result = this.testHarness.QueryDatabase<Car>(cars => cars.Where(x => x.id == this.fordId));
+            var result = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(x => x.id == this.fordId));
 
             Assert.Empty(result);
         }
@@ -45,7 +45,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveWithAPredicateOnAnItemAddedInTheCurrentSession));
 
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = Guid.NewGuid(), Active = true, Make = "Lambo"

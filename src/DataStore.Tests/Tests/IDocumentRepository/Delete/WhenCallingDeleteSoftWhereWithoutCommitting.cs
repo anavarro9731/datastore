@@ -19,7 +19,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhereWithoutCommitting));
 
             var carId = Guid.Parse("0ec06a89-308b-4a3e-9cfb-d223ff4cdc67");
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = carId,
@@ -36,7 +36,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.NotEmpty(this.testHarness.QueryDatabase<Car>());
+            Assert.NotEmpty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }

@@ -33,8 +33,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().Active);
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id == this.newCarId);
         }
 
         private async Task Setup()
@@ -52,7 +52,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
             //When
             await this.testHarness.DataStore.DocumentRepository.CreateAsync(newCar, "Test");
 
-            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.newCarId)).Single().VersionHistory;
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.newCarId)).Single().VersionHistory;
         }
     }
 }

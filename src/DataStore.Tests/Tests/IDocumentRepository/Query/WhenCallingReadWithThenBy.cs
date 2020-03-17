@@ -62,10 +62,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 Year = 2010
             };
 
-            this.testHarness.AddToDatabase(firstExistingCar);
-            this.testHarness.AddToDatabase(secondExistingCar);
-            this.testHarness.AddToDatabase(thirdExistingCar);
-            this.testHarness.AddToDatabase(fourthExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(firstExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(secondExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(thirdExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(fourthExistingCar);
 
 
             //note with booleans, true has a higher sort order

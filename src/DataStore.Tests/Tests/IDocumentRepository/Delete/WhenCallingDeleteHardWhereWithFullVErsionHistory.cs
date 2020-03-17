@@ -34,7 +34,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 });
 
             await this.testHarness.DataStore.CommitChanges();
-            Assert.NotEmpty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
+            Assert.NotEmpty(this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>());
 
             //When
             this.result = await this.testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == this.carId);
@@ -47,7 +47,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteHardWhere)));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
-            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
 
@@ -62,7 +62,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldRemoveAllHistoryItems()
         {
             await Setup();
-            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>());
         }
     }
 }

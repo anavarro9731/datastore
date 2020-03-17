@@ -49,23 +49,27 @@
 
         public IDataStore DataStore { get; }
 
-        public void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new()
+        public void AddItemDirectlyToUnderlyingDb<T>(T aggregate) where T : class, IAggregate, new()
         {
             void etagUpdated(string newTag) => aggregate.Etag = newTag;
 
-            //clone aggregate to avoid modifying entries later when using inmemory db
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddToDatabase), aggregate.Clone(), DataStore.DocumentRepository, DataStore.MessageAggregator, etagUpdated);
+            //clone aggregate to avoid modifying entries later when using InMemoryDb
+            var clone = aggregate.Clone();
+
+            //DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
+
+            var newAggregate = new QueuedCreateOperation<T>(nameof(AddItemDirectlyToUnderlyingDb), clone, DataStore.DocumentRepository, DataStore.MessageAggregator, etagUpdated);
 
             Task.Run(async () => await newAggregate.CommitClosure().ConfigureAwait(false)).Wait();
         }
 
-        public List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
+        public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
         {
             var query = DataStore.DocumentRepository.CreateDocumentQuery<T>();
             var updatedQuery = extendQueryable?.Invoke(query) ?? query;
 
             var results = Task.Run(
-                async () => await DataStore.DocumentRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryDatabase), updatedQuery))
+                async () => await DataStore.DocumentRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryUnderlyingDbDirectly), updatedQuery))
                                            .ConfigureAwait(false)).Result;
             return results.ToList();
         }
