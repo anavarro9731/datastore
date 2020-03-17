@@ -51,7 +51,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
 
-            var car = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
+            var car = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
             Assert.Equal(2, car.VersionHistory.Count);
             var aggregateVersionInfo = car.VersionHistory.First();
             Assert.Equal(this.unitOfWorkId.ToString(), aggregateVersionInfo.UnitOfWorkId);
@@ -67,11 +67,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             Assert.Equal(2, this.testHarness.DataStore
                                .ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
-            var car = this.testHarness.QueryDatabase<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
+            var car = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
             var aggregateVersionInfo = car.VersionHistory.First();
 
             var aggregateHistoryItem = this.testHarness
-                                           .QueryDatabase<AggregateHistoryItem<Car>>(cars => cars.Where(x => x.id == aggregateVersionInfo.AggegateHistoryItemId))
+                                           .QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>(cars => cars.Where(x => x.id == aggregateVersionInfo.AggegateHistoryItemId))
                                            .SingleOrDefault();
 
             Assert.NotNull(aggregateHistoryItem);

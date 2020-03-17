@@ -18,7 +18,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
         {
             await Setup();
-            Assert.False(this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
+            Assert.False(this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Active);
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }
@@ -29,7 +29,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteSoftById));
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = this.carId, Make = "Volvo"

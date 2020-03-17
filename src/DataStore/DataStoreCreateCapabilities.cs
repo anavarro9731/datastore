@@ -77,7 +77,7 @@ namespace DataStore
             newObject.ModifiedAsMillisecondsEpochTime = newObject.CreatedAsMillisecondsEpochTime;
         }
 
-        private static void WalkGraphAndUpdateEntityMeta(object current)
+        internal static void WalkGraphAndUpdateEntityMeta(object current)
         {
             if (current != null)
             {

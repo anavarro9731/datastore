@@ -25,7 +25,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 id = this.carId,
                 Make = "Volvo"
             };
-            this.testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
             //read from db to pickup changes to properties made by datastore oncreate
             var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
@@ -44,7 +44,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         public async void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
         {
             await Setup();
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }

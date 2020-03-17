@@ -41,8 +41,8 @@
         {
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().Active);
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().id == this.newCarId);
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().Active);
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id == this.newCarId);
         }
 
         [Fact]

@@ -1,16 +1,21 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Update
 {
     using System;
-    using System.Data;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Options;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingUpdateWithAnOutdatedEtag
+    public class WhenCallingUpdateWithNewChildItems
     {
+        private const string thWheel = "5th Wheel";
+
         private Guid carId;
 
         private Car existingCar;
@@ -19,17 +24,22 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private Car udpatedCar;
 
+        private readonly Guid unitOfWorkId = Guid.NewGuid();
+
+        private List<Aggregate.AggregateVersionInfo> versionHistory;
+
         [Fact]
-        public async void ItShouldThrowAConcurrencyException()
+        public async void ItShouldSetTheIdOnTheNewWheel()
         {
             await Setup();
-            await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
+
+            Assert.NotEqual(Guid.Empty, (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Wheels.Single(w => w.FriendlyId == thWheel).id);
         }
 
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWithAnOutdatedEtag));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWithNewChildItems), DataStoreOptions.Create().SpecifyUnitOfWorkId(this.unitOfWorkId));
 
             this.carId = Guid.NewGuid();
 
@@ -44,9 +54,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
 
-            existingCarFromDb.Etag = "fake outdated tag";
+            existingCarFromDb.Wheels.Add(
+                new Car.Wheel
+                {
+                    RimSize = 5,
+                    FriendlyId = thWheel
+                });
 
+            //When
             this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
+            await this.testHarness.DataStore.CommitChanges();
+
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single().VersionHistory;
         }
     }
 }

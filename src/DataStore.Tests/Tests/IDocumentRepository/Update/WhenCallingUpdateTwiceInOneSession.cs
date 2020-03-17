@@ -30,7 +30,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 id = this.carId,
                 Make = "Volvo"
             };
-            this.testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
             //When
             var update1 = (await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota"));

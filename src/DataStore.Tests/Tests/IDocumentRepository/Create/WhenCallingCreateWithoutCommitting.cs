@@ -36,7 +36,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<Car>));
-            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
         }
 
         [Fact]

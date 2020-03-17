@@ -28,7 +28,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
                 Make = "Volvo"
             };
 
-            this.testHarness.AddToDatabase(existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
             await this.testHarness.DataStore.DeleteHardById<Car>(carId);
 

@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 DataStoreOptions.Create().DisableOptimisticConcurrency());
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = this.carId,

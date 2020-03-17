@@ -32,8 +32,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 Active = false,
                 Make = "Jeep"
             };
-            testHarness.AddToDatabase(activeExistingCar);
-            testHarness.AddToDatabase(inactiveExistingCar);
+            testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
+            testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
 
             // When
             this.activeCarFromDatabase = (await testHarness.DataStore.ReadActive<Car>(car => car.id == activeCarId)).SingleOrDefault();

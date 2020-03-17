@@ -46,7 +46,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteHard)));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
-            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
 

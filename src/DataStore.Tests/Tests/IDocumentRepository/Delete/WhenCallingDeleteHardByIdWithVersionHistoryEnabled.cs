@@ -27,7 +27,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldDeleteAllTheHistory()
         {
             await Setup();
-            Assert.Empty(this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>());
         }
 
         [Fact]
@@ -63,9 +63,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
             await this.testHarness.DataStore.CommitChanges();
 
-            this.versionHistoryBeforeDelete = this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().VersionHistory;
+            this.versionHistoryBeforeDelete = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().VersionHistory;
 
-            this.versionHistoryFullRecordBeforeDelete = this.testHarness.QueryDatabase<AggregateHistoryItem<Car>>();
+            this.versionHistoryFullRecordBeforeDelete = this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>();
 
             //When
             this.result = await this.testHarness.DataStore.DeleteHardById<Car>(this.carId);

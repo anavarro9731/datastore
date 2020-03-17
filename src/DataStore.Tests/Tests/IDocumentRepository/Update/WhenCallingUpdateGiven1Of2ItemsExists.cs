@@ -22,7 +22,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGiven1Of2ItemsExists));
 
             var volvoId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = volvoId,
@@ -30,7 +30,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 });
 
             var fordId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = fordId,

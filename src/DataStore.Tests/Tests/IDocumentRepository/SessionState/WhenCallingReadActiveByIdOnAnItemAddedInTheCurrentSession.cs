@@ -48,7 +48,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
         public async void ItShouldNotHaveAddedAnythingToTheDatabaseYet()
         {
             await Setup();
-            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Equal(2, (await this.testHarness.DataStore.ReadActive<Car>()).Count());
         }
 

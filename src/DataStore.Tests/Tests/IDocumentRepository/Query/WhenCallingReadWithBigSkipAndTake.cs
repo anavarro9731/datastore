@@ -40,7 +40,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                                 id = activeCarId,
                                 Make = "Volvo"
                             };
-                            this.testHarness.AddToDatabase(activeExistingCar);
+                            this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
                         });
 
             Enumerable.Range(1, 1200).ToList().ForEach(
@@ -53,7 +53,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                             Active = false,
                             Make = "Volvo"
                         };
-                        this.testHarness.AddToDatabase(inactiveExistingCar);
+                        this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
                     });
 
             this.thirdCarId = Guid.NewGuid();
@@ -72,15 +72,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 Make = "Volvo"
             };
 
-            this.testHarness.AddToDatabase(thirdExistingCar);
-            this.testHarness.AddToDatabase(fourthExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(thirdExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(fourthExistingCar);
 
             var c = new ContinuationToken();
             await this.testHarness.DataStore.WithoutEventReplay.Read<Car, WithoutReplayOptions<Car>>(car => car.Make == "Volvo", o => o.Take(100, ref c));
 
 
             // When
-            this.carsInDatabase = this.testHarness.QueryDatabase<Car>();
+            this.carsInDatabase = this.testHarness.QueryUnderlyingDbDirectly<Car>();
 
             var c1 = new ContinuationToken();
             this.carsFromDatabaseWithFilter1 =

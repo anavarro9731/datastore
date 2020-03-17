@@ -17,7 +17,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             var testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardWhereAndNoItemsMatchThePredicate));
 
             var carId = Guid.NewGuid();
-            testHarness.AddToDatabase(
+            testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = carId,

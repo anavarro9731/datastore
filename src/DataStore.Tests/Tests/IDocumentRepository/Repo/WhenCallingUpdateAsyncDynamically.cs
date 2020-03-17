@@ -40,7 +40,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
                 Modified = DateTime.UtcNow.AddDays(-1),
                 ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
             };
-            this.testHarness.AddToDatabase(this.existingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(this.existingCar);
 
             var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
 
@@ -50,7 +50,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
             
             await this.testHarness.DataStore.DocumentRepository.UpdateAsync(existingCarFromDb);
 
-            this.versionHistory = this.testHarness.QueryDatabase<Car>(cars =>
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars =>
                 cars.Where(c => c.id == this.carId)).Single().VersionHistory;
         }
 
@@ -70,7 +70,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.Equal("Ford", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
 

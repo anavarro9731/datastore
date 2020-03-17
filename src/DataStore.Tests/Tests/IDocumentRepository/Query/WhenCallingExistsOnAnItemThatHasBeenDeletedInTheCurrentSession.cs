@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 id = this.activeCarId,
                 Make = "Volvo"
             };
-            this.testHarness.AddToDatabase(activeExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
 
             // When
             await this.testHarness.DataStore.DeleteHardById<Car>(this.activeCarId);

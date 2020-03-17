@@ -10,9 +10,9 @@ namespace DataStore.Interfaces
         IDataStore DataStore { get; }
 
         //add to the underlying db directly (i.e. not via datastore)
-        void AddToDatabase<T>(T aggregate) where T : class, IAggregate, new();
+        void AddItemDirectlyToUnderlyingDb<T>(T aggregate) where T : class, IAggregate, new();
 
         //query the underlying db directly (i.e. not via datastore)
-        List<T> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new();
+        List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new();
     }
 }

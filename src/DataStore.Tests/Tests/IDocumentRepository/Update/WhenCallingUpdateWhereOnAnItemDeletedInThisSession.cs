@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWhereOnAnItemDeletedInThisSession));
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = this.carId,
@@ -45,7 +45,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             //nothing should have been updated because it was already deleted.
             Assert.Empty(this.results);
-            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Volvo", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
         }
 
         [Fact]

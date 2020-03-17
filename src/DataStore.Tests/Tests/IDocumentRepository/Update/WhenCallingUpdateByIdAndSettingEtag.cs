@@ -30,7 +30,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateByIdAndSettingEtag));
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = this.carId,

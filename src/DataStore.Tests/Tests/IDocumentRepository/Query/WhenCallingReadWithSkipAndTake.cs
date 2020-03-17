@@ -64,10 +64,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 Make = "Volvo"
             };
 
-            this.testHarness.AddToDatabase(activeExistingCar);
-            this.testHarness.AddToDatabase(inactiveExistingCar);
-            this.testHarness.AddToDatabase(thirdExistingCar);
-            this.testHarness.AddToDatabase(fourthExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(thirdExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(fourthExistingCar);
 
             // When
             var firstContinuationToken = new ContinuationToken();

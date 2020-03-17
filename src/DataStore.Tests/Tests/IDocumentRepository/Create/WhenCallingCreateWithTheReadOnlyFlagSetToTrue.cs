@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.True(this.testHarness.QueryDatabase<Car>().Single().ReadOnly);
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().ReadOnly);
         }
 
         [Fact]

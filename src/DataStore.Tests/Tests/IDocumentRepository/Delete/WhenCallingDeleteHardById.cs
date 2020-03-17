@@ -44,7 +44,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotNull(
                 this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(
                     e => e is HardDeleteOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteHardById)));
-            Assert.Empty(this.testHarness.QueryDatabase<Car>());
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await this.testHarness.DataStore.CommitChanges();
             
             this.versionHistoryBeforeHardDelete = this.testHarness
-                    .QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().VersionHistory;
+                    .QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().VersionHistory;
 
             //When
             this.result = await this.testHarness.DataStore.DeleteHardById<Car>(this.carId);

@@ -128,6 +128,9 @@
             {
                 var originalObject = dataObject.Clone();
 
+                //* set here so changes are counted in the restrictedProperties calculation 
+                DataStoreCreateCapabilities.WalkGraphAndUpdateEntityMeta(dataObject); 
+
                 var restrictedPropertiesBefore = originalObject.id + dataObject.Schema;
                 var restrictedCreatedBefore = dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedBefore = dataObject.Modified.ToString(CultureInfo.InvariantCulture) + dataObject.ModifiedAsMillisecondsEpochTime;
@@ -135,6 +138,8 @@
                 restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore + restrictedVersionInfo;
 
                 action(dataObject);
+                //* set here to override any resetting of restricted properties set only internally by the action()
+                DataStoreCreateCapabilities.WalkGraphAndUpdateEntityMeta(dataObject);
                 DisableOptimisticConcurrencyIfRequested(dataObject); //- has to happen after action
 
                 var restrictedPropertiesAfter = originalObject.id + dataObject.Schema;

@@ -21,7 +21,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWhereWithoutCommitting));
 
             this.carId = Guid.NewGuid();
-            this.testHarness.AddToDatabase(
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
                     id = this.carId,
@@ -38,7 +38,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             await Setup();
             Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Volvo", this.testHarness.QueryDatabase<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Volvo", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
             Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }
