@@ -8,6 +8,8 @@ namespace DataStore.Interfaces
 
     public interface IDocumentRepository : IDisposable
     {
+        IDatabaseSettings ConnectionSettings { get; }
+
         Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new();
 
         IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IAggregate, new();
