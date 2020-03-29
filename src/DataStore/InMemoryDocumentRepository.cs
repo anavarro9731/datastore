@@ -13,6 +13,8 @@
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
 
+        public IDatabaseSettings ConnectionSettings => new Settings(this);
+
         public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
             var toAdd = aggregateAdded.Model;
@@ -54,8 +56,7 @@
             Aggregates.Clear();
         }
 
-        public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
-            where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new()
         {
             var results = new List<T>();
 
@@ -126,15 +127,18 @@
             var existingRecord = Aggregates.Single(x => x.id == updatedRecord.id);
 
             var optimisticConcurrencyDisabled = updatedRecord.Etag == null;
-            if (updatedRecord.Etag != existingRecord.Etag &&
-                !optimisticConcurrencyDisabled) throw new DBConcurrencyException($"Etag {aggregateUpdated.Model.Etag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated");
+            if (updatedRecord.Etag != existingRecord.Etag && !optimisticConcurrencyDisabled)
+            {
+                throw new DBConcurrencyException(
+                    $"Etag {aggregateUpdated.Model.Etag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated");
+            }
 
             updatedRecord.CopyPropertiesTo(existingRecord);
 
             //- fake eTag update, by updating aggregateUpdated.Model this is sent back to the client (see UpdateOperation class)
             updatedRecord.Etag = Guid.NewGuid().ToString();
             //* locally we have no underlying Document object so we save the updated Tag directly on the in-memory object
-            existingRecord.Etag = updatedRecord.Etag; 
+            existingRecord.Etag = updatedRecord.Etag;
 
             return Task.CompletedTask;
         }
@@ -144,6 +148,25 @@
             Aggregates.Clear();
 
             return Task.CompletedTask;
+        }
+
+        /* should return the same backing store as any other instances
+         so that ir mirrors the capability of persistent-state backed providers.
+         This will show up as subtle errors otherwise in unit-testing when
+         the ConnectionSettings are used to create a simultaneous session. */
+        public class Settings : IDatabaseSettings
+        {
+            private readonly IDocumentRepository repository;
+
+            public Settings(IDocumentRepository repository)
+            {
+                this.repository = repository;
+            }
+
+            public IDocumentRepository CreateRepository()
+            {
+                return this.repository;
+            }
         }
     }
 }

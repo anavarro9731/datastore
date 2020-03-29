@@ -4,9 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Data;
-    using System.Diagnostics;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -14,7 +12,6 @@
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
-    using Microsoft.CSharp.RuntimeBinder;
 
     public class CosmosDbRepository : IDocumentRepository, IResetData
     {
@@ -30,6 +27,8 @@
             this.settings = settings;
             ResetClient();
         }
+
+        public IDatabaseSettings ConnectionSettings => this.settings;
 
         public async Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
         {
@@ -65,7 +64,7 @@
                     MaxItemCount = (queryOptions as IContinueAndTake<T>)?.MaxTake,
                     ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
                     EnableCrossPartitionQuery = true,
-                    PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue),
+                    PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                 }).Where(i => i.Schema == schema);
 
             return query;
@@ -86,8 +85,12 @@
             aggregateHardDeleted.Model.Etag = "item was deleted";
         }
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
-            where T : class, IAggregate, new()
+        public void Dispose()
+        {
+            this.client?.Dispose();
+        }
+
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new()
         {
             var results = new List<T>();
             {
@@ -119,7 +122,7 @@
                                 /* set Etag */
                                 .Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
                             return asT;
-                        });
+                            });
 
                     results.AddRange(typedResponses);
 
@@ -180,8 +183,6 @@
             }
         }
 
-
-
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
             var query = CreateDocumentQuery<T>();
@@ -219,7 +220,8 @@
                                      PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                                  }).ConfigureAwait(false);
 
-                aggregateUpdated.Model.Etag = result.Resource.ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
+                aggregateUpdated.Model.Etag =
+                    result.Resource.ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
 
                 aggregateUpdated.StateOperationCost = result.RequestCharge;
             }
@@ -234,20 +236,22 @@
                 string eTag;
                 if (!string.IsNullOrEmpty(eTag = dataStoreWriteOperation.Model.Etag))
                 {
-                    accessCondition = new AccessCondition()
+                    accessCondition = new AccessCondition
                     {
                         Condition = eTag,
                         Type = AccessConditionType.IfMatch
                     };
                 }
-                else accessCondition = null;
+                else
+                {
+                    accessCondition = null;
+                }
             }
-
         }
 
         async Task IResetData.NonTransactionalReset()
         {
-            await new CosmosDbUtilities().ResetDatabase(this.settings).ConfigureAwait(false);
+            await new CosmosDbUtilities().ResetDatabase(ConnectionSettings).ConfigureAwait(false);
             ResetClient();
         }
 
@@ -266,11 +270,5 @@
         {
             this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
         }
-
-        public void Dispose()
-        {
-            this.client?.Dispose();
-        }
-
     }
 }
