@@ -5,20 +5,20 @@
     using System.Security;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Options;
-    using IPermission = CircuitBoard.Security.IPermission;
 
     public class ControlFunctions
     {
         public static async Task<List<IHaveScope>> Authorise(
             IIdentityWithDatabasePermissions user,
-            IPermission requiredPermission,
+            DatabasePermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
             IDataStore dataStore)
         {
-            if (user.HasPermission(requiredPermission))
+            if (user.HasDatabasePermission(requiredPermission))
             {
                 //all data will be returned if the scoped data passes or if there is no scoped data, see below
 
@@ -43,7 +43,7 @@
                 why things are not appearing.
                 */
 
-                var userPermission = user.PermissionInstances.Single(x => x.Id == requiredPermission.Id);
+                var userPermission = user.DatabasePermissions.Single(x => x.Id == requiredPermission.Id);
                 if (scopedData.All(sd => sd.ScopeReferences.Intersect(userPermission.ScopeReferences).Any())) return dataBeingQueried;
 
                 /*
@@ -65,18 +65,18 @@
 
         public static async Task<List<IHaveScope>> Filter(
             IIdentityWithDatabasePermissions user,
-            IPermission requiredPermission,
+            DatabasePermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
             IDataStore dataStore)
         {
-            if (user.HasPermission(requiredPermission))
+            if (user.HasDatabasePermission(requiredPermission))
             {
                 var scopedData = dataBeingQueried.Where( /* if an underlying provider should
                     return null for an empty list you would need to add x.ScopeReferences != null || */
                     x => x.ScopeReferences.Any()).ToList();
 
-                var userPermission = user.PermissionInstances.Single(x => x.Id == requiredPermission.Id);
+                var userPermission = user.DatabasePermissions.Single(x => x.Id == requiredPermission.Id);
 
                 /* Extrapolate all indirect scopes and check against this. 
                  */
@@ -90,7 +90,7 @@
 
         public delegate Task<List<IHaveScope>> ControlDataDelegate(
             IIdentityWithDatabasePermissions user,
-            IPermission requiredPermission,
+            DatabasePermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
             IDataStore dataStore);

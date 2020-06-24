@@ -5,6 +5,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.Messages;
     using global::DataStore.Options;
@@ -109,8 +110,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                     new DatabaseScopeReference(pi2s1.id, pi2s1.GetType().FullName, scopeObjectDebugId:pi2s1.Name)
                 });
 
-            user.AddPermission(permission1Instance);
-            user.AddPermission(permission2Instance);
+            user.DatabasePermissions.Add(permission1Instance);
+            user.DatabasePermissions.Add(permission2Instance);
 
             this.volvo1Id = Guid.NewGuid();
             var volvo1 = new Car

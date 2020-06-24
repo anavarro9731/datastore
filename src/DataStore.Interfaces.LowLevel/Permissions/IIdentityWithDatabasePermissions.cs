@@ -2,17 +2,30 @@
 {
     using System;
     using System.Collections.Generic;
-    using CircuitBoard.Security;
+    using System.Linq;
 
     public interface IIdentityWithDatabasePermissions : IHaveAUniqueId
     {
-        bool HasPermission(IPermission permission);
+        List<DatabasePermissionInstance> DatabasePermissions { get; set; }
+    }
 
-        void AddPermission(IDatabasePermissionInstance permissionInstance);
+    public static class IdentityWithDatabasePermissionsExtensions
+    {
+        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, DatabasePermission permission)
+        {
+            var count = identity.DatabasePermissions.Count(p => p.Id == permission.Id);
 
-        void RemovePermission(IDatabasePermissionInstance permissionInstance);
+            if (count == 1)
+            {
+                return true;
+            }
 
-        IEnumerable<IDatabasePermissionInstance> PermissionInstances { get; }
+            if (count > 1)
+            {
+                throw new Exception("User has the same DatabasePermission twice instead the scopes should be merged");
+            }
 
+            return false;
+        }
     }
 }
