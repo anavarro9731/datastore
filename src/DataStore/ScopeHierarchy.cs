@@ -32,7 +32,7 @@
             Task<List<EntityWithChildren>> HydrateScopeLevel(IDataStore dataStore);
         }
 
-        public async Task<bool> ExpandedPermissionContains(IDatabasePermissionInstance permissionInstance, IDataStore dataStore, DatabaseScopeReference scopeToMatch)
+        public async Task<bool> ExpandedPermissionContains(DatabasePermissionInstance permissionInstance, IDataStore dataStore, DatabaseScopeReference scopeToMatch)
         {
             if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
 

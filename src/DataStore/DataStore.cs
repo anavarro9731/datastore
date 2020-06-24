@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Runtime.InteropServices;
@@ -52,8 +53,7 @@
 
         public IDocumentRepository DocumentRepository { get; }
 
-        public IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
-            new ReadOnlyCapableList<IDataStoreOperation>().Op(l => l.AddRange(MessageAggregator.AllMessages.OfType<IDataStoreOperation>()));
+        public IReadOnlyList<IDataStoreOperation> ExecutedOperations => MessageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
 
         public IMessageAggregator MessageAggregator { get; }
 
@@ -61,8 +61,9 @@
         {
             get
             {
-                var queued = new ReadOnlyCapableList<IQueuedDataStoreWriteOperation>().Op(
-                    l => l.AddRange(MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)));
+                var queued = 
+                    MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
+                                     .Where(o => o.Committed == false).ToList().AsReadOnly();
 
                 return queued;
             }
