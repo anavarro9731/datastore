@@ -4,9 +4,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Collections.Generic;
     using System.Linq;
     using System.Security;
-    using System.Threading.Tasks;
-    using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.Messages;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models;
@@ -21,10 +20,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
         private ITestHarness testHarness;
 
-        private IIdentityWithPermissions user;
+        private IIdentityWithDatabasePermissions user;
 
-        private Permission permission1 = new Permission(Guid.NewGuid(), "Perm 1");
-        private Permission permission2 = new Permission(Guid.NewGuid(), "Perm 2");
+        private DatabasePermission permission1 = new DatabasePermission(Guid.NewGuid(), "Perm 1");
+        private DatabasePermission permission2 = new DatabasePermission(Guid.NewGuid(), "Perm 2");
 
         [Fact]
         public async void ItShouldFailWhenAllVolvosAreRequested()
@@ -110,22 +109,22 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
             var pi1s1 = companyADivision1;
             var pi1s2 = companyBDivision2Office1;
-            var permission1Instance = new PermissionInstance(
+            var permission1Instance = new DatabasePermissionInstance(
                 this.permission1,
-                new List<ScopeReference>
+                new List<DatabaseScopeReference>
                 {
-                    new ScopeReference(pi1s1.id, pi1s1.GetType().FullName, scopeObjectDebugId: pi1s1.Name),
-                    new ScopeReference(pi1s2.id, pi1s2.GetType().FullName, scopeObjectDebugId:pi1s2.Name)
+                    new DatabaseScopeReference(pi1s1.id, pi1s1.GetType().FullName, scopeObjectDebugId: pi1s1.Name),
+                    new DatabaseScopeReference(pi1s2.id, pi1s2.GetType().FullName, scopeObjectDebugId:pi1s2.Name)
                 });
 
 
 
             var pi2s1 = companyBDivision1Office2;
-            var permission2Instance = new PermissionInstance(
+            var permission2Instance = new DatabasePermissionInstance(
                 this.permission2,
-                new List<ScopeReference>
+                new List<DatabaseScopeReference>
                 {
-                    new ScopeReference(pi2s1.id, pi2s1.GetType().FullName, scopeObjectDebugId:pi2s1.Name)
+                    new DatabaseScopeReference(pi2s1.id, pi2s1.GetType().FullName, scopeObjectDebugId:pi2s1.Name)
                 });
 
             user.AddPermission(permission1Instance);

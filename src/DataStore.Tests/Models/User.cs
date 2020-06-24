@@ -4,9 +4,10 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using CircuitBoard.Permissions;
+    using CircuitBoard.Security;
+    using global::DataStore.Interfaces.LowLevel.Permissions;
 
-    public class User : IIdentityWithPermissions
+    public class User : IIdentityWithDatabasePermissions
     {
         public User(Guid id, string userName)
         {
@@ -14,18 +15,18 @@
             UserName = userName;
         }
 
-        public void RemovePermission(IPermissionInstance permissionInstance)
+        public void RemovePermission(IDatabasePermissionInstance permissionInstance)
         {
             this.Permissions.Remove(permissionInstance);
         }
 
         public Guid id { get; set; }
 
-        private List<IPermissionInstance> Permissions { get; } = new List<IPermissionInstance>();
+        private List<IDatabasePermissionInstance> Permissions { get; } = new List<IDatabasePermissionInstance>();
 
         public string UserName { get; set; }
 
-        public IEnumerable<IPermissionInstance> PermissionInstances => Permissions;
+        public IEnumerable<IDatabasePermissionInstance> PermissionInstances => Permissions;
 
         public bool HasPermission(IPermission permission)
         {
@@ -37,38 +38,38 @@
 
             if (count > 1)
             {
-                throw new Exception("User has the same permission twice");
+                throw new Exception("User has the same databasePermission twice");
             }
 
             return false;
         }
 
-        public void AddPermission(IPermissionInstance permissionInstance)
+        public void AddPermission(IDatabasePermissionInstance permissionInstance)
         {
             this.Permissions.Add(permissionInstance);
         }
     }
 
-    public class PermissionInstance : Permission, IPermissionInstance
+    public class DatabasePermissionInstance : DatabasePermission, IDatabasePermissionInstance
     {
-        public PermissionInstance(Permission permission, List<ScopeReference> scopeReferences)
-            : base(permission.DisplayOrder, permission.Id, permission.PermissionName, permission.PermissionRequiredToAdministerThisPermission)
+        public DatabasePermissionInstance(DatabasePermission databasePermission, List<DatabaseScopeReference> scopeReferences)
+            : base(databasePermission.DisplayOrder, databasePermission.Id, databasePermission.PermissionName, databasePermission.PermissionRequiredToAdministerThisPermission)
         {
             ScopeReferences = scopeReferences;
         }
 
-        public List<ScopeReference> ScopeReferences { get; set; }
+        public List<DatabaseScopeReference> ScopeReferences { get; set; }
     }
 
-    public class Permission : IPermission
+    public class DatabasePermission : IPermission
     {
-        public Permission(Guid id, string permissionName)
+        public DatabasePermission(Guid id, string permissionName)
         {
             Id = id;
             PermissionName = permissionName;
         }
 
-        public Permission(int displayOrder, Guid id, string permissionName, Guid permissionRequiredToAdministerThisPermission)
+        public DatabasePermission(int displayOrder, Guid id, string permissionName, Guid permissionRequiredToAdministerThisPermission)
         {
             DisplayOrder = displayOrder;
             Id = id;

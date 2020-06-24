@@ -4,15 +4,15 @@
     using System.Linq;
     using System.Security;
     using System.Threading.Tasks;
-    using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Options;
-    using IPermission = CircuitBoard.Permissions.IPermission;
+    using IPermission = CircuitBoard.Security.IPermission;
 
     public class ControlFunctions
     {
         public static async Task<List<IHaveScope>> Authorise(
-            IIdentityWithPermissions user,
+            IIdentityWithDatabasePermissions user,
             IPermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
@@ -64,7 +64,7 @@
         }
 
         public static async Task<List<IHaveScope>> Filter(
-            IIdentityWithPermissions user,
+            IIdentityWithDatabasePermissions user,
             IPermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
@@ -89,7 +89,7 @@
         }
 
         public delegate Task<List<IHaveScope>> ControlDataDelegate(
-            IIdentityWithPermissions user,
+            IIdentityWithDatabasePermissions user,
             IPermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,

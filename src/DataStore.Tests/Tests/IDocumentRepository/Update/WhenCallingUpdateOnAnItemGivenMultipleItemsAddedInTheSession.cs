@@ -59,7 +59,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         }
 
         [Fact(Skip = "Not Implemented Yet")]
-        public async void ItShouldMakeSureThatAsObjectsCommitTheyDontAffectOtherObjectsEtags()
+        public void ItShouldMakeSureThatAsObjectsCommitTheyDontAffectOtherObjectsEtags()
         {
         }
 
