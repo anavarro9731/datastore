@@ -10,7 +10,6 @@ namespace DataStore
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using CircuitBoard.Permissions;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;

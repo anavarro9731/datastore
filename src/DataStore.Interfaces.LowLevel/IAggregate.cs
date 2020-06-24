@@ -2,7 +2,7 @@ namespace DataStore.Interfaces.LowLevel
 {
     using System;
     using System.Collections.Generic;
-    using CircuitBoard.Permissions;
+    using DataStore.Interfaces.LowLevel.Permissions;
 
     public interface IAggregate : IHaveScope, IEntity, IRememberWhenIWasModified, IHaveAnETag
     {

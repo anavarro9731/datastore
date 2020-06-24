@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using CircuitBoard.Permissions;
+    using DataStore.Interfaces.LowLevel.Permissions;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -56,19 +56,19 @@
 
         public bool ReadOnly { get; set; }
 
-        public List<ScopeReference> ScopeReferences
+        public List<DatabaseScopeReference> ScopeReferences
         {
             get
             {
                 var propertiesWithScope = GetType().GetProperties().Where(p => p.GetCustomAttribute<ScopeObjectReferenceAttribute>() != null);
 
-                var scopeReferences = new List<ScopeReference>();
+                var scopeReferences = new List<DatabaseScopeReference>();
                 foreach (var propertyInfo in propertiesWithScope)
                 {
                     var attribute = propertyInfo.GetCustomAttribute<ScopeObjectReferenceAttribute>();
                     if (attribute != null && propertyInfo.GetValue(this) != null)
                     {
-                        scopeReferences.Add(new ScopeReference((Guid)propertyInfo.GetValue(this), attribute.FullTypeName));
+                        scopeReferences.Add(new DatabaseScopeReference((Guid)propertyInfo.GetValue(this), attribute.FullTypeName));
                     }
                 }
 

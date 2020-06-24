@@ -6,9 +6,10 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using CircuitBoard.Permissions;
+    using CircuitBoard.Security;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Options;
 
     public class ControlledStore : IDataStore
@@ -19,10 +20,10 @@
 
         private readonly IPermission requiredPermissionWithScopeToData;
 
-        private readonly IIdentityWithPermissions user;
+        private readonly IIdentityWithDatabasePermissions user;
 
         public ControlledStore(
-            IIdentityWithPermissions user,
+            IIdentityWithDatabasePermissions user,
             IPermission requiredPermissionWithScopeToData,
             DataStore dataStore,
             ControlFunctions.ControlDataDelegate dataController)
@@ -231,12 +232,12 @@
 
     public static class DataStoreExtensions
     {
-        public static ControlledStore FilterByPermission(this IDataStore dataStore, IPermission requiredPermissionWithScopeToData, IIdentityWithPermissions user)
+        public static ControlledStore FilterByPermission(this IDataStore dataStore, IPermission requiredPermissionWithScopeToData, IIdentityWithDatabasePermissions user)
         {
             return new ControlledStore(user, requiredPermissionWithScopeToData, (DataStore)dataStore, ControlFunctions.Filter);
         }
 
-        public static ControlledStore RequirePermission(this IDataStore dataStore, IPermission requiredPermissionWithScopeToData, IIdentityWithPermissions user)
+        public static ControlledStore RequirePermission(this IDataStore dataStore, IPermission requiredPermissionWithScopeToData, IIdentityWithDatabasePermissions user)
         {
             return new ControlledStore(user, requiredPermissionWithScopeToData, (DataStore)dataStore, ControlFunctions.Authorise);
         }
