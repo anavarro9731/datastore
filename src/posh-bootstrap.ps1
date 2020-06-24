@@ -3,18 +3,18 @@ Import-Module ".\load-modules.psm1" -Verbose -Global -Force
 Remove-Item ".\load-modules.psm1" -Verbose -Recurse
 Load-Modules
 
-
-
 #expose this function like a CmdLet
 function global:Run {
-
 
 	Param(
 		[switch]$PrepareNewVersion,
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
-        [Alias('k')]
-        [string] $nugetApiKey
+        [Alias('nuget-key')]
+        [string] $nugetApiKey,
+        [Alias('ado-pat')]
+        [string] $azureDevopsPat,
+        [string] $forceVersion
 	)
 	
 	if ($PrepareNewVersion) {
@@ -25,8 +25,11 @@ function global:Run {
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models",
 			"DataStore.Tests"
-        )
-	}
+        ) `
+        -githubUserName "anavarro9731" `
+        -repository "datastore" `
+        -forceVersion $forceVersion
+    	}
 
 	if ($BuildAndTest) {
 		Build-And-Test -testProjects @(
@@ -35,7 +38,7 @@ function global:Run {
 	}
 
     if ($PackAndPublish) {
-        Pack-And-Publish -standardProjects @(
+        Pack-And-Publish -allProjects @(
             "DataStore",		      
             "DataStore.Providers.CosmosDb",
             "DataStore.Interfaces",
@@ -45,9 +48,6 @@ function global:Run {
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models" 
         ) `
-        -nugetFeedUri "https://www.nuget.org/api/v2/package" `
-        -nugetSymbolFeedUri "https://www.nuget.org/api/v2/package" `
-        -nugetApiKey $nugetApiKey `
-        -originUrl $originUrl
+        -nugetApiKey $nugetApiKey
     }
 }
