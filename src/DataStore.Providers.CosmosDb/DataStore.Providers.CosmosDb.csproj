@@ -9,7 +9,7 @@
     <PackageId>DataStore.Providers.CosmosDb</PackageId>
     <PackageTags>CosmosDb;DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>10.3.0-alpha</Version>
+    <Version>11.0.0-alpha</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
