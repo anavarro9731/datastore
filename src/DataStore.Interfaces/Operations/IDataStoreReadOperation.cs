@@ -1,4 +1,4 @@
-﻿namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces.Operations
 {
     using System;
     using System.Linq;
@@ -8,7 +8,8 @@
     public interface IDataStoreReadFromQueryable<T> : IDataStoreReadOperation where T : class, IAggregate, new()
     {
         IQueryable<T> Query { get; set; }
-        IQueryOptions<T> QueryOptions { get; set; }
+
+        object QueryOptions { get; set; }
     }
 
     public interface IDataStoreReadById : IDataStoreReadOperation

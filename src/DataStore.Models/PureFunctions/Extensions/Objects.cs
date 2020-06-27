@@ -11,9 +11,7 @@
     {
         private static readonly char[] SystemTypeChars =
         {
-            '<',
-            '>',
-            '+'
+            '<', '>', '+'
         };
 
         /// <summary>
@@ -22,20 +20,11 @@
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static T As<T>(this object obj) where T : class
-        {
-            return obj as T;
-        }
+        public static T As<T>(this object obj) where T : class => obj as T;
 
-        public static T Cast<T>(this object o)
-        {
-            return (T)o;
-        }
+        public static T Cast<T>(this object o) => (T)o;
 
-        public static T Clone<T>(this T source)
-        {
-            return source.ToJsonString().FromJsonString<T>();
-        }
+        public static T Clone<T>(this T source) => source.ToJsonString().FromJsonString<T>();
 
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
@@ -56,31 +45,60 @@
             var results = from srcProp in typeSrc.GetProperties()
                           let targetProperty = typeDest.GetProperty(srcProp.Name)
                           where srcProp.CanRead && targetProperty != null && targetProperty.GetSetMethod(true) != null
-                                && !targetProperty.GetSetMethod(true).IsPrivate && (targetProperty.GetSetMethod(true).Attributes & MethodAttributes.Static) == 0
-                                && targetProperty.PropertyType.IsAssignableFrom(srcProp.PropertyType) && !exclude.Contains(targetProperty.Name)
+                                && !targetProperty.GetSetMethod(true).IsPrivate
+                                && (targetProperty.GetSetMethod(true).Attributes & MethodAttributes.Static) == 0
+                                && targetProperty.PropertyType.IsAssignableFrom(srcProp.PropertyType)
+                                && !exclude.Contains(targetProperty.Name)
                           select new
                           {
-                              sourceProperty = srcProp,
-                              targetProperty
+                              sourceProperty = srcProp, targetProperty
                           };
 
             // map the properties
             foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
-        public static bool Is(this object child, Type t)
-        {
-            return child.GetType().InheritsOrImplements(t);
-        }
+        public static T FromJsonString<T>(this string source) => source == null ? default : JsonSerializer.Deserialize<T>(source);
 
         /// <summary>
-            ///     checks if a class inherits from or implements a base class/interface.
-            ///     Superbly supports generic interfaces and types!
-            /// </summary>
-            /// <param name="child"></param>
-            /// <param name="parent"></param>
-            /// <returns></returns>
-            public static bool InheritsOrImplements(this Type child, Type parent)
+        ///     get property name from current instance
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="type"></param>
+        /// <param name="propertyRefExpr"></param>
+        /// <returns></returns>
+        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr) =>
+            // usage: obj.GetPropertyName(o => o.Member)
+            GetPropertyNameCore(propertyRefExpr.Body);
+
+        /// <summary>
+        ///     get property name from any class
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="propertyRefExpr"></param>
+        /// <returns></returns>
+        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr) =>
+            // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
+            GetPropertyNameCore(propertyRefExpr.Body);
+
+        /// <summary>
+        ///     get static property name from any class
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression) =>
+            // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
+            GetPropertyNameCore(expression);
+
+        /// <summary>
+        ///     checks if a class inherits from or implements a base class/interface.
+        ///     Superbly supports generic interfaces and types!
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static bool InheritsOrImplements(this Type child, Type parent)
         {
             parent = ResolveGenericTypeDefinition(parent);
 
@@ -106,70 +124,7 @@
             return false;
         }
 
-        private static bool HasAnyInterfaces(Type parent, Type child)
-        {
-            return child.GetInterfaces()
-                        .Any(
-                            childInterface =>
-                                {
-                                var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
-
-                                return currentInterface == parent;
-                                });
-        }
-
-        private static Type ResolveGenericTypeDefinition(Type parent)
-        {
-            var shouldUseGenericType = true;
-            if (parent.IsGenericType && parent.GetGenericTypeDefinition() != parent) shouldUseGenericType = false;
-
-            if (parent.IsGenericType && shouldUseGenericType) parent = parent.GetGenericTypeDefinition();
-
-            return parent;
-        }
-    
-
-    public static T FromJsonString<T>(this string source)
-        {
-            return source == null ? default(T) : JsonSerializer.Deserialize<T>(source);
-        }
-
-        /// <summary>
-        ///     get property name from current instance
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="type"></param>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr)
-        {
-            // usage: obj.GetPropertyName(o => o.Member)
-            return GetPropertyNameCore(propertyRefExpr.Body);
-        }
-
-        /// <summary>
-        ///     get property name from any class
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr)
-        {
-            // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
-            return GetPropertyNameCore(propertyRefExpr.Body);
-        }
-
-        /// <summary>
-        ///     get static property name from any class
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression)
-        {
-            // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
-            return GetPropertyNameCore(expression);
-        }
+        public static bool Is(this object child, Type t) => child.GetType().InheritsOrImplements(t);
 
         public static bool IsAnonymousType(this Type type)
         {
@@ -180,10 +135,8 @@
             return isAnonymousType;
         }
 
-        public static bool IsSystemType(this Type type)
-        {
-            return type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
-        }
+        public static bool IsSystemType(this Type type) =>
+            type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
 
         /// <summary>
         ///     perform an operation on any class inline, (e.g. new Object().Op(o => someoperationon(o));
@@ -198,11 +151,7 @@
             return obj;
         }
 
-
-        public static string ToJsonString(this object source)
-        {
-            return source == null ? null : JsonSerializer.Serialize(source);
-        }
+        public static string ToJsonString(this object source) => source == null ? null : JsonSerializer.Serialize(source);
 
         private static string GetPropertyNameCore(Expression propertyRefExpr)
         {
@@ -223,6 +172,27 @@
             throw new ArgumentException("No property reference expression was found.", nameof(propertyRefExpr));
         }
 
+        private static bool HasAnyInterfaces(Type parent, Type child)
+        {
+            return child.GetInterfaces().Any(
+                childInterface =>
+                    {
+                    var currentInterface = childInterface.IsGenericType
+                                               ? childInterface.GetGenericTypeDefinition()
+                                               : childInterface;
 
+                    return currentInterface == parent;
+                    });
+        }
+
+        private static Type ResolveGenericTypeDefinition(Type parent)
+        {
+            var shouldUseGenericType = true;
+            if (parent.IsGenericType && parent.GetGenericTypeDefinition() != parent) shouldUseGenericType = false;
+
+            if (parent.IsGenericType && shouldUseGenericType) parent = parent.GetGenericTypeDefinition();
+
+            return parent;
+        }
     }
 }

@@ -12,33 +12,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     public class WhenCallingUpdateTwiceInOneSession
     {
         private Guid carId;
+
         private string firstEtag;
+
         private string secondEtag;
 
         private ITestHarness testHarness;
-
-
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateTwiceInOneSession));
-
-            this.carId = Guid.NewGuid();
-            var existingCar = new Car
-            {
-                id = this.carId,
-                Make = "Volvo"
-            };
-            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
-
-            //When
-            var update1 = (await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota"));
-            var update2 = (await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda"));
-            await this.testHarness.DataStore.CommitChanges();
-            this.firstEtag = update1.Etag;
-            this.secondEtag = update2.Etag;
-        }
 
         [Fact]
         public async void ItShouldCallUpdateTwice()
@@ -59,6 +38,26 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.NotEqual(this.firstEtag, this.secondEtag);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateTwiceInOneSession));
+
+            this.carId = Guid.NewGuid();
+            var existingCar = new Car
+            {
+                id = this.carId, Make = "Volvo"
+            };
+            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
+
+            //When
+            var update1 = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
+            var update2 = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda");
+            await this.testHarness.DataStore.CommitChanges();
+            this.firstEtag = update1.Etag;
+            this.secondEtag = update2.Etag;
         }
     }
 }

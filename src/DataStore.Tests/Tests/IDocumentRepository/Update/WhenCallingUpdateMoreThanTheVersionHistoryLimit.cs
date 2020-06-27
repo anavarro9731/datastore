@@ -6,7 +6,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
-    using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models;
@@ -15,52 +14,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateMoreThanTheVersionHistoryLimit
     {
+        private const int Iterations = 15;
+
+        private const int VersionHistoryLimit = 10;
+
         private Guid carId;
+
+        private Car existingCar;
 
         private ITestHarness testHarness;
 
         private Car udpatedCar;
 
-        private Car existingCar;
+        private readonly Guid unitOfWorkId = Guid.NewGuid();
 
         private List<Aggregate.AggregateVersionInfo> versionHistory;
-
-        private Guid unitOfWorkId = Guid.NewGuid();
-
-        private const int VersionHistoryLimit = 10;
-
-        private const int Iterations = 15;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateMoreThanTheVersionHistoryLimit), DataStoreOptions.Create()
-                        .SpecifyUnitOfWorkId(this.unitOfWorkId));
-
-            this.carId = Guid.NewGuid();
-
-            this.existingCar = new Car
-            {
-                id = this.carId,
-                Make = "Volvo",
-                Modified = DateTime.UtcNow.AddDays(-1),
-                ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
-            };
-            this.testHarness.AddItemDirectlyToUnderlyingDb(this.existingCar);
-            for (int i = 0; i < Iterations; i++)
-            {
-                var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
-                existingCarFromDb.Make = $"Ford{i}";
-
-                //When
-                this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
-                await this.testHarness.DataStore.CommitChanges();
-                this.testHarness.DataStore.MessageAggregator.Clear(); //-fake reset to clear commitbatch
-            }
-
-            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars =>
-                cars.Where(c => c.id == this.carId)).Single().VersionHistory;
-        }
 
         [Fact]
         public async void ItShouldCreateTheVersionHistoryRecordsInTheAggregate()
@@ -73,5 +41,36 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             Assert.Equal(1, this.versionHistory.Last().CommitBatch);
         }
 
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(
+                nameof(WhenCallingUpdateMoreThanTheVersionHistoryLimit),
+                DataStoreOptions.Create().SpecifyUnitOfWorkId(this.unitOfWorkId));
+
+            this.carId = Guid.NewGuid();
+
+            this.existingCar = new Car
+            {
+                id = this.carId,
+                Make = "Volvo",
+                Modified = DateTime.UtcNow.AddDays(-1),
+                ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
+            };
+            this.testHarness.AddItemDirectlyToUnderlyingDb(this.existingCar);
+            for (var i = 0; i < Iterations; i++)
+            {
+                var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
+                existingCarFromDb.Make = $"Ford{i}";
+
+                //When
+                this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
+                await this.testHarness.DataStore.CommitChanges();
+                this.testHarness.DataStore.MessageAggregator.Clear(); //-fake reset to clear commitbatch
+            }
+
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single()
+                                      .VersionHistory;
+        }
     }
 }

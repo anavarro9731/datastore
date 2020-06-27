@@ -39,7 +39,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             Assert.Equal(this.fordId, newCarFromSession.id);
         }
 
-        async Task Setup()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveWithAPredicateOnAnItemAddedThenChangedInTheCurrentSession));

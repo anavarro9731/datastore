@@ -16,6 +16,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     {
         private const string thWheel = "5th Wheel";
 
+        private readonly Guid unitOfWorkId = Guid.NewGuid();
+
         private Guid carId;
 
         private Car existingCar;
@@ -24,8 +26,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private Car udpatedCar;
 
-        private readonly Guid unitOfWorkId = Guid.NewGuid();
-
         private List<Aggregate.AggregateVersionInfo> versionHistory;
 
         [Fact]
@@ -33,13 +33,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
 
-            Assert.NotEqual(Guid.Empty, (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Wheels.Single(w => w.FriendlyId == thWheel).id);
+            Assert.NotEqual(
+                Guid.Empty,
+                (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Wheels.Single(w => w.FriendlyId == thWheel).id);
         }
 
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWithNewChildItems), DataStoreOptions.Create().SpecifyUnitOfWorkId(this.unitOfWorkId));
+            this.testHarness = TestHarness.Create(
+                nameof(WhenCallingUpdateWithNewChildItems),
+                DataStoreOptions.Create().SpecifyUnitOfWorkId(this.unitOfWorkId));
 
             this.carId = Guid.NewGuid();
 
@@ -57,15 +61,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             existingCarFromDb.Wheels.Add(
                 new Car.Wheel
                 {
-                    RimSize = 5,
-                    FriendlyId = thWheel
+                    RimSize = 5, FriendlyId = thWheel
                 });
 
             //When
             this.udpatedCar = await this.testHarness.DataStore.Update(existingCarFromDb);
             await this.testHarness.DataStore.CommitChanges();
 
-            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single().VersionHistory;
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single()
+                                      .VersionHistory;
         }
     }
 }

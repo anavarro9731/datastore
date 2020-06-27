@@ -5,10 +5,7 @@
 
     public class DataStoreOptions
     {
-        public static DataStoreOptions Create()
-        {
-            return new DataStoreOptions();
-        }
+        public static DataStoreOptions Create() => new DataStoreOptions();
 
         private DataStoreOptions()
         {

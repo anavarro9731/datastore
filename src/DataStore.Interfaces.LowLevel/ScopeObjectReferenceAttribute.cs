@@ -4,8 +4,6 @@
 
     public class ScopeObjectReferenceAttribute : Attribute
     {
-        public string FullTypeName { get; }
-
         public ScopeObjectReferenceAttribute(Type type)
         {
             FullTypeName = type.FullName;
@@ -15,5 +13,7 @@
         {
             FullTypeName = fullTypeName;
         }
+
+        public string FullTypeName { get; }
     }
 }

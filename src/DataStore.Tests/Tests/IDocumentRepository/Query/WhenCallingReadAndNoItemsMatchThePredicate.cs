@@ -10,20 +10,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     {
         private IEnumerable<Car> carsFromDatabase;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnAnEmptyList()
+        {
+            await Setup();
+            Assert.Empty(this.carsFromDatabase);
+        }
+
+        private async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingReadAndNoItemsMatchThePredicate));
 
             // When
             this.carsFromDatabase = await testHarness.DataStore.Read<Car>(car => car.Make == "None");
-        }
-
-        [Fact]
-        public async void ItShouldReturnAnEmptyList()
-        {
-            await Setup();
-            Assert.Empty(this.carsFromDatabase);
         }
     }
 }

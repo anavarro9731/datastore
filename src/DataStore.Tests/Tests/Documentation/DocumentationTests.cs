@@ -21,8 +21,7 @@
             inMemoryDb.Add(
                 new Car
                 {
-                    id = carId,
-                    Make = "Toyota"
+                    id = carId, Make = "Toyota"
                 });
 
             //When
@@ -54,8 +53,7 @@
             inMemoryDb.Add(
                 new Car
                 {
-                    id = carId,
-                    Make = "Toyota"
+                    id = carId, Make = "Toyota"
                 });
 
             //When

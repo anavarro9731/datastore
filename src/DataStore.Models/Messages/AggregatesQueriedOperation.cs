@@ -2,18 +2,18 @@
 {
     using System;
     using System.Linq;
-    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Operations;
 
     public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T> where T : class, IAggregate, new()
     {
-        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions<T> queryOptions = null)
+        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, object queryOptions = null)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;
             Query = query;
             QueryOptions = queryOptions;
-            Created = DateTime.UtcNow;  
+            Created = DateTime.UtcNow;
         }
 
         public DateTime Created { get; set; }
@@ -22,7 +22,7 @@
 
         public IQueryable<T> Query { get; set; }
 
-        public IQueryOptions<T> QueryOptions { get; set; }
+        public object QueryOptions { get; set; }
 
         public double StateOperationCost { get; set; }
 

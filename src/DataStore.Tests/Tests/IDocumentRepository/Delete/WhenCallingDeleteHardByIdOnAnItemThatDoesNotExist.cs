@@ -10,21 +10,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     {
         private Car result;
 
-         async Task Setup()
-        {
-            // Given
-            var testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdOnAnItemThatDoesNotExist));
-
-            //When
-            this.result = await testHarness.DataStore.DeleteHardById<Car>(Guid.NewGuid());
-            await testHarness.DataStore.CommitChanges();
-        }
-
         [Fact]
         public async void ItShouldReturnNull()
         {
             await Setup();
             Assert.Null(this.result);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            var testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdOnAnItemThatDoesNotExist));
+
+            //When
+            this.result = await testHarness.DataStore.DeleteById<Car>(Guid.NewGuid(), o => o.Permanently());
+            await testHarness.DataStore.CommitChanges();
         }
     }
 }

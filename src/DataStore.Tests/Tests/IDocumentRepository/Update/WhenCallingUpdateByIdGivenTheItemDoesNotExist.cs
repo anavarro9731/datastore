@@ -15,18 +15,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private ITestHarness testHarness;
 
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateByIdGivenTheItemDoesNotExist));
-
-            var carId = Guid.NewGuid();
-
-            //When
-            this.result = await this.testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Whatever");
-            await this.testHarness.DataStore.CommitChanges();
-        }
-
         [Fact]
         public async void ItShouldNotExecuteAnyUpdateOperations()
         {
@@ -39,6 +27,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.Null(this.result);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateByIdGivenTheItemDoesNotExist));
+
+            var carId = Guid.NewGuid();
+
+            //When
+            this.result = await this.testHarness.DataStore.UpdateById<Car>(carId, car => car.Make = "Whatever");
+            await this.testHarness.DataStore.CommitChanges();
         }
     }
 }

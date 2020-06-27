@@ -23,7 +23,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }
 
-        async Task Setup()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteSoftById));
@@ -35,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                     id = this.carId, Make = "Volvo"
                 });
 
-            var result = await this.testHarness.DataStore.DeleteSoftById<Car>(this.carId);
+            var result = await this.testHarness.DataStore.DeleteById<Car>(this.carId);
 
             //When
             result.id = Guid.NewGuid(); //change in memory before commit

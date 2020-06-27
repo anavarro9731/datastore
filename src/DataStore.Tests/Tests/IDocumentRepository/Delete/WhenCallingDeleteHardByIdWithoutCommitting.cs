@@ -11,25 +11,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteHardByIdWithoutCommitting
     {
-        private ITestHarness testHarness;
-
         private Car result;
-         async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdWithoutCommitting));
 
-            var carId = Guid.NewGuid();
-            this.testHarness.AddItemDirectlyToUnderlyingDb(
-                new Car
-                {
-                    id = carId,
-                    Make = "Volvo"
-                });
-
-            //When
-            this.result = await this.testHarness.DataStore.DeleteHardById<Car>(carId);
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldOnlyMakeChangesInSession()
@@ -41,12 +25,27 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
 
-
         [Fact]
         public async void ItShouldSetTheEtagsCorrectly()
         {
             await Setup();
             Assert.Equal("waiting to be committed", this.result.Etag);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdWithoutCommitting));
+
+            var carId = Guid.NewGuid();
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
+                new Car
+                {
+                    id = carId, Make = "Volvo"
+                });
+
+            //When
+            this.result = await this.testHarness.DataStore.DeleteById<Car>(carId, o => o.Permanently());
         }
     }
 }

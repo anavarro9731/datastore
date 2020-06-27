@@ -11,7 +11,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     {
         private IEnumerable<Car> result;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnAnEmptyList()
+        {
+            await Setup();
+            Assert.Empty(this.result);
+        }
+
+        private async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardWhereAndNoItemsMatchThePredicate));
@@ -20,20 +27,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
-                    id = carId,
-                    Make = "Volvo"
+                    id = carId, Make = "Volvo"
                 });
 
             //When
-            this.result = await testHarness.DataStore.DeleteHardWhere<Car>(car => car.id == Guid.NewGuid());
+            this.result = await testHarness.DataStore.DeleteWhere<Car>(car => car.id == Guid.NewGuid(), o => o.Permanently());
             await testHarness.DataStore.CommitChanges();
-        }
-
-        [Fact]
-        public async void ItShouldReturnAnEmptyList()
-        {
-            await Setup();
-            Assert.Empty(this.result);
         }
     }
 }

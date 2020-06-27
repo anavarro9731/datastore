@@ -1,17 +1,12 @@
 namespace DataStore.Providers.CosmosDb
 {
-    using System;
     using System.Collections;
-    using System.Collections.Concurrent;
-    using System.Threading;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
-    using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Cosmos;
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        
         private static void CreateClient(CosmosSettings cosmosStoreSettings, out CosmosClient client)
         {
             client = new CosmosClient(cosmosStoreSettings.EndpointUrl, cosmosStoreSettings.AuthKey);
@@ -28,8 +23,7 @@ namespace DataStore.Providers.CosmosDb
                 var response = await db.Database.CreateContainerIfNotExistsAsync(
                                    new ContainerProperties
                                    {
-                                       PartitionKeyPath = "/PartitionKey",
-                                       Id = cosmosStoreSettings.DatabaseName
+                                       PartitionKeyPath = "/PartitionKey", Id = cosmosStoreSettings.DatabaseName
                                    }).ConfigureAwait(false);
 
                 await Task.Delay(5000); //the above call seems to be fire-and-forget and i need it complete reliably

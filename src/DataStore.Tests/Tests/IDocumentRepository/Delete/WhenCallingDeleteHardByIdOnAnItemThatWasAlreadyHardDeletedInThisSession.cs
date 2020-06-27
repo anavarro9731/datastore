@@ -9,9 +9,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession
     {
-        private Car result;
-
         private Guid newCarId;
+
+        private Car result;
 
         private ITestHarness testHarness;
 
@@ -21,10 +21,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
 
             Assert.Null(this.result);
-
         }
 
-        async Task Setup()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession));
@@ -37,9 +36,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
             await this.testHarness.DataStore.CommitChanges();
 
-            await this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId);
+            await this.testHarness.DataStore.DeleteById<Car>(this.newCarId, o => o.Permanently());
 
-            this.result = await this.testHarness.DataStore.DeleteHardById<Car>(this.newCarId);
+            this.result = await this.testHarness.DataStore.DeleteById<Car>(this.newCarId, o => o.Permanently());
         }
     }
 }

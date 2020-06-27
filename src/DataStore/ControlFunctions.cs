@@ -4,19 +4,20 @@
     using System.Linq;
     using System.Security;
     using System.Threading.Tasks;
-    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Options;
 
     public class ControlFunctions
     {
-        public static async Task<List<IHaveScope>> Authorise(
+        private readonly DataStore dataStore;
+
+        private static async Task<List<IHaveScope>> Authorise(
             IIdentityWithDatabasePermissions user,
             DatabasePermission requiredPermission,
             List<IHaveScope> dataBeingQueried,
             DataStoreOptions.SecuritySettings settings,
-            IDataStore dataStore)
+            DataStore dataStore)
         {
             if (user.HasDatabasePermission(requiredPermission))
             {
@@ -60,39 +61,46 @@
             }
 
             throw new SecurityException(
-                "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission with the appropriate scope.");
+                "User not authorized to perform this action. "
+                + $"You require the {requiredPermission.PermissionName} permission with the appropriate scope.");
         }
 
-        public static async Task<List<IHaveScope>> Filter(
-            IIdentityWithDatabasePermissions user,
-            DatabasePermission requiredPermission,
-            List<IHaveScope> dataBeingQueried,
-            DataStoreOptions.SecuritySettings settings,
-            IDataStore dataStore)
+        public ControlFunctions(DataStore dataStore)
         {
-            if (user.HasDatabasePermission(requiredPermission))
-            {
-                var scopedData = dataBeingQueried.Where( /* if an underlying provider should
-                    return null for an empty list you would need to add x.ScopeReferences != null || */
-                    x => x.ScopeReferences.Any()).ToList();
-
-                var userPermission = user.DatabasePermissions.Single(x => x.Id == requiredPermission.Id);
-
-                /* Extrapolate all indirect scopes and check against this. 
-                 */
-
-                return (await settings.ScopeHierarchy.Expanded(scopedData, userPermission.ScopeReferences, dataStore).ConfigureAwait(false)).ToList();
-            }
-
-            throw new SecurityException(
-                "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission.");
+            this.dataStore = dataStore;
         }
 
-        public delegate Task<List<IHaveScope>> ControlDataDelegate(
+        public async Task<IEnumerable<T>> AuthoriseData<T>(
+            IEnumerable<T> data,
+            DatabasePermission requiredPermissionWithScopeToData,
+            IIdentityWithDatabasePermissions identity) where T : class, IAggregate, new()
+        {
+            var result = await Authorise(identity, requiredPermissionWithScopeToData, data.Cast<IHaveScope>().ToList())
+                             .ConfigureAwait(false);
+
+            return result.Cast<T>();
+        }
+
+        public async Task<T> AuthoriseDatum<T>(
+            T data,
+            DatabasePermission requiredPermissionWithScopeToData,
+            IIdentityWithDatabasePermissions identity) where T : class, IAggregate, new()
+        {
+            var result = await AuthoriseData(
+                             new[]
+                             {
+                                 data
+                             },
+                             requiredPermissionWithScopeToData,
+                             identity).ConfigureAwait(false);
+
+            return result.SingleOrDefault();
+        }
+
+        private Task<List<IHaveScope>> Authorise(
             IIdentityWithDatabasePermissions user,
             DatabasePermission requiredPermission,
-            List<IHaveScope> dataBeingQueried,
-            DataStoreOptions.SecuritySettings settings,
-            IDataStore dataStore);
+            List<IHaveScope> dataBeingQueried) =>
+            Authorise(user, requiredPermission, dataBeingQueried, this.dataStore.DataStoreOptions.Security, this.dataStore);
     }
 }

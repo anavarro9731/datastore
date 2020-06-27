@@ -1,7 +1,6 @@
 ﻿namespace DataStore.MessageAggregator
 {
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
 
@@ -11,16 +10,13 @@
 
         private readonly List<IMessage> allMessages = new List<IMessage>();
 
-        public void Clear()
-        {
-            this.allMessages.Clear();
-        }
+        public static IMessageAggregator Create() => new DataStoreMessageAggregator();
 
         public IReadOnlyList<IMessage> AllMessages => this.allMessages.AsReadOnly();
 
-        public static IMessageAggregator Create()
+        public void Clear()
         {
-            return new DataStoreMessageAggregator();
+            this.allMessages.Clear();
         }
 
         public void Collect(IMessage message)
@@ -34,9 +30,7 @@
             return new DataStoreMessagePropogator<TMessage>(message);
         }
 
-        public IValueReturner When<TMessage>() where TMessage : IMessage
-        {
-            return new DataStoreValueReturner(this.ReturnValues, typeof(TMessage).FullName);
-        }
+        public IValueReturner When<TMessage>() where TMessage : IMessage =>
+            new DataStoreValueReturner(this.ReturnValues, typeof(TMessage).FullName);
     }
 }

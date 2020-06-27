@@ -17,25 +17,6 @@
 
         private ITestHarness testHarness;
 
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCommitMultipleTimesAfterACreateOperation));
-
-            this.newCarId = Guid.NewGuid();
-            var newCar = new Car
-            {
-                id = this.newCarId,
-                Make = "Volvo"
-            };
-
-            this.car = await this.testHarness.DataStore.Create(newCar);
-
-            //When
-            await this.testHarness.DataStore.CommitChanges();
-            await this.testHarness.DataStore.CommitChanges();
-        }
-
         [Fact]
         public async void ItShouldPersistChangesToTheDatabaseOnlyOnce()
         {
@@ -60,6 +41,24 @@
         {
             await Setup();
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedCreateOperation<Car>));
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCommitMultipleTimesAfterACreateOperation));
+
+            this.newCarId = Guid.NewGuid();
+            var newCar = new Car
+            {
+                id = this.newCarId, Make = "Volvo"
+            };
+
+            this.car = await this.testHarness.DataStore.Create(newCar);
+
+            //When
+            await this.testHarness.DataStore.CommitChanges();
+            await this.testHarness.DataStore.CommitChanges();
         }
     }
 }

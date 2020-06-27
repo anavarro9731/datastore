@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using global::DataStore.Interfaces.LowLevel;
 
     public class Car : Aggregate
@@ -26,8 +25,9 @@
 
         public class Wheel : Entity
         {
-            public int RimSize { get; set; } = 15;
             public string FriendlyId { get; set; }
+
+            public int RimSize { get; set; } = 15;
         }
     }
 }

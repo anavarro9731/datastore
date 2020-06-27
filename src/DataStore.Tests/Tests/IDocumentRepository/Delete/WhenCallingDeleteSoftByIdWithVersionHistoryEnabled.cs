@@ -1,7 +1,6 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
-    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
@@ -14,35 +13,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteSoftByIdWithVersionHistoryEnabled
     {
-        private  Guid carId;
+        private Guid carId;
 
-        private  ITestHarness testHarness;
-
-        async Task Setup()
-        {
-            // Given
-            this.carId = Guid.NewGuid();
-
-
-            this.testHarness = TestHarness
-                .Create(nameof(WhenCallingDeleteSoftByIdWithVersionHistoryEnabled), 
-                    DataStoreOptions.Create().EnableFullVersionHistory());
-
-            await this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = this.carId,
-                    Make = "Volvo"
-                });
-
-            await this.testHarness.DataStore.CommitChanges();
-
-            //When
-            await this.testHarness.DataStore.DeleteSoftById<Car>(this.carId);
-            await this.testHarness.DataStore.CommitChanges();
-        }
-
-
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldAddAHistoryIndexEntityToTheHistory()
@@ -62,14 +35,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             await Setup();
 
             //- create for create and update ops
-            Assert.Equal(2, this.testHarness.DataStore
-                               .ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
+            Assert.Equal(2, this.testHarness.DataStore.ExecutedOperations.Count(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var car = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single();
             var aggregateVersionInfo = car.VersionHistory.First();
 
             var aggregateHistoryItem = this.testHarness
-                                           .QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>(cars => cars.Where(x => x.id == aggregateVersionInfo.AggegateHistoryItemId))
+                                           .QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>(
+                                               cars => cars.Where(x => x.id == aggregateVersionInfo.AggegateHistoryItemId))
                                            .SingleOrDefault();
 
             Assert.NotNull(aggregateHistoryItem);
@@ -78,6 +51,26 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.True(aggregateHistoryItem.AggregateVersion.id == this.carId);
         }
 
+        private async Task Setup()
+        {
+            // Given
+            this.carId = Guid.NewGuid();
 
+            this.testHarness = TestHarness.Create(
+                nameof(WhenCallingDeleteSoftByIdWithVersionHistoryEnabled),
+                DataStoreOptions.Create().EnableFullVersionHistory());
+
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = this.carId, Make = "Volvo"
+                });
+
+            await this.testHarness.DataStore.CommitChanges();
+
+            //When
+            await this.testHarness.DataStore.DeleteById<Car>(this.carId);
+            await this.testHarness.DataStore.CommitChanges();
+        }
     }
 }

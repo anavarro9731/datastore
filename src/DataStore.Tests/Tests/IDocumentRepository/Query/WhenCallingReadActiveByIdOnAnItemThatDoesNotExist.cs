@@ -1,4 +1,4 @@
-        namespace DataStore.Tests.Tests.IDocumentRepository.Query
+namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Threading.Tasks;
@@ -10,20 +10,20 @@
     {
         private Car activeCarFromDatabase;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnNull()
+        {
+            await Setup();
+            Assert.Null(this.activeCarFromDatabase);
+        }
+
+        private async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnItemThatDoesNotExist));
 
             // When
             this.activeCarFromDatabase = await testHarness.DataStore.ReadActiveById<Car>(Guid.NewGuid());
-        }
-
-        [Fact]
-        public async void ItShouldReturnNull()
-        {
-            await Setup();
-            Assert.Null(this.activeCarFromDatabase);
         }
     }
 }

@@ -482,4 +482,5 @@ namespace $NAMESPACE$&#xD;
   /// &lt;/summary&gt;&#xD;
   public interface $INTERFACE$ {$END$}&#xD;
 }</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Authorise/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=dentity/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

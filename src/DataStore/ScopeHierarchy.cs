@@ -5,7 +5,6 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
-    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.PureFunctions.Extensions;
@@ -16,10 +15,7 @@
 
         private readonly List<IScopeLevel> scopeLevels = new List<IScopeLevel>();
 
-        public static ScopeHierarchy Create()
-        {
-            return new ScopeHierarchy();
-        }
+        public static ScopeHierarchy Create() => new ScopeHierarchy();
 
         private ScopeHierarchy()
         {
@@ -29,10 +25,13 @@
         {
             string EntityTypeName { get; }
 
-            Task<List<EntityWithChildren>> HydrateScopeLevel(IDataStore dataStore);
+            Task<List<EntityWithChildren>> HydrateScopeLevel(DataStore dataStore);
         }
 
-        public async Task<bool> ExpandedPermissionContains(DatabasePermissionInstance permissionInstance, IDataStore dataStore, DatabaseScopeReference scopeToMatch)
+        public async Task<bool> ExpandedPermissionContains(
+            DatabasePermissionInstance permissionInstance,
+            DataStore dataStore,
+            DatabaseScopeReference scopeToMatch)
         {
             if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
 
@@ -44,8 +43,9 @@
                     RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
                 }
 
-            var result = permissionInstance.ScopeReferences.Contains(scopeToMatch) /*better check the required scope is not already present*/
-                         || extrapolatedScopes.Contains(scopeToMatch);
+            var result =
+                permissionInstance.ScopeReferences.Contains(scopeToMatch) /*better check the required scope is not already present*/
+                || extrapolatedScopes.Contains(scopeToMatch);
 
             return result;
         }
@@ -61,9 +61,11 @@
             return this;
         }
 
-        internal async Task<IEnumerable<IHaveScope>> Expanded(List<IHaveScope> dataWithScope, List<DatabaseScopeReference> userPermissionScopes, IDataStore dataStore)
+        internal async Task<IEnumerable<IHaveScope>> Expanded(
+            List<IHaveScope> dataWithScope,
+            List<DatabaseScopeReference> userPermissionScopes,
+            DataStore dataStore)
         {
-
             if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
 
             var extrapolatedScopes = new List<DatabaseScopeReference>(userPermissionScopes);
@@ -76,10 +78,9 @@
                 }
 
             return dataWithScope.Where(sd => sd.ScopeReferences.Intersect(extrapolatedScopes).Any());
-
         }
 
-        private async Task HydrateHierarchy(IDataStore dataStore)
+        private async Task HydrateHierarchy(DataStore dataStore)
         {
             foreach (var scopeLevel in this.scopeLevels)
             {
@@ -106,19 +107,19 @@
                     return scopeEntities.Any(e => e.ParentId != Guid.Empty);
                 }
 
-                bool TheUserIsAddingAScopeLevelWhoseEntitiesCantBeTracedToAParent()
-                {
-                    return this.scopeEntityLookup.Count > 0 && AllEntitiesHaveParents() == false;
-                }
+                bool TheUserIsAddingAScopeLevelWhoseEntitiesCantBeTracedToAParent() =>
+                    this.scopeEntityLookup.Count > 0 && AllEntitiesHaveParents() == false;
             }
-
         }
 
-        private void RecurseAndFindNewScopeReferences(EntityWithChildren referencedEntity, ref List<DatabaseScopeReference> extrapolatedScopesBuffer)
+        private void RecurseAndFindNewScopeReferences(
+            EntityWithChildren referencedEntity,
+            ref List<DatabaseScopeReference> extrapolatedScopesBuffer)
         {
             if (referencedEntity.Children.Any())
             {
-                extrapolatedScopesBuffer.AddRange(referencedEntity.Children.Select(c => new DatabaseScopeReference(c.id, c.EntityTypeName, c.ScopeReferenceId)));
+                extrapolatedScopesBuffer.AddRange(
+                    referencedEntity.Children.Select(c => new DatabaseScopeReference(c.id, c.EntityTypeName, c.ScopeReferenceId)));
                 foreach (var referencedEntityChild in referencedEntity.Children)
                     RecurseAndFindNewScopeReferences(referencedEntityChild, ref extrapolatedScopesBuffer);
             }
@@ -164,16 +165,16 @@
 
             public string EntityTypeName => typeof(T).FullName;
 
-            public async Task<List<EntityWithChildren>> HydrateScopeLevel(IDataStore dataStore)
+            public async Task<List<EntityWithChildren>> HydrateScopeLevel(DataStore dataStore)
             {
                 var stopWatch = new Stopwatch().Op(s => s.Start());
 
                 var aggregates = await dataStore.Read<T>().ConfigureAwait(false);
-                
+
                 Debug.WriteLine($"Hydrating scope level {typeof(T).FullName} cost {stopWatch.ElapsedMilliseconds} milliseconds");
-                
+
                 var projection = aggregates.Select(x => new EntityWithChildren(x, this.ParentIdSelector(x))).ToList();
-                
+
                 return projection;
             }
         }

@@ -14,16 +14,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private ITestHarness testHarness;
 
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGivenTheItemDoesNotExist));
-
-            //When
-            this.result = await this.testHarness.DataStore.Update(new Car());
-            await this.testHarness.DataStore.CommitChanges();
-        }
-
         [Fact]
         public async void ItShouldNotExecuteAnyUpdateOperation()
         {
@@ -36,6 +26,16 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.Null(this.result);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGivenTheItemDoesNotExist));
+
+            //When
+            this.result = await this.testHarness.DataStore.Update(new Car());
+            await this.testHarness.DataStore.CommitChanges();
         }
     }
 }

@@ -4,27 +4,23 @@
 
     public class DatabaseScopeReference : IEquatable<DatabaseScopeReference>
     {
-
-        public DatabaseScopeReference()
-        {
-            //serialiser
-        }
-
         public static bool operator ==(DatabaseScopeReference a, DatabaseScopeReference b)
         {
             // If both are null, or both are same instance, return true.
             if (ReferenceEquals(a, b)) return true;
 
             // If one is null, but not both, return false.
-            if ((object) a == null || (object) b == null) return false;
+            if ((object)a == null || (object)b == null) return false;
 
             // Return true if the fields match:
             return a.PropertiesAreEqual(b);
         }
 
-        public static bool operator !=(DatabaseScopeReference a, DatabaseScopeReference b)
+        public static bool operator !=(DatabaseScopeReference a, DatabaseScopeReference b) => !(a == b);
+
+        public DatabaseScopeReference()
         {
-            return !(a == b);
+            //serialiser
         }
 
         public DatabaseScopeReference(Guid idOfScopeObject, string typeOfOwner, string scopeObjectDebugId = null)
@@ -52,7 +48,7 @@
             if (obj.GetType() != GetType()) return false;
 
             //check on property equality
-            return PropertiesAreEqual((DatabaseScopeReference) obj);
+            return PropertiesAreEqual((DatabaseScopeReference)obj);
         }
 
         public override int GetHashCode()
@@ -63,14 +59,9 @@
             return hash;
         }
 
-        bool IEquatable<DatabaseScopeReference>.Equals(DatabaseScopeReference other)
-        {
-            return Equals(other);
-        }
+        bool IEquatable<DatabaseScopeReference>.Equals(DatabaseScopeReference other) => Equals(other);
 
-        protected bool PropertiesAreEqual(DatabaseScopeReference other)
-        {
-            return ScopeObjectId.Equals(other.ScopeObjectId) && ScopeObjectType.Equals(other.ScopeObjectType);
-        }
+        protected bool PropertiesAreEqual(DatabaseScopeReference other) =>
+            ScopeObjectId.Equals(other.ScopeObjectId) && ScopeObjectType.Equals(other.ScopeObjectType);
     }
 }

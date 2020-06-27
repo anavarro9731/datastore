@@ -18,7 +18,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         public async void ItShouldThrowAConcurrencyException()
         {
             await Setup();
-            var exception = await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
+            var exception =
+                await Assert.ThrowsAnyAsync<DBConcurrencyException>(async () => await this.testHarness.DataStore.CommitChanges());
             Assert.Contains(this.carId.ToString(), exception.Message);
             Assert.Contains(typeof(Car).FullName, exception.Message);
         }
@@ -33,8 +34,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
-                    id = this.carId,
-                    Make = "Volvo"
+                    id = this.carId, Make = "Volvo"
                 });
 
             //When
