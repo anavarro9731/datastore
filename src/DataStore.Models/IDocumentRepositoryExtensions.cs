@@ -1,9 +1,11 @@
-namespace DataStore.Interfaces
+namespace DataStore.Models
 {
     using System;
     using System.Reflection;
     using System.Threading.Tasks;
+    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Operations;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
 
@@ -11,7 +13,7 @@ namespace DataStore.Interfaces
     {
         public static Task CreateAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
         {
-            Type type = model.GetType();
+            var type = model.GetType();
 
             var createOperationType = typeof(CreateOperation<>).MakeGenericType(type);
 
@@ -27,9 +29,9 @@ namespace DataStore.Interfaces
             return createAsync.InvokeAsync(repo, createOperation);
         }
 
-        public static Task DeleteAsync(this IDocumentRepository repo,  IAggregate model, string methodCalled = null)
+        public static Task DeleteAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
         {
-            Type type = model.GetType();
+            var type = model.GetType();
             var deleteOperationType = typeof(HardDeleteOperation<>).MakeGenericType(type);
 
             var deleteAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.DeleteAsync)).MakeGenericMethod(type);
@@ -44,9 +46,9 @@ namespace DataStore.Interfaces
             return deleteAsync.InvokeAsync(repo, deleteOperation);
         }
 
-        public static Task UpdateAsync(this IDocumentRepository repo,  IAggregate model, string methodCalled = null)
+        public static Task UpdateAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
         {
-            Type type = model.GetType();
+            var type = model.GetType();
             var updateOperationType = typeof(UpdateOperation<>).MakeGenericType(type);
 
             var updateAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.UpdateAsync)).MakeGenericMethod(type);

@@ -10,11 +10,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenChangingTheItemReturnedFromCreate
     {
-        private  Guid newCarId;
+        private Guid newCarId;
 
-        private  ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-         async Task Setup()
+        [Fact]
+        public async void ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned()
+        {
+            await Setup();
+            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id == this.newCarId);
+            Assert.NotNull(await this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId));
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemReturnedFromCreate));
@@ -23,8 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             var newCar = new Car
             {
-                id = this.newCarId,
-                Make = "Volvo"
+                id = this.newCarId, Make = "Volvo"
             };
 
             var result = await this.testHarness.DataStore.Create(newCar);
@@ -34,14 +41,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
             //When
             await this.testHarness.DataStore.CommitChanges();
-        }
-
-        [Fact]
-        public async void ItShouldNotAffectTheCreateWhenCommittedBecauseItIsCloned()
-        {
-            await Setup();
-            Assert.True(this.testHarness.QueryUnderlyingDbDirectly<Car>().Single().id == this.newCarId);
-            Assert.NotNull(await this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId));
         }
     }
 }

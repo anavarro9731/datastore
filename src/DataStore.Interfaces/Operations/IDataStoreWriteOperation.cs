@@ -1,4 +1,4 @@
-﻿namespace DataStore.Interfaces
+﻿namespace DataStore.Interfaces.Operations
 {
     using System.Collections.Generic;
     using CircuitBoard.Messages;

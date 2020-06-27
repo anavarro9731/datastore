@@ -15,7 +15,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldNotReturnTheItem()
+        {
+            await Setup();
+            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
+            Assert.Null(this.inactiveCarFromDatabase);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnInactiveItem));
@@ -23,17 +31,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
-                Active = true,
-                Make = "Volvo"
+                id = activeCarId, Active = true, Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
-                Active = false,
-                Make = "Jeep"
+                id = inactiveCarId, Active = false, Make = "Jeep"
             };
 
             this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
@@ -41,14 +45,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
             // When
             this.inactiveCarFromDatabase = await this.testHarness.DataStore.ReadActiveById<Car>(inactiveCarId);
-        }
-
-        [Fact]
-        public async void ItShouldNotReturnTheItem()
-        {
-            await Setup();
-            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation));
-            Assert.Null(this.inactiveCarFromDatabase);
         }
     }
 }

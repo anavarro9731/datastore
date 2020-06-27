@@ -1,8 +1,8 @@
 ﻿namespace DataStore.Interfaces.LowLevel.Permissions
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security;
 
     public interface IIdentityWithDatabasePermissions : IHaveAUniqueId
     {
@@ -22,7 +22,7 @@
 
             if (count > 1)
             {
-                throw new Exception("User has the same DatabasePermission twice instead the scopes should be merged");
+                throw new SecurityException("User has the same DatabasePermission twice instead the scopes should be merged");
             }
 
             return false;

@@ -11,24 +11,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteSoftByIdWithoutCommitting
     {
-        private  ITestHarness testHarness;
-
-        private async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftByIdWithoutCommitting));
-
-            var carId = Guid.NewGuid();
-            this.testHarness.AddItemDirectlyToUnderlyingDb(
-                new Car
-                {
-                    id = carId,
-                    Make = "Volvo"
-                });
-
-            //When
-            await this.testHarness.DataStore.DeleteSoftById<Car>(carId);
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldOnlyMakeChangesInSession()
@@ -39,6 +22,22 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotEmpty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.ReadActive<Car>());
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftByIdWithoutCommitting));
+
+            var carId = Guid.NewGuid();
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
+                new Car
+                {
+                    id = carId, Make = "Volvo"
+                });
+
+            //When
+            await this.testHarness.DataStore.DeleteById<Car>(carId);
         }
     }
 }

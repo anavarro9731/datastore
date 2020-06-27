@@ -5,16 +5,16 @@
 
     public class Company : Aggregate
     {
-        public string Name { get; set; }
-
         public Company(string name, Guid myId)
         {
-            this.Name = name;
+            Name = name;
             id = myId;
         }
 
         public Company()
         {
         }
+
+        public string Name { get; set; }
     }
 }

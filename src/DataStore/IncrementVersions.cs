@@ -4,8 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.Operations;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
 
@@ -18,6 +18,20 @@
             this.dataStore = dataStore;
         }
 
+        public async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T : class, IAggregate, new()
+        {
+            if (typeof(T) != typeof(AggregateHistoryItem<>)) //- without this check you'd get recursion to infinity
+                //- delete history records
+            {
+                await this.dataStore.DeleteWhere<AggregateHistoryItem<T>>(
+                    h => h.AggregateVersion.id == id,
+                    o => o.Permanently(),
+                    $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
+            }
+
+            ;
+        }
+
         public async Task IncrementAggregateVersionOfQueuedItem<T>(T model, string methodName) where T : class, IAggregate, new()
         {
             {
@@ -27,12 +41,16 @@
 
                     AddHistoryRecordEntryToExistingIndexOfQueuedItem(model, historyRecordEntry);
 
-                    await CreateFullAggregateRecordIfEnabled(model, historyRecordEntry, $"{methodName}.{nameof(IncrementAggregateVersionOfQueuedItem)}");
-                    
+                    await CreateFullAggregateRecordIfEnabled(
+                        model,
+                        historyRecordEntry,
+                        $"{methodName}.{nameof(IncrementAggregateVersionOfQueuedItem)}");
                 }
             }
 
-            void PrepareNewHistoryRecordEntry(List<Aggregate.AggregateVersionInfo> versionHistory, out Aggregate.AggregateVersionInfo historyRecordEntry)
+            void PrepareNewHistoryRecordEntry(
+                List<Aggregate.AggregateVersionInfo> versionHistory,
+                out Aggregate.AggregateVersionInfo historyRecordEntry)
             {
                 historyRecordEntry = new Aggregate.AggregateVersionInfo
                 {
@@ -44,21 +62,24 @@
                                             x => x.GetHistoryItems.Any() ? x.GetHistoryItems.Max(y => y.CommitBatch) : 0) + 1
                                       : 1 /* this is rather confusing, the reason history items can sometimes be empty is that
                                       if you are dealing with a historyitem itself there won't be any*/,
-                    ChangeCount = versionHistory.Any() ? versionHistory.First().ChangeCount + 1 : 1 
+                    ChangeCount = versionHistory.Any() ? versionHistory.First().ChangeCount + 1 : 1
                 };
             }
 
             void AddHistoryRecordEntryToExistingIndexOfQueuedItem(T aggregate, Aggregate.AggregateVersionInfo newVersion)
             {
-                aggregate.VersionHistory.Insert(0,newVersion);
-                if (aggregate.VersionHistory.Count > 10) aggregate.VersionHistory.RemoveAt(aggregate.VersionHistory.Count -1);
-            }
-            bool VersioningStyleIsFull()
-            {
-                return this.dataStore.DataStoreOptions.VersionHistory.VersioningStyle == DataStoreOptions.VersioningStyle.CompleteCopyOfAllAggregateVersions;
+                aggregate.VersionHistory.Insert(0, newVersion);
+                if (aggregate.VersionHistory.Count > 10) aggregate.VersionHistory.RemoveAt(aggregate.VersionHistory.Count - 1);
             }
 
-            async Task CreateFullAggregateRecordIfEnabled(T modelNested, Aggregate.AggregateVersionInfo historyRecordEntry, string methodNameNested)
+            bool VersioningStyleIsFull() =>
+                this.dataStore.DataStoreOptions.VersionHistory.VersioningStyle
+                == DataStoreOptions.VersioningStyle.CompleteCopyOfAllAggregateVersions;
+
+            async Task CreateFullAggregateRecordIfEnabled(
+                T modelNested,
+                Aggregate.AggregateVersionInfo historyRecordEntry,
+                string methodNameNested)
             {
                 {
                     if (VersioningStyleIsFull())
@@ -67,7 +88,6 @@
                     }
                 }
 
-      
                 async Task CreateFullAggregateRecord(Guid id)
                 {
                     await this.dataStore.Create(
@@ -82,15 +102,6 @@
                         methodName: methodNameNested).ConfigureAwait(false);
                 }
             }
-        }
-
-        public async Task DeleteAggregateHistory<T>(Guid id, string methodName) where T : class, IAggregate, new()
-        {
-            if (typeof(T) != typeof(AggregateHistoryItem<>)) //- without this check you'd get recursion to infinity
-            //- delete history records
-                await this.dataStore.DeleteHardWhere<AggregateHistoryItem<T>>(h => h.AggregateVersion.id == id, $"{methodName}.{nameof(DeleteAggregateHistory)}")
-                      .ConfigureAwait(false);
-            ;
         }
     }
 }

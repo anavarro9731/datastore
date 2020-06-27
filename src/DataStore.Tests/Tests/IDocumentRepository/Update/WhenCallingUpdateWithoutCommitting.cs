@@ -15,7 +15,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldOnlyMakeTheChangesInSession()
+        {
+            await Setup();
+            Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+            Assert.Equal(
+                "Volvo",
+                this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWithoutCommitting));
@@ -23,8 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = this.carId,
-                Make = "Volvo"
+                id = this.carId, Make = "Volvo"
             };
             this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
@@ -32,16 +43,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             var existingCarFromDb = await this.testHarness.DataStore.ReadActiveById<Car>(this.carId);
             existingCarFromDb.Make = "Ford";
             await this.testHarness.DataStore.Update(existingCarFromDb);
-        }
-
-        [Fact]
-        public async void ItShouldOnlyMakeTheChangesInSession()
-        {
-            await Setup();
-            Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
-            Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Volvo", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
-            Assert.Equal("Ford",(await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }
 }

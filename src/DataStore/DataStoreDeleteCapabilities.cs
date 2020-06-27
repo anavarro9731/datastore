@@ -8,23 +8,26 @@
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.Operations;
+    using global::DataStore.Interfaces.Options;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
 
     //Eventreplay on
-    internal class DataStoreDeleteCapabilities : IDataStoreDeleteCapabilities
+    internal class DataStoreDeleteCapabilities
     {
         private readonly EventReplay eventReplay;
 
-        private readonly IMessageAggregator messageAggregator;
-
         private readonly IncrementVersions incrementVersions;
 
-        private readonly IDataStoreUpdateCapabilities updateCapabilities;
+        private readonly IMessageAggregator messageAggregator;
 
-        public static void CheckWasObjectAlreadyHardDeleted<T>(IMessageAggregator messageAggregator, Guid aggregateId) where T : class, IAggregate, new()
+        private readonly DataStoreUpdateCapabilities updateCapabilities;
+
+        public static void CheckWasObjectAlreadyHardDeleted<T>(IMessageAggregator messageAggregator, Guid aggregateId)
+            where T : class, IAggregate, new()
         {
             var uncommittedEvents = messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(e => !e.Committed);
 
@@ -41,7 +44,7 @@
 
         public DataStoreDeleteCapabilities(
             IDocumentRepository dataStoreConnection,
-            IDataStoreUpdateCapabilities updateCapabilities,
+            DataStoreUpdateCapabilities updateCapabilities,
             IMessageAggregator messageAggregator,
             IncrementVersions incrementVersions)
         {
@@ -54,72 +57,72 @@
 
         private IDocumentRepository DsConnection { get; }
 
-        public Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> Delete<T, O>(T instance, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : DeleteOptionsLibrarySide, new() =>
+            DeleteById<T, O>(instance.id, options, methodName);
+
+        public async Task<T> DeleteById<T, O>(Guid id, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : DeleteOptionsLibrarySide, new()
         {
-            return DeleteHardById<T>(instance.id, methodName);
+            return (await DeleteWhere<T, O>(x => x.id == id, options, methodName).ConfigureAwait(false)).SingleOrDefault();
         }
 
-        public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> DeleteWhere<T, O>(Expression<Func<T, bool>> predicate, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : DeleteOptionsLibrarySide, new()
         {
-            return (await DeleteHardWhere<T>(x => x.id == id, methodName).ConfigureAwait(false)).SingleOrDefault();
-        }
-
-        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
-        {
-            var objectsToDelete = await this.messageAggregator
-                                            .CollectAndForward(new AggregatesQueriedOperation<T>(methodName, DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                                            .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
-
-            //can't just return null here if there are no matches because we need to replay previous events
-            //a match might have been added previously in this session            
-            objectsToDelete = this.eventReplay.ApplyAggregateEvents(objectsToDelete, predicate.Compile());
-
-            foreach (var dataObject in objectsToDelete)
-                CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.id);
-
-            if (!objectsToDelete.Any()) return objectsToDelete;
-
-            var clones = new List<T>();
-
-            foreach (var dataObject in objectsToDelete)
+            if (options.IsHardDelete)
             {
-                var clone = dataObject.Clone();
+                var objectsToDelete = await this.messageAggregator
+                                                .CollectAndForward(
+                                                    new AggregatesQueriedOperation<T>(
+                                                        methodName,
+                                                        DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                                                .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
-                void EtagUpdated(string newTag) => clone.Etag = newTag;
+                //can't just return null here if there are no matches because we need to replay previous events
+                //a match might have been added previously in this session            
+                objectsToDelete = this.eventReplay.ApplyAggregateEvents(objectsToDelete, predicate.Compile());
 
-                this.messageAggregator.Collect(new QueuedHardDeleteOperation<T>(methodName, dataObject, DsConnection, this.messageAggregator, EtagUpdated));
+                foreach (var dataObject in objectsToDelete)
+                    CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.id);
 
-                await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(dataObject, methodName);
-                await this.incrementVersions.DeleteAggregateHistory<T>(dataObject.id, methodName);
+                if (!objectsToDelete.Any()) return objectsToDelete;
 
-                clone.Etag = "waiting to be committed";
-                clones.Add(clone);
+                var clones = new List<T>();
+
+                foreach (var dataObject in objectsToDelete)
+                {
+                    var clone = dataObject.Clone();
+
+                    void EtagUpdated(string newTag)
+                    {
+                        clone.Etag = newTag;
+                    }
+
+                    this.messageAggregator.Collect(
+                        new QueuedHardDeleteOperation<T>(methodName, dataObject, DsConnection, this.messageAggregator, EtagUpdated));
+
+                    await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(dataObject, methodName);
+                    await this.incrementVersions.DeleteAggregateHistory<T>(dataObject.id, methodName);
+
+                    clone.Etag = "waiting to be committed";
+                    clones.Add(clone);
+                }
+
+                //clone otherwise its to easy to change the referenced object before committing
+                return clones;
             }
 
-            //clone otherwise its to easy to change the referenced object before committing
-            return clones;
+            return await this.updateCapabilities.UpdateWhere(
+                       predicate,
+                       MarkAsSoftDeleted,
+                       (UpdateOptionsLibrarySide)new DefaultUpdateOptions().Op(
+                           o =>
+                               {
+                               o.DisableOptimisticConcurrency();
+                               o.OverwriteReadonly();
+                               }),
+                       methodName);
         }
-
-        public Task<T> DeleteSoft<T>(T instance, string methodName = null) where T : class, IAggregate, new()
-        {
-            return DeleteSoftById<T>(instance.id, methodName);
-        }
-
-        public Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
-        {
-            return this.updateCapabilities.UpdateById<T, UpdateOptions>(id, MarkAsSoftDeleted, o => o.DisableOptimisticConcurrecy(), true, methodName);
-        }
-
-        // .. soft delete one or more DataObjects 
-        public Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
-        {
-            return this.updateCapabilities.UpdateWhere<T, UpdateOptions>(
-                predicate,
-                MarkAsSoftDeleted,
-                o => o.DisableOptimisticConcurrecy(),
-                true,
-                nameof(DeleteSoftWhere));
-        }
-
     }
 }

@@ -4,65 +4,95 @@
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
-    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.Operations;
+    using global::DataStore.Interfaces.Options;
 
     /// <summary>
-    ///     Facade over querying and unit of work capabilities
-    ///     Derived non-generic shorthand when a single or primary store exists
+    ///     Limits writes to a single aggregate type
     /// </summary>
-    public class DataStoreWriteOnly<T> : IDataStoreWriteOnlyScoped<T> where T : class, IAggregate, new()
+    public class DataStoreWriteOnly<T> where T : class, IAggregate, new()
     {
-        private readonly IDataStore dataStore;
+        private readonly DataStore dataStore;
 
-        public DataStoreWriteOnly(IDataStore dataStore)
+        public DataStoreWriteOnly(DataStore dataStore)
         {
             this.dataStore = dataStore;
         }
 
-        public Task CommitChanges()
-        {
-            return this.dataStore.CommitChanges();
-        }
+        public IReadOnlyList<IDataStoreOperation> ExecutedOperations => this.dataStore.ExecutedOperations;
 
-        public Task<T> Create(T model, bool readOnly = false, string methodName = null)
-        {
-            return this.dataStore.Create(model, readOnly, methodName);
-        }
+        public IReadOnlyList<IQueuedDataStoreWriteOperation> QueuedOperations => this.dataStore.QueuedOperations;
 
-        public Task<T> DeleteHardById(Guid id, string methodName = null)
-        {
-            return this.dataStore.DeleteHardById<T>(id, methodName);
-        }
+        public Task CommitChanges() => this.dataStore.CommitChanges();
 
-        public Task<IEnumerable<T>> DeleteHardWhere(Expression<Func<T, bool>> predicate, string methodName = null)
-        {
-            return this.dataStore.DeleteHardWhere(predicate, methodName);
-        }
+        public Task<T1> Create<T1, O>(T1 model, Action<O> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() where O : CreateOptionsClientSide, new() =>
+            this.dataStore.Create(model, setOptions, methodName);
 
-        public Task<T> DeleteSoftById(Guid id, string methodName = null)
-        {
-            return this.dataStore.DeleteSoftById<T>(id, methodName);
-        }
+        public Task<T1> Create<T1>(T1 model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() =>
+            this.dataStore.Create(model, setOptions, methodName);
 
-        public Task<IEnumerable<T>> DeleteSoftWhere(Expression<Func<T, bool>> predicate, string methodName = null)
-        {
-            return this.dataStore.DeleteSoftWhere(predicate, methodName);
-        }
+        public Task<T1> Delete<T1, O>(T1 instance, Action<O> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() where O : DeleteOptionsClientSide, new() =>
+            this.dataStore.Delete(instance, setOptions, methodName);
 
-        public Task<T> Update(T src, bool overwriteReadOnly = true, string methodName = null)
-        {
-            return this.dataStore.Update(src, overwriteReadOnly, methodName);
-        }
+        public Task<T1> Delete<T1>(T1 instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() =>
+            this.dataStore.Delete(instance, setOptions, methodName);
 
-        public Task<T> UpdateById(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null)
-        {
-            return this.dataStore.UpdateById(id, action, overwriteReadOnly, methodName);
-        }
+        public Task<T1> DeleteById<T1, O>(Guid id, Action<O> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() where O : DeleteOptionsClientSide, new() =>
+            this.dataStore.DeleteById<T1, O>(id, setOptions, methodName);
 
-        public Task<IEnumerable<T>> UpdateWhere(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
-        {
-            return this.dataStore.UpdateWhere(predicate, action, overwriteReadOnly, methodName);
-        }
+        public Task<T1> DeleteById<T1>(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() =>
+            this.dataStore.DeleteById<T1>(id, setOptions, methodName);
+
+        public Task<IEnumerable<T1>> DeleteWhere<T1, O>(
+            Expression<Func<T1, bool>> predicate,
+            Action<O> setOptions = null,
+            string methodName = null) where T1 : class, IAggregate, new() where O : DeleteOptionsClientSide, new() =>
+            this.dataStore.DeleteWhere(predicate, setOptions, methodName);
+
+        public Task<IEnumerable<T1>> DeleteWhere<T1>(
+            Expression<Func<T1, bool>> predicate,
+            Action<DeleteOptionsClientSide> setOptions = null,
+            string methodName = null) where T1 : class, IAggregate, new() =>
+            this.dataStore.DeleteWhere(predicate, setOptions, methodName);
+
+        public Task<T1> Update<T1, O>(T1 src, Action<O> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() where O : UpdateOptionsClientSide, new() =>
+            this.dataStore.Update(src, setOptions, methodName);
+
+        public Task<T1> Update<T1>(T1 src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() =>
+            this.dataStore.Update(src, setOptions, methodName);
+
+        public Task<T1> UpdateById<T1, O>(Guid id, Action<T1> action, Action<O> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new() where O : UpdateOptionsClientSide, new() =>
+            this.dataStore.UpdateById(id, action, setOptions, methodName);
+
+        public Task<T1> UpdateById<T1>(
+            Guid id,
+            Action<T1> action,
+            Action<UpdateOptionsClientSide> setOptions = null,
+            string methodName = null) where T1 : class, IAggregate, new() =>
+            this.dataStore.UpdateById(id, action, setOptions, methodName);
+
+        public Task<IEnumerable<T1>> UpdateWhere<T1, O>(
+            Expression<Func<T1, bool>> predicate,
+            Action<T1> action,
+            Action<O> setOptions = null,
+            string methodName = null) where T1 : class, IAggregate, new() where O : UpdateOptionsClientSide, new() =>
+            this.dataStore.UpdateWhere(predicate, action, setOptions, methodName);
+
+        public Task<IEnumerable<T1>> UpdateWhere<T1>(
+            Expression<Func<T1, bool>> predicate,
+            Action<T1> action,
+            Action<UpdateOptionsClientSide> setOptions = null,
+            string methodName = null) where T1 : class, IAggregate, new() =>
+            this.dataStore.UpdateWhere(predicate, action, setOptions, methodName);
     }
 }

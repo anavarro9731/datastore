@@ -14,6 +14,8 @@
     {
         private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
 
+        public static ITestHarness Create(DataStoreOptions dataStoreOptions = null) => new InMemoryTestHarness(dataStoreOptions);
+
         private InMemoryTestHarness(DataStoreOptions dataStoreOptions)
         {
             DocumentRepository = new InMemoryDocumentRepository();
@@ -23,11 +25,6 @@
         public IDataStore DataStore { get; }
 
         private InMemoryDocumentRepository DocumentRepository { get; }
-
-        public static ITestHarness Create(DataStoreOptions dataStoreOptions = null)
-        {
-            return new InMemoryTestHarness(dataStoreOptions);
-        }
 
         public void AddItemDirectlyToUnderlyingDb<T>(T aggregate) where T : class, IAggregate, new()
         {
@@ -42,7 +39,8 @@
             aggregate.Etag = clone.Etag; //fake etag update externally
         }
 
-        public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
+        public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+            where T : class, IAggregate, new()
         {
             var queryResult = extendQueryable == null
                                   ? DocumentRepository.Aggregates.OfType<T>()

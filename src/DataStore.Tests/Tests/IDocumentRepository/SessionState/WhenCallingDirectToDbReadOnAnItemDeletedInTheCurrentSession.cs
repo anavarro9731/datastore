@@ -15,7 +15,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnThatItem()
+        {
+            await Setup();
+            Assert.NotNull(
+                this.testHarness.DataStore.ExecutedOperations.Where(
+                    e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
+            Assert.NotNull(this.carFromDatabase);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingDirectToDbReadOnAnItemDeletedInTheCurrentSession));
@@ -23,25 +33,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             var carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = carId,
-                Active = false,
-                Make = "Volvo"
+                id = carId, Active = false, Make = "Volvo"
             };
 
             this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
-            await this.testHarness.DataStore.DeleteHardById<Car>(carId);
+            await this.testHarness.DataStore.DeleteById<Car>(carId);
 
             // When
             this.carFromDatabase = (await this.testHarness.DataStore.WithoutEventReplay.Read<Car>(car => car.id == carId)).Single();
-        }
-
-        [Fact]
-        public async void ItShouldReturnThatItem()
-        {
-            await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.Where(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
-            Assert.NotNull(this.carFromDatabase);
         }
     }
 }

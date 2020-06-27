@@ -1,11 +1,9 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
-    using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models;
@@ -14,37 +12,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
     public class WhenCallingDeleteHard
     {
-        private  Guid carId;
+        private Guid carId;
 
-        private  Car result;
+        private Car result;
 
-        private  ITestHarness testHarness;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHard), DataStoreOptions.Create());
-
-            this.carId = Guid.NewGuid();
-            var car = await this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = this.carId,
-                    Make = "Volvo"
-                });
-
-            await this.testHarness.DataStore.CommitChanges();
-
-            //When
-            this.result = await this.testHarness.DataStore.DeleteHard(car);
-            await this.testHarness.DataStore.CommitChanges();
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldPersistChangesToTheDatabase()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is HardDeleteOperation<Car> && e.MethodCalled == nameof(DataStore.DeleteHard)));
+            Assert.NotNull(
+                this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(
+                    e => e is HardDeleteOperation<Car> && e.MethodCalled == nameof(DataStore.Delete)));
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
             Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
             Assert.Empty(await this.testHarness.DataStore.Read<Car>());
@@ -64,7 +44,23 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.Equal("item was deleted", this.result.Etag);
         }
 
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHard), DataStoreOptions.Create());
 
+            this.carId = Guid.NewGuid();
+            var car = await this.testHarness.DataStore.Create(
+                          new Car
+                          {
+                              id = this.carId, Make = "Volvo"
+                          });
 
+            await this.testHarness.DataStore.CommitChanges();
+
+            //When
+            this.result = await this.testHarness.DataStore.Delete(car, o => o.Permanently());
+            await this.testHarness.DataStore.CommitChanges();
+        }
     }
 }

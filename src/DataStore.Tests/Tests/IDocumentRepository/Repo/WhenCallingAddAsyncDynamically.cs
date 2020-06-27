@@ -6,6 +6,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
@@ -45,14 +46,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
             this.newCarId = Guid.NewGuid();
             var newCar = new Car
             {
-                id = this.newCarId,
-                Make = "Volvo"
+                id = this.newCarId, Make = "Volvo"
             };
 
             //When
             await this.testHarness.DataStore.DocumentRepository.CreateAsync(newCar, "Test");
 
-            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.newCarId)).Single().VersionHistory;
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.newCarId))
+                                      .Single().VersionHistory;
         }
     }
 }

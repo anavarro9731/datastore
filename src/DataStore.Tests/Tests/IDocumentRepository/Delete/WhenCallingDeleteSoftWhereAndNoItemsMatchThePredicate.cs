@@ -11,21 +11,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     {
         private IEnumerable<Car> result;
 
-        async Task Setup()
-        {
-            // Given
-            var testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhereAndNoItemsMatchThePredicate));
-
-            //When
-            this.result = await testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == Guid.NewGuid());
-            await testHarness.DataStore.CommitChanges();
-        }
-
         [Fact]
         public async void ItShouldReturnAnEmptyList()
         {
             await Setup();
             Assert.Empty(this.result);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            var testHarness = TestHarness.Create(nameof(WhenCallingDeleteSoftWhereAndNoItemsMatchThePredicate));
+
+            //When
+            this.result = await testHarness.DataStore.DeleteWhere<Car>(car => car.id == Guid.NewGuid());
+            await testHarness.DataStore.CommitChanges();
         }
     }
 }

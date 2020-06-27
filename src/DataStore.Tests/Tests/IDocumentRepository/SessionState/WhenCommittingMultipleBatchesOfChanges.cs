@@ -13,13 +13,23 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
     public class WhenCommittingMultipleBatchesOfChanges
     {
-        private Guid carId = Guid.NewGuid();
+        private readonly Guid carId = Guid.NewGuid();
 
         private ITestHarness testHarness;
-            
+
         private List<Aggregate.AggregateVersionInfo> versionHistory;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldIncrementTheVersionHistoryBatchIds()
+        {
+            await Setup();
+            Assert.Equal(1, this.versionHistory.Last().CommitBatch);
+            Assert.Equal(2, this.versionHistory.Skip(1).First().CommitBatch);
+            Assert.Equal(3, this.versionHistory.First().CommitBatch);
+            Assert.Equal(3, this.versionHistory.Count);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCommittingMultipleBatchesOfChanges));
@@ -36,7 +46,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             await this.testHarness.DataStore.CommitChanges();
 
             result.Make = "Ford";
-            var result2  = await this.testHarness.DataStore.Update(result);
+            var result2 = await this.testHarness.DataStore.Update(result);
             await this.testHarness.DataStore.CommitChanges();
 
             result2.Make = "Alfa Romeo";
@@ -44,18 +54,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             await this.testHarness.DataStore.CommitChanges();
 
             //When
-            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => 
-                cars.Where(c => c.id == this.carId)).Single().VersionHistory;
-        }
-
-        [Fact]
-        public async void ItShouldIncrementTheVersionHistoryBatchIds()
-        {
-            await Setup();
-            Assert.Equal(1, this.versionHistory.Last().CommitBatch);
-            Assert.Equal(2, this.versionHistory.Skip(1).First().CommitBatch);
-            Assert.Equal(3, this.versionHistory.First().CommitBatch);
-            Assert.Equal(3, this.versionHistory.Count);
+            this.versionHistory = this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(c => c.id == this.carId)).Single()
+                                      .VersionHistory;
         }
     }
 }

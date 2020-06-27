@@ -22,10 +22,7 @@
             return a.Equals(b);
         }
 
-        public static bool operator !=(DatabasePermission a, DatabasePermission b)
-        {
-            return !(a == b);
-        }
+        public static bool operator !=(DatabasePermission a, DatabasePermission b) => !(a == b);
 
         public DatabasePermission(Guid id, string permissionName)
         {
@@ -33,21 +30,9 @@
             PermissionName = permissionName;
         }
 
-        public DatabasePermission(int displayOrder, Guid id, string permissionName, Guid permissionRequiredToAdministerThisPermission)
-        {
-            DisplayOrder = displayOrder;
-            Id = id;
-            PermissionName = permissionName;
-            PermissionRequiredToAdministerThisPermission = permissionRequiredToAdministerThisPermission;
-        }
-
-        public int DisplayOrder { get; set; }
-
         public Guid Id { get; set; }
 
         public string PermissionName { get; set; }
-
-        public Guid PermissionRequiredToAdministerThisPermission { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -57,14 +42,8 @@
             return Equals((DatabasePermission)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        protected bool Equals(DatabasePermission other)
-        {
-            return Id.Equals(other.Id);
-        }
+        protected bool Equals(DatabasePermission other) => Id.Equals(other.Id);
     }
 }

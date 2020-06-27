@@ -10,26 +10,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithTheReadOnlyFlagSetToTrue
     {
-        private  Guid newCarId;
+        private Guid newCarId;
 
-        private  ITestHarness testHarness;
-
-        private async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
-
-            this.newCarId = Guid.NewGuid();
-            var newCar = new Car
-            {
-                id = this.newCarId,
-                Make = "Volvo"
-            };
-
-            //When
-            await this.testHarness.DataStore.Create(newCar, true);
-            await this.testHarness.DataStore.CommitChanges();
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldPersistChangesToTheDatabase()
@@ -43,6 +26,22 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         {
             await Setup();
             Assert.True((await this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId)).ReadOnly);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithTheReadOnlyFlagSetToTrue));
+
+            this.newCarId = Guid.NewGuid();
+            var newCar = new Car
+            {
+                id = this.newCarId, Make = "Volvo"
+            };
+
+            //When
+            await this.testHarness.DataStore.Create(newCar, o => o.CreateReadonly());
+            await this.testHarness.DataStore.CommitChanges();
         }
     }
 }

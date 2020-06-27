@@ -13,11 +13,30 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     {
         private Guid carId;
 
-        private ITestHarness testHarness;
-
         private Car result;
 
-        async Task Setup()
+        private ITestHarness testHarness;
+
+        [Fact]
+        public async void ItShouldOnlyMakeTheChangesInSession()
+        {
+            await Setup();
+            Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+            Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+            Assert.Equal(
+                "Volvo",
+                this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
+        }
+
+        [Fact]
+        public async void ItShouldSetTheEtagsCorrectly()
+        {
+            await Setup();
+            Assert.Equal("waiting to be committed", this.result.Etag);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateByIdWithoutCommitting));
@@ -26,30 +45,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
-                    id = this.carId,
-                    Make = "Volvo"
+                    id = this.carId, Make = "Volvo"
                 });
 
             //When
             this.result = await this.testHarness.DataStore.UpdateById<Car>(this.carId, car => car.Make = "Ford");
-        }
-
-        [Fact]
-        public async void ItShouldOnlyMakeTheChangesInSession()
-        {
-            await Setup();
-            Assert.Null(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
-            Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-            Assert.Equal("Volvo", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
-            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
-        }
-
-
-        [Fact]
-        public async void ItShouldSetTheEtagsCorrectly()
-        {
-            await Setup();
-            Assert.Equal("waiting to be committed", this.result.Etag);
         }
     }
 }

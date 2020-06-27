@@ -8,6 +8,8 @@
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options;
     using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
@@ -53,15 +55,16 @@
             return count;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IAggregate, new()
+        public IQueryable<T> CreateDocumentQuery<T>(object queryOptions = null) where T : class, IAggregate, new()
         {
             var schema = typeof(T).FullName;
             var query = this.client.CreateDocumentQuery<T>(
                 this.collectionUri,
                 new FeedOptions
                 {
-                    RequestContinuation = (queryOptions as IContinueAndTake<T>)?.CurrentContinuationToken?.ToString(),
-                    MaxItemCount = (queryOptions as IContinueAndTake<T>)?.MaxTake,
+                    RequestContinuation =
+                        (queryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
+                    MaxItemCount = (queryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
                     ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
                     EnableCrossPartitionQuery = true,
                     PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
@@ -90,11 +93,12 @@
             this.client?.Dispose();
         }
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
+            where T : class, IAggregate, new()
         {
             var results = new List<T>();
             {
-                if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
+                if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> orderByOptions)
                 {
                     aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
                     if (orderByOptions.OrderByParameters.Count > 1)
@@ -107,7 +111,7 @@
 
                 while (HaveLessRecordsThanUserRequested() && documentQuery.HasMoreResults)
                 {
-                    FeedResponse<Document> feedResponseEnumerable = await documentQuery.ExecuteNextAsync<Document>().ConfigureAwait(false);
+                    var feedResponseEnumerable = await documentQuery.ExecuteNextAsync<Document>().ConfigureAwait(false);
 
                     aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
 
@@ -116,8 +120,9 @@
                         throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
                     }
 
-                    IEnumerable<T> typedResponses = feedResponseEnumerable.Select(feedItem =>
-                        {
+                    var typedResponses = feedResponseEnumerable.Select(
+                        feedItem =>
+                            {
                             var asT = ((T)(dynamic)feedItem)
                                 /* set Etag */
                                 .Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
@@ -134,16 +139,17 @@
 
             bool HaveLessRecordsThanUserRequested()
             {
-                var userRequestedLimit = (aggregatesQueried.QueryOptions as IContinueAndTake<T>)?.MaxTake;
+                var userRequestedLimit = (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake;
 
                 return userRequestedLimit == null || results.Count < userRequestedLimit;
             }
 
             void SetContinuationToken(FeedResponse<Document> result)
             {
-                if (aggregatesQueried.QueryOptions is IContinueAndTake<T> continueAndTakeOptions && continueAndTakeOptions.MaxTake != null)
+                if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> continueAndTakeOptions
+                    && continueAndTakeOptions.MaxTake != null)
                 {
-                    continueAndTakeOptions.NextContinuationToken = new ContinuationToken(result.ResponseContinuation);
+                    continueAndTakeOptions.NextContinuationTokenValue = new ContinuationToken(result.ResponseContinuation);
                 }
             }
 
@@ -190,11 +196,11 @@
             if (count == 0) return default;
 
             var result = (await this.client.ReadDocumentAsync<Document>(
-                             CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
-                             new RequestOptions
-                             {
-                                 PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                             }).ConfigureAwait(false)).Document;
+                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
+                              new RequestOptions
+                              {
+                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                              }).ConfigureAwait(false)).Document;
 
             var asT = ((T)(dynamic)result)
                 /* set eTag */
@@ -208,27 +214,34 @@
 
             try
             {
-                PrepareAccessCondition(aggregateUpdated, out AccessCondition condition);
-                aggregateUpdated.Model.Etag = null; //- clear after copying to access condition, no reason to save and its confusing to see it, this is our eTag property, not the underlying documents
+                PrepareAccessCondition(aggregateUpdated, out var condition);
+                aggregateUpdated.Model.Etag =
+                    null; //- clear after copying to access condition, no reason to save and its confusing to see it, this is our eTag property, not the underlying documents
 
                 var result = await this.client.ReplaceDocumentAsync(
                                  CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
                                  aggregateUpdated.Model,
                                  new RequestOptions
                                  {
-                                     AccessCondition = condition,
-                                     PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                                     AccessCondition = condition, PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
                                  }).ConfigureAwait(false);
 
                 aggregateUpdated.Model.Etag =
-                    result.Resource.ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
+                    result.Resource
+                          .ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
 
                 aggregateUpdated.StateOperationCost = result.RequestCharge;
             }
             catch (DocumentClientException e)
             {
-                if (e.Error.Code == "PreconditionFailed") throw new DBConcurrencyException($"Etag {preSaveTag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated", e);
-                else throw;
+                if (e.Error.Code == "PreconditionFailed")
+                {
+                    throw new DBConcurrencyException(
+                        $"Etag {preSaveTag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated",
+                        e);
+                }
+
+                throw;
             }
 
             void PrepareAccessCondition(IDataStoreWriteOperation<T> dataStoreWriteOperation, out AccessCondition accessCondition)
@@ -238,8 +251,7 @@
                 {
                     accessCondition = new AccessCondition
                     {
-                        Condition = eTag,
-                        Type = AccessConditionType.IfMatch
+                        Condition = eTag, Type = AccessConditionType.IfMatch
                     };
                 }
                 else

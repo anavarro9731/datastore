@@ -11,38 +11,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
     public class WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession
     {
+        private Guid fordId;
+
         private Car newCarFromSession;
 
         private ITestHarness testHarness;
-
-        private Guid fordId;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
-
-            var volvoId = Guid.NewGuid();
-            
-            await this.testHarness.DataStore.Create(new Car
-                {
-                    id = volvoId,
-                    Active = true,
-                    Make = "Volvo"
-                });
-
-            this.fordId = Guid.NewGuid();
-
-            await this.testHarness.DataStore.Create(
-                new Car
-                {
-                    id = this.fordId,
-                    Active = true,
-                    Make = "Ford"
-                });
-
-            this.newCarFromSession = await this.testHarness.DataStore.ReadActiveById<Car>(this.fordId);
-        }
 
         [Fact]
         public async void ItShouldNotHaveAddedAnythingToTheDatabaseYet()
@@ -59,6 +32,30 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));
             Assert.NotNull(this.newCarFromSession);
             Assert.Equal(this.fordId, this.newCarFromSession.id);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnItemAddedInTheCurrentSession));
+
+            var volvoId = Guid.NewGuid();
+
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = volvoId, Active = true, Make = "Volvo"
+                });
+
+            this.fordId = Guid.NewGuid();
+
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = this.fordId, Active = true, Make = "Ford"
+                });
+
+            this.newCarFromSession = await this.testHarness.DataStore.ReadActiveById<Car>(this.fordId);
         }
     }
 }

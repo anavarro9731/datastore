@@ -11,24 +11,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithoutCommitting
     {
-        private  Car result;
+        private Car result;
 
-        private  ITestHarness testHarness;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithoutCommitting));
-
-            var newCar = new Car
-            {
-                id = Guid.NewGuid(),
-                Make = "Volvo"
-            };
-
-            //When
-            this.result = await this.testHarness.DataStore.Create(newCar);
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldNotWriteToTheDatabase()
@@ -40,18 +25,32 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         }
 
         [Fact]
+        public async void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
+        {
+            await Setup();
+            Assert.Single(await this.testHarness.DataStore.ReadActive<Car>());
+            Assert.True(this.result.Active);
+        }
+
+        [Fact]
         public async void ItShouldSetTheEtagsCorrectly()
         {
             await Setup();
             Assert.Equal("waiting to be committed", this.result.Etag);
         }
 
-        [Fact]
-        public async void ItShouldReflectTheChangeInFutureQueriesFromTheSameSession()
+        private async Task Setup()
         {
-            await Setup();
-            Assert.Single(await this.testHarness.DataStore.ReadActive<Car>());
-            Assert.True(this.result.Active);
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCreateWithoutCommitting));
+
+            var newCar = new Car
+            {
+                id = Guid.NewGuid(), Make = "Volvo"
+            };
+
+            //When
+            this.result = await this.testHarness.DataStore.Create(newCar);
         }
     }
 }

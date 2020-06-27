@@ -8,20 +8,19 @@
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.Options;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
 
     //methods return the latest version of an object including uncommitted session changes
 
-    public class DataStoreQueryCapabilities : IDataStoreQueryCapabilities
+    public class DataStoreQueryCapabilities
     {
         private readonly EventReplay eventReplay;
 
         private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreQueryCapabilities(
-            IDocumentRepository dataStoreConnection,
-            IMessageAggregator messageAggregator)
+        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
         {
             this.messageAggregator = messageAggregator;
             this.eventReplay = new EventReplay(messageAggregator);
@@ -31,7 +30,8 @@
         private IDocumentRepository DbConnection { get; }
 
         // get a filtered list of the models from set of DataObjects
-        public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsLibrarySide, new()
         {
             var queryable = DbConnection.CreateDocumentQuery<T>();
 
@@ -46,44 +46,16 @@
                 predicate = a => true;
             }
 
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable)).To(DbConnection.ExecuteQuery).ConfigureAwait(false);
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable))
+                                    .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
             return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
         }
 
-        public Task<IEnumerable<T>> Read<T>(string methodName = null) where T : class, IAggregate, new()
-        {
-            return Read<T>(null, methodName);
-        }
-
-        public async Task<T> ReadById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
-        {
-            if (modelId == Guid.Empty) return null;
-
-            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, modelId))
-                                   .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
-
-            bool Predicate(T a)
-            {
-                return a.id == modelId;
-            }
-
-            if (result == null)
-            {
-                var replayResult = this.eventReplay.ApplyAggregateEvents(new List<T>(), Predicate).SingleOrDefault();
-                return replayResult;
-            }
-
-            return this.eventReplay.ApplyAggregateEvents(
-                new List<T>
-                {
-                    result
-                },
-                Predicate).SingleOrDefault();
-        }
-
         // get a filtered list of the models from a set of active DataObjects
-        public async Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsLibrarySide, new()
+
         {
             predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
@@ -95,23 +67,17 @@
             return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>(string methodName = null) where T : class, IAggregate, new()
-        {
-            return ReadActive<T>(null, methodName);
-        }
-
         // get a filtered list of the models from  a set of DataObjects
-        public async Task<T> ReadActiveById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
+        public async Task<T> ReadActiveById<T, O>(Guid modelId, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsLibrarySide, new()
+
         {
             if (modelId == Guid.Empty) return null;
 
             var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, modelId))
                                    .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
 
-            bool Predicate(T a)
-            {
-                return a.Active && a.id == modelId;
-            }
+            bool Predicate(T a) => a.Active && a.id == modelId;
 
             if (result == null || !result.Active)
             {
@@ -127,5 +93,28 @@
                 Predicate).SingleOrDefault();
         }
 
+        public async Task<T> ReadById<T, O>(Guid modelId, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsLibrarySide, new()
+        {
+            if (modelId == Guid.Empty) return null;
+
+            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, modelId))
+                                   .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
+
+            bool Predicate(T a) => a.id == modelId;
+
+            if (result == null)
+            {
+                var replayResult = this.eventReplay.ApplyAggregateEvents(new List<T>(), Predicate).SingleOrDefault();
+                return replayResult;
+            }
+
+            return this.eventReplay.ApplyAggregateEvents(
+                new List<T>
+                {
+                    result
+                },
+                Predicate).SingleOrDefault();
+        }
     }
 }

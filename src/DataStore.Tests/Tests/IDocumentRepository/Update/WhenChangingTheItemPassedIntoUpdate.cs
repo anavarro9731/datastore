@@ -10,11 +10,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenChangingTheItemPassedIntoUpdate
     {
-        private  Guid carId;
+        private Guid carId;
 
-        private  ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
+        {
+            await Setup();
+            Assert.Equal(
+                "Ford",
+                this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemPassedIntoUpdate));
@@ -22,8 +32,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = this.carId,
-                Make = "Volvo"
+                id = this.carId, Make = "Volvo"
             };
             this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
@@ -38,14 +47,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             //When
             await this.testHarness.DataStore.CommitChanges();
-        }
-
-        [Fact]
-        public async void ItShouldNotAffectTheUpdateWhenCommittedBecauseItIsCloned()
-        {
-            await Setup();
-            Assert.Equal("Ford", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
-            Assert.Equal("Ford", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
     }
 }

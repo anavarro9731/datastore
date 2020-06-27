@@ -11,13 +11,27 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
     public class WhenCallingReadOnAnItemUpdatedInTheCurrentSession
     {
-        private  Car carFromSession;
+        private Car carFromSession;
 
-        private  Guid carId;
+        private Guid carId;
 
-        private  ITestHarness testHarness;
+        private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
+        {
+            await Setup();
+            Assert.NotNull(
+                this.testHarness.DataStore.ExecutedOperations.Where(
+                    e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
+            Assert.Equal(
+                "Volvo",
+                this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal("Ford", this.carFromSession.Make);
+            Assert.Equal(this.carId, this.carFromSession.id);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadOnAnItemUpdatedInTheCurrentSession));
@@ -25,9 +39,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = this.carId,
-                Active = false,
-                Make = "Volvo"
+                id = this.carId, Active = false, Make = "Volvo"
             };
             this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
@@ -35,16 +47,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
             // When
             this.carFromSession = (await this.testHarness.DataStore.Read<Car>(car => car.Make == "Ford")).Single();
-        }
-
-        [Fact]
-        public async void ItShouldReturnTheItemWithTheUpdatesAppliedWhenThePredicateMatches()
-        {
-            await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.Where(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
-            Assert.Equal("Volvo", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
-            Assert.Equal("Ford", this.carFromSession.Make);
-            Assert.Equal(this.carId, this.carFromSession.id);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace DataStore.Models.Messages
 {
     using System;
-    using DataStore.Interfaces;
+    using DataStore.Interfaces.Operations;
 
     public class AggregateQueriedByIdOperation : IDataStoreReadById
     {

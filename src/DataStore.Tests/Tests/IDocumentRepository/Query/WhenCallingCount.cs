@@ -11,35 +11,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
     public class WhenCallingCount
     {
-        private  int countOfCars;
+        private int countOfCars;
 
         private ITestHarness testHarness;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCount));
-
-            var activeCarId = Guid.NewGuid();
-            var activeExistingCar = new Car
-            {
-                id = activeCarId,
-                Make = "Volvo"
-            };
-
-            var inactiveCarId = Guid.NewGuid();
-            var inactiveExistingCar = new Car
-            {
-                id = inactiveCarId,
-                Active = false,
-                Make = "Volvo"
-            };
-            this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
-            this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
-
-            // When
-            this.countOfCars = await this.testHarness.DataStore.WithoutEventReplay.Count<Car>(car => car.Make == "Volvo");
-        }
 
         [Fact]
         public async void ItShouldReturnACountOf2()
@@ -47,6 +21,29 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateCountedOperation<Car>));
             Assert.Equal(2, this.countOfCars);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCount));
+
+            var activeCarId = Guid.NewGuid();
+            var activeExistingCar = new Car
+            {
+                id = activeCarId, Make = "Volvo"
+            };
+
+            var inactiveCarId = Guid.NewGuid();
+            var inactiveExistingCar = new Car
+            {
+                id = inactiveCarId, Active = false, Make = "Volvo"
+            };
+            this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
+            this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
+
+            // When
+            this.countOfCars = await this.testHarness.DataStore.WithoutEventReplay.Count<Car>(car => car.Make == "Volvo");
         }
     }
 }

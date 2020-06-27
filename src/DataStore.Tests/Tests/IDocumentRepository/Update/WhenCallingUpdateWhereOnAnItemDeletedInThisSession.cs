@@ -10,31 +10,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingUpdateWhereOnAnItemDeletedInThisSession
+    public class WhenCallingUpdateWhereOnAnItemHardDeletedInThisSession
     {
-        private  Guid carId;
+        private Guid carId;
 
-        private  IEnumerable<Car> results;
+        private IEnumerable<Car> results;
 
-        private  ITestHarness testHarness;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWhereOnAnItemDeletedInThisSession));
-
-            this.carId = Guid.NewGuid();
-            this.testHarness.AddItemDirectlyToUnderlyingDb(
-                new Car
-                {
-                    id = this.carId,
-                    Make = "Volvo"
-                });
-            await this.testHarness.DataStore.DeleteHardById<Car>(this.carId);
-
-            //When
-            this.results = await this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford");
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldConsiderThePreviousDeleteInAnyFutureQueriesInSession()
@@ -45,7 +27,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             //nothing should have been updated because it was already deleted.
             Assert.Empty(this.results);
-            Assert.Equal("Volvo", this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+            Assert.Equal(
+                "Volvo",
+                this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
         }
 
         [Fact]
@@ -53,6 +37,23 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedHardDeleteOperation<Car>));
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateWhereOnAnItemHardDeletedInThisSession));
+
+            this.carId = Guid.NewGuid();
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
+                new Car
+                {
+                    id = this.carId, Make = "Volvo"
+                });
+            await this.testHarness.DataStore.DeleteById<Car>(this.carId, o => o.Permanently());
+
+            //When
+            this.results = await this.testHarness.DataStore.UpdateWhere<Car>(car => car.id == this.carId, car => car.Make = "Ford");
         }
     }
 }

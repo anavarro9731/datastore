@@ -5,20 +5,20 @@
 
     public class CompanyDivision : Aggregate
     {
-        [ScopeObjectReference(typeof(Company))]
-        public Guid CompanyId { get; set; }
-
-        public string Name { get; set; }
-
         public CompanyDivision(string name, Guid myId, Guid companyId)
         {
-            this.Name = name;
-            this.CompanyId = companyId;
+            Name = name;
+            CompanyId = companyId;
             id = myId;
         }
 
         public CompanyDivision()
         {
         }
+
+        [ScopeObjectReference(typeof(Company))]
+        public Guid CompanyId { get; set; }
+
+        public string Name { get; set; }
     }
 }

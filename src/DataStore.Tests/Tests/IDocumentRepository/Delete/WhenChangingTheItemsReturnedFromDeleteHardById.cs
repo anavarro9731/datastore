@@ -12,7 +12,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     {
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
+        {
+            await Setup();
+            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
+            Assert.Empty(await this.testHarness.DataStore.Read<Car>());
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteHardById));
@@ -21,23 +29,14 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
-                    id = carId,
-                    Make = "Volvo"
+                    id = carId, Make = "Volvo"
                 });
 
-            var result = await this.testHarness.DataStore.DeleteHardById<Car>(carId);
+            var result = await this.testHarness.DataStore.DeleteById<Car>(carId, o => o.Permanently());
 
             //When
             result.id = Guid.NewGuid(); //change in memory before commit
             await this.testHarness.DataStore.CommitChanges();
-        }
-
-        [Fact]
-        public async void ItShouldNotAffectTheDeleteWhenCommittedBecauseItIsCloned()
-        {
-            await Setup();
-            Assert.Empty(this.testHarness.QueryUnderlyingDbDirectly<Car>());
-            Assert.Empty(await this.testHarness.DataStore.Read<Car>());
         }
     }
 }

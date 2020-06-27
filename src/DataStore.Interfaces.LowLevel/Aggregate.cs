@@ -19,21 +19,6 @@
     /// </summary>
     public abstract class Aggregate : Entity, IAggregate
     {
-        public List<AggregateVersionInfo> VersionHistory { get; set; } = new List<AggregateVersionInfo>();
-
-        public class AggregateVersionInfo
-        {
-            public string UnitOfWorkId { get; set; }
-
-            public int CommitBatch { get; set; }
-
-            public Guid? AggegateHistoryItemId { get; set; }
-
-            public DateTime Timestamp { get; set; }
-
-            public int ChangeCount { get; set; }
-        }
-
         public const string PartitionKeyValue = "shared";
 
         protected Aggregate()
@@ -60,7 +45,8 @@
         {
             get
             {
-                var propertiesWithScope = GetType().GetProperties().Where(p => p.GetCustomAttribute<ScopeObjectReferenceAttribute>() != null);
+                var propertiesWithScope =
+                    GetType().GetProperties().Where(p => p.GetCustomAttribute<ScopeObjectReferenceAttribute>() != null);
 
                 var scopeReferences = new List<DatabaseScopeReference>();
                 foreach (var propertyInfo in propertiesWithScope)
@@ -74,6 +60,21 @@
 
                 return scopeReferences;
             }
+        }
+
+        public List<AggregateVersionInfo> VersionHistory { get; set; } = new List<AggregateVersionInfo>();
+
+        public class AggregateVersionInfo
+        {
+            public Guid? AggegateHistoryItemId { get; set; }
+
+            public int ChangeCount { get; set; }
+
+            public int CommitBatch { get; set; }
+
+            public DateTime Timestamp { get; set; }
+
+            public string UnitOfWorkId { get; set; }
         }
     }
 }

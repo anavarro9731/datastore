@@ -14,28 +14,46 @@
         /// <summary>
         ///     Combines the first predicate with the second using the logical "and".
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
-        {
-            return first.Compose(second, Expression.AndAlso);
-        }
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1611:ElementParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second) =>
+            first.Compose(second, Expression.AndAlso);
 
         /// <summary>
         ///     Combines the first expression with the second using the specified merge function.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        public static Expression<T> Compose<T>(this Expression<T> first, Expression<T> second, Func<Expression, Expression, Expression> merge)
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1611:ElementParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        public static Expression<T> Compose<T>(
+            this Expression<T> first,
+            Expression<T> second,
+            Func<Expression, Expression, Expression> merge)
         {
             // zip parameters (map from parameters of second to parameters of first)
             var map = first.Parameters.Select(
                 (f, i) => new
                 {
-                    f,
-                    s = second.Parameters[i]
+                    f, s = second.Parameters[i]
                 }).ToDictionary(p => p.s, p => p.f);
 
             // replace parameters in the second lambda expression with the parameters in the first
@@ -48,19 +66,31 @@
         /// <summary>
         ///     Creates a predicate expression from the specified lambda expression.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        public static Expression<Func<T, bool>> Create<T>(Expression<Func<T, bool>> predicate)
-        {
-            return predicate;
-        }
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1611:ElementParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        public static Expression<Func<T, bool>> Create<T>(Expression<Func<T, bool>> predicate) => predicate;
 
         /// <summary>
         ///     Creates a predicate that evaluates to false.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
         public static Expression<Func<T, bool>> False<T>()
         {
             return param => false;
@@ -69,9 +99,18 @@
         /// <summary>
         ///     Negates the predicate.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1611:ElementParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
         public static Expression<Func<T, bool>> Not<T>(this Expression<Func<T, bool>> expression)
         {
             var negated = Expression.Not(expression.Body);
@@ -81,13 +120,20 @@
         /// <summary>
         ///     Combines the first predicate with the second using the logical "or".
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
-        {
-            return first.Compose(second, Expression.OrElse);
-        }
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1611:ElementParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second) =>
+            first.Compose(second, Expression.OrElse);
 
         public static string PredicateToString(Expression expression)
         {
@@ -100,8 +146,14 @@
         /// <summary>
         ///     Creates a predicate that evaluates to true.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1615:ElementReturnValueMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1618:GenericTypeParametersMustBeDocumented", Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1615:ElementReturnValueMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1618:GenericTypeParametersMustBeDocumented",
+            Justification = "Reviewed. Suppression is OK here.")]
         public static Expression<Func<T, bool>> True<T>()
         {
             return param => true;
@@ -111,14 +163,12 @@
         {
             private readonly Dictionary<ParameterExpression, ParameterExpression> map;
 
+            public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map, Expression exp) =>
+                new ParameterRebinder(map).Visit(exp);
+
             public ParameterRebinder(Dictionary<ParameterExpression, ParameterExpression> map)
             {
                 this.map = map ?? new Dictionary<ParameterExpression, ParameterExpression>();
-            }
-
-            public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map, Expression exp)
-            {
-                return new ParameterRebinder(map).Visit(exp);
             }
 
             protected override Expression VisitParameter(ParameterExpression p)

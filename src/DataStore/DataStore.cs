@@ -2,18 +2,15 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Runtime.InteropServices;
-    using System.Runtime.InteropServices.ComTypes;
-    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.Operations;
+    using global::DataStore.Interfaces.Options;
     using global::DataStore.MessageAggregator;
-    using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
 
@@ -23,7 +20,22 @@
     /// </summary>
     public class DataStore : IDataStore
     {
-        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, DataStoreOptions dataStoreOptions = null)
+        private static void AppendMethodName(ref string current, string add)
+        {
+            if (string.IsNullOrWhiteSpace(current))
+            {
+                current += add;
+            }
+            else
+            {
+                current += "+" + add;
+            }
+        }
+
+        public DataStore(
+            IDocumentRepository documentRepository,
+            IMessageAggregator eventAggregator = null,
+            DataStoreOptions dataStoreOptions = null)
         {
             {
                 ValidateOptions(dataStoreOptions);
@@ -37,9 +49,19 @@
                     var incrementVersions = new IncrementVersions(this);
 
                     QueryCapabilities = new DataStoreQueryCapabilities(DocumentRepository, MessageAggregator);
-                    UpdateCapabilities = new DataStoreUpdateCapabilities(DocumentRepository, MessageAggregator, DataStoreOptions, incrementVersions);
-                    DeleteCapabilities = new DataStoreDeleteCapabilities(DocumentRepository, UpdateCapabilities, MessageAggregator, incrementVersions);
+                    UpdateCapabilities = new DataStoreUpdateCapabilities(
+                        DocumentRepository,
+                        MessageAggregator,
+                        DataStoreOptions,
+                        incrementVersions);
+                    DeleteCapabilities = new DataStoreDeleteCapabilities(
+                        DocumentRepository,
+                        UpdateCapabilities,
+                        MessageAggregator,
+                        incrementVersions);
                     CreateCapabilities = new DataStoreCreateCapabilities(DocumentRepository, MessageAggregator, incrementVersions);
+
+                    ControlFunctions = new ControlFunctions(this);
                 }
             }
 
@@ -53,7 +75,8 @@
 
         public IDocumentRepository DocumentRepository { get; }
 
-        public IReadOnlyList<IDataStoreOperation> ExecutedOperations => MessageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
+        public IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
+            MessageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
 
         public IMessageAggregator MessageAggregator { get; }
 
@@ -61,15 +84,17 @@
         {
             get
             {
-                var queued = 
-                    MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>()
-                                     .Where(o => o.Committed == false).ToList().AsReadOnly();
+                var queued = MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)
+                                              .ToList().AsReadOnly();
 
                 return queued;
             }
         }
 
-        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DocumentRepository, MessageAggregator);
+        public IWithoutEventReplay WithoutEventReplay =>
+            new WithoutEventReplay(DocumentRepository, MessageAggregator, ControlFunctions, DataStoreOptions);
+
+        private ControlFunctions ControlFunctions { get; }
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -79,15 +104,9 @@
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public IDataStoreQueryCapabilities AsReadOnly()
-        {
-            return QueryCapabilities;
-        }
+        public DataStoreQueryCapabilities AsReadOnly() => QueryCapabilities;
 
-        public IDataStoreWriteOnlyScoped<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new()
-        {
-            return new DataStoreWriteOnly<T>(this);
-        }
+        public DataStoreWriteOnly<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new() => new DataStoreWriteOnly<T>(this);
 
         public async Task CommitChanges()
         {
@@ -95,17 +114,17 @@
                 FilterEvents(out var committableEvents, out var committedEvents);
 
                 await CommitAllEvents(committableEvents);
-
             }
 
             async Task CommitAllEvents(List<IQueuedDataStoreWriteOperation> committableEvents)
             {
-            
                 foreach (var dataStoreWriteEvent in committableEvents)
                     await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
             }
 
-            void FilterEvents(out List<IQueuedDataStoreWriteOperation> committableEvents, out List<IQueuedDataStoreWriteOperation> committedEvents)
+            void FilterEvents(
+                out List<IQueuedDataStoreWriteOperation> committableEvents,
+                out List<IQueuedDataStoreWriteOperation> committedEvents)
             {
                 var dsEvents = MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList();
                 committableEvents = dsEvents.Where(e => !e.Committed).ToList();
@@ -113,173 +132,257 @@
             }
         }
 
-        public async Task<T> Create<T>(T model, bool readOnly = false, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(Create);
+        /* the Operation<T,O> makes it possible to have a db specific impl
+         while Operation<T> allows you to use the built-in globally shared features only */
 
-            var result = await CreateCapabilities.Create(model, readOnly, methodName).ConfigureAwait(false);
+        //* Create
+        public async Task<T> Create<T, O>(T model, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : CreateOptionsClientSide, new()
+        {
+            CreateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(Create));
+
+            var result = await CreateCapabilities.Create(model, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.CREATE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<T> DeleteHard<T>(T instance, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteHard);
+        public Task<T> Create<T>(T model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            Create<T, DefaultCreateOptions>(model, setOptions, methodName);
 
-            var result = await DeleteCapabilities.DeleteHard(instance, methodName).ConfigureAwait(false);
+        //* Delete
+        public async Task<T> Delete<T, O>(T instance, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : DeleteOptionsClientSide, new()
+        {
+            DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(Delete));
+
+            var result = await DeleteCapabilities.Delete(instance, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<T> DeleteHardById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteHardById);
+        public Task<T> Delete<T>(T instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            Delete<T, DefaultDeleteOptions>(instance, setOptions, methodName);
 
-            var result = await DeleteCapabilities.DeleteHardById<T>(id, methodName).ConfigureAwait(false);
+        //* DeleteById
+        public async Task<T> DeleteById<T, O>(Guid id, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : DeleteOptionsClientSide, new()
+        {
+            DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(DeleteById));
+
+            var result = await DeleteCapabilities.DeleteById<T, DeleteOptionsLibrarySide>(id, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> DeleteHardWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteHardWhere);
+        public Task<T> DeleteById<T>(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            DeleteById<T, DefaultDeleteOptions>(id, setOptions, methodName);
 
-            var results = await DeleteCapabilities.DeleteHardWhere(predicate, methodName).ConfigureAwait(false);
+        //* DeleteWhere
+        public async Task<IEnumerable<T>> DeleteWhere<T, O>(
+            Expression<Func<T, bool>> predicate,
+            Action<O> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() where O : DeleteOptionsClientSide, new()
+        {
+            DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(DeleteWhere));
+
+            var results = await DeleteCapabilities.DeleteWhere(predicate, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                results = await ControlFunctions.AuthoriseData(results, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
 
             return results;
         }
 
-        public async Task<T> DeleteSoft<T>(T instance, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoft);
+        public Task<IEnumerable<T>> DeleteWhere<T>(
+            Expression<Func<T, bool>> predicate,
+            Action<DeleteOptionsClientSide> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() =>
+            DeleteWhere<T, DefaultDeleteOptions>(predicate, setOptions, methodName);
 
-            var result = await DeleteCapabilities.DeleteSoft(instance, methodName).ConfigureAwait(false);
+        //* Read
+        public async Task<IEnumerable<T>> Read<T, O>(
+            Expression<Func<T, bool>> predicate = null,
+            Action<O> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+        {
+            ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(Read));
+
+            var result = await QueryCapabilities.Read(predicate, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<T> DeleteSoftById<T>(Guid id, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoftById);
+        public Task<IEnumerable<T>> Read<T>(
+            Expression<Func<T, bool>> predicate = null,
+            Action<ReadOptionsClientSide> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() =>
+            Read<T, DefaultReadOptions>(predicate, setOptions, methodName);
 
-            var result = await DeleteCapabilities.DeleteSoftById<T>(id, methodName).ConfigureAwait(false);
+        //*ReadActive
+        public async Task<IEnumerable<T>> ReadActive<T, O>(
+            Expression<Func<T, bool>> predicate = null,
+            Action<O> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+        {
+            ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(ReadActive));
+
+            var result = await QueryCapabilities.ReadActive(predicate, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> DeleteSoftWhere<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
+        public Task<IEnumerable<T>> ReadActive<T>(
+            Expression<Func<T, bool>> predicate = null,
+            Action<ReadOptionsClientSide> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() =>
+            ReadActive<T, DefaultReadOptions>(predicate, setOptions, methodName);
+
+        //ReadActiveById
+        public async Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
         {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(DeleteSoftWhere);
+            ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
-            var results = await DeleteCapabilities.DeleteSoftWhere(predicate, methodName).ConfigureAwait(false);
+            AppendMethodName(ref methodName, nameof(ReadActiveById));
 
-            return results;
-        }
+            var result = await QueryCapabilities.ReadActiveById<T, ReadOptionsLibrarySide>(modelId, options, methodName)
+                                                .ConfigureAwait(false);
 
-        public async Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(Read);
-
-            var result = await QueryCapabilities.Read(predicate, methodName).ConfigureAwait(false);
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> Read<T>(string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(Read);
+        public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            ReadActiveById<T, DefaultReadOptions>(modelId, setOptions, methodName);
 
-            var result = await QueryCapabilities.Read<T>(methodName).ConfigureAwait(false);
+        //ReadById
+        public async Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+        {
+            ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(ReadById));
+
+            var result = await QueryCapabilities.ReadById<T, ReadOptionsLibrarySide>(modelId, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActive);
+        public Task<T> ReadById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            ReadById<T, DefaultReadOptions>(modelId, setOptions, methodName);
 
-            var result = await QueryCapabilities.ReadActive(predicate, methodName).ConfigureAwait(false);
+        //* Update
+        public async Task<T> Update<T, O>(T src, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : UpdateOptionsClientSide, new()
+        {
+            UpdateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(Update));
+
+            var result = await UpdateCapabilities.Update(src, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<IEnumerable<T>> ReadActive<T>(string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActive);
+        public Task<T> Update<T>(T src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            Update<T, DefaultUpdateOptions>(src, setOptions, methodName);
 
-            var result = await QueryCapabilities.ReadActive<T>(methodName).ConfigureAwait(false);
+        //* UpdateById
+        public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : UpdateOptionsClientSide, new()
+        {
+            UpdateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            AppendMethodName(ref methodName, nameof(UpdateById));
+
+            var result = await UpdateCapabilities.UpdateById(id, action, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<T> ReadActiveById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadActiveById);
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() =>
+            UpdateById<T, DefaultUpdateOptions>(id, action, setOptions, methodName);
 
-            var result = await QueryCapabilities.ReadActiveById<T>(modelId, methodName).ConfigureAwait(false);
-
-            return result;
-        }
-
-        public async Task<T> ReadById<T>(Guid modelId, string methodName = null) where T : class, IAggregate, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(ReadById);
-
-            var result = await QueryCapabilities.ReadById<T>(modelId, methodName).ConfigureAwait(false);
-
-            return result;
-        }
-
-        public async Task<T> Update<T, O>(T src, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null)
-            where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(Update);
-
-            var result = await UpdateCapabilities.Update(src, overwriteReadOnly, methodName).ConfigureAwait(false);
-
-            return result;
-        }
-
-        public Task<T> Update<T>(T src, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
-        {
-            return Update<T, UpdateOptions>(src, options => { }, overwriteReadOnly, methodName);
-        }
-
-        public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, Action<O> setOptions, bool overwriteReadOnly = false, string methodName = null)
-            where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
-        {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(UpdateById);
-
-            var result = await UpdateCapabilities.UpdateById(id, action, overwriteReadOnly, methodName).ConfigureAwait(false);
-
-            return result;
-        }
-
-        public Task<T> UpdateById<T>(Guid id, Action<T> action, bool overwriteReadOnly = true, string methodName = null) where T : class, IAggregate, new()
-        {
-            return UpdateById<T, UpdateOptions>(id, action, options => { }, overwriteReadOnly, methodName);
-        }
-
+        //* UpdateWhere
         public async Task<IEnumerable<T>> UpdateWhere<T, O>(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            Action<O> setOptions,
-            bool overwriteReadOnly = false,
-            string methodName = null) where T : class, IAggregate, new() where O : class, IUpdateOptions, new()
+            Action<O> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() where O : UpdateOptionsClientSide, new()
         {
-            methodName = (methodName == null ? string.Empty : ".") + nameof(UpdateWhere);
+            UpdateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
-            var results = await UpdateCapabilities.UpdateWhere(predicate, action, overwriteReadOnly, methodName).ConfigureAwait(false);
+            AppendMethodName(ref methodName, nameof(UpdateWhere));
+
+            var results = await UpdateCapabilities.UpdateWhere(predicate, action, options, methodName).ConfigureAwait(false);
+
+            var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
+            if (applySecurity)
+                results = await ControlFunctions.AuthoriseData(results, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
 
             return results;
         }
 
-        public Task<IEnumerable<T>> UpdateWhere<T>(Expression<Func<T, bool>> predicate, Action<T> action, bool overwriteReadOnly = false, string methodName = null)
-            where T : class, IAggregate, new()
-        {
-            return UpdateWhere<T, UpdateOptions>(predicate, action, options => { }, overwriteReadOnly, methodName);
-        }
-
-
+        public Task<IEnumerable<T>> UpdateWhere<T>(
+            Expression<Func<T, bool>> predicate,
+            Action<T> action,
+            Action<UpdateOptionsClientSide> setOptions = null,
+            string methodName = null) where T : class, IAggregate, new() =>
+            UpdateWhere<T, DefaultUpdateOptions>(predicate, action, setOptions, methodName);
     }
 }

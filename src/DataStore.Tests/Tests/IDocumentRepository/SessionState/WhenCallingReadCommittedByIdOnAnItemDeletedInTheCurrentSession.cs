@@ -9,11 +9,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
 
     public class WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession
     {
-        private  Car carFromDatabase;
+        private Car carFromDatabase;
 
-        private  Guid carId;
+        private Guid carId;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnTheItem()
+        {
+            await Setup();
+            Assert.Equal("Volvo", this.carFromDatabase.Make);
+            Assert.Equal(this.carId, this.carFromDatabase.id);
+        }
+
+        private async Task Setup()
         {
             // Given
             var testHarness = TestHarness.Create(nameof(WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession));
@@ -21,13 +29,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = this.carId,
-                Active = false,
-                Make = "Volvo"
+                id = this.carId, Active = false, Make = "Volvo"
             };
             testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
-            await testHarness.DataStore.DeleteHardById<Car>(this.carId);
+            await testHarness.DataStore.DeleteById<Car>(this.carId);
 
             // When
             var document = await testHarness.DataStore.WithoutEventReplay.ReadById<Car>(this.carId);
@@ -39,14 +45,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
             {
                 this.carFromDatabase = JsonConvert.DeserializeObject<Car>(JsonConvert.SerializeObject(document));
             }
-        }
-
-        [Fact]
-        public async void ItShouldReturnTheItem()
-        {
-            await Setup();
-            Assert.Equal("Volvo", this.carFromDatabase.Make);
-            Assert.Equal(this.carId, this.carFromDatabase.id);
         }
     }
 }

@@ -12,35 +12,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
     public class WhenCallingUpdateGiven1Of2ItemsExists
     {
-        private  IEnumerable<Car> result;
+        private IEnumerable<Car> result;
 
-        private  ITestHarness testHarness;
-
-        async Task Setup()
-        {
-            // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGiven1Of2ItemsExists));
-
-            var volvoId = Guid.NewGuid();
-            this.testHarness.AddItemDirectlyToUnderlyingDb(
-                new Car
-                {
-                    id = volvoId,
-                    Make = "Volvo"
-                });
-
-            var fordId = Guid.NewGuid();
-            this.testHarness.AddItemDirectlyToUnderlyingDb(
-                new Car
-                {
-                    id = fordId,
-                    Make = "Ford"
-                });
-
-            //When
-            this.result = await this.testHarness.DataStore.UpdateWhere<Car>(c => c.Make == "Volvo", car => car.Year = 2000);
-            await this.testHarness.DataStore.CommitChanges();
-        }
+        private ITestHarness testHarness;
 
         [Fact]
         public async void ItShouldExecuteOnlyOneUpdate()
@@ -54,6 +28,30 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.Single(this.result);
+        }
+
+        private async Task Setup()
+        {
+            // Given
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateGiven1Of2ItemsExists));
+
+            var volvoId = Guid.NewGuid();
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
+                new Car
+                {
+                    id = volvoId, Make = "Volvo"
+                });
+
+            var fordId = Guid.NewGuid();
+            this.testHarness.AddItemDirectlyToUnderlyingDb(
+                new Car
+                {
+                    id = fordId, Make = "Ford"
+                });
+
+            //When
+            this.result = await this.testHarness.DataStore.UpdateWhere<Car>(c => c.Make == "Volvo", car => car.Year = 2000);
+            await this.testHarness.DataStore.CommitChanges();
         }
     }
 }

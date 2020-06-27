@@ -17,10 +17,9 @@
         {
             var cosmosStoreSettings = GetCosmosStoreSettings(testName);
 
-            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings/**/).ConfigureAwait(false);
+            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings /**/).ConfigureAwait(false);
 
             return new CosmosDbTestHarness(dataStore);
-
         }
 
         public static CosmosSettings GetCosmosStoreSettings(string testName)
@@ -58,19 +57,27 @@
 
             //DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
 
-            var newAggregate = new QueuedCreateOperation<T>(nameof(AddItemDirectlyToUnderlyingDb), clone, DataStore.DocumentRepository, DataStore.MessageAggregator, etagUpdated);
+            var newAggregate = new QueuedCreateOperation<T>(
+                nameof(AddItemDirectlyToUnderlyingDb),
+                clone,
+                DataStore.DocumentRepository,
+                DataStore.MessageAggregator,
+                etagUpdated);
 
             Task.Run(async () => await newAggregate.CommitClosure().ConfigureAwait(false)).Wait();
         }
 
-        public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : class, IAggregate, new()
+        public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
+            where T : class, IAggregate, new()
         {
             var query = DataStore.DocumentRepository.CreateDocumentQuery<T>();
             var updatedQuery = extendQueryable?.Invoke(query) ?? query;
 
             var results = Task.Run(
-                async () => await DataStore.DocumentRepository.ExecuteQuery(new AggregatesQueriedOperation<T>(nameof(QueryUnderlyingDbDirectly), updatedQuery))
-                                           .ConfigureAwait(false)).Result;
+                async () => await DataStore.DocumentRepository.ExecuteQuery(
+                                new AggregatesQueriedOperation<T>(
+                                    nameof(QueryUnderlyingDbDirectly),
+                                    updatedQuery)).ConfigureAwait(false)).Result;
             return results.ToList();
         }
     }

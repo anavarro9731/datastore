@@ -13,20 +13,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
 
     public class WhenCallingCreateWithFullHistoryLoggingEnabled
     {
+        private Car newCar;
+
         private Guid newCarId;
 
         private ITestHarness testHarness;
 
         private Guid unitOfWorkId;
 
-        private Car newCar;
-
         [Fact]
         public async void ItShouldAddAHistoryIndexEntityToTheHistory()
         {
             await Setup();
 
-            Assert.Single(newCar.VersionHistory);
+            Assert.Single(this.newCar.VersionHistory);
             var aggregateVersionInfo = this.newCar.VersionHistory.Single();
             Assert.Equal(this.unitOfWorkId.ToString(), aggregateVersionInfo.UnitOfWorkId);
             Assert.Equal(1, aggregateVersionInfo.CommitBatch);
@@ -36,7 +36,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         public async void ItShouldCreateAnAggregateHistoryItemRecord()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistoryItem<Car>>));
+            Assert.NotNull(
+                this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is CreateOperation<AggregateHistoryItem<Car>>));
 
             var aggregateHistoryItem = this.testHarness.QueryUnderlyingDbDirectly<AggregateHistoryItem<Car>>().Single();
             Assert.NotEqual(Guid.Empty, aggregateHistoryItem.id);

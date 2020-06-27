@@ -17,32 +17,32 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnTheItem()
+        {
+            await Setup();
+            Assert.Equal(
+                1,
+                this.testHarness.DataStore.ExecutedOperations.Count(
+                    e => e is AggregateQueriedByIdOperation && e.MethodCalled == nameof(DataStore.ReadById)));
+            Assert.Equal(this.inactiveCarId, this.inactiveCarFromDatabase.id);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadById));
 
-
             this.inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
-                Active = false,
-                Make = "Jeep"
+                id = this.inactiveCarId, Active = false, Make = "Jeep"
             };
 
             this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
 
             // When
             this.inactiveCarFromDatabase = await this.testHarness.DataStore.ReadById<Car>(this.inactiveCarId);
-        }
-
-        [Fact]
-        public async void ItShouldReturnTheItem()
-        {
-            await Setup();
-            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation && e.MethodCalled == nameof(DataStore.ReadById)));
-            Assert.Equal(this.inactiveCarId, this.inactiveCarFromDatabase.id);
         }
     }
 }

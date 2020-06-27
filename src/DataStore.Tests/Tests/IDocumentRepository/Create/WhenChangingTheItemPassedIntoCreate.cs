@@ -22,7 +22,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             Assert.NotNull(await this.testHarness.DataStore.ReadActiveById<Car>(this.newCarId));
         }
 
-         async Task Setup()
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemPassedIntoCreate));

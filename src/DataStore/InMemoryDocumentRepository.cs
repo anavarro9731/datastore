@@ -7,6 +7,8 @@
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Interfaces.Operations;
+    using global::DataStore.Interfaces.Options;
     using global::DataStore.Models.PureFunctions.Extensions;
 
     public class InMemoryDocumentRepository : IDocumentRepository, IResetData
@@ -36,7 +38,7 @@
             return Task.FromResult(count);
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(IQueryOptions<T> queryOptions = null) where T : class, IAggregate, new()
+        public IQueryable<T> CreateDocumentQuery<T>(object queryOptions = null) where T : class, IAggregate, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
@@ -60,21 +62,21 @@
         {
             var results = new List<T>();
 
-            if (aggregatesQueried.QueryOptions is IOrderBy<T> orderByOptions)
+            if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> orderByOptions)
             {
                 aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
             }
 
-            if (aggregatesQueried.QueryOptions is IContinueAndTake<T> skipAndTakeOptions)
+            if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> skipAndTakeOptions)
             {
                 {
-                    AddSkipIfExists(out int skip);
+                    AddSkipIfExists(out var skip);
 
-                    AddTakeIfExists(out int take);
+                    AddTakeIfExists(out var take);
 
                     if (take < int.MaxValue)
                     {
-                        skipAndTakeOptions.NextContinuationToken = new ContinuationToken(skip + take);
+                        skipAndTakeOptions.NextContinuationTokenValue = new ContinuationToken(skip + take);
                     }
                 }
 
@@ -115,7 +117,8 @@
 
         public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().SingleOrDefault(a => a.id == aggregateQueriedById.Id);
+            var aggregate = Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>()
+                                      .SingleOrDefault(a => a.id == aggregateQueriedById.Id);
 
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Task.FromResult(aggregate?.Clone());
@@ -163,10 +166,7 @@
                 this.repository = repository;
             }
 
-            public IDocumentRepository CreateRepository()
-            {
-                return this.repository;
-            }
+            public IDocumentRepository CreateRepository() => this.repository;
         }
     }
 }

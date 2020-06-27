@@ -6,27 +6,33 @@ namespace DataStore.Models.Messages
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Operations;
     using DataStore.Models.PureFunctions.Extensions;
 
     public class QueuedCreateOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
-        public QueuedCreateOperation(string methodCalled, T model, IDocumentRepository repo, IMessageAggregator messageAggregator, Action<string> etagUpdated)
+        public QueuedCreateOperation(
+            string methodCalled,
+            T model,
+            IDocumentRepository repo,
+            IMessageAggregator messageAggregator,
+            Action<string> etagUpdated)
         {
             CommitClosure = async () =>
                 {
-                    await messageAggregator.CollectAndForward(
-                        new CreateOperation<T>
-                        {
-                            TypeName = typeof(T).FullName,
-                            MethodCalled = methodCalled,
-                            Created = DateTime.UtcNow,
-                            Model = model
-                        }).To(repo.AddAsync).ConfigureAwait(false);
-                    Committed = true;
-                    /* Committed=true has to happen before update eTag is called,
-                     there is logic that responds to etagUpdated which expects the item causing the update
-                     to be committed */
-                    etagUpdated(model.Etag);
+                await messageAggregator.CollectAndForward(
+                    new CreateOperation<T>
+                    {
+                        TypeName = typeof(T).FullName,
+                        MethodCalled = methodCalled,
+                        Created = DateTime.UtcNow,
+                        Model = model
+                    }).To(repo.AddAsync).ConfigureAwait(false);
+                Committed = true;
+                /* Committed=true has to happen before update eTag is called,
+                 there is logic that responds to etagUpdated which expects the item causing the update
+                 to be committed */
+                etagUpdated(model.Etag);
                 };
 
             Created = DateTime.UtcNow;
@@ -45,21 +51,20 @@ namespace DataStore.Models.Messages
 
         public long? LastModified => null;
 
+        public T NewModel { get; set; }
+
         public T PreviousModel { get; set; }
 
         IAggregate IQueuedDataStoreWriteOperation.NewModel => NewModel;
-        IAggregate IQueuedDataStoreWriteOperation.PreviousModel => PreviousModel;
 
-        public T NewModel { get; set; }
+        IAggregate IQueuedDataStoreWriteOperation.PreviousModel => PreviousModel;
     }
 
     public class CreateOperation<T> : IDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {
-        public List<Aggregate.AggregateVersionInfo> GetHistoryItems => Model.VersionHistory;
-
-        IAggregate IDataStoreWriteOperation.Model { set => Model = value.As<T>(); }
-        
         public DateTime Created { get; set; }
+
+        public List<Aggregate.AggregateVersionInfo> GetHistoryItems => Model.VersionHistory;
 
         public string MethodCalled { get; set; }
 
@@ -74,5 +79,7 @@ namespace DataStore.Models.Messages
         public long? StateOperationStopTimestamp { get; set; }
 
         public string TypeName { get; set; }
+
+        IAggregate IDataStoreWriteOperation.Model { set => Model = value.As<T>(); }
     }
 }

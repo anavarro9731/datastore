@@ -17,7 +17,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnTheItem()
+        {
+            await Setup();
+            Assert.Equal(
+                1,
+                this.testHarness.DataStore.ExecutedOperations.Count(
+                    e => e is AggregateQueriedByIdOperation && e.MethodCalled == nameof(DataStore.ReadActiveById)));
+            Assert.Equal(this.activeCarId, this.activeCarFromDatabase.id);
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdOnAnActiveItem));
@@ -25,17 +36,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = this.activeCarId,
-                Active = true,
-                Make = "Volvo"
+                id = this.activeCarId, Active = true, Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
-                Active = false,
-                Make = "Jeep"
+                id = inactiveCarId, Active = false, Make = "Jeep"
             };
 
             this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
@@ -43,14 +50,6 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
             // When
             this.activeCarFromDatabase = await this.testHarness.DataStore.ReadActiveById<Car>(this.activeCarId);
-        }
-
-        [Fact]
-        public async void ItShouldReturnTheItem()
-        {
-            await Setup();
-            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is AggregateQueriedByIdOperation && e.MethodCalled == nameof(DataStore.ReadActiveById)));
-            Assert.Equal(this.activeCarId, this.activeCarFromDatabase.id);
         }
     }
 }

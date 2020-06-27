@@ -2,7 +2,7 @@
 {
     using System;
     using System.Linq.Expressions;
-    using DataStore.Interfaces;
+    using DataStore.Interfaces.Operations;
 
     public class AggregateCountedOperation<T> : IDataStoreCountFromQueryable<T>
     {

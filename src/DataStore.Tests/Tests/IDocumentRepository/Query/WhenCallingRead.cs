@@ -2,17 +2,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Models.Messages;
-    using global::DataStore.Models.PureFunctions.Extensions;
-    using global::DataStore.Providers.CosmosDb;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
-    using Xunit.Abstractions;
 
     public class WhenCallingRead
     {
@@ -20,7 +16,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
         private ITestHarness testHarness;
 
-        async Task Setup()
+        [Fact]
+        public async void ItShouldReturnAllItemsRegardlessOfActiveFlag()
+        {
+            await Setup();
+            Assert.NotNull(
+                this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(
+                    e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
+            Assert.Equal(2, this.carsFromDatabase.Count());
+        }
+
+        private async Task Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingRead));
@@ -28,32 +34,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
             {
-                id = activeCarId,
-                Make = "Volvo"
+                id = activeCarId, Make = "Volvo"
             };
 
             var inactiveCarId = Guid.NewGuid();
             var inactiveExistingCar = new Car
             {
-                id = inactiveCarId,
-                Active = false,
-                Make = "Volvo"
+                id = inactiveCarId, Active = false, Make = "Volvo"
             };
             this.testHarness.AddItemDirectlyToUnderlyingDb(activeExistingCar);
             this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
 
             // When
-    
-           this.carsFromDatabase = await this.testHarness.DataStore.Read<Car>(car => car.Make == "Volvo");
-           
-        }
 
-        [Fact]
-        public async void ItShouldReturnAllItemsRegardlessOfActiveFlag()
-        {
-            await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car> && e.MethodCalled == nameof(DataStore.Read)));
-            Assert.Equal(2, this.carsFromDatabase.Count());
+            this.carsFromDatabase = await this.testHarness.DataStore.Read<Car>(car => car.Make == "Volvo");
         }
     }
 }

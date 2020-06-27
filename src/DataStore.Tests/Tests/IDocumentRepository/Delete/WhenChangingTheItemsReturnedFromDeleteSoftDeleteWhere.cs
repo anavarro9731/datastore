@@ -8,7 +8,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenChangingTheItemsReturnedFromDeleteSoftDeleteWhere
+    public class WhenChangingTheItemsReturnedFromDeleteSoftWhere
     {
         private Guid carId;
 
@@ -23,20 +23,19 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotEmpty(await this.testHarness.DataStore.Read<Car>());
         }
 
-        async Task Setup()
+        private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteSoftDeleteWhere));
+            this.testHarness = TestHarness.Create(nameof(WhenChangingTheItemsReturnedFromDeleteSoftWhere));
 
             this.carId = Guid.NewGuid();
             this.testHarness.AddItemDirectlyToUnderlyingDb(
                 new Car
                 {
-                    id = this.carId,
-                    Make = "Volvo"
+                    id = this.carId, Make = "Volvo"
                 });
 
-            var result = await this.testHarness.DataStore.DeleteSoftWhere<Car>(car => car.id == this.carId);
+            var result = await this.testHarness.DataStore.DeleteWhere<Car>(car => car.id == this.carId);
 
             //When
             result.Single().id = Guid.NewGuid(); //change in memory before commit
