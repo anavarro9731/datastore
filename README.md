@@ -12,12 +12,11 @@ It supports basic CRUD operations on any C# object, with some additional feature
 
 * Generic Repository with IQueryable<T> support for LINQ queries against objects and their children 
 	(limited by CosmosDB .NET client support, does include paging with continuation tokens)
-* Increased consistency with re-usable Sessions which commit only upon completion (i.e. Unit of Work pattern)
-* In-memory database, and event history for testing
-* Optimitic Concurrency supported by default with the ability to disable on a per-query basis
-(e.g. DataStore.ExecutedOperations.Where(o => o...))
+* Increased consistency with session-based unit of work 
+* In-memory database, and event history for testing (e.g. DataStore.ExecutedOperations.Where(o => o...)
+* Optimistic Concurrency supported by default with the ability to disable on a per-query basis
 * Profiling (e.g. Duration and Query Cost in Request Units)
-* Automatic Id and timestamp management of object hierarchies 
+* Automatic ID and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 * Session-based vs Direct-to-Database views of data. 
 Using a feature called "Event Replay" queries by default will reflect all previous changes made in the session. 
@@ -187,3 +186,45 @@ Calling DataStore.CommitChanges() will commit these events to the database.
 > from all sessions, but those already committed will be marked as Committed. The reason we do not remove events afer CommitChanges()
 > is called is to allow you to query their performance metrics later on.
 
+#### Options 
+
+There are two levels of settings one at the store level and one at query level.
+
+##### Store-level 
+
+```
+            var dataStoreOptions = DataStoreOptions.Create()
+                .WithSecurity(scopeHierarchy)
+                .EnableFullVersionHistory()
+                .DisableOptimisticConcurrency();
+            
+            new DataStore(
+                    new CosmosDbRepository(
+                    cosmosStoreSettings),
+                    dataStoreOptions: dataStoreOptions))
+```
+
+##### Query-level 
+
+These options are specific as an optional lambda function on most Datastore methods.
+They make possible a number of things including:
+
+Skip/Take: (see WhenCallingReadActiveWithSkipAndTake.cs)
+```
+this.carsFromDatabase = await this.testHarness.DataStore.WithoutEventReplay.ReadActive<Car>(
+                                        car => car.Make == "Volvo",
+                                        o => o.ContinueFrom(firstContinuationToken).Take(2, ref secondContinuationToken));
+```
+
+Order By: (see WhenCallingReadWithOrderBy.cs)           
+```
+this.carsFromDatabaseOrderedAscending =
+                await this.testHarness.DataStore.WithoutEventReplay.Read<Car>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id));
+```
+
+Security: (see WhenCallingReadWithAuthorisation.cs)
+```
+await this.testHarness.DataStore.DeleteWhere<Car>(car => car.Make == "Volvo", o => o.AuthoriseFor(this.user));
+```
+
+and others. The lambda delegate sigature makes the options for a given query discoverable.
