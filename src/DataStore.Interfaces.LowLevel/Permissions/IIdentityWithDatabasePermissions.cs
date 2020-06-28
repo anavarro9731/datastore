@@ -4,7 +4,7 @@
     using System.Linq;
     using System.Security;
 
-    public interface IIdentityWithDatabasePermissions : IHaveAUniqueId
+    public interface IIdentityWithDatabasePermissions 
     {
         List<DatabasePermissionInstance> DatabasePermissions { get; set; }
     }
