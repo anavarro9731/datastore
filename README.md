@@ -8,7 +8,9 @@ DataStore is an easy-to-use, data-access framework, which maps POCO C# classes t
 
 Currently the only supported database is Azure CosmosDb (via DataStore.Providers.CosmosDb package).
 
-It supports basic CRUD operations on any C# object, with some additional features such as:
+It supports basic CRUD operations on any C# object, with additional features such as:
+
+**See extensive test suite for examples of yet undocumented features**
 
 * Generic Repository with IQueryable<T> support for LINQ queries against objects and their children 
 	(limited by CosmosDB .NET client support, does include paging with continuation tokens)
@@ -33,6 +35,7 @@ DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and
 * Add Performance Tracing
 * Partitioned Collection Support (partition on Id or ClassName)
 * Upgrade to v4 SDK
+* MartenDB implementation
 
 ## Usage
 
