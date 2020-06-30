@@ -104,7 +104,7 @@
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public DataStoreQueryCapabilities AsReadOnly() => QueryCapabilities;
+        public DataStoreReadOnly AsReadOnly() => new DataStoreReadOnly(this);
 
         public DataStoreWriteOnly<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new() => new DataStoreWriteOnly<T>(this);
 
