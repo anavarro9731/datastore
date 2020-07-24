@@ -5,7 +5,7 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-    using System.Text.Json;
+    using Newtonsoft.Json;
 
     public static class Objects
     {
@@ -58,7 +58,7 @@
             foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
-        public static T FromJsonString<T>(this string source) => source == null ? default : JsonSerializer.Deserialize<T>(source);
+        public static T FromJsonString<T>(this string source) => source == null ? default : JsonConvert.DeserializeObject<T>(source);
 
         /// <summary>
         ///     get property name from current instance
@@ -151,7 +151,7 @@
             return obj;
         }
 
-        public static string ToJsonString(this object source) => source == null ? null : JsonSerializer.Serialize(source);
+        public static string ToJsonString(this object source) => source == null ? null : JsonConvert.SerializeObject(source);
 
         private static string GetPropertyNameCore(Expression propertyRefExpr)
         {

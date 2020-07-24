@@ -5,7 +5,6 @@
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
@@ -121,7 +120,7 @@
                     dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedBefore = dataObject.Modified.ToString(CultureInfo.InvariantCulture)
                                                + dataObject.ModifiedAsMillisecondsEpochTime;
-                var restrictedVersionInfo = JsonSerializer.Serialize(dataObject.VersionHistory);
+                var restrictedVersionInfo = dataObject.VersionHistory.ToJsonString();
                 restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore
                                              + restrictedVersionInfo;
 
@@ -135,7 +134,7 @@
                     dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedAfter = dataObject.Modified.ToString(CultureInfo.InvariantCulture)
                                               + dataObject.ModifiedAsMillisecondsEpochTime;
-                var restrictedVersionInfoAfter = JsonSerializer.Serialize(dataObject.VersionHistory);
+                var restrictedVersionInfoAfter = dataObject.VersionHistory.ToJsonString();
                 restrictedPropertiesAfter = restrictedPropertiesAfter + restrictedCreatedAfter + restrictedModifiedAfter
                                             + restrictedVersionInfoAfter;
 
