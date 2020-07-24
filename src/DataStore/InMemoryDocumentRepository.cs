@@ -154,7 +154,7 @@
         }
 
         /* should return the same backing store as any other instances
-         so that ir mirrors the capability of persistent-state backed providers.
+         so that it mirrors the capability of persistent-state backed providers.
          This will show up as subtle errors otherwise in unit-testing when
          the ConnectionSettings are used to create a simultaneous session. */
         public class Settings : IDatabaseSettings
