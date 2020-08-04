@@ -11,6 +11,18 @@ namespace DataStore.Models
 
     public static class DocumentRepositoryExtensions
     {
+        
+        public static Task GetItemAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
+        {
+            var type = model.GetType();
+
+            var aggregateQueried = new AggregateQueriedByIdOperation(methodCalled, model.id);
+
+            var getItemAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.GetItemAsync)).MakeGenericMethod(type);
+            
+            return getItemAsync.InvokeAsync(repo, aggregateQueried);
+        }
+        
         public static Task CreateAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
         {
             var type = model.GetType();
