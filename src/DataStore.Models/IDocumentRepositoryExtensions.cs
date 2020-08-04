@@ -12,7 +12,7 @@ namespace DataStore.Models
     public static class DocumentRepositoryExtensions
     {
         
-        public static Task GetItemAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
+        public static async Task<bool> Exists<T>(this IDocumentRepository repo, T model, string methodCalled = null) where T: IAggregate 
         {
             var type = model.GetType();
 
@@ -20,7 +20,10 @@ namespace DataStore.Models
 
             var getItemAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.GetItemAsync)).MakeGenericMethod(type);
             
-            return getItemAsync.InvokeAsync(repo, aggregateQueried);
+            var result = await (Task<T>)getItemAsync.InvokeAsync(repo, aggregateQueried);
+
+            return result != null;
+
         }
         
         public static Task CreateAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)
