@@ -12,7 +12,7 @@ namespace DataStore.Models
     public static class DocumentRepositoryExtensions
     {
         
-        public static async Task<bool> Exists<T>(this IDocumentRepository repo, T model, string methodCalled = null) where T: IAggregate 
+        public static async Task<bool> Exists(this IDocumentRepository repo, IAggregate model, string methodCalled = null)  
         {
             var type = model.GetType();
 
@@ -20,8 +20,12 @@ namespace DataStore.Models
 
             var getItemAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.GetItemAsync)).MakeGenericMethod(type);
             
-            var result = await (Task<T>)getItemAsync.InvokeAsync(repo, aggregateQueried);
-
+            var task = getItemAsync.InvokeAsync(repo, aggregateQueried);
+            
+            await task;
+            
+            var result = task.GetType().GetProperty(nameof(Task<object>.Result)).GetValue(task);
+            
             return result != null;
 
         }
@@ -68,13 +72,13 @@ namespace DataStore.Models
 
             var updateAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.UpdateAsync)).MakeGenericMethod(type);
 
-            var updateoperation = Activator.CreateInstance(updateOperationType).As<IDataStoreWriteOperation>();
-            updateoperation.TypeName = type.FullName;
-            updateoperation.MethodCalled = methodCalled;
-            updateoperation.Created = DateTime.UtcNow;
-            updateoperation.Model = model;
+            var updateOperation = Activator.CreateInstance(updateOperationType).As<IDataStoreWriteOperation>();
+            updateOperation.TypeName = type.FullName;
+            updateOperation.MethodCalled = methodCalled;
+            updateOperation.Created = DateTime.UtcNow;
+            updateOperation.Model = model;
 
-            return updateAsync.InvokeAsync(repo, updateoperation);
+            return updateAsync.InvokeAsync(repo, updateOperation);
         }
 
         private static Task InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
