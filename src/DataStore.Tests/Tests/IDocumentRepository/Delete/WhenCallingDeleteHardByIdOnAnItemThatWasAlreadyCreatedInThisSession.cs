@@ -17,6 +17,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 
         private ITestHarness testHarness;
 
+        private Guid volvoId;
+
         [Fact]
         public async void ItShouldReturnTheItem() 
         {
@@ -25,22 +27,20 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
             Assert.NotNull(this.result);
         }
         
-        
         [Fact]
-        public async void ItShouldRemoveTheCreate()
+        public async void ItShouldNotQueueTheCreateOperationForTheObjectThatWasDeleted()
         {
             await Setup();
 
-            Assert.Empty(this.testHarness.DataStore.QueuedOperations.Where(x => x is QueuedCreateOperation<Car>));
+            Assert.Equal(0, this.testHarness.DataStore.QueuedOperations.Count(o => o.AggregateId == this.newCarId));
         }
         
-        
         [Fact]
-        public async void ItShouldNotQueueAnyDatabaseOperations()
+        public async void ItShouldQueueTheCreateOperationForTheObjectThatWasNotDeleted()
         {
             await Setup();
 
-            Assert.Equal(0, this.testHarness.DataStore.QueuedOperations.Count);
+            Assert.Equal(1, this.testHarness.DataStore.QueuedOperations.Count(o => o.AggregateId == this.volvoId));
         }
 
         private async Task Setup()
@@ -52,6 +52,12 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 new Car
                 {
                     id = this.newCarId = Guid.NewGuid(), Make = "Ford"
+                });
+            
+            await this.testHarness.DataStore.Create(
+                new Car
+                {
+                    id = this.volvoId = Guid.NewGuid(), Make = "Volvo"
                 });
             
             this.result = await this.testHarness.DataStore.DeleteById<Car>(this.newCarId, o => o.Permanently());
