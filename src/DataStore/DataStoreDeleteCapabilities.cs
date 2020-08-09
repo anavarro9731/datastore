@@ -77,7 +77,7 @@
 
                     this.eventReplay.RemoveQueuedOperationsMatchingPredicate(predicate.Compile(), out var itemsCreatedInThisSession);
 
-                    GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate, v => objectsToDelete = v);
+                    await GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate, v => objectsToDelete = v);
 
                     if (!objectsToDelete.Any()) return itemsCreatedInThisSession;
 
@@ -106,9 +106,9 @@
                     return results;
                 }
 
-                async Task GetObjectFromDatabaseThatMatchPredicateForDeletion<T>(
+                async Task GetObjectFromDatabaseThatMatchPredicateForDeletion(
                     Expression<Func<T, bool>> predicate1,
-                    Action<List<T>> setObjectsToBeDeleted) where T : class, IAggregate, new()
+                    Action<List<T>> setObjectsToBeDeleted) 
                 {
                     var objectToBeDeletedFromDb = await this.messageAggregator
                                                             .CollectAndForward(
