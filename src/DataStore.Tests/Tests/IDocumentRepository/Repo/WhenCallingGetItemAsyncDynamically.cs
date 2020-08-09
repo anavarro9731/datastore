@@ -24,7 +24,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingAddAsyncDynamically));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingGetItemAsyncDynamically));
 
             this.newCar = new Car
             {
