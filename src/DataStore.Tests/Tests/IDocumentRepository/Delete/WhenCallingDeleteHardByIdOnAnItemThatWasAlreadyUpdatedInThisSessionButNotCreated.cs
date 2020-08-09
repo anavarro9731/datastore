@@ -44,7 +44,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyUpdatedInThisSessionButNotCreated));
 
             await this.testHarness.DataStore.Create(
                 new Car
