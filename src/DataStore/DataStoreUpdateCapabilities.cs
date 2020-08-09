@@ -103,7 +103,6 @@
                         originalObject.ReadOnly && !options.AllowReadonlyOverwriting,
                         "Cannot update read-only item " + originalObject.id);
 
-                    Action<string> etagUpdated = null;
                     //* check to see if this operation can this be merged into a previous operation
                     var modelQueuedForPersistence = this.eventReplay.MergeCurrentUpdateIntoPreviousCreateOrUpdateOperations<T>(
                         originalObject.id,
