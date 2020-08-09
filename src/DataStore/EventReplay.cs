@@ -147,8 +147,11 @@ namespace DataStore
                 switch (operation)
                 {
                     case QueuedCreateOperation<T> _:
-                        itemsCreatedInThisSession.Add(operation.NewModel);
-                        if (predicate(operation.NewModel)) RemoveOperationFromQueue();
+                        if (predicate(operation.NewModel))
+                        {
+                            itemsCreatedInThisSession.Add(operation.NewModel);
+                            RemoveOperationFromQueue();
+                        }
                         break;
 
                     case QueuedUpdateOperation<T> _:
