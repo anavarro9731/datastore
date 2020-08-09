@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Reflection;
     using DataStore.Interfaces.LowLevel.Permissions;
+    using Newtonsoft.Json;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -17,9 +18,10 @@
     ///     of this logic, your code could start producing unexpected results.
     ///     So, NO LOGIC of any kind in these abstract classes.
     /// </summary>
-    public abstract class Aggregate : Entity, IAggregate
+    public abstract class Aggregate : Entity, IAggregate, IEtagUpdated
     {
         public const string PartitionKeyValue = "shared";
+
 
         protected Aggregate()
         {
@@ -76,5 +78,8 @@
 
             public string UnitOfWorkId { get; set; }
         }
+
+        //* Json.NET ignores explicit implementations and we kind of want to hide this anyway
+        Action<string> IEtagUpdated.EtagUpdated { get; set; }
     }
 }

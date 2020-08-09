@@ -125,22 +125,18 @@ namespace DataStore
                 $"An item with the same ID of {newObject.id} already exists",
                 Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
 
-            var clone = newObject.Clone();
-            clone.Etag = "waiting to be committed";
-
-            void EtagUpdated(string newTag)
-            {
-                clone.Etag = newTag;
-            }
-
             this.messageAggregator.Collect(
-                new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator, EtagUpdated));
-
-            await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(newObject, methodName);
+                new QueuedCreateOperation<T>(methodName, newObject, DsConnection, this.messageAggregator));
+            
+            var itemToReturnToCaller = newObject.Clone(); //* return clones otherwise its to easy to change the referenced object before committing    
+            itemToReturnToCaller.Etag = "waiting to be committed";
+            (newObject as IEtagUpdated).EtagUpdated += newTag => itemToReturnToCaller.Etag = newTag; 
+            
+            await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(newObject, methodName);
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally
-            return clone;
+            return itemToReturnToCaller;
         }
     }
 }

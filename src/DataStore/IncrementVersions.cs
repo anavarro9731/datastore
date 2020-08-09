@@ -32,7 +32,7 @@
             ;
         }
 
-        public async Task IncrementAggregateVersionOfQueuedItem<T>(T model, string methodName) where T : class, IAggregate, new()
+        public async Task IncrementAggregateVersionOfItemToBeQueued<T>(T model, string methodName) where T : class, IAggregate, new()
         {
             {
                 if (!typeof(T).InheritsOrImplements(typeof(AggregateHistoryItem<>))) //- without this check you'd get recursion to infinity
@@ -44,7 +44,7 @@
                     await CreateFullAggregateRecordIfEnabled(
                         model,
                         historyRecordEntry,
-                        $"{methodName}.{nameof(IncrementAggregateVersionOfQueuedItem)}");
+                        $"{methodName}.{nameof(IncrementAggregateVersionOfItemToBeQueued)}");
                 }
             }
 

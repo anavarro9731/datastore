@@ -18,18 +18,26 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
         private ITestHarness testHarness;
 
+
         [Fact]
-        public async void ItShouldConsiderThePreviousDeleteInAnyFutureQueriesInSession()
+        public async void ItShouldNotAttemptAnUpdate()
         {
             await Setup();
             //in this circumstance we have deleted the only thing we updated so there is no update required
             Assert.Null(this.testHarness.DataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
-
-            //nothing should have been updated because it was already deleted.
-            Assert.Empty(this.results);
             Assert.Equal(
                 "Volvo",
                 this.testHarness.QueryUnderlyingDbDirectly<Car>(cars => cars.Where(car => car.id == this.carId)).Single().Make);
+
+        }
+
+        [Fact]
+        public async void ItShouldNotReturnAnyResults()
+        {
+            await Setup();
+            //nothing should have been updated because it was already deleted.
+            Assert.Empty(this.results);
+
         }
 
         [Fact]

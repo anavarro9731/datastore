@@ -9,7 +9,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingUpdateTwiceInOneSession
+    public class WhenCallingUpdateOnAnItemAddedInThisSession
     {
         private Guid carId;
 
@@ -20,17 +20,17 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         private ITestHarness testHarness;
 
         [Fact]
-        public async void  ItShouldCallUpdateOnlyOnce()
+        public async void  ItShouldCallCreateOnlyOnce()
         {
             await Setup();
-            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is UpdateOperation<Car>));
+            Assert.Equal(1, this.testHarness.DataStore.ExecutedOperations.Count(e => e is CreateOperation<Car>));
         }
 
         [Fact]
         public async void ItShouldPersistTheLastChangeToTheDatabase()
         {
             await Setup();
-            Assert.Equal("Honda", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
+            Assert.Equal("Toyota", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
         }
 
         [Fact]
@@ -44,21 +44,22 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateTwiceInOneSession));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateOnAnItemAddedInThisSession));
 
             this.carId = Guid.NewGuid();
-            var existingCar = new Car
+            var newCar = new Car
             {
                 id = this.carId, Make = "Volvo"
             };
-            this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
+            var create = await this.testHarness.DataStore.Create(newCar);
 
             //When
-            var update1 = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
-            var update2 = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Honda");
+            var update = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
+            
             await this.testHarness.DataStore.CommitChanges();
-            this.firstEtag = update1.Etag;
-            this.secondEtag = update2.Etag;
+            
+            this.firstEtag = create.Etag;
+            this.secondEtag = update.Etag;
         }
     }
 }

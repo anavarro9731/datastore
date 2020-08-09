@@ -15,8 +15,7 @@
             string methodCalled,
             T model,
             IDocumentRepository repo,
-            IMessageAggregator messageAggregator,
-            Action<string> etagUpdated)
+            IMessageAggregator messageAggregator)
         {
             CommitClosure = async () =>
                 {
@@ -32,7 +31,7 @@
                 /* Committed=true has to happen before update eTag is called,
                  there is logic that responds to etagUpdated which expects the item causing the update
                  to be committed */
-                etagUpdated(model.Etag);
+                (model as IEtagUpdated)?.EtagUpdated(model.Etag);
                 };
 
             Created = DateTime.UtcNow;
