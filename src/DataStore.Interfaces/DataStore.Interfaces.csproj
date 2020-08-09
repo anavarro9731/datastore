@@ -8,7 +8,7 @@
     <PackageId>DataStore.Interfaces</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>13.6.0-alpha</Version>
+    <Version>13.7.0-alpha</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
