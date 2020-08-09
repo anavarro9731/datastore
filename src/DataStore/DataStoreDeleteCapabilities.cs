@@ -70,47 +70,54 @@
         public async Task<IEnumerable<T>> DeleteWhere<T, O>(Expression<Func<T, bool>> predicate, O options, string methodName = null)
             where T : class, IAggregate, new() where O : DeleteOptionsLibrarySide, new()
         {
-            if (options.IsHardDelete)
             {
-                var objectsToDelete = await this.messageAggregator
-                                                .CollectAndForward(
-                                                    new AggregatesQueriedOperation<T>(
-                                                        methodName,
-                                                        DsConnection.CreateDocumentQuery<T>().Where(predicate)))
-                                                .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
-
-                //can't just return null here if there are no matches because we need to replay previous events
-                //a match might have been added previously in this session            
-                objectsToDelete = this.eventReplay.ApplyAggregateEvents(objectsToDelete, predicate.Compile());
-
-                foreach (var dataObject in objectsToDelete)
-                    CheckWasObjectAlreadyHardDeleted<T>(this.messageAggregator, dataObject.id);
-
-                if (!objectsToDelete.Any()) return objectsToDelete;
-
-                var clones = new List<T>();
-
-                foreach (var dataObject in objectsToDelete)
+                if (options.IsHardDelete)
                 {
-                    var clone = dataObject.Clone();
+                    List<T> objectsToDelete = null;
 
-                    void EtagUpdated(string newTag)
+                    this.eventReplay.RemoveQueuedOperationsMatchingPredicate(predicate.Compile(), out var itemsCreatedInThisSession);
+
+                    GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate, v => objectsToDelete = v);
+
+                    if (!objectsToDelete.Any()) return itemsCreatedInThisSession;
+
+                    var results = new List<T>(itemsCreatedInThisSession); //* clone otherwise its too easy to change the referenced object before committing
+
+                    foreach (var modelToPersist in objectsToDelete)
                     {
-                        clone.Etag = newTag;
+ 
+                        this.messageAggregator.Collect(
+                            new QueuedHardDeleteOperation<T>(
+                                methodName,
+                                modelToPersist,
+                                DsConnection,
+                                this.messageAggregator
+                                ));
+
+                        await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName); 
+                        await this.incrementVersions.DeleteAggregateHistory<T>(modelToPersist.id, methodName);
+
+                        var clone = modelToPersist.Clone();
+                        clone.Etag = "waiting to be committed";
+                        (modelToPersist as IEtagUpdated).EtagUpdated += s => clone.Etag = s;
+                        results.Add(clone);
                     }
 
-                    this.messageAggregator.Collect(
-                        new QueuedHardDeleteOperation<T>(methodName, dataObject, DsConnection, this.messageAggregator, EtagUpdated));
-
-                    await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(dataObject, methodName);
-                    await this.incrementVersions.DeleteAggregateHistory<T>(dataObject.id, methodName);
-
-                    clone.Etag = "waiting to be committed";
-                    clones.Add(clone);
+                    return results;
                 }
 
-                //clone otherwise its to easy to change the referenced object before committing
-                return clones;
+                async Task GetObjectFromDatabaseThatMatchPredicateForDeletion<T>(
+                    Expression<Func<T, bool>> predicate1,
+                    Action<List<T>> setObjectsToBeDeleted) where T : class, IAggregate, new()
+                {
+                    var objectToBeDeletedFromDb = await this.messageAggregator
+                                                            .CollectAndForward(
+                                                                new AggregatesQueriedOperation<T>(
+                                                                    methodName,
+                                                                    DsConnection.CreateDocumentQuery<T>().Where(predicate1)))
+                                                            .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
+                    setObjectsToBeDeleted(objectToBeDeletedFromDb.ToList());
+                }
             }
 
             return await this.updateCapabilities.UpdateWhere(

@@ -23,11 +23,11 @@ namespace DataStore.Models
             var task = getItemAsync.InvokeAsync(repo, aggregateQueried);
             
             await task;
-            
+                
             var result = task.GetType().GetProperty(nameof(Task<object>.Result)).GetValue(task);
             
             return result != null;
-
+    
         }
         
         public static Task CreateAsync(this IDocumentRepository repo, IAggregate model, string methodCalled = null)

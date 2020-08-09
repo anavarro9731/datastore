@@ -49,7 +49,7 @@
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
-            return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
+            return this.eventReplay.ApplyQueuedOperations(results, predicate.Compile());
         }
 
         // get a filtered list of the models from a set of active DataObjects
@@ -64,7 +64,7 @@
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
-            return this.eventReplay.ApplyAggregateEvents(results, predicate.Compile());
+            return this.eventReplay.ApplyQueuedOperations(results, predicate.Compile());
         }
 
         // get a filtered list of the models from  a set of DataObjects
@@ -81,11 +81,11 @@
 
             if (result == null || !result.Active)
             {
-                var replayResult = this.eventReplay.ApplyAggregateEvents(new List<T>(), Predicate).SingleOrDefault();
+                var replayResult = this.eventReplay.ApplyQueuedOperations(new List<T>(), Predicate).SingleOrDefault();
                 return replayResult;
             }
 
-            return this.eventReplay.ApplyAggregateEvents(
+            return this.eventReplay.ApplyQueuedOperations(
                 new List<T>
                 {
                     result
@@ -105,11 +105,11 @@
 
             if (result == null)
             {
-                var replayResult = this.eventReplay.ApplyAggregateEvents(new List<T>(), Predicate).SingleOrDefault();
+                var replayResult = this.eventReplay.ApplyQueuedOperations(new List<T>(), Predicate).SingleOrDefault();
                 return replayResult;
             }
 
-            return this.eventReplay.ApplyAggregateEvents(
+            return this.eventReplay.ApplyQueuedOperations(
                 new List<T>
                 {
                     result

@@ -18,6 +18,12 @@
         {
             this.allMessages.Clear();
         }
+        
+        public void Remove(IMessage message)
+        {
+            this.allMessages.Remove(message);
+        }
+
 
         public void Collect(IMessage message)
         {

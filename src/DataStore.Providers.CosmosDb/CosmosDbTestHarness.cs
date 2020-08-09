@@ -50,19 +50,17 @@
 
         public void AddItemDirectlyToUnderlyingDb<T>(T aggregate) where T : class, IAggregate, new()
         {
-            void etagUpdated(string newTag) => aggregate.Etag = newTag;
-
             //clone aggregate to avoid modifying entries later when using InMemoryDb
             var clone = aggregate.Clone();
-
+            (clone as IEtagUpdated).EtagUpdated = newTag => aggregate.Etag = newTag;
+            
             //DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
 
             var newAggregate = new QueuedCreateOperation<T>(
                 nameof(AddItemDirectlyToUnderlyingDb),
                 clone,
                 DataStore.DocumentRepository,
-                DataStore.MessageAggregator,
-                etagUpdated);
+                DataStore.MessageAggregator);
 
             Task.Run(async () => await newAggregate.CommitClosure().ConfigureAwait(false)).Wait();
         }

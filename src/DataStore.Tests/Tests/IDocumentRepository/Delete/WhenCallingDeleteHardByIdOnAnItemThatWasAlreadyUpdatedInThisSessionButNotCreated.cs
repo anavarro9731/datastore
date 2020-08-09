@@ -1,13 +1,15 @@
 namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyHardDeletedInThisSession
+    public class WhenCallingDeleteHardByIdOnAnItemThatWasAlreadyUpdatedInThisSessionButNotCreated
     {
         private Guid newCarId;
 
@@ -16,7 +18,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         private ITestHarness testHarness;
 
         [Fact]
-        public async void ItShouldReturnTheItem()
+        public async void ItShouldReturnTheItem() 
         {
             await Setup();
 
@@ -24,7 +26,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         }
         
         [Fact]
-        public async void ItShouldCollapseTheDeletes()
+        public async void ItShouldRemoveTheUpdate()
+        {
+            await Setup();
+
+            Assert.Empty(this.testHarness.DataStore.QueuedOperations.Where(x => x is QueuedUpdateOperation<Car>));
+        }
+        
+        [Fact]
+        public async void ItShouldNotQueueADeleteToTheDatabase()
         {
             await Setup();
 
@@ -43,10 +53,11 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
                 });
 
             await this.testHarness.DataStore.CommitChanges();
-
-            await this.testHarness.DataStore.DeleteById<Car>(this.newCarId, o => o.Permanently());
-
+            
+            this.result = await this.testHarness.DataStore.UpdateById<Car>(this.newCarId, car => car.Make = "Tucker");
+            
             this.result = await this.testHarness.DataStore.DeleteById<Car>(this.newCarId, o => o.Permanently());
+
         }
     }
 }

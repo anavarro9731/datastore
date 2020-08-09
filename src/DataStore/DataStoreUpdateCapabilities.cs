@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
@@ -76,7 +77,7 @@
             return (await UpdateWhere(x => x.id == id, action, options, methodName)).SingleOrDefault();
         }
 
-        // update a DataObject selected with a singular predicate
+        //* update a DataObject selected with a singular predicate
         public async Task<IEnumerable<T>> UpdateWhere<T, O>(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
@@ -84,98 +85,72 @@
             string methodName = null) where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
 
         {
-            var objectsToUpdate = await this.eventAggregator
-                                            .CollectAndForward(
-                                                new AggregatesQueriedOperation<T>(
-                                                    methodName,
-                                                    DsConnection.CreateDocumentQuery<T>().Where(predicate))).To(DsConnection.ExecuteQuery)
-                                            .ConfigureAwait(false);
-
-            var dataObjects = this.eventReplay.ApplyAggregateEvents(objectsToUpdate, predicate.Compile()).AsEnumerable();
-
-            return await UpdateInternal(action, dataObjects, methodName, options);
-        }
-
-        private async Task<IEnumerable<T>> UpdateInternal<T, O>(Action<T> action, IEnumerable<T> dataObjects, string methodName, O options)
-            where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
-        {
-            foreach (var dataObject in dataObjects)
             {
-                Guard.Against(dataObject.ReadOnly && !options.AllowReadonlyOverwriting, "Cannot update read-only item " + dataObject.id);
+                var matchingObjectsFromDb = await this.eventAggregator
+                                                      .CollectAndForward(
+                                                          new AggregatesQueriedOperation<T>(
+                                                              methodName,
+                                                              DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                                                      .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
-                DataStoreDeleteCapabilities.CheckWasObjectAlreadyHardDeleted<T>(this.eventAggregator, dataObject.id);
-            }
+                var matchingObjectsDbAndQueued = this.eventReplay.ApplyQueuedOperations(matchingObjectsFromDb, predicate.Compile());
 
-            var clones = new List<T>();
+                var results = new List<T>(); //* return a list of clones
 
-            foreach (var dataObject in dataObjects)
-            {
-                var originalObject = dataObject.Clone();
+                foreach (var originalObject in matchingObjectsDbAndQueued)
+                {
+                    Guard.Against(
+                        originalObject.ReadOnly && !options.AllowReadonlyOverwriting,
+                        "Cannot update read-only item " + originalObject.id);
 
-                //* set here so changes are counted in the restrictedProperties calculation 
-                DataStoreCreateCapabilities.WalkGraphAndUpdateEntityMeta(dataObject);
+                    Action<string> etagUpdated = null;
+                    //* check to see if this operation can this be merged into a previous operation
+                    var modelQueuedForPersistence = this.eventReplay.MergeCurrentUpdateIntoPreviousCreateOrUpdateOperations<T>(
+                        originalObject.id,
+                        model => PerformUpdateOfProperties(ref model),
+                        methodName);
 
-                var restrictedPropertiesBefore = originalObject.id + dataObject.Schema;
-                var restrictedCreatedBefore =
-                    dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
-                var restrictedModifiedBefore = dataObject.Modified.ToString(CultureInfo.InvariantCulture)
-                                               + dataObject.ModifiedAsMillisecondsEpochTime;
-                var restrictedVersionInfo = dataObject.VersionHistory.ToJsonString();
-                restrictedPropertiesBefore = restrictedPropertiesBefore + restrictedCreatedBefore + restrictedModifiedBefore
-                                             + restrictedVersionInfo;
-
-                action(dataObject);
-                //* set here to override any resetting of restricted properties set only internally by the action()
-                DataStoreCreateCapabilities.WalkGraphAndUpdateEntityMeta(dataObject);
-                DisableOptimisticConcurrencyIfRequested(dataObject); //- has to happen after action
-
-                var restrictedPropertiesAfter = originalObject.id + dataObject.Schema;
-                var restrictedCreatedAfter =
-                    dataObject.Created.ToString(CultureInfo.InvariantCulture) + dataObject.CreatedAsMillisecondsEpochTime;
-                var restrictedModifiedAfter = dataObject.Modified.ToString(CultureInfo.InvariantCulture)
-                                              + dataObject.ModifiedAsMillisecondsEpochTime;
-                var restrictedVersionInfoAfter = dataObject.VersionHistory.ToJsonString();
-                restrictedPropertiesAfter = restrictedPropertiesAfter + restrictedCreatedAfter + restrictedModifiedAfter
-                                            + restrictedVersionInfoAfter;
-
-                Guard.Against(
-                    restrictedPropertiesBefore != restrictedPropertiesAfter,
-                    "Cannot change restricted properties [" + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, "
-                                                            + $"{nameof(Aggregate.Created)}, {nameof(Aggregate.CreatedAsMillisecondsEpochTime)}, "
-                                                            + $"{nameof(Aggregate.Modified)}, {nameof(Aggregate.ModifiedAsMillisecondsEpochTime)},  "
-                                                            + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObject.id}");
-
-                dataObject.Modified = DateTime.UtcNow;
-                dataObject.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();
-
-                var clone = dataObject.Clone();
-
-                var etagUpdated = new Action<string>(newTag => clone.Etag = newTag);
-
-                etagUpdated += newTag =>
+                    if (modelQueuedForPersistence != null)
                     {
-                    var previousMatches = this.eventAggregator.AllMessages.OfType<QueuedUpdateOperation<T>>()
-                                              .Where(q => q.Committed == false && q.AggregateId == dataObject.id).ToList();
-                    previousMatches.ForEach(queuedUpdate => { queuedUpdate.NewModel.Etag = newTag; /* update other queued updates */ });
-                    };
+                        var itemToReturnToCaller =
+                            modelQueuedForPersistence
+                                .Clone(); //* return clones otherwise its to easy to change the referenced object before committing 
+                        itemToReturnToCaller.Etag = "waiting to be committed";
+                        (modelQueuedForPersistence as IEtagUpdated).EtagUpdated += s =>
+                            {
+                            itemToReturnToCaller.Etag = s;
+                            };
+                        results.Add(itemToReturnToCaller);
+                    }
+                    else
+                    {
+                        var modelToPersist =
+                            originalObject
+                                .Clone(); //* clones originalObject so it will always be correct when used as the BeforeModel in the QueuedUpdateOperation below.
+                        PerformUpdateOfProperties(ref modelToPersist);
 
-                this.eventAggregator.Collect(
-                    new QueuedUpdateOperation<T>(
-                        methodName,
-                        dataObject,
-                        originalObject,
-                        DsConnection,
-                        this.eventAggregator,
-                        etagUpdated));
+                        await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName);
 
-                await this.incrementVersions.IncrementAggregateVersionOfQueuedItem(dataObject, methodName);
+                        this.eventAggregator.Collect(
+                            new QueuedUpdateOperation<T>(
+                                methodName,
+                                modelToPersist,
+                                originalObject,
+                                DsConnection,
+                                this.eventAggregator
+                                ));
+                        
+                        var itemToReturnToCaller =
+                            modelToPersist
+                                .Clone(); //* return clones otherwise its to easy to change the referenced object before committing 
+                        itemToReturnToCaller.Etag = "waiting to be committed";
+                        results.Add(itemToReturnToCaller);
+                        (modelToPersist as IEtagUpdated).EtagUpdated += newTag => itemToReturnToCaller.Etag = newTag;
+                    }
+                }
 
-                clone.Etag = "waiting to be committed";
-                clones.Add(clone);
+                return results;
             }
-
-            //- clone otherwise its to easy to change the referenced object before committing
-            return clones;
 
             void DisableOptimisticConcurrencyIfRequested(T dataObject)
             {
@@ -187,6 +162,47 @@
                     dataObject.Etag = null;
                 }
             }
+
+            void PerformUpdateOfProperties(ref T objectToUpdate)
+            {
+                //* set here so changes are counted in the restrictedProperties calculation 
+                DataStoreCreateCapabilities.WalkGraphAndUpdateEntityMeta(objectToUpdate);
+
+                var originalObjectId = objectToUpdate.id;
+
+                var restrictedIdBefore = objectToUpdate.id + objectToUpdate.Schema;
+                var restrictedCreatedBefore = objectToUpdate.Created.ToString(CultureInfo.InvariantCulture)
+                                              + objectToUpdate.CreatedAsMillisecondsEpochTime;
+                var restrictedModifiedBefore = objectToUpdate.Modified.ToString(CultureInfo.InvariantCulture)
+                                               + objectToUpdate.ModifiedAsMillisecondsEpochTime;
+                var restrictedVersionInfo = objectToUpdate.VersionHistory.ToJsonString();
+                restrictedIdBefore = restrictedIdBefore + restrictedCreatedBefore + restrictedModifiedBefore + restrictedVersionInfo;
+
+                action(objectToUpdate);
+                //* set here to override any resetting of restricted properties set only internally by the action()
+                DataStoreCreateCapabilities.WalkGraphAndUpdateEntityMeta(objectToUpdate);
+                DisableOptimisticConcurrencyIfRequested(objectToUpdate); //- has to happen after action
+
+                var restrictedIdAfter = objectToUpdate.id + objectToUpdate.Schema;
+                var restrictedCreatedAfter = objectToUpdate.Created.ToString(CultureInfo.InvariantCulture)
+                                             + objectToUpdate.CreatedAsMillisecondsEpochTime;
+                var restrictedModifiedAfter = objectToUpdate.Modified.ToString(CultureInfo.InvariantCulture)
+                                              + objectToUpdate.ModifiedAsMillisecondsEpochTime;
+                var restrictedVersionInfoAfter = objectToUpdate.VersionHistory.ToJsonString();
+                restrictedIdAfter = restrictedIdAfter + restrictedCreatedAfter + restrictedModifiedAfter + restrictedVersionInfoAfter;
+
+                Guard.Against(
+                    restrictedIdBefore != restrictedIdAfter,
+                    "Cannot change restricted properties [" + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, "
+                                                            + $"{nameof(Aggregate.Created)}, {nameof(Aggregate.CreatedAsMillisecondsEpochTime)}, "
+                                                            + $"{nameof(Aggregate.Modified)}, {nameof(Aggregate.ModifiedAsMillisecondsEpochTime)},  "
+                                                            + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObjectId}");
+
+                objectToUpdate.Modified = DateTime.UtcNow;
+                objectToUpdate.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();
+            }
         }
+
+
     }
 }
