@@ -8,7 +8,7 @@
     <PackageId>DataStore</PackageId>
     <PackageTags>CosmosDb;Azure;DocumentDB,Data Access;Transactions;Paging;LINQ;Profiling</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
-    <Version>13.7.0-alpha</Version>
+    <Version>13.8.0-alpha</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
