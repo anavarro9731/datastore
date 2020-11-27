@@ -48,6 +48,7 @@ function global:Run {
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models" 
         ) `
-        -nugetApiKey $nugetApiKey
+        -nugetApiKey $nugetApiKey `
+        -nugetFeedUri "https://api.nuget.org/v3/index.json"
     }
 }
