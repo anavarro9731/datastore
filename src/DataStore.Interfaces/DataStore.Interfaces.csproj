@@ -3,7 +3,7 @@
     <Description>DataStore.Interfaces Class Library</Description>
     <Authors>Aaron Navarro</Authors>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
     <AssemblyName>DataStore.Interfaces</AssemblyName>
     <PackageId>DataStore.Interfaces</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
@@ -12,6 +12,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="CircuitBoard" Version="4.3.0-alpha" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>

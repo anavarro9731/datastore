@@ -3,7 +3,7 @@
     <Description>A Document-Centric Data Access Framework</Description>
     <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
     <AssemblyName>DataStore</AssemblyName>
     <PackageId>DataStore</PackageId>
     <PackageTags>CosmosDb;Azure;DocumentDB,Data Access;Transactions;Paging;LINQ;Profiling</PackageTags>
@@ -12,7 +12,6 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CircuitBoard" Version="4.1.0-alpha" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
