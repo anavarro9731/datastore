@@ -51,7 +51,8 @@ class Car : Aggregate {
 Create a new `DataStore` object in the following 3 steps:
 ```
 var s = new CosmosSettings(
-				authorizationKey, 
+				authorizationKey,
+                containerName, 
 				databaseName, 
 				endpointUrl
 			);
