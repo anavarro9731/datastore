@@ -38,7 +38,7 @@
 
             var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
 
-            return new CosmosSettings(cosmosSettings.AuthKey, cosmosSettings.DatabaseName + testName, cosmosSettings.EndpointUrl);
+            return new CosmosSettings(cosmosSettings.AuthKey, testName, cosmosSettings.DatabaseName, cosmosSettings.EndpointUrl);
         }
 
         private CosmosDbTestHarness(IDataStore dataStore)

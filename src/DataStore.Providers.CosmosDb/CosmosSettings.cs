@@ -4,16 +4,19 @@
 
     public class CosmosSettings : IDatabaseSettings
     {
-        public CosmosSettings(string authKey, string databaseName, string endpointUrl)
+        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl)
         {
             AuthKey = authKey;
             DatabaseName = databaseName;
             EndpointUrl = endpointUrl;
+            ContainerName = containerName;
         }
 
         public string AuthKey { get; }
 
         public string DatabaseName { get; }
+        
+        public string ContainerName { get; }
 
         public string EndpointUrl { get; }
 

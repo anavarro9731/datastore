@@ -25,7 +25,7 @@
 
         public CosmosDbRepository(CosmosSettings settings)
         {
-            this.collectionUri = UriFactory.CreateDocumentCollectionUri(settings.DatabaseName, settings.DatabaseName);
+            this.collectionUri = UriFactory.CreateDocumentCollectionUri(settings.DatabaseName, settings.ContainerName);
             this.settings = settings;
             ResetClient();
         }
@@ -274,7 +274,7 @@
                 throw new ArgumentException("id is required for update/delete/read operation");
             }
 
-            var docLink = UriFactory.CreateDocumentUri(this.settings.DatabaseName, this.settings.DatabaseName, id.ToString());
+            var docLink = UriFactory.CreateDocumentUri(this.settings.DatabaseName, this.settings.ContainerName, id.ToString());
             return docLink;
         }
 
