@@ -13,11 +13,11 @@ pool:
 steps:
 
 - powershell: |
-   & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
+   & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1
    Run -BuildAndTest   
   displayName: 'Build and Test'
 
 - powershell: |
-   & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
+   & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1
    Run -PackAndPublish -nugetApiKey $(nuget-api-key)   
   displayName: 'Pack and Publish'
