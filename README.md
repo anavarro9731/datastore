@@ -21,19 +21,20 @@ It supports basic CRUD operations on any C# object via LINQ queries with many ad
 * Automatic retries of queries when limits are exceeded
 * Session-based vs Direct-to-Database views of data. 
 Using a feature called "Event Replay" queries by default will reflect all previous changes made in the session. 
-This is can be circumnvented by choosing to use the "WithoutEventReplay" option on any call.
+This is can be circumvented by choosing to use the "WithoutEventReplay" option on any call.
 Some features such as Continue/Take, and OrderBy/ThenBy are available only WithoutEventReplay for obvious reasons.
 * Document-level security (see the WhenCallingReadWithAuthorisation test in Datastore.Tests/IDocumentRepository/Query/)
 
 DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and does not require .NET Core.
 
 ## Roadmap
-
+* Upgrade to v4 SDK (Feb 2020)
 * Better documentation of API features
-* Update Version History on active instances post-commit
+* Update Version History on instances in the current session post-commit
 * Add Performance Tracing
-* Partitioned Collection Support (partition on Id or ClassName)
-* Upgrade to v4 SDK
+* Partitioned Collection Support 
+  Currently on a single partition is supported. Azure does allow partitions to grow
+  without restriction now, and manages this for you, but some may prefer partitioning on Id or ClassName)
 * MartenDB implementation
 
 ## Usage
@@ -103,7 +104,7 @@ or
 
 See IDataStoreQueryCapabilities.cs for the full list of supported methods.
 
-#### Transactions
+#### Sessions
 
 Operations are not committed by default.
 They are queued as events in the EventAggregator object.
