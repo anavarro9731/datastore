@@ -39,7 +39,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
                 id = this.carId,
                 Make = "Volvo",
                 Modified = DateTime.UtcNow.AddDays(-1),
-                ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
+                ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToMillisecondsEpochTime()
             };
 
             var result = await this.testHarness.DataStore.Create(newCar);
