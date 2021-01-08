@@ -2,6 +2,8 @@
 
 A Document-Centric Data Access Framework for Azure CosmosDb (DocumentDB client)
 
+[Change Log](ChangeLog.md)
+
 ## Overview
 
 DataStore is an easy-to-use, data-access framework, which maps POCO C# classes to documents. 
