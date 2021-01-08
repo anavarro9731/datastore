@@ -9,7 +9,7 @@ namespace DataStore.Models
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
 
-    public static class DocumentRepositoryExtensions
+    internal static class DocumentRepositoryExtensions
     {
         
         public static async Task<bool> Exists(this IDocumentRepository repo, IAggregate model, string methodCalled = null)  

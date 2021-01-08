@@ -2,7 +2,7 @@
 {
     using System.Security;
 
-    public static class SecureStringExtensions
+    internal static class SecureStringExtensions
     {
         public static SecureString ToSecureString(this string unsecuredString)
         {

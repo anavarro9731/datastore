@@ -7,7 +7,7 @@
     using System.Runtime.CompilerServices;
     using Newtonsoft.Json;
 
-    public static class Objects
+    internal static class Objects
     {
         private static readonly char[] SystemTypeChars =
         {

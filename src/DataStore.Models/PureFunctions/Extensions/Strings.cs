@@ -2,7 +2,7 @@
 {
     using System;
 
-    public static class Strings
+    internal static class Strings
     {
         /// <summary>
         ///     Return the substring after to but not including the first instance of 'c'.
