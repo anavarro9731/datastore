@@ -70,7 +70,7 @@ namespace DataStore
                         //set created datetime if this is null
                         if (((double)p.GetValue(current, null)).Equals(default))
                         {
-                            p.SetValue(current, DateTime.UtcNow.ConvertToSecondsEpochTime(), null);
+                            p.SetValue(current, DateTime.UtcNow.ConvertToMillisecondsEpochTime(), null);
                         }
                     }
                     else if (!p.PropertyType.IsSystemType())

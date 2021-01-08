@@ -198,7 +198,7 @@
                                                             + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObjectId}");
 
                 objectToUpdate.Modified = DateTime.UtcNow;
-                objectToUpdate.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToSecondsEpochTime();
+                objectToUpdate.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToMillisecondsEpochTime();
             }
         }
 

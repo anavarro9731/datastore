@@ -52,7 +52,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
                 id = this.carId,
                 Make = "Volvo",
                 Modified = DateTime.UtcNow.AddDays(-1),
-                ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToSecondsEpochTime()
+                ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.AddDays(-1).ConvertToMillisecondsEpochTime()
             };
             this.testHarness.AddItemDirectlyToUnderlyingDb(this.existingCar);
 
