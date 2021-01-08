@@ -45,7 +45,6 @@ function global:Run {
             "DataStore.Interfaces.LowLevel",
             "DataStore.Models"       	         	    			
         ) -unlistedProjects @(
-            "DataStore.Interfaces.LowLevel",
             "DataStore.Models" 
         ) `
         -nugetApiKey $nugetApiKey `
