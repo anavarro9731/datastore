@@ -9,7 +9,7 @@
     /// <summary>
     ///     Enables the efficient, dynamic composition of query predicates.
     /// </summary>
-    public static class PredicateBuilder
+    internal static class PredicateBuilder
     {
         /// <summary>
         ///     Combines the first predicate with the second using the logical "and".

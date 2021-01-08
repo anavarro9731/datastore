@@ -2,7 +2,7 @@
 {
     using System;
 
-    public static class Dates
+    internal static class Dates
     {
         public static DateTime ConvertFromMillisecondsEpochTime(this double src) =>
             new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(src);

@@ -2,7 +2,7 @@
 {
     using System;
 
-    public static class Guard
+    internal static class Guard
     {
         public static void Against(Func<bool> test, string errorMessage, Guid? code = null)
         {
