@@ -44,7 +44,7 @@
                 why things are not appearing.
                 */
 
-                var userPermission = user.DatabasePermissions.Single(x => x.Id == requiredPermission.Id);
+                var userPermission = user.DatabasePermissions.Single(x => x.PermissionName == requiredPermission.PermissionName);
                 if (scopedData.All(sd => sd.ScopeReferences.Intersect(userPermission.ScopeReferences).Any())) return dataBeingQueried;
 
                 /*

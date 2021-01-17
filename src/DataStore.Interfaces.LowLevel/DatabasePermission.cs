@@ -1,7 +1,5 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
-    using System;
-
     public class DatabasePermission
     {
         public static bool operator ==(DatabasePermission a, DatabasePermission b)
@@ -24,13 +22,10 @@
 
         public static bool operator !=(DatabasePermission a, DatabasePermission b) => !(a == b);
 
-        public DatabasePermission(Guid id, string permissionName)
+        public DatabasePermission(string permissionName)
         {
-            Id = id;
             PermissionName = permissionName;
         }
-
-        public Guid Id { get; set; }
 
         public string PermissionName { get; set; }
 
@@ -42,8 +37,8 @@
             return Equals((DatabasePermission)obj);
         }
 
-        public override int GetHashCode() => Id.GetHashCode();
+        public override int GetHashCode() => PermissionName.GetHashCode();
 
-        protected bool Equals(DatabasePermission other) => Id.Equals(other.Id);
+        protected bool Equals(DatabasePermission other) => PermissionName.Equals(other.PermissionName);
     }
 }

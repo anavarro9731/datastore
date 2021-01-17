@@ -13,7 +13,7 @@
     {
         public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, DatabasePermission permission)
         {
-            var count = identity.DatabasePermissions.Count(p => p.Id == permission.Id);
+            var count = identity.DatabasePermissions.Count(p => p.PermissionName == permission.PermissionName);
 
             if (count == 1)
             {

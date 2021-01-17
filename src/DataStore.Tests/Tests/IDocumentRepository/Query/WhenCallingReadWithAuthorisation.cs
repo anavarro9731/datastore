@@ -56,14 +56,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         [Fact]
         public async void ItShouldFailWhenUserHasOverlappingPermissions()
         {
-            Setup();
-
+            var nullScopeReferenceTypes = false;
+            Setup(nullScopeReferenceTypes);
+            
             var pi2s1 = this.companyBDivision1Office2;
             var permission2Instance = new DatabasePermissionInstance(
                 DatabasePermissions.READ,
                 new List<DatabaseScopeReference>
                 {
-                    new DatabaseScopeReference(pi2s1.id, pi2s1.GetType().FullName, pi2s1.Name)
+                    new DatabaseScopeReference(pi2s1.id, nullScopeReferenceTypes ? null :pi2s1.GetType().FullName , pi2s1.Name)
                 });
 
             this.user.DatabasePermissions.Add(permission2Instance);
@@ -77,9 +78,25 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         }
 
         [Fact]
-        public async void ItShouldSucceedWhenRequestingOnlyVolvosMatchingTheUsecarFromDatabasersPermissionsAreRequested()
+        public async void ItShouldSucceedWhenRequestingOnlyVolvosMatchingTheUsersCarFromDatabasePermissionsAreRequested()
         {
             Setup();
+
+            // When
+            this.carsFromDatabase = await this.testHarness.DataStore.Read<Car>(
+                                        car => car.id == this.volvo1Id || car.id == this.volvo2Id,
+                                        o => o.AuthoriseFor(this.user));
+
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregatesQueriedOperation<Car>));
+            Assert.Equal(2, this.carsFromDatabase.Count());
+            Assert.Equal(1, this.carsFromDatabase.Count(x => x.id == this.volvo1Id));
+            Assert.Equal(1, this.carsFromDatabase.Count(x => x.id == this.volvo2Id));
+        }
+        
+        [Fact]
+        public async void ItShouldSucceedWhenRequestingOnlyVolvosMatchingTheUsersCarFromDatabasePermissionsAreRequestedAndPermissionsAreCreatedWithoutScopeReferenceTypeNamesDefined()
+        {
+            Setup(true);
 
             // When
             this.carsFromDatabase = await this.testHarness.DataStore.Read<Car>(
@@ -103,7 +120,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Assert.NotNull(carFromDatabase);
         }
 
-        private void Setup()
+        private void Setup(bool nullScopeReferenceTypes = false)
         {
             // Given
             var scopeHierarchy = ScopeHierarchy.Create().WithScopeLevel<Company>(x => Guid.Empty)
@@ -167,9 +184,9 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 DatabasePermissions.READ,
                 new List<DatabaseScopeReference>
                 {
-                    new DatabaseScopeReference(pi1s1.id, pi1s1.GetType().FullName, pi1s1.Name),
-                    new DatabaseScopeReference(pi1s2.id, pi1s2.GetType().FullName, pi1s2.Name),
-                    new DatabaseScopeReference(pi1s3.id, pi1s3.GetType().FullName, pi1s3.Name)
+                    new DatabaseScopeReference(pi1s1.id, nullScopeReferenceTypes ? null : pi1s1.GetType().FullName, pi1s1.Name),
+                    new DatabaseScopeReference(pi1s2.id, nullScopeReferenceTypes ? null : pi1s2.GetType().FullName, pi1s2.Name),
+                    new DatabaseScopeReference(pi1s3.id, nullScopeReferenceTypes ? null : pi1s3.GetType().FullName, pi1s3.Name)
                 });
 
             var pi2s1 = this.companyBDivision2Office1;
@@ -177,7 +194,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 DatabasePermissions.DELETE,
                 new List<DatabaseScopeReference>
                 {
-                    new DatabaseScopeReference(pi2s1.id, pi2s1.GetType().FullName, pi2s1.Name)
+                    new DatabaseScopeReference(pi2s1.id, nullScopeReferenceTypes ? null :  pi2s1.GetType().FullName, pi2s1.Name)
                 });
 
             this.user.DatabasePermissions.Add(permission1Instance);
