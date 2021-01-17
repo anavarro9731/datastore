@@ -6,7 +6,7 @@
     public class DatabasePermissionInstance : DatabasePermission
     {
         public DatabasePermissionInstance(DatabasePermission databasePermission, List<DatabaseScopeReference> scopeReferences)
-            : base(databasePermission.Id, databasePermission.PermissionName)
+            : base(databasePermission.PermissionName)
         {
             ScopeReferences = scopeReferences;
         }

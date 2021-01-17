@@ -20,14 +20,14 @@
 
         public DatabaseScopeReference()
         {
-            //serialiser
+            //* serialiser
         }
 
-        public DatabaseScopeReference(Guid idOfScopeObject, string typeOfOwner, string scopeObjectDebugId = null)
+        public DatabaseScopeReference(Guid idOfScopeObject, string typeOfOwner = null, string scopeObjectDebugId = null)
         {
             ScopeObjectId = idOfScopeObject;
-            ScopeObjectType = typeOfOwner;
-            ScopeObjectDebugId = scopeObjectDebugId;
+            ScopeObjectType = typeOfOwner;  //* here for debugging and logging use, would normally be the .net type
+            ScopeObjectDebugId = scopeObjectDebugId; //* friendly id providing further granularity in debugging and logging, eg. "company xyz"
         }
 
         public string ScopeObjectDebugId { get; set; }
@@ -55,13 +55,12 @@
         {
             var hash = 13;
             hash = hash * 7 + ScopeObjectId.GetHashCode();
-            hash = hash * 7 + ScopeObjectType.GetHashCode();
+            //* don't include typename and debugId as their optional
             return hash;
         }
 
         bool IEquatable<DatabaseScopeReference>.Equals(DatabaseScopeReference other) => Equals(other);
 
-        protected bool PropertiesAreEqual(DatabaseScopeReference other) =>
-            ScopeObjectId.Equals(other.ScopeObjectId) && ScopeObjectType.Equals(other.ScopeObjectType);
+        protected bool PropertiesAreEqual(DatabaseScopeReference other) => ScopeObjectId.Equals(other.ScopeObjectId);
     }
 }
