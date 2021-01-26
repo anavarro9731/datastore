@@ -4,7 +4,7 @@ A Document-Centric Data Access Framework for Azure CosmosDb
 
 [Change Log](ChangeLog.md)
 
-Other databases can be supported if you are willing to write a provider implmenting the IDocumentStore interface.
+Support for other databases is possible if you are willing to write a provider implmenting the `IDocumentStore` interface.
 
 ## Overview
 
