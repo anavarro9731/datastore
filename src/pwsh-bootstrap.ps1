@@ -50,4 +50,17 @@ function global:Run {
         -nugetApiKey $nugetApiKey `
         -nugetFeedUri "https://api.nuget.org/v3/index.json"
     }
+
+    if ($CreateRelease) {
+        Create-Release -projects @(
+        "DataStore",
+        "DataStore.Providers.CosmosDb",
+        "DataStore.Interfaces",
+        "DataStore.Interfaces.LowLevel",
+        "DataStore.Models",
+        "DataStore.Tests"
+        ) `
+        -githubUserName "anavarro9731" `
+        -repository "soap"
+    }
 }
