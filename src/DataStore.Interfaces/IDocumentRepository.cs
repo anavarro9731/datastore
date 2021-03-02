@@ -15,7 +15,7 @@ namespace DataStore.Interfaces
 
         Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new();
 
-        IQueryable<T> CreateDocumentQuery<T>(
+        IQueryable<T> CreateQueryable<T>(
             object /* take as an object here so that you can take the more
                                                      * restrictive I..ClientSide interface at the entry point
                                                      * and dramatically cleanup the intellisense experience */

@@ -31,14 +31,14 @@
 
         public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
         {
-            var query = CreateDocumentQuery<T>();
+            var query = CreateQueryable<T>();
 
             var count = aggregatesCounted.Predicate == null ? query.Count() : query.Count(aggregatesCounted.Predicate);
 
             return Task.FromResult(count);
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(object queryOptions = null) where T : class, IAggregate, new()
+        public IQueryable<T> CreateQueryable<T>(object queryOptions = null) where T : class, IAggregate, new()
         {
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();

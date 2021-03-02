@@ -68,7 +68,7 @@
         public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
             where T : class, IAggregate, new()
         {
-            var query = DataStore.DocumentRepository.CreateDocumentQuery<T>();
+            var query = DataStore.DocumentRepository.CreateQueryable<T>();
             var updatedQuery = extendQueryable?.Invoke(query) ?? query;
 
             var results = Task.Run(

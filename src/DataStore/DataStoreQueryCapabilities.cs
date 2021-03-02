@@ -33,7 +33,7 @@
         public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate, O options, string methodName = null)
             where T : class, IAggregate, new() where O : ReadOptionsLibrarySide, new()
         {
-            var queryable = DbConnection.CreateDocumentQuery<T>();
+            var queryable = DbConnection.CreateQueryable<T>();
 
             if (predicate != null)
             {
@@ -59,7 +59,7 @@
         {
             predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
-            var queryable = DbConnection.CreateDocumentQuery<T>().Where(predicate);
+            var queryable = DbConnection.CreateQueryable<T>().Where(predicate);
 
             var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);

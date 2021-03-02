@@ -114,7 +114,7 @@
                                                             .CollectAndForward(
                                                                 new AggregatesQueriedOperation<T>(
                                                                     methodName,
-                                                                    DsConnection.CreateDocumentQuery<T>().Where(predicate1)))
+                                                                    DsConnection.CreateQueryable<T>().Where(predicate1)))
                                                             .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
                     setObjectsToBeDeleted(objectToBeDeletedFromDb.ToList());
                 }
