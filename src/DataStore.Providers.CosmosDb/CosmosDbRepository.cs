@@ -2,30 +2,31 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Data;
     using System.Linq;
+    using System.Net;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
     using DataStore.Models.PureFunctions.Extensions;
-    using Microsoft.Azure.Documents;
-    using Microsoft.Azure.Documents.Client;
-    using Microsoft.Azure.Documents.Linq;
+    using Microsoft.Azure.Cosmos;
+    using Microsoft.Azure.Cosmos.Linq;
+    using Newtonsoft.Json.Linq;
 
     public class CosmosDbRepository : IDocumentRepository, IResetData
     {
-        private readonly Uri collectionUri;
+        private readonly Container container;
 
         private readonly CosmosSettings settings;
 
-        private DocumentClient client;
+        private CosmosClient client;
 
         public CosmosDbRepository(CosmosSettings settings)
         {
-            this.collectionUri = UriFactory.CreateDocumentCollectionUri(settings.DatabaseName, settings.ContainerName);
+            CosmosDbUtilities.CreateClient(settings, out this.client);
+            this.container = this.client.GetContainer(settings.DatabaseName, settings.ContainerName);
             this.settings = settings;
             ResetClient();
         }
@@ -39,50 +40,35 @@
                 throw new ArgumentNullException(nameof(aggregateAdded));
             }
 
-            var result = await this.client.CreateDocumentAsync(this.collectionUri, aggregateAdded.Model).ConfigureAwait(false);
+            var result = await this.container.CreateItemAsync(aggregateAdded.Model).ConfigureAwait(false);
 
-            aggregateAdded.Model.Etag = result.Resource.ETag; //- update it
+            aggregateAdded.Model.Etag = result.ETag; //- update it
 
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
 
         public async Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
         {
-            var query = CreateDocumentQuery<T>();
+            var query = CreateQueryable<T>();
 
             var count = await query.Where(aggregatesCounted.Predicate).CountAsync().ConfigureAwait(false);
 
             return count;
         }
 
-        public IQueryable<T> CreateDocumentQuery<T>(object queryOptions = null) where T : class, IAggregate, new()
+        public IQueryable<T> CreateQueryable<T>(object queryOptions = null) where T : class, IAggregate, new()
         {
             var schema = typeof(T).FullName;
-            var query = this.client.CreateDocumentQuery<T>(
-                this.collectionUri,
-                new FeedOptions
-                {
-                    RequestContinuation =
-                        (queryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
-                    MaxItemCount = (queryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
-                    ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
-                    EnableCrossPartitionQuery = true,
-                    PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                }).Where(i => i.Schema == schema);
+            var query = this.container.GetItemLinqQueryable<T>().Where(i => i.Schema == schema);
 
             return query;
         }
 
         public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            var docLink = CreateDocumentSelfLinkFromId(aggregateHardDeleted.Model.id);
-
-            var result = await this.client.DeleteDocumentAsync(
-                             docLink,
-                             new RequestOptions
-                             {
-                                 PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                             }).ConfigureAwait(false);
+            var result = await this.container.DeleteItemAsync<T>(
+                             aggregateHardDeleted.Model.id.ToString(),
+                             new PartitionKey(Aggregate.PartitionKeyValue)).ConfigureAwait(false);
 
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
             aggregateHardDeleted.Model.Etag = "item was deleted";
@@ -96,6 +82,7 @@
         public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
             where T : class, IAggregate, new()
         {
+            
             var results = new List<T>();
             {
                 if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> orderByOptions)
@@ -103,35 +90,51 @@
                     aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
                     if (orderByOptions.OrderByParameters.Count > 1)
                     {
-                        await CreateIndexes(orderByOptions.OrderByParameters).ConfigureAwait(false);
+                        //TODO
+                        //await CreateIndexes(orderByOptions.OrderByParameters).ConfigureAwait(false);
                     }
                 }
 
-                var documentQuery = aggregatesQueried.Query.AsDocumentQuery();
-
-                while (HaveLessRecordsThanUserRequested() && documentQuery.HasMoreResults)
-                {
-                    var feedResponseEnumerable = await documentQuery.ExecuteNextAsync<Document>().ConfigureAwait(false);
-
-                    aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
-
-                    if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
+                /* it would be quite a lot easier to just use the aggregatsQueried.Query.ToIterator()
+                but that would give you a typed iterator, and no way to get back an untyped feed response
+                which you must have in order to at the udpated ETag and copy it back to our customer eTag property.
+                So for now we convert the CosmosLINQQueryable into a generic one. */
+                
+                using (var setIterator = this.container.GetItemQueryIterator<dynamic>(
+                    aggregatesQueried.Query.ToQueryDefinition(),
+                    (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
+                    new QueryRequestOptions
                     {
-                        throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
+                        MaxItemCount = (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
+                        ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
+                        PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                    }))
+                {
+                    while (HaveLessRecordsThanUserRequested() && setIterator.HasMoreResults)
+                    {
+                        var feedResponseEnumerable = await setIterator.ReadNextAsync();
+
+                        aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
+
+                        if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
+                        {
+                            throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
+                        }
+
+                        //set updated etag
+                        var typedResponses = feedResponseEnumerable.Select(
+                            feedItem =>
+                                {
+                                var asT = ((JObject)feedItem).ToObject<T>()
+                                                             /* set Etag */
+                                                             .Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
+                                return asT;
+                                });
+
+                        results.AddRange(typedResponses);
+
+                        SetContinuationToken(feedResponseEnumerable);
                     }
-
-                    var typedResponses = feedResponseEnumerable.Select(
-                        feedItem =>
-                            {
-                            var asT = ((T)(dynamic)feedItem)
-                                /* set Etag */
-                                .Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
-                            return asT;
-                            });
-
-                    results.AddRange(typedResponses);
-
-                    SetContinuationToken(feedResponseEnumerable);
                 }
 
                 return results;
@@ -144,63 +147,60 @@
                 return userRequestedLimit == null || results.Count < userRequestedLimit;
             }
 
-            void SetContinuationToken(FeedResponse<Document> result)
+            void SetContinuationToken(FeedResponse<dynamic> result)
             {
                 if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> continueAndTakeOptions
                     && continueAndTakeOptions.MaxTake != null)
                 {
-                    continueAndTakeOptions.NextContinuationTokenValue = new ContinuationToken(result.ResponseContinuation);
+                    continueAndTakeOptions.NextContinuationTokenValue = new ContinuationToken(result.ContinuationToken);
                 }
             }
 
-            async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
-            {
-                // Retrieve the container's details
-                var containerResponse = await this.client.ReadDocumentCollectionAsync(this.collectionUri).ConfigureAwait(false);
-                // Add a composite index
-                var compositePaths = new Collection<CompositePath>();
-
-                foreach (var valueTuple in fieldName_IsDescending)
-                    compositePaths.Add(
-                        new CompositePath
-                        {
-                            Path = $"/{valueTuple.Item1}",
-                            Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
-                        });
-
-                containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
-                // Update container with changes
-                await this.client.ReplaceDocumentCollectionAsync(containerResponse.Resource).ConfigureAwait(false);
-
-                long indexTransformationProgress;
-                do
-                {
-                    // retrieve the container's details
-                    var container = await this.client.ReadDocumentCollectionAsync(
-                                        this.collectionUri,
-                                        new RequestOptions
-                                        {
-                                            PopulateQuotaInfo = true
-                                        }).ConfigureAwait(false);
-                    // retrieve the index transformation progress from the result
-                    indexTransformationProgress = container.IndexTransformationProgress;
-                }
-                while (indexTransformationProgress < 100);
-            }
+            // async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
+            // {
+            //     // Retrieve the container's details
+            //     var containerResponse = await this.client.ReadDocumentCollectionAsync(this.collectionUri).ConfigureAwait(false);
+            //     // Add a composite index
+            //     var compositePaths = new Collection<CompositePath>();
+            //
+            //     foreach (var valueTuple in fieldName_IsDescending)
+            //         compositePaths.Add(
+            //             new CompositePath
+            //             {
+            //                 Path = $"/{valueTuple.Item1}",
+            //                 Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
+            //             });
+            //
+            //     containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
+            //     // Update container with changes
+            //     await this.client.ReplaceDocumentCollectionAsync(containerResponse.Resource).ConfigureAwait(false);
+            //
+            //     long indexTransformationProgress;
+            //     do
+            //     {
+            //         // retrieve the container's details
+            //         var container = await this.client.ReadDocumentCollectionAsync(
+            //                             this.collectionUri,
+            //                             new RequestOptions
+            //                             {
+            //                                 PopulateQuotaInfo = true
+            //                             }).ConfigureAwait(false);
+            //         // retrieve the index transformation progress from the result
+            //         indexTransformationProgress = container.IndexTransformationProgress;
+            //     }
+            //     while (indexTransformationProgress < 100);
+            // }
         }
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var query = CreateDocumentQuery<T>();
+            var query = CreateQueryable<T>();
             var count = await query.Where(d => d.id == aggregateQueriedById.Id).CountAsync().ConfigureAwait(false);
             if (count == 0) return default;
 
-            var result = (await this.client.ReadDocumentAsync<Document>(
-                              CreateDocumentSelfLinkFromId(aggregateQueriedById.Id),
-                              new RequestOptions
-                              {
-                                  PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                              }).ConfigureAwait(false)).Document;
+            var result = await this.container.ReadItemAsync<T>(
+                             aggregateQueriedById.Id.ToString(),
+                             new PartitionKey(Aggregate.PartitionKeyValue)).ConfigureAwait(false);
 
             var asT = ((T)(dynamic)result)
                 /* set eTag */
@@ -214,27 +214,26 @@
 
             try
             {
-                PrepareAccessCondition(aggregateUpdated, out var condition);
                 aggregateUpdated.Model.Etag =
                     null; //- clear after copying to access condition, no reason to save and its confusing to see it, this is our eTag property, not the underlying documents
 
-                var result = await this.client.ReplaceDocumentAsync(
-                                 CreateDocumentSelfLinkFromId(aggregateUpdated.Model.id),
+                var result = await this.container.ReplaceItemAsync(
                                  aggregateUpdated.Model,
-                                 new RequestOptions
+                                 aggregateUpdated.Model.id.ToString(),
+                                 new PartitionKey(Aggregate.PartitionKeyValue),
+                                 new ItemRequestOptions
                                  {
-                                     AccessCondition = condition, PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
+                                     IfMatchEtag = preSaveTag //* can be null, note made for reference on conversion to v3 SDK
                                  }).ConfigureAwait(false);
 
                 aggregateUpdated.Model.Etag =
-                    result.Resource
-                          .ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
+                    result.ETag; //- update etag with value from underlying document and in doing so send it back to caller, see UpdateOperation
 
                 aggregateUpdated.StateOperationCost = result.RequestCharge;
             }
-            catch (DocumentClientException e)
+            catch (CosmosException e)
             {
-                if (e.Error.Code == "PreconditionFailed")
+                if (e.StatusCode == HttpStatusCode.PreconditionFailed)
                 {
                     throw new DBConcurrencyException(
                         $"Etag {preSaveTag} on {aggregateUpdated.Model.GetType().FullName} with id {aggregateUpdated.Model.id} is outdated",
@@ -242,22 +241,6 @@
                 }
 
                 throw;
-            }
-
-            void PrepareAccessCondition(IDataStoreWriteOperation<T> dataStoreWriteOperation, out AccessCondition accessCondition)
-            {
-                string eTag;
-                if (!string.IsNullOrEmpty(eTag = dataStoreWriteOperation.Model.Etag))
-                {
-                    accessCondition = new AccessCondition
-                    {
-                        Condition = eTag, Type = AccessConditionType.IfMatch
-                    };
-                }
-                else
-                {
-                    accessCondition = null;
-                }
             }
         }
 
@@ -267,20 +250,9 @@
             ResetClient();
         }
 
-        private Uri CreateDocumentSelfLinkFromId(Guid id)
-        {
-            if (Guid.Empty == id)
-            {
-                throw new ArgumentException("id is required for update/delete/read operation");
-            }
-
-            var docLink = UriFactory.CreateDocumentUri(this.settings.DatabaseName, this.settings.ContainerName, id.ToString());
-            return docLink;
-        }
-
         private void ResetClient()
         {
-            this.client = new DocumentClient(new Uri(this.settings.EndpointUrl), this.settings.AuthKey);
+            CosmosDbUtilities.CreateClient(this.settings, out this.client);
         }
     }
 }

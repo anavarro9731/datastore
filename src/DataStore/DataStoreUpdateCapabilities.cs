@@ -90,7 +90,7 @@
                                                       .CollectAndForward(
                                                           new AggregatesQueriedOperation<T>(
                                                               methodName,
-                                                              DsConnection.CreateDocumentQuery<T>().Where(predicate)))
+                                                              DsConnection.CreateQueryable<T>().Where(predicate)))
                                                       .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
                 var matchingObjectsDbAndQueued = this.eventReplay.ApplyQueuedOperations(matchingObjectsFromDb, predicate.Compile());
