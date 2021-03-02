@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Data;
     using System.Linq;
     using System.Net;
@@ -82,7 +83,6 @@
         public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
             where T : class, IAggregate, new()
         {
-            
             var results = new List<T>();
             {
                 if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> orderByOptions)
@@ -90,8 +90,7 @@
                     aggregatesQueried.Query = orderByOptions.AddOrderBy(aggregatesQueried.Query);
                     if (orderByOptions.OrderByParameters.Count > 1)
                     {
-                        //TODO
-                        //await CreateIndexes(orderByOptions.OrderByParameters).ConfigureAwait(false);
+                        await CreateIndexes(orderByOptions.OrderByParameters).ConfigureAwait(false);
                     }
                 }
 
@@ -99,7 +98,7 @@
                 but that would give you a typed iterator, and no way to get back an untyped feed response
                 which you must have in order to at the udpated ETag and copy it back to our customer eTag property.
                 So for now we convert the CosmosLINQQueryable into a generic one. */
-                
+
                 using (var setIterator = this.container.GetItemQueryIterator<dynamic>(
                     aggregatesQueried.Query.ToQueryDefinition(),
                     (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
@@ -156,40 +155,45 @@
                 }
             }
 
-            // async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
-            // {
-            //     // Retrieve the container's details
-            //     var containerResponse = await this.client.ReadDocumentCollectionAsync(this.collectionUri).ConfigureAwait(false);
-            //     // Add a composite index
-            //     var compositePaths = new Collection<CompositePath>();
-            //
-            //     foreach (var valueTuple in fieldName_IsDescending)
-            //         compositePaths.Add(
-            //             new CompositePath
-            //             {
-            //                 Path = $"/{valueTuple.Item1}",
-            //                 Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
-            //             });
-            //
-            //     containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
-            //     // Update container with changes
-            //     await this.client.ReplaceDocumentCollectionAsync(containerResponse.Resource).ConfigureAwait(false);
-            //
-            //     long indexTransformationProgress;
-            //     do
-            //     {
-            //         // retrieve the container's details
-            //         var container = await this.client.ReadDocumentCollectionAsync(
-            //                             this.collectionUri,
-            //                             new RequestOptions
-            //                             {
-            //                                 PopulateQuotaInfo = true
-            //                             }).ConfigureAwait(false);
-            //         // retrieve the index transformation progress from the result
-            //         indexTransformationProgress = container.IndexTransformationProgress;
-            //     }
-            //     while (indexTransformationProgress < 100);
-            // }
+            async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
+            {
+                // Retrieve the container's details
+                var containerResponse = await this.container.ReadContainerAsync();
+
+                // Add a composite index
+                var compositePaths = new Collection<CompositePath>();
+
+                foreach (var valueTuple in fieldName_IsDescending)
+                {
+                    compositePaths.Add(
+                        new CompositePath
+                        {
+                            Path = $"/{valueTuple.Item1}",
+                            Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
+                        });
+                }
+
+                containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
+
+                // Update container with changes
+                await this.container.ReplaceContainerAsync(containerResponse.Resource).ConfigureAwait(false);
+
+                long indexTransformationProgress;
+                do
+                {
+                    // retrieve the container's details
+                    containerResponse = await this.container.ReadContainerAsync(
+                                            new ContainerRequestOptions
+                                            {
+                                                PopulateQuotaInfo = true
+                                            }).ConfigureAwait(false);
+
+                    // retrieve the index transformation progress from the result
+                    indexTransformationProgress =
+                        long.Parse(containerResponse.Headers["x-ms-documentdb-collection-index-transformation-progress"]);
+                }
+                while (indexTransformationProgress < 100);
+            }
         }
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
