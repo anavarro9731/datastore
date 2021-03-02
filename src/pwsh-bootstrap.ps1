@@ -10,6 +10,7 @@ function global:Run {
 		[switch]$PrepareNewVersion,
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
+        [switch]$CreateRelease,
         [Alias('nuget-key')]
         [string] $nugetApiKey,
         [Alias('ado-pat')]
