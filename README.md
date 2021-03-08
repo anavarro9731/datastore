@@ -1,6 +1,6 @@
 # DataStore
 
-A Document-Centric Data Access Framework for Azure CosmosDb 
+A Data Access Framework, with a Azure CosmosDb implementation that expands on the features of the native .NET SDK
 
 [Change Log](ChangeLog.md)
 
@@ -8,7 +8,7 @@ Support for other databases is possible if you are willing to write a provider i
 
 ## Overview
 
-DataStore is an easy-to-use, data-access framework for C# extending the basic LINQ query
+DataStore is an easy-to-use, data-access framework for C# which extends the basic LINQ query
 capabilities on C# POCO objects with many additional features including:
 
 * Paging with continuation tokens
