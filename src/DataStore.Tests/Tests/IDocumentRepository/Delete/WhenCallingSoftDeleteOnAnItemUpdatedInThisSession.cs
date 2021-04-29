@@ -9,7 +9,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingUpdateTwiceInOneSession
+    public class WhenCallingSoftDeleteOnAnItemUpdatedInThisSession
     {
         private Guid carId;
 
@@ -30,10 +30,10 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         public async void ItShouldPersistBothChangesToTheDatabase()
         {
             await Setup();
-            Assert.Equal("Toyota", (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Make);
-            Assert.Equal(2001, (await this.testHarness.DataStore.ReadActiveById<Car>(this.carId)).Year);
+            Assert.Equal("Toyota", (await this.testHarness.DataStore.ReadById<Car>(this.carId)).Make);
+            Assert.Equal(false, (await this.testHarness.DataStore.ReadById<Car>(this.carId)).Active);
         }
-        
+
         [Fact]
         public async void TheFirstAndSecondEtagShouldBeTheSameBecauseTheyAreTheSameUpdate()
         {
@@ -45,21 +45,18 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateTwiceInOneSession));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingSoftDeleteOnAnItemUpdatedInThisSession));
 
             this.carId = Guid.NewGuid();
             var existingCar = new Car
             {
-                id = this.carId, Make = "Volvo", Year = 2000
+                id = this.carId, Make = "Volvo"
             };
             this.testHarness.AddItemDirectlyToUnderlyingDb(existingCar);
 
             //When
             var update1 = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
-            var update2 = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c =>
-                {
-                    c.Year = 2001;
-                });
+            var update2 = await this.testHarness.DataStore.DeleteById<Car>(this.carId);
             await this.testHarness.DataStore.CommitChanges();
             this.firstEtag = update1.Etag;
             this.secondEtag = update2.Etag;
