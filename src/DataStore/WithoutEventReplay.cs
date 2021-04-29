@@ -88,7 +88,7 @@ namespace DataStore
         public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
             where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<T>, new()
         {
-            predicate = predicate.And(a => a.Active);
+            predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
             WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
 
