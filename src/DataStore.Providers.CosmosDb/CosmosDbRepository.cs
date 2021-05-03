@@ -161,11 +161,11 @@
                 var containerResponse = await this.container.ReadContainerAsync();
 
                 // Add a composite index
-                var compositePaths = new Collection<CompositePath>();
+                var newCompositeIndex = new Collection<CompositePath>();
 
                 foreach (var valueTuple in fieldName_IsDescending)
                 {
-                    compositePaths.Add(
+                    newCompositeIndex.Add(
                         new CompositePath
                         {
                             Path = $"/{valueTuple.Item1}",
@@ -173,26 +173,47 @@
                         });
                 }
 
-                containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(compositePaths);
+                var exists = containerResponse.Resource.IndexingPolicy.CompositeIndexes.Any(
+                    existingCompositeIndex =>
+                        {
+                        
+                        //* this existing index doesn't match the new one
+                        if (newCompositeIndex.Count != existingCompositeIndex.Count) return false;
 
-                // Update container with changes
-                await this.container.ReplaceContainerAsync(containerResponse.Resource).ConfigureAwait(false);
+                        for (int i = 0; i < existingCompositeIndex.Count; i++)
+                        {
+                            //* this existing index doesn't match the new one
+                            if (existingCompositeIndex[i].Path != newCompositeIndex[i].Path || existingCompositeIndex[i].Order != newCompositeIndex[i].Order) 
+                                return false; 
+                        }
 
-                long indexTransformationProgress;
-                do
+                        //* if we have the same number of fields, and all the paths and orders match, then it exists
+                        return true;
+                        });
+                if (!exists)
                 {
-                    // retrieve the container's details
-                    containerResponse = await this.container.ReadContainerAsync(
-                                            new ContainerRequestOptions
-                                            {
-                                                PopulateQuotaInfo = true
-                                            }).ConfigureAwait(false);
+                    containerResponse.Resource.IndexingPolicy.CompositeIndexes.Add(newCompositeIndex);
 
-                    // retrieve the index transformation progress from the result
-                    indexTransformationProgress =
-                        long.Parse(containerResponse.Headers["x-ms-documentdb-collection-index-transformation-progress"]);
+                    // Update container with changes
+                    await this.container.ReplaceContainerAsync(containerResponse.Resource).ConfigureAwait(false);
+
+                    long indexTransformationProgress;
+                    do
+                    {
+                        // retrieve the container's details
+                        containerResponse = await this.container.ReadContainerAsync(
+                                                new ContainerRequestOptions
+                                                {
+                                                    PopulateQuotaInfo = true
+                                                }).ConfigureAwait(false);
+
+                        // retrieve the index transformation progress from the result
+                        indexTransformationProgress =
+                            long.Parse(containerResponse.Headers["x-ms-documentdb-collection-index-transformation-progress"]);
+                    }
+                    while (indexTransformationProgress < 100);
                 }
-                while (indexTransformationProgress < 100);
+                
             }
         }
 
