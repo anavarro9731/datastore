@@ -7,9 +7,9 @@ namespace DataStore.Providers.CosmosDb
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        internal static void CreateClient(CosmosSettings cosmosStoreSettings, out CosmosClient client)
+        internal static void CreateClient(CosmosSettings cosmosSettings, out CosmosClient client)
         {
-            client = new CosmosClient(cosmosStoreSettings.EndpointUrl, cosmosStoreSettings.AuthKey);
+            client = new CosmosClient(cosmosSettings.EndpointUrl, cosmosSettings.AuthKey, cosmosSettings.ClientOptions);
         }
 
         private static async Task CreateDb(CosmosClient client, CosmosSettings cosmosStoreSettings)

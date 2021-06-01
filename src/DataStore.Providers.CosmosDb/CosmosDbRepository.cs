@@ -29,7 +29,7 @@
             CosmosDbUtilities.CreateClient(settings, out this.client);
             this.container = this.client.GetContainer(settings.DatabaseName, settings.ContainerName);
             this.settings = settings;
-            ResetClient();
+            
         }
 
         public IDatabaseSettings ConnectionSettings => this.settings;
@@ -272,12 +272,8 @@
         async Task IResetData.NonTransactionalReset()
         {
             await new CosmosDbUtilities().ResetDatabase(ConnectionSettings).ConfigureAwait(false);
-            ResetClient();
+            CosmosDbUtilities.CreateClient(settings, out this.client);
         }
 
-        private void ResetClient()
-        {
-            CosmosDbUtilities.CreateClient(this.settings, out this.client);
-        }
     }
 }
