@@ -1,16 +1,20 @@
 ﻿namespace DataStore.Providers.CosmosDb
 {
     using DataStore.Interfaces;
+    using Microsoft.Azure.Cosmos;
 
     public class CosmosSettings : IDatabaseSettings
     {
-        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl)
+        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl, CosmosClientOptions clientOptions = null)
         {
             AuthKey = authKey;
             DatabaseName = databaseName;
             EndpointUrl = endpointUrl;
             ContainerName = containerName;
+            ClientOptions = clientOptions;
         }
+        
+        public CosmosClientOptions ClientOptions { get; }
 
         public string AuthKey { get; }
 
