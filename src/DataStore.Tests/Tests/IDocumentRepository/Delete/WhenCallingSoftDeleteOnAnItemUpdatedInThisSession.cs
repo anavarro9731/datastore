@@ -31,7 +31,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
         {
             await Setup();
             Assert.Equal("Toyota", (await this.testHarness.DataStore.ReadById<Car>(this.carId)).Make);
-            Assert.Equal(false, (await this.testHarness.DataStore.ReadById<Car>(this.carId)).Active);
+            Assert.False((await this.testHarness.DataStore.ReadById<Car>(this.carId)).Active);
         }
 
         [Fact]
