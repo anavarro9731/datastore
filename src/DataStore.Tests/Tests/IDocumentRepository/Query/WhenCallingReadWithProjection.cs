@@ -22,7 +22,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         [Fact]
         public async void ItShouldReturnTheProjection()
         {
-            await Setup();
+            Setup();
 
             var cars = await this.testHarness.DataStore.WithoutEventReplay.Read<Car, CarProjection>(
                            car => new CarProjection
@@ -32,14 +32,15 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                            x => x.Make == "Volvo",
                            options => options.OrderBy(x => x.Make));
 
-            Assert.Equal(2, cars.Count());
-            Assert.IsType<CarProjection>(cars.First());
-            Assert.Equal("Volvo", cars.First().Make);
-            Assert.NotEqual(Guid.Empty, cars.First().CarId);
-            Assert.NotEqual(DateTime.MinValue, cars.First().Created);
+            var carProjections = cars as CarProjection[] ?? cars.ToArray();
+            Assert.Equal(2, carProjections.Count());
+            Assert.IsType<CarProjection>(carProjections.First());
+            Assert.Equal("Volvo", carProjections.First().Make);
+            Assert.NotEqual(Guid.Empty, carProjections.First().CarId);
+            Assert.NotEqual(DateTime.MinValue, carProjections.First().Created);
         }
 
-        private async Task Setup()
+        private void Setup()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadWithProjection));
