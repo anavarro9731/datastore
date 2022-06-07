@@ -57,63 +57,117 @@ namespace DataStore
         }
 
         //* Read
-        public Task<IEnumerable<T>> Read<T>(
-            Expression<Func<T, bool>> predicate = null,
-            Action<WithoutReplayOptionsClientSide<T>> setOptions = null) where T : class, IAggregate, new() =>
-            Read<T, DefaultWithoutReplayOptions<T>>(predicate, setOptions);
-
-        public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<T>, new()
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
+            where T : class, IAggregate, new()
         {
-            WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
+            return Read<T, DefaultWithoutReplayOptions<T>, T>(null, predicate, setOptions);
+        }
 
-            var queryable = this.dataStoreConnection.CreateQueryable<T>(options);
-            if (predicate != null) queryable = queryable.Where(predicate);
+        public Task<IEnumerable<R>> Read<T, R>(
+            Expression<Func<T, R>> map,
+            Expression<Func<T, bool>> predicate = null,
+            Action<WithoutReplayOptionsClientSide<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
+        {
+            return Read<T, DefaultWithoutReplayOptions<R>, R>(map, predicate, setOptions);
+        }
 
-            var results = await this.messageAggregator
-                                    .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(Read), queryable, options))
-                                    .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);
-
-            var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+        public async Task<IEnumerable<R>> Read<T, O, R>(Expression<Func<T, R>> map = null, Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
+            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<R>, new() where R : class, IAggregate, new()
+        {
+            WithoutReplayOptionsLibrarySide<R> options;
+            if (setOptions == null)
             {
-                results = await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READ, options.Identity)
-                                    .ConfigureAwait(false);
+                options = new DefaultWithoutReplayOptions<R>();
+            }
+            else
+            {
+                options = new O().Op(setOptions);
             }
 
-            return results;
+            if (map != null)
+            {
+                map = Expressions.Combine(
+                    map,
+                    aggregate => new R
+                    {
+                        Active = aggregate.Active,
+                        id = aggregate.id,
+                        Created = aggregate.Created,
+                        CreatedAsMillisecondsEpochTime = aggregate.CreatedAsMillisecondsEpochTime,
+                        Modified = aggregate.Modified,
+                        ModifiedAsMillisecondsEpochTime = aggregate.ModifiedAsMillisecondsEpochTime,
+                        ReadOnly = aggregate.ReadOnly,
+                        VersionHistory = aggregate.VersionHistory,
+                        Schema = aggregate.Schema
+                    });
+            }
+
+            IQueryable<R> queryableR = null;
+            IQueryable<T> queryableT = null;
+            if (predicate == null)
+            {
+                queryableR = map == null ? this.dataStoreConnection.CreateQueryable<R>(options) : this.dataStoreConnection.CreateQueryable<T>(options).Select(map);
+            }
+            else if (map == null)
+            {
+                queryableT = this.dataStoreConnection.CreateQueryable<T>(options).Where(predicate);
+            }
+            else
+            {
+                queryableR = this.dataStoreConnection.CreateQueryable<T>(options).Where(predicate).Select(map);
+            }
+
+            if (queryableR != null)
+            {
+                var resultsR = await ExecuteQuery(queryableR);
+                resultsR = await AuthoriseData(resultsR);
+                return resultsR;
+            }
+
+            var resultsT = await ExecuteQuery(queryableT);
+            resultsT = await AuthoriseData(resultsT);
+            return resultsT.Cast<R>(); //* T is R when R not supplied
+
+            async Task<IEnumerable<T2>> AuthoriseData<T2>(IEnumerable<T2> results) where T2 : class, IAggregate, new()
+            {
+                var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
+                if (applySecurity)
+                {
+                    return await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                }
+
+                return results;
+            }
+
+            async Task<IEnumerable<T1>> ExecuteQuery<T1>(IQueryable<T1> query) where T1 : class, IAggregate, new()
+            {
+                return await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T1>(nameof(Read), query, options))
+                                 .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);
+            }
         }
 
         //* ReadActive
-        public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<T>, new()
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
+            where T : class, IAggregate, new()
         {
-            predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
-
-            WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
-
-            var queryable = this.dataStoreConnection.CreateQueryable<T>(options).Where(predicate);
-
-            var results = await this.messageAggregator
-                                    .CollectAndForward(new AggregatesQueriedOperation<T>(nameof(ReadActive), queryable, options))
-                                    .To(this.dataStoreConnection.ExecuteQuery).ConfigureAwait(false);
-
-            var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
-            {
-                results = await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READ, options.Identity)
-                                    .ConfigureAwait(false);
-            }
-
-            return results;
+            return Read(predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
         }
 
-        public Task<IEnumerable<T>> ReadActive<T>(
+        public Task<IEnumerable<R>> ReadActive<T, R>(
+            Expression<Func<T, R>> map,
             Expression<Func<T, bool>> predicate = null,
-            Action<WithoutReplayOptionsClientSide<T>> setOptions = null) where T : class, IAggregate, new() =>
-            ReadActive<T, DefaultWithoutReplayOptions<T>>(predicate, setOptions);
+            Action<WithoutReplayOptionsClientSide<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
+        {
+            return Read(map, predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
+        }
 
-        //* ReadById
+        public Task<IEnumerable<R>> ReadActive<T, O, R>(Expression<Func<T, R>> map, Expression<Func<T, bool>> predicate, Action<O> setOptions)
+            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<R>, new() where R : class, IAggregate, new()
+        {
+            return Read(map, predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
+        }
+
+        //* ReadById (no map)
         public async Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null)
             where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<T>, new()
         {
@@ -125,15 +179,47 @@ namespace DataStore
             var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
             if (applySecurity)
             {
-                result = await this.controlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity)
-                                   .ConfigureAwait(false);
+                result = await this.controlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
             }
 
             return result;
         }
 
-        public Task<T> ReadById<T>(Guid modelId, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
-            where T : class, IAggregate, new() =>
-            ReadById<T, DefaultWithoutReplayOptions<T>>(modelId, setOptions);
+        public Task<T> ReadById<T>(Guid modelId, Action<WithoutReplayOptionsClientSide<T>> setOptions = null) where T : class, IAggregate, new()
+        {
+            return ReadById<T, DefaultWithoutReplayOptions<T>>(modelId, setOptions);
+        }
+    }
+
+    internal static class Expressions
+    {
+        internal static Expression<Func<TSource, TDestination>> Combine<TSource, TDestination>(params Expression<Func<TSource, TDestination>>[] selectors)
+        {
+            var param = Expression.Parameter(typeof(TSource), "x");
+            return Expression.Lambda<Func<TSource, TDestination>>(
+                Expression.MemberInit(
+                    Expression.New(typeof(TDestination).GetConstructor(Type.EmptyTypes)),
+                    from selector in selectors
+                    let replace = new ParameterReplaceVisitor(selector.Parameters[0], param)
+                    from binding in ((MemberInitExpression)selector.Body).Bindings.OfType<MemberAssignment>()
+                    select Expression.Bind(binding.Member, replace.VisitAndConvert(binding.Expression, "Combine"))),
+                param);
+        }
+
+        internal class ParameterReplaceVisitor : ExpressionVisitor
+        {
+            private readonly ParameterExpression from, to;
+
+            public ParameterReplaceVisitor(ParameterExpression from, ParameterExpression to)
+            {
+                this.from = from;
+                this.to = to;
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                return node == this.from ? this.to : base.VisitParameter(node);
+            }
+        }
     }
 }

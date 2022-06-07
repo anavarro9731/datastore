@@ -91,10 +91,8 @@
             }
         }
 
-        public IWithoutEventReplay WithoutEventReplay =>
-            new WithoutEventReplay(DocumentRepository, MessageAggregator, ControlFunctions, DataStoreOptions);
-
-        private ControlFunctions ControlFunctions { get; }
+        
+        internal ControlFunctions ControlFunctions { get; }
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
 
@@ -108,6 +106,9 @@
 
         public DataStoreWriteOnly<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new() => new DataStoreWriteOnly<T>(this);
 
+        public IWithoutEventReplay WithoutEventReplay =>
+            new WithoutEventReplay(DocumentRepository, MessageAggregator, ControlFunctions, DataStoreOptions);
+        
         public async Task CommitChanges()
         {
             {
