@@ -4,18 +4,24 @@
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Options;
 
     public class DataStoreReadOnly
     {
         private readonly DataStore dataStore;
-
+        
         public DataStoreReadOnly(DataStore dataStore)
         {
             this.dataStore = dataStore;
         }
+        
+        public IWithoutEventReplay WithoutEventReplay =>
+            new WithoutEventReplay(this.dataStore.DocumentRepository, this.dataStore.MessageAggregator, this.dataStore.ControlFunctions ,this.dataStore.DataStoreOptions);
 
+        
         public Task<IEnumerable<T>> Read<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
