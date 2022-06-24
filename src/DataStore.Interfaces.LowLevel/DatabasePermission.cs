@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public class SecurableOperationInstance : SecurableOperation
+    public class DatabasePermission : SecurableOperation
     {
-        public SecurableOperationInstance(SecurableOperation securableOperation, List<AggregateReference> scopeReferences)
+        public DatabasePermission(SecurableOperation securableOperation, List<AggregateReference> scopeReferences)
             : base(securableOperation.PermissionName)
         {
             ScopeReferences = scopeReferences;

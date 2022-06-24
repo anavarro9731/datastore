@@ -6,7 +6,7 @@
 
     public interface IIdentityWithDatabasePermissions 
     {
-        List<SecurableOperationInstance> DatabasePermissions { get; set; }
+        List<DatabasePermission> DatabasePermissions { get; set; }
     }
 
     public static class IdentityWithDatabasePermissionsExtensions

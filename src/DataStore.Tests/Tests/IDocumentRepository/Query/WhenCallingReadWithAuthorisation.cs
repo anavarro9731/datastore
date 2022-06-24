@@ -62,8 +62,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Setup(nullScopeReferenceTypes);
             
             var pi2s1 = this.companyBDivision1Office2;
-            var permission2Instance = new SecurableOperationInstance(
-                DatabasePermissions.READ,
+            var permission2Instance = new DatabasePermission(
+                SecurableOperations.READ,
                 new List<AggregateReference>
                 {
                     new AggregateReference(pi2s1.id, nullScopeReferenceTypes ? null :pi2s1.GetType().FullName , pi2s1.Name)
@@ -157,7 +157,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         {
             Setup();
             //* remove READ
-            this.user.DatabasePermissions.RemoveAll(p => p.PermissionName == DatabasePermissions.READ.PermissionName);
+            this.user.DatabasePermissions.RemoveAll(p => p.PermissionName == SecurableOperations.READ.PermissionName);
 
             //* the key point about testing Project vs Cars is that it tests a scope hierarchy which has sibling branches
             await Assert.ThrowsAsync<SecurityException>(
@@ -260,8 +260,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var pi1s2 = this.companyBDivision2Office1;
             var pi1s3 = this.companyBDivision1Office2;
 
-            var permission1Instance = new SecurableOperationInstance(
-                DatabasePermissions.READ,
+            var permission1Instance = new DatabasePermission(
+                SecurableOperations.READ,
                 new List<AggregateReference>
                 {
                     new AggregateReference(pi1s1.id, nullScopeReferenceTypes ? null : pi1s1.GetType().FullName, pi1s1.Name),
@@ -270,8 +270,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
                 });
 
             var pi2s1 = this.companyBDivision2Office1;
-            var permission2Instance = new SecurableOperationInstance(
-                DatabasePermissions.DELETE,
+            var permission2Instance = new DatabasePermission(
+                SecurableOperations.DELETE,
                 new List<AggregateReference>
                 {
                     new AggregateReference(pi2s1.id, nullScopeReferenceTypes ? null :  pi2s1.GetType().FullName, pi2s1.Name),

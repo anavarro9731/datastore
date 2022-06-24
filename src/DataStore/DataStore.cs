@@ -152,7 +152,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.CREATE, options.Identity).ConfigureAwait(false);
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.CREATE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
@@ -176,7 +176,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.DELETE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
@@ -200,7 +200,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.DELETE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
@@ -226,7 +226,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                results = await ControlFunctions.AuthoriseData(results, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
+                results = await ControlFunctions.AuthoriseData(results, SecurableOperations.DELETE, options.Identity).ConfigureAwait(false);
 
             return results;
         }
@@ -258,11 +258,11 @@
                 var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
                 if (hasPii)
                 {
-                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
                 }
             }
 
@@ -296,11 +296,11 @@
                 var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
                 if (hasPii)
                 {
-                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
                 }
             }
 
@@ -334,11 +334,11 @@
                 var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
                 if (hasPii)
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
                 }
             }
 
@@ -368,11 +368,11 @@
                 var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
                 if (hasPii)
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
                 }
             }
 
@@ -398,7 +398,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.UPDATE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
@@ -422,7 +422,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.UPDATE, options.Identity).ConfigureAwait(false);
 
             return result;
         }
@@ -449,7 +449,7 @@
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                results = await ControlFunctions.AuthoriseData(results, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
+                results = await ControlFunctions.AuthoriseData(results, SecurableOperations.UPDATE, options.Identity).ConfigureAwait(false);
 
             return results;
         }

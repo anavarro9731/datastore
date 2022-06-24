@@ -55,7 +55,7 @@
                     /* do they have the read, write, delete, etc capability regardless of scope
                      when using full rbac in soap, by default they will have all permissions, unless a specific restriction has been made */
                 {
-                    SecurableOperationInstance
+                    DatabasePermission
                         permissionInstance = user.DatabasePermissions.Single(x => x.PermissionName == requiredPermission.PermissionName);
                     
                     //* check that the scope of the data intersects the scope of the user for this operation
@@ -73,7 +73,7 @@
                     "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission with the appropriate scope.");
             }
 
-            async Task<bool> CheckScope(SecurableOperationInstance databasePermissionInstance, DataStoreOptions.SecuritySettings settings, DataStore dataStore)
+            async Task<bool> CheckScope(DatabasePermission databasePermissionInstance, DataStoreOptions.SecuritySettings settings, DataStore dataStore)
             {
                 if (dataBeingQueried.Count == 0) return true;
 

@@ -1,6 +1,6 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
-    public static class DatabasePermissions
+    public static class SecurableOperations
     {
         public static SecurableOperation CREATE = new SecurableOperation("CREATE");
 

@@ -29,7 +29,7 @@
         }
 
         public async Task<bool> ExpandedPermissionContains(
-            SecurableOperationInstance permissionInstance,
+            DatabasePermission permissionInstance,
             DataStore dataStore,
             AggregateReference scopeToMatch)
         {

@@ -141,10 +141,10 @@ namespace DataStore
                     var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
                     if (hasPii)
                     {
-                        return await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                        return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
                     }
 
-                    return await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                    return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
                 }
 
                 return results;
@@ -193,7 +193,7 @@ namespace DataStore
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
-                result = await this.controlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                result = await this.controlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
             }
 
             return result;
