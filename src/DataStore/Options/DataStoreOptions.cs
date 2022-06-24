@@ -50,7 +50,7 @@
             return this;
         }
 
-        public DataStoreOptions WithSecurity(ScopeHierarchy scopeHierarchy)
+        public DataStoreOptions WithSecurity(ScopeHierarchy scopeHierarchy = null)
         {
             Security = new SecuritySettings
             {

@@ -90,8 +90,8 @@
                 to this approach.
                  */
 
-                if ((await settings.ScopeHierarchy.ExpandedIntersect(dataBeingQueried, databasePermissionInstance.ScopeReferences, dataStore).ConfigureAwait(false))
-                    .Count() == dataBeingQueried.Count)
+                if (settings.ScopeHierarchy != null && 
+                    (await settings.ScopeHierarchy.ExpandedIntersect(dataBeingQueried, databasePermissionInstance.ScopeReferences, dataStore).ConfigureAwait(false)).Count() == dataBeingQueried.Count)
                 {
                     return true;
                 }
