@@ -1,5 +1,6 @@
 ﻿namespace DataStore.Options
 {
+    using System;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
 
@@ -21,6 +22,14 @@
         public override void CreateReadonly()
         {
             LibrarySide.SetReadonlyFlag = true;
+        }
+
+        public override void BypassSecurity(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new ArgumentException("You must provide a reason you are bypassing security. Please be clear. This is for other developers to read.");
+            //* reason is only for reading the source code
+            LibrarySide.BypassSecurity = true;
         }
     }
 }

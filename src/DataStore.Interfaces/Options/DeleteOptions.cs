@@ -17,6 +17,8 @@
 
         public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
 
+        public abstract void BypassSecurity(string reason);
+
         public abstract void Permanently();
     }
 
@@ -25,5 +27,7 @@
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool IsHardDelete { get; set; }
+
+        public bool BypassSecurity { get; set; }
     }
 }

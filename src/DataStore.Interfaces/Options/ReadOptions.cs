@@ -16,10 +16,14 @@
         //* visible members
 
         public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
+
+        public abstract void BypassSecurity(string reason);
     }
 
     public class ReadOptionsLibrarySide
     {
         public IIdentityWithDatabasePermissions Identity { get; set; }
+
+        public bool BypassSecurity { get; set; }
     }
 }

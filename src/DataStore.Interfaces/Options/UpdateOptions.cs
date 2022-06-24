@@ -18,6 +18,8 @@
         public abstract void DisableOptimisticConcurrency();
 
         public abstract void OverwriteReadonly();
+
+        public abstract void BypassSecurity(string reason);
     }
 
     public class UpdateOptionsLibrarySide
@@ -27,5 +29,7 @@
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool OptimisticConcurrency { get; set; } = true;
+
+        public bool BypassSecurity { get; set; }
     }
 }

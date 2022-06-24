@@ -29,17 +29,17 @@
         }
 
         public async Task<bool> ExpandedPermissionContains(
-            DatabasePermissionInstance permissionInstance,
+            SecurableOperationInstance permissionInstance,
             DataStore dataStore,
-            DatabaseScopeReference scopeToMatch)
+            AggregateReference scopeToMatch)
         {
             if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
 
-            var extrapolatedScopes = new List<DatabaseScopeReference>();
+            var extrapolatedScopes = new List<AggregateReference>();
             foreach (var userPermissionScope in permissionInstance.ScopeReferences)
-                if (this.scopeEntityLookup.ContainsKey(userPermissionScope.ScopeObjectId))
+                if (this.scopeEntityLookup.ContainsKey(userPermissionScope.AggregateId))
                 {
-                    var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.ScopeObjectId];
+                    var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.AggregateId];
                     RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
                 }
 
@@ -61,19 +61,19 @@
             return this;
         }
 
-        internal async Task<IEnumerable<IHaveScope>> Expanded(
+        internal async Task<IEnumerable<IHaveScope>> ExpandedIntersect(
             List<IHaveScope> dataWithScope,
-            List<DatabaseScopeReference> userPermissionScopes,
+            List<AggregateReference> userPermissionScopes,
             DataStore dataStore)
         {
             if (this.scopeEntityLookup.Count == 0) await HydrateHierarchy(dataStore).ConfigureAwait(false);
 
-            var extrapolatedScopes = new List<DatabaseScopeReference>(userPermissionScopes);
+            var extrapolatedScopes = new List<AggregateReference>(userPermissionScopes);
 
             foreach (var userPermissionScope in userPermissionScopes)
-                if (this.scopeEntityLookup.ContainsKey(userPermissionScope.ScopeObjectId))
+                if (this.scopeEntityLookup.ContainsKey(userPermissionScope.AggregateId))
                 {
-                    var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.ScopeObjectId];
+                    var currentScopeReferencedEntity = this.scopeEntityLookup[userPermissionScope.AggregateId];
                     RecurseAndFindNewScopeReferences(currentScopeReferencedEntity, ref extrapolatedScopes);
                 }
 
@@ -114,12 +114,12 @@
 
         private void RecurseAndFindNewScopeReferences(
             EntityWithChildren referencedEntity,
-            ref List<DatabaseScopeReference> extrapolatedScopesBuffer)
+            ref List<AggregateReference> extrapolatedScopesBuffer)
         {
             if (referencedEntity.Children.Any())
             {
                 extrapolatedScopesBuffer.AddRange(
-                    referencedEntity.Children.Select(c => new DatabaseScopeReference(c.id, c.EntityTypeName, c.ScopeReferenceId)));
+                    referencedEntity.Children.Select(c => new AggregateReference(c.id, c.EntityTypeName, c.ScopeReferenceId)));
                 foreach (var referencedEntityChild in referencedEntity.Children)
                     RecurseAndFindNewScopeReferences(referencedEntityChild, ref extrapolatedScopesBuffer);
             }

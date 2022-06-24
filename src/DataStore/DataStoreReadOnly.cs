@@ -21,7 +21,6 @@
         public IWithoutEventReplay WithoutEventReplay =>
             new WithoutEventReplay(this.dataStore.DocumentRepository, this.dataStore.MessageAggregator, this.dataStore.ControlFunctions ,this.dataStore.DataStoreOptions);
 
-        
         public Task<IEnumerable<T>> Read<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,

@@ -53,5 +53,14 @@
             LibrarySide.ThenByQueue.Enqueue((propertyName, descending));
             return this;
         }
+        
+                
+        public override void BypassSecurity(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new ArgumentException("You must provide a reason you are bypassing security. Please be clear. This is for other developers to read.");
+            //* reason is only for reading the source code
+            LibrarySide.BypassSecurity = true;
+        }
     }
 }

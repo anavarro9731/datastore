@@ -13,7 +13,7 @@
             UserName = userName;
         }
 
-        public List<DatabasePermissionInstance> DatabasePermissions { get; set; } = new List<DatabasePermissionInstance>();
+        public List<SecurableOperationInstance> DatabasePermissions { get; set; } = new List<SecurableOperationInstance>();
 
         public Guid id { get; set; }
 

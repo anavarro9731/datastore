@@ -4,6 +4,7 @@ namespace DataStore
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
@@ -74,6 +75,7 @@ namespace DataStore
         public async Task<IEnumerable<R>> Read<T, O, R>(Expression<Func<T, R>> map = null, Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
             where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<R>, new() where R : class, IAggregate, new()
         {
+            /* T is Aggregate, R is a possible Projection */
             WithoutReplayOptionsLibrarySide<R> options;
             if (setOptions == null)
             {
@@ -131,8 +133,17 @@ namespace DataStore
             async Task<IEnumerable<T2>> AuthoriseData<T2>(IEnumerable<T2> results) where T2 : class, IAggregate, new()
             {
                 var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
-                if (applySecurity)
+                var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+                var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+                if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 {
+                    var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                    if (hasPii)
+                    {
+                        return await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                    }
+
                     return await this.controlFunctions.AuthoriseData(results, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
                 }
 
@@ -177,7 +188,10 @@ namespace DataStore
                                    .To(this.dataStoreConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
                 result = await this.controlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
             }

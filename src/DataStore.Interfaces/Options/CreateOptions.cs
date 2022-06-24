@@ -1,5 +1,6 @@
 ﻿namespace DataStore.Interfaces.Options
 {
+    using CircuitBoard;
     using DataStore.Interfaces.LowLevel.Permissions;
 
     public class CreateOptionsLibrarySide
@@ -7,6 +8,8 @@
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool SetReadonlyFlag { get; set; }
+        
+        public bool BypassSecurity { get; set; }
     }
 
     public abstract class CreateOptionsClientSide
@@ -24,5 +27,9 @@
         public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
 
         public abstract void CreateReadonly();
+
+        public abstract void BypassSecurity(string reason);
     }
+
+    
 }

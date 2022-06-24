@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
@@ -147,7 +148,10 @@
             var result = await CreateCapabilities.Create(model, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.CREATE, options.Identity).ConfigureAwait(false);
 
             return result;
@@ -168,7 +172,10 @@
             var result = await DeleteCapabilities.Delete(instance, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
 
             return result;
@@ -189,7 +196,10 @@
             var result = await DeleteCapabilities.DeleteById<T, DeleteOptionsLibrarySide>(id, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
 
             return result;
@@ -212,7 +222,10 @@
             var results = await DeleteCapabilities.DeleteWhere(predicate, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 results = await ControlFunctions.AuthoriseData(results, DatabasePermissions.DELETE, options.Identity).ConfigureAwait(false);
 
             return results;
@@ -237,8 +250,21 @@
             var result = await QueryCapabilities.Read(predicate, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
-                result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            {
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                if (hasPii)
+                {
+                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                }
+            }
 
             return result;
         }
@@ -262,8 +288,21 @@
             var result = await QueryCapabilities.ReadActive(predicate, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
-                result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            {
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                if (hasPii)
+                {
+                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await ControlFunctions.AuthoriseData(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                }
+            }
 
             return result;
         }
@@ -286,8 +325,22 @@
                                                 .ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            {
+
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                if (hasPii)
+                {
+                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                }
+            }
 
             return result;
         }
@@ -307,8 +360,21 @@
             var result = await QueryCapabilities.ReadById<T, ReadOptionsLibrarySide>(modelId, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
-                result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            {
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                if (hasPii)
+                {
+                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READPII, options.Identity).ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.READ, options.Identity).ConfigureAwait(false);
+                }
+            }
 
             return result;
         }
@@ -328,7 +394,10 @@
             var result = await UpdateCapabilities.Update(src, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
 
             return result;
@@ -349,7 +418,10 @@
             var result = await UpdateCapabilities.UpdateById(id, action, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 result = await ControlFunctions.AuthoriseDatum(result, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
 
             return result;
@@ -373,7 +445,10 @@
             var results = await UpdateCapabilities.UpdateWhere(predicate, action, options, methodName).ConfigureAwait(false);
 
             var applySecurity = DataStoreOptions.Security != null && options.Identity != null;
-            if (applySecurity)
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+                
+            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 results = await ControlFunctions.AuthoriseData(results, DatabasePermissions.UPDATE, options.Identity).ConfigureAwait(false);
 
             return results;

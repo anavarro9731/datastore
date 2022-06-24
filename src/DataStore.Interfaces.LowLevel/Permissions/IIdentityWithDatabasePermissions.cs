@@ -6,12 +6,12 @@
 
     public interface IIdentityWithDatabasePermissions 
     {
-        List<DatabasePermissionInstance> DatabasePermissions { get; set; }
+        List<SecurableOperationInstance> DatabasePermissions { get; set; }
     }
 
     public static class IdentityWithDatabasePermissionsExtensions
     {
-        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, DatabasePermission permission)
+        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, SecurableOperation permission)
         {
             var count = identity.DatabasePermissions.Count(p => p.PermissionName == permission.PermissionName);
 

@@ -30,6 +30,8 @@
         public abstract WithoutReplayOptionsClientSide<T> Take(int take, ref ContinuationToken newContinuationToken);
 
         public abstract WithoutReplayOptionsClientSide<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
+
+        public abstract void BypassSecurity(string reason);
     }
 
     public class WithoutReplayOptionsLibrarySide<T>
@@ -51,6 +53,8 @@
         public ContinuationToken NextContinuationTokenValue { set => this.NextContinuationToken.Value = value.Value; }
 
         public List<(string, bool)> OrderByParameters { get; } = new List<(string, bool)>();
+
+        public bool BypassSecurity { get; set; }
 
         public IQueryable<T> AddOrderBy(IQueryable<T> queryable)
         {

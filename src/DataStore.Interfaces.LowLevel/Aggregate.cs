@@ -43,21 +43,25 @@
 
         public bool ReadOnly { get; set; }
 
-        public List<DatabaseScopeReference> ScopeReferences
+        public List<AggregateReference> ScopeReferences
         {
             get
             {
                 var propertiesWithScope =
                     GetType().GetProperties().Where(p => p.GetCustomAttribute<ScopeObjectReferenceAttribute>() != null);
 
-                var scopeReferences = new List<DatabaseScopeReference>();
+                var scopeReferences = new List<AggregateReference>();
                 foreach (var propertyInfo in propertiesWithScope)
                 {
                     var attribute = propertyInfo.GetCustomAttribute<ScopeObjectReferenceAttribute>();
                     if (attribute != null && propertyInfo.GetValue(this) != null)
                     {
-                        scopeReferences.Add(new DatabaseScopeReference((Guid)propertyInfo.GetValue(this), attribute.FullTypeName));
+                        scopeReferences.Add(new AggregateReference((Guid)propertyInfo.GetValue(this), attribute.FullTypeName));
                     }
+                    /* you always get yourself as a scope as well, so by default any document is scoped only by itself
+                     and if you are using database security you would need to give a permissions specific to this document
+                     or attach a wider scope to it in order for it to be accessible by a user */
+                    scopeReferences.Add(new AggregateReference(this.id, this.Schema));
                 }
 
                 return scopeReferences;

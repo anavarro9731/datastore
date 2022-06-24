@@ -4,6 +4,6 @@
 
     public interface IHaveScope
     {
-        List<DatabaseScopeReference> ScopeReferences { get; }
+        List<AggregateReference> ScopeReferences { get; }
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
-    public class DatabasePermission
+    public class SecurableOperation
     {
-        public static bool operator ==(DatabasePermission a, DatabasePermission b)
+        public static bool operator ==(SecurableOperation a, SecurableOperation b)
         {
             // If both are null, or both are same instance, return true.
             if (ReferenceEquals(a, b))
@@ -20,9 +20,9 @@
             return a.Equals(b);
         }
 
-        public static bool operator !=(DatabasePermission a, DatabasePermission b) => !(a == b);
+        public static bool operator !=(SecurableOperation a, SecurableOperation b) => !(a == b);
 
-        public DatabasePermission(string permissionName)
+        public SecurableOperation(string permissionName)
         {
             PermissionName = permissionName;
         }
@@ -34,11 +34,11 @@
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((DatabasePermission)obj);
+            return Equals((SecurableOperation)obj);
         }
 
         public override int GetHashCode() => PermissionName.GetHashCode();
 
-        protected bool Equals(DatabasePermission other) => PermissionName.Equals(other.PermissionName);
+        protected bool Equals(SecurableOperation other) => PermissionName.Equals(other.PermissionName);
     }
 }
