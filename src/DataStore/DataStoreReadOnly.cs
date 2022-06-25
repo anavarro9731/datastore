@@ -9,7 +9,7 @@
     using global::DataStore.Interfaces.Options;
     using global::DataStore.Options;
 
-    public class DataStoreReadOnly
+    public class DataStoreReadOnly : IDataStoreReadOnly
     {
         private readonly DataStore dataStore;
         

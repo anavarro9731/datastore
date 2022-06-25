@@ -1,23 +1,15 @@
 ﻿namespace DataStore.Options
 {
     using System;
+    using global::DataStore.Interfaces;
     using global::DataStore.Models.PureFunctions;
 
-    public class DataStoreOptions
+    public class DataStoreOptions : IDataStoreOptions
     {
         public static DataStoreOptions Create() => new DataStoreOptions();
 
         private DataStoreOptions()
         {
-        }
-
-        
-
-        public enum VersioningStyle
-        {
-            AggregateHeaderInfoOnly,
-
-            CompleteCopyOfAllAggregateVersions
         }
 
         public bool OptimisticConcurrency { get; private set; } = true;
@@ -28,7 +20,7 @@
 
         public VersionHistorySettings VersionHistory { get; } = new VersionHistorySettings
         {
-            VersioningStyle = VersioningStyle.AggregateHeaderInfoOnly
+            Style = VersionHistorySettings.VersioningStyle.AggregateHeaderInfoOnly
         };
 
         public DataStoreOptions DisableOptimisticConcurrency()
@@ -39,7 +31,7 @@
 
         public DataStoreOptions EnableFullVersionHistory()
         {
-            VersionHistory.VersioningStyle = VersioningStyle.CompleteCopyOfAllAggregateVersions;
+            VersionHistory.Style = VersionHistorySettings.VersioningStyle.CompleteCopyOfAllAggregateVersions;
             return this;
         }
 
@@ -60,14 +52,7 @@
             return this;
         }
 
-        public class SecuritySettings
-        {
-            public ScopeHierarchy ScopeHierarchy { get; internal set; }
-        }
+        
 
-        public class VersionHistorySettings
-        {
-            public VersioningStyle VersioningStyle { get; internal set; }
-        }
     }
 }

@@ -21,7 +21,7 @@ namespace DataStore
 
         private readonly IDocumentRepository dataStoreConnection;
 
-        private readonly DataStoreOptions dataStoreOptions;
+        private readonly IDataStoreOptions dataStoreOptions;
 
         private readonly IMessageAggregator messageAggregator;
 
@@ -29,7 +29,7 @@ namespace DataStore
             IDocumentRepository dataStoreConnection,
             IMessageAggregator messageAggregator,
             ControlFunctions controlFunctions,
-            DataStoreOptions dataStoreOptions)
+            IDataStoreOptions dataStoreOptions)
         {
             this.dataStoreConnection = dataStoreConnection;
             this.messageAggregator = messageAggregator;

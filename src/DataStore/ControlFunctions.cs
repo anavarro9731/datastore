@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Security;
     using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Options;
@@ -24,6 +25,7 @@
         {
             if (identity == null)
             {
+                //* this should be checked by caller first
                 throw new SecurityException(
                     "Data authorisation enabled but no identity has been provided. Please set the .AuthoriseFor(identity) option when calling your DataStore operation");
             }
@@ -78,7 +80,7 @@
                     "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission with the appropriate scope.");
             }
 
-            async Task<bool> CheckScope(DatabasePermission databasePermissionInstance, DataStoreOptions.SecuritySettings settings, DataStore dataStore)
+            async Task<bool> CheckScope(DatabasePermission databasePermissionInstance, SecuritySettings settings, DataStore dataStore)
             {
                 if (dataBeingQueried.Count == 0) return true;
 
@@ -96,7 +98,7 @@
                  */
 
                 if (settings.ScopeHierarchy != null && 
-                    (await settings.ScopeHierarchy.ExpandedIntersect(dataBeingQueried, databasePermissionInstance.ScopeReferences, dataStore).ConfigureAwait(false)).Count() == dataBeingQueried.Count)
+                    (await settings.ScopeHierarchy.GetDataAndPermissionScopeIntersection(dataBeingQueried, databasePermissionInstance.ScopeReferences, dataStore).ConfigureAwait(false)).Count() == dataBeingQueried.Count)
                 {
                     return true;
                 }

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Models.PureFunctions.Extensions;
@@ -73,8 +74,8 @@
             }
 
             bool VersioningStyleIsFull() =>
-                this.dataStore.DataStoreOptions.VersionHistory.VersioningStyle
-                == DataStoreOptions.VersioningStyle.CompleteCopyOfAllAggregateVersions;
+                this.dataStore.DataStoreOptions.VersionHistory.Style
+                == VersionHistorySettings.VersioningStyle.CompleteCopyOfAllAggregateVersions;
 
             async Task CreateFullAggregateRecordIfEnabled(
                 T modelNested,

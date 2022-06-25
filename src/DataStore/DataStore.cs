@@ -44,7 +44,7 @@
                 {
                     // init vars
                     MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
-                    DataStoreOptions = dataStoreOptions ?? DataStoreOptions.Create();
+                    DataStoreOptions = dataStoreOptions ?? global::DataStore.Options.DataStoreOptions.Create();
                     DocumentRepository = documentRepository;
 
                     var incrementVersions = new IncrementVersions(this);
@@ -72,7 +72,7 @@
             }
         }
 
-        public DataStoreOptions DataStoreOptions { get; }
+        public IDataStoreOptions DataStoreOptions { get; }
 
         public IDocumentRepository DocumentRepository { get; }
 
@@ -103,9 +103,9 @@
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public DataStoreReadOnly AsReadOnly() => new DataStoreReadOnly(this);
+        public IDataStoreReadOnly AsReadOnly() => new DataStoreReadOnly(this);
 
-        public DataStoreWriteOnly<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new() => new DataStoreWriteOnly<T>(this);
+        public IDataStoreWriteOnly AsWriteOnlyScoped<T>() where T : class, IAggregate, new() => new DataStoreWriteOnly<T>(this);
 
         public IWithoutEventReplay WithoutEventReplay =>
             new WithoutEventReplay(DocumentRepository, MessageAggregator, ControlFunctions, DataStoreOptions);

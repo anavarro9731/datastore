@@ -20,7 +20,7 @@
 
     internal class DataStoreUpdateCapabilities
     {
-        private readonly DataStoreOptions dataStoreOptions;
+        private readonly IDataStoreOptions dataStoreOptions;
 
         private readonly IMessageAggregator eventAggregator;
 
@@ -31,7 +31,7 @@
         public DataStoreUpdateCapabilities(
             IDocumentRepository dataStoreConnection,
             IMessageAggregator eventAggregator,
-            DataStoreOptions dataStoreOptions,
+            IDataStoreOptions dataStoreOptions,
             IncrementVersions incrementVersions)
         {
             this.eventAggregator = eventAggregator;

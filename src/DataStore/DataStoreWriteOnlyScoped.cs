@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
+    using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
@@ -11,7 +12,7 @@
     /// <summary>
     ///     Limits writes to a single aggregate type
     /// </summary>
-    public class DataStoreWriteOnly<T> where T : class, IAggregate, new()
+    public class DataStoreWriteOnly<T> : IDataStoreWriteOnly where T : class, IAggregate, new()
     {
         private readonly DataStore dataStore;
 
