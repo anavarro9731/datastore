@@ -8,9 +8,9 @@
         public DatabasePermission(SecurableOperation securableOperation, List<AggregateReference> scopeReferences)
             : base(securableOperation.PermissionName)
         {
-            ScopeReferences = scopeReferences;
+            if (scopeReferences != null) ScopeReferences = scopeReferences;
         }
 
-        public List<AggregateReference> ScopeReferences { get; set; }
+        public List<AggregateReference> ScopeReferences { get; private set; } = new List<AggregateReference>();
     }
 }
