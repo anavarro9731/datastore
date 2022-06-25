@@ -5,6 +5,12 @@
 
     public class DatabasePermission : SecurableOperation
     {
+
+        internal DatabasePermission()
+        {
+            
+        }
+        
         public DatabasePermission(SecurableOperation securableOperation, List<AggregateReference> scopeReferences)
             : base(securableOperation.PermissionName)
         {

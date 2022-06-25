@@ -22,6 +22,11 @@
 
         public static bool operator !=(SecurableOperation a, SecurableOperation b) => !(a == b);
 
+        internal SecurableOperation()
+        {
+            
+        }
+        
         public SecurableOperation(string permissionName)
         {
             PermissionName = permissionName;
