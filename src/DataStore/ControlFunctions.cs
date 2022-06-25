@@ -22,6 +22,11 @@
             SecurableOperation requiredPermission,
             IIdentityWithDatabasePermissions identity) where T : class, IAggregate, new()
         {
+            if (identity == null)
+            {
+                throw new SecurityException(
+                    "Data authorisation enabled but no identity has been provided. Please set the .AuthoriseFor(identity) option when calling your DataStore operation");
+            }
             var result = await Authorise(identity, requiredPermission, data.Cast<IHaveScope>().ToList()).ConfigureAwait(false);
 
             return result.Cast<T>();
