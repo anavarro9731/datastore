@@ -1,6 +1,7 @@
 ﻿namespace DataStore.Interfaces.LowLevel.Permissions
 {
     using System;
+    using Newtonsoft.Json;
 
     public class AggregateReference : IEquatable<AggregateReference>
     {
@@ -18,9 +19,9 @@
 
         public static bool operator !=(AggregateReference a, AggregateReference b) => !(a == b);
 
-        public AggregateReference()
+        [JsonConstructor]
+        internal AggregateReference()
         {
-            //* serialiser
         }
 
         public AggregateReference(Guid idOfAggregate, string typeOfOwner = null, string debugId = null)

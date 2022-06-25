@@ -2,10 +2,12 @@
 {
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel.Permissions;
+    using Newtonsoft.Json;
 
     public class DatabasePermission : SecurableOperation
     {
 
+        [JsonConstructor]
         internal DatabasePermission()
         {
             

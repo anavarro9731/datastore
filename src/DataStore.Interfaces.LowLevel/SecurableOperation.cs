@@ -1,5 +1,7 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    using Newtonsoft.Json;
+
     public class SecurableOperation
     {
         public static bool operator ==(SecurableOperation a, SecurableOperation b)
@@ -22,6 +24,7 @@
 
         public static bool operator !=(SecurableOperation a, SecurableOperation b) => !(a == b);
 
+        [JsonConstructor]
         internal SecurableOperation()
         {
             
