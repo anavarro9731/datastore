@@ -33,7 +33,8 @@
     }
     
     [AttributeUsage(AttributeTargets.Property)]
-    public class ContainsPIIAttribute : Attribute
+    // ReSharper disable once InconsistentNaming
+    public class PIIAttribute : Attribute
     {
         
     }

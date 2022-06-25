@@ -7,7 +7,6 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
-    using global::DataStore.Options;
 
     public class ControlFunctions
     {
@@ -66,7 +65,7 @@
                         permissionInstance = user.DatabasePermissions.Single(x => x.PermissionName == requiredPermission.PermissionName);
                     
                     //* check that the scope of the data intersects the scope of the user for this operation
-                    var authorised = await CheckScope(permissionInstance, this.dataStore.DataStoreOptions.Security, this.dataStore);
+                    var authorised = await CheckScope(permissionInstance, this.dataStore.DataStoreOptions.Security, this.dataStore).ConfigureAwait(false);
                     if (authorised) return dataBeingQueried;
                 }
 

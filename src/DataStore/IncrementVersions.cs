@@ -8,7 +8,6 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Models.PureFunctions.Extensions;
-    using global::DataStore.Options;
 
     public class IncrementVersions
     {
@@ -29,8 +28,6 @@
                     o => o.Permanently(),
                     $"{methodName}.{nameof(DeleteAggregateHistory)}").ConfigureAwait(false);
             }
-
-            ;
         }
 
         public async Task IncrementAggregateVersionOfItemToBeQueued<T>(T model, string methodName) where T : class, IAggregate, new()

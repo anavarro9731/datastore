@@ -21,9 +21,9 @@ namespace DataStore.MessageAggregator
 
             passTo(this.message);
 
-            if (this.message is IStateOperation)
+            if (this.message is IStateOperation operation)
             {
-                ((IStateOperation)this.message).StateOperationDuration = stopWatch.Elapsed;
+                operation.StateOperationDuration = stopWatch.Elapsed;
             }
         }
 

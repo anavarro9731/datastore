@@ -115,7 +115,7 @@
             {
                 FilterEvents(out var committableEvents, out var committedEvents);
 
-                await CommitAllEvents(committableEvents);
+                await CommitAllEvents(committableEvents).ConfigureAwait(false);
             }
 
             async Task CommitAllEvents(List<IQueuedDataStoreWriteOperation> committableEvents)
@@ -255,7 +255,7 @@
 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
                 if (hasPii)
                 {
                     result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
@@ -293,7 +293,7 @@
 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
                 if (hasPii)
                 {
                     result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
@@ -331,7 +331,7 @@
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
 
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
                 if (hasPii)
                 {
                     result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
@@ -365,7 +365,7 @@
 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
                 if (hasPii)
                 {
                     result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);

@@ -111,7 +111,7 @@
                 {
                     while (HaveLessRecordsThanUserRequested() && setIterator.HasMoreResults)
                     {
-                        var feedResponseEnumerable = await setIterator.ReadNextAsync();
+                        var feedResponseEnumerable = await setIterator.ReadNextAsync().ConfigureAwait(false);
 
                         aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
 
@@ -158,7 +158,7 @@
             async Task CreateIndexes(List<(string, bool)> fieldName_IsDescending)
             {
                 // Retrieve the container's details
-                var containerResponse = await this.container.ReadContainerAsync();
+                var containerResponse = await this.container.ReadContainerAsync().ConfigureAwait(false);
 
                 // Add a composite index
                 var newCompositeIndex = new Collection<CompositePath>();

@@ -138,7 +138,7 @@ namespace DataStore
                 
                 if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
                 {
-                    var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(ContainsPIIAttribute), false) != null);
+                    var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
                     if (hasPii)
                     {
                         return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);

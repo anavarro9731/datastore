@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
@@ -14,7 +13,6 @@
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
-    using global::DataStore.Options;
 
     //methods return object after changes have been applied, including previous uncommitted session changes
 

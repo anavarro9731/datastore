@@ -77,7 +77,7 @@
 
                     this.eventReplay.RemoveQueuedOperationsMatchingPredicate(predicate.Compile(), out var itemsCreatedInThisSession);
 
-                    await GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate, v => objectsToDelete = v);
+                    await GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate, v => objectsToDelete = v).ConfigureAwait(false);
 
                     if (!objectsToDelete.Any()) return itemsCreatedInThisSession;
 
@@ -94,8 +94,8 @@
                                 this.messageAggregator
                                 ));
 
-                        await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName); 
-                        await this.incrementVersions.DeleteAggregateHistory<T>(modelToPersist.id, methodName);
+                        await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName).ConfigureAwait(false); 
+                        await this.incrementVersions.DeleteAggregateHistory<T>(modelToPersist.id, methodName).ConfigureAwait(false);
 
                         var clone = modelToPersist.Clone();
                         clone.Etag = "waiting to be committed";
