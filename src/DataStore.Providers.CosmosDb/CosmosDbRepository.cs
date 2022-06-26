@@ -94,7 +94,7 @@
                     }
                 }
 
-                /* it would be quite a lot easier to just use the aggregatsQueried.Query.ToIterator()
+                /* it would be quite a lot easier to just use the AggregatesQueried.Query.ToIterator()
                 but that would give you a typed iterator, and no way to get back an untyped feed response
                 which you must have in order to at the udpated ETag and copy it back to our customer eTag property.
                 So for now we convert the CosmosLINQQueryable into a generic one. */

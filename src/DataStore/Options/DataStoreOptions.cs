@@ -2,6 +2,7 @@
 {
     using System;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.PureFunctions;
 
     public class DataStoreOptions : IDataStoreOptions
@@ -42,6 +43,18 @@
             return this;
         }
 
+        /// <summary>
+        /// Secured Datastore for the whole session against a single identity, can be called repetitively
+        /// </summary>
+        /// <param name="identityWithDatabasePermissions"></param>
+        /// <returns></returns>
+        public DataStoreOptions SecureFor(IIdentityWithDatabasePermissions identityWithDatabasePermissions)
+        {
+            Security = Security ?? new SecuritySettings();
+            Security.SecuredFor = identityWithDatabasePermissions;
+            return this;
+        }
+        
         public DataStoreOptions WithSecurity(ScopeHierarchy scopeHierarchy = null)
         {
             Security = new SecuritySettings

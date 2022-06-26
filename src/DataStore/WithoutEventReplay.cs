@@ -121,18 +121,18 @@ namespace DataStore
 
             if (queryableR != null)
             {
-                var resultsR = await ExecuteQuery(queryableR);
-                resultsR = await AuthoriseData(resultsR);
+                var resultsR = await ExecuteQuery(queryableR).ConfigureAwait(false);
+                resultsR = await AuthoriseData(resultsR).ConfigureAwait(false);
                 return resultsR;
             }
 
-            var resultsT = await ExecuteQuery(queryableT);
-            resultsT = await AuthoriseData(resultsT);
+            var resultsT = await ExecuteQuery(queryableT).ConfigureAwait(false);
+            resultsT = await AuthoriseData(resultsT).ConfigureAwait(false);
             return resultsT.Cast<R>(); //* T is R when R not supplied
 
             async Task<IEnumerable<T2>> AuthoriseData<T2>(IEnumerable<T2> results) where T2 : class, IAggregate, new()
             {
-                var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
+                var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
                 var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
                 var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
@@ -141,10 +141,10 @@ namespace DataStore
                     var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
                     if (hasPii)
                     {
-                        return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READPII, options.Identity).ConfigureAwait(false);
+                        return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
                     }
 
-                    return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
+                    return await this.controlFunctions.AuthoriseData(results, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
                 }
 
                 return results;
@@ -187,13 +187,13 @@ namespace DataStore
             var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(nameof(ReadById), modelId))
                                    .To(this.dataStoreConnection.GetItemAsync<T>).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && options.Identity != null;
+            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
             var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
             var bypassSecurityEnabledForThisCall = options.BypassSecurity;
                 
             if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
             {
-                result = await this.controlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity).ConfigureAwait(false);
+                result = await this.controlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
             }
 
             return result;

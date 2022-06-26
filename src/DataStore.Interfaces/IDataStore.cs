@@ -6,11 +6,13 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.LowLevel.Permissions;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
 
     public interface IDataStore : IDataStoreReadOnly, IDataStoreWriteOnly
     {
+
         IDataStoreOptions DataStoreOptions { get; }
 
         IDocumentRepository DocumentRepository { get; }

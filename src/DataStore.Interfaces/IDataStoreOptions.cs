@@ -1,5 +1,7 @@
 namespace DataStore.Interfaces
 {
+    using DataStore.Interfaces.LowLevel.Permissions;
+
     public interface IDataStoreOptions
     {
         bool OptimisticConcurrency { get; }
@@ -15,6 +17,7 @@ namespace DataStore.Interfaces
     public class SecuritySettings 
     {
         public IScopeHierarchy ScopeHierarchy { get; set; }
+        public IIdentityWithDatabasePermissions SecuredFor { get; set; }
     }
 
     public class VersionHistorySettings 
