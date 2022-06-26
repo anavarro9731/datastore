@@ -1,9 +1,11 @@
 ﻿namespace DataStore
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Security;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
@@ -25,8 +27,7 @@
             if (identity == null)
             {
                 //* this should be checked by caller first
-                throw new SecurityException(
-                    "Data authorisation enabled but no identity has been provided. Please set the .AuthoriseFor(identity) option when calling your DataStore operation");
+                throw new CircuitException(ErrorCodes.IdentityMissingWhenApplyingAuthorisation);
             }
             var result = await Authorise(identity, requiredPermission, data.Cast<IHaveScope>().ToList()).ConfigureAwait(false);
 
@@ -75,8 +76,7 @@
                     If your queries are architect-ed correctly then there won't be any mismatch and therefore no performance hit and no security failure.                
                     */
                 
-                throw new SecurityException(
-                    "User not authorized to perform this action. " + $"You require the {requiredPermission.PermissionName} permission with the appropriate scope.");
+                throw new CircuitException($"You require the {requiredPermission.PermissionName} permission with the appropriate scope.", ErrorCodes.MissingDbPermissions);
             }
 
             async Task<bool> CheckScope(DatabasePermission databasePermissionInstance, SecuritySettings settings, DataStore dataStore)
@@ -104,6 +104,26 @@
 
                 return false;
             }
+        }
+    }
+    public static class IdentityWithDatabasePermissionsExtensions
+    {
+        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, SecurableOperation permission)
+        {
+            var count = identity.DatabasePermissions.Count(p => p.PermissionName == permission.PermissionName);
+
+            if (count == 1)
+            {
+                return true;
+            }
+
+            if (count > 1)
+            {
+                
+                throw new CircuitException($"The permission that is duplicated is {permission}.", ErrorCodes.DuplicateDbPermissions);
+            }
+
+            return false;
         }
     }
 }

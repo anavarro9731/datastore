@@ -45,6 +45,11 @@
             return Equals((SecurableOperation)obj);
         }
 
+        public override string ToString()
+        {
+            return PermissionName;
+        }
+
         public override int GetHashCode() => PermissionName.GetHashCode();
 
         protected bool Equals(SecurableOperation other) => PermissionName.Equals(other.PermissionName);

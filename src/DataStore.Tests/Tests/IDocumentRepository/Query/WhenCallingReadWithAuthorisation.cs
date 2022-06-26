@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Collections.Generic;
     using System.Linq;
     using System.Security;
+    using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
@@ -34,7 +35,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         {
             Setup();
 
-            await Assert.ThrowsAsync<SecurityException>(
+            await Assert.ThrowsAsync<CircuitException>(
                 async () =>
                     {
                     // When
@@ -47,7 +48,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         {
             Setup();
 
-            await Assert.ThrowsAsync<SecurityException>(
+            await Assert.ThrowsAsync<CircuitException>(
                 async () =>
                     {
                     // When
@@ -71,7 +72,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
 
             this.user.DatabasePermissions.Add(permission2Instance);
 
-            await Assert.ThrowsAsync<SecurityException>(
+            await Assert.ThrowsAsync<CircuitException>(
                 async () =>
                     {
                     // When
@@ -117,7 +118,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Setup(doNotAddProjectsToScopeHierarchy:true);
 
             //* the key point about testing Project vs Cars is that it tests a scope hierarchy which has sibling branches
-            await Assert.ThrowsAsync<SecurityException>(
+            await Assert.ThrowsAsync<CircuitException>(
                 async () =>
                     {
                     // When
@@ -143,7 +144,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Setup();
 
             
-            await Assert.ThrowsAsync<SecurityException>(
+            await Assert.ThrowsAsync<CircuitException>(
                 async () =>
                     {
                     // When
@@ -160,7 +161,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             this.user.DatabasePermissions.RemoveAll(p => p.PermissionName == SecurableOperations.READ.PermissionName);
 
             //* the key point about testing Project vs Cars is that it tests a scope hierarchy which has sibling branches
-            await Assert.ThrowsAsync<SecurityException>(
+            await Assert.ThrowsAsync<CircuitException>(
                 async () =>
                     {
                     // When

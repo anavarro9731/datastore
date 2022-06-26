@@ -9,23 +9,5 @@
         List<DatabasePermission> DatabasePermissions { get; set; }
     }
 
-    public static class IdentityWithDatabasePermissionsExtensions
-    {
-        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, SecurableOperation permission)
-        {
-            var count = identity.DatabasePermissions.Count(p => p.PermissionName == permission.PermissionName);
 
-            if (count == 1)
-            {
-                return true;
-            }
-
-            if (count > 1)
-            {
-                throw new SecurityException("User has the same DatabasePermission twice instead the scopes should be merged");
-            }
-
-            return false;
-        }
-    }
 }
