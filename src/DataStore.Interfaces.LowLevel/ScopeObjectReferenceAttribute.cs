@@ -26,9 +26,9 @@
     {
         public List<SecurableOperation> ForTheseOperations { get; }
 
-        public BypassSecurity(params SecurableOperation[] forTheseOperations)
+        public BypassSecurity(params string[] forTheseOperations)
         {
-            ForTheseOperations = forTheseOperations.ToList();
+            ForTheseOperations = forTheseOperations.Select(x => new SecurableOperation(x)).ToList();
         }
     }
     
