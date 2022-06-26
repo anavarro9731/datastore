@@ -1,8 +1,6 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
 
     [AttributeUsage(AttributeTargets.Property)]
     public class ScopeObjectReferenceAttribute : Attribute
@@ -18,24 +16,5 @@
         }
         
         public string FullTypeName { get; }
-    }
-
-    //* permission still required but no scope match is required
-    [AttributeUsage(AttributeTargets.Class)]
-    public class BypassSecurity : Attribute
-    {
-        public List<SecurableOperation> ForTheseOperations { get; }
-
-        public BypassSecurity(params string[] forTheseOperations)
-        {
-            ForTheseOperations = forTheseOperations.Select(x => new SecurableOperation(x)).ToList();
-        }
-    }
-    
-    [AttributeUsage(AttributeTargets.Property)]
-    // ReSharper disable once InconsistentNaming
-    public class PIIAttribute : Attribute
-    {
-        
     }
 }
