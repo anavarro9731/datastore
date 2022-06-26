@@ -158,7 +158,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
         {
             Setup();
             //* remove READ
-            this.user.DatabasePermissions.RemoveAll(p => p.PermissionName == SecurableOperations.READ.PermissionName);
+            this.user.DatabasePermissions.RemoveAll(p => p.PermissionName == SecurableOperations.READ);
 
             //* the key point about testing Project vs Cars is that it tests a scope hierarchy which has sibling branches
             await Assert.ThrowsAsync<CircuitException>(

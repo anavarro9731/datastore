@@ -13,8 +13,8 @@
             
         }
         
-        public DatabasePermission(SecurableOperation securableOperation, List<AggregateReference> scopeReferences)
-            : base(securableOperation.PermissionName)
+        public DatabasePermission(string securableOperation, List<AggregateReference> scopeReferences)
+            : base(securableOperation)
         {
             if (scopeReferences != null) ScopeReferences = scopeReferences;
         }

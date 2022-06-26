@@ -21,7 +21,7 @@
 
         public async Task<IEnumerable<T>> AuthoriseData<T>(
             IEnumerable<T> data,
-            SecurableOperation requiredPermission,
+            string requiredPermission,
             IIdentityWithDatabasePermissions identity) where T : class, IAggregate, new()
         {
             if (identity == null)
@@ -34,7 +34,7 @@
             return result.Cast<T>();
         }
 
-        public async Task<T> AuthoriseDatum<T>(T data, SecurableOperation requiredPermissionWithScopeToData, IIdentityWithDatabasePermissions identity)
+        public async Task<T> AuthoriseDatum<T>(T data, string requiredPermissionWithScopeToData, IIdentityWithDatabasePermissions identity)
             where T : class, IAggregate, new()
         {
             var result = await AuthoriseData(
@@ -50,11 +50,11 @@
 
         private async Task<List<IHaveScope>> Authorise(
             IIdentityWithDatabasePermissions user,
-            SecurableOperation requiredPermission,
+            string requiredPermission,
             List<IHaveScope> dataBeingQueried)
         {
             {
-                if (user.HasDatabasePermission(new SecurableOperation("*"))) return dataBeingQueried; 
+                if (user.HasDatabasePermission("*")) return dataBeingQueried; 
                 /* wildcard means all permissions and ALSO all possible scopes, its an escape hatch for service accounts
                  or test accounts, if you want all permissions with limited scopes you need to add all the permissions separately */ 
                 
@@ -63,7 +63,7 @@
                      when using full rbac in soap, by default they will have all permissions, unless a specific restriction has been made */
                 {
                     DatabasePermission
-                        permissionInstance = user.DatabasePermissions.Single(x => x.PermissionName == requiredPermission.PermissionName);
+                        permissionInstance = user.DatabasePermissions.Single(x => x.PermissionName == requiredPermission);
                     
                     //* check that the scope of the data intersects the scope of the user for this operation
                     var authorised = await CheckScope(permissionInstance, this.dataStore.DataStoreOptions.Security, this.dataStore).ConfigureAwait(false);
@@ -76,7 +76,7 @@
                     If your queries are architect-ed correctly then there won't be any mismatch and therefore no performance hit and no security failure.                
                     */
                 
-                throw new CircuitException($"You require the {requiredPermission.PermissionName} permission with the appropriate scope.", ErrorCodes.MissingDbPermissions);
+                throw new CircuitException($"You require the {requiredPermission} permission with the appropriate scope.", ErrorCodes.MissingDbPermissions);
             }
 
             async Task<bool> CheckScope(DatabasePermission databasePermissionInstance, SecuritySettings settings, DataStore dataStore)
@@ -108,9 +108,9 @@
     }
     public static class IdentityWithDatabasePermissionsExtensions
     {
-        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, SecurableOperation permission)
+        public static bool HasDatabasePermission(this IIdentityWithDatabasePermissions identity, string permission)
         {
-            var count = identity.DatabasePermissions.Count(p => p.PermissionName == permission.PermissionName);
+            var count = identity.DatabasePermissions.Count(p => p.PermissionName == permission);
 
             if (count == 1)
             {

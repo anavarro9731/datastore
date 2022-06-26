@@ -2,16 +2,16 @@
 {
     public static class SecurableOperations
     {
-        public static SecurableOperation CREATE = new SecurableOperation("CREATE");
+        public const string CREATE = "CREATE";
 
-        public static SecurableOperation DELETE = new SecurableOperation("DELETE");
+        public const string DELETE = "DELETE";
 
-        public static SecurableOperation READ = new SecurableOperation("READ");
-        
-        public static SecurableOperation READPII = new SecurableOperation("READ-PII");
+        public const string READ = "READ";
 
-        public static SecurableOperation UPDATE = new SecurableOperation("UPDATE");
-        
-        
+        public const string READPII = "READPII";
+
+        public const string UPDATE = "UPDATE";
+
+
     }
 }
