@@ -2,6 +2,9 @@
 {
     using System;
 
+    /// <summary>
+    ///     Only works on Guid or IEnumerable Guid property types
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class ScopeObjectReferenceAttribute : Attribute
     {
@@ -14,7 +17,7 @@
         {
             FullTypeName = fullTypeName;
         }
-        
+
         public string FullTypeName { get; }
     }
 }

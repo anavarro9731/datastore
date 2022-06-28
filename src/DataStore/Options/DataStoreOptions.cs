@@ -42,18 +42,6 @@
             UnitOfWorkId = unitOfWorkId.ToString();
             return this;
         }
-
-        /// <summary>
-        /// Secured Datastore for the whole session against a single identity, can be called repetitively
-        /// </summary>
-        /// <param name="identityWithDatabasePermissions"></param>
-        /// <returns></returns>
-        public DataStoreOptions SecureFor(IIdentityWithDatabasePermissions identityWithDatabasePermissions)
-        {
-            Security = Security ?? new SecuritySettings();
-            Security.SecuredFor = identityWithDatabasePermissions;
-            return this;
-        }
         
         public DataStoreOptions WithSecurity(ScopeHierarchy scopeHierarchy = null)
         {
