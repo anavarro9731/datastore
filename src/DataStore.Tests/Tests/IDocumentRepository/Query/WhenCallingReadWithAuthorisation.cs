@@ -183,15 +183,32 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Assert.NotNull(carFromDatabase);
         }
         
+        [Fact]
+        public async void ItShouldSucceedWhenSomeOfTheScopeLevelItemsDontHaveParentIds()
+        {
+            Setup();
+            
+            this.testHarness.AddItemDirectlyToUnderlyingDb(new Project("Project X", Guid.NewGuid(), Guid.Empty));
+            this.testHarness.AddItemDirectlyToUnderlyingDb(new Project("Project Y", Guid.NewGuid(), (Guid?)null));
+
+            // When
+            var projectTaskFromDb = await this.testHarness.DataStore.ReadById<ProjectTask>(this.task1.id, 
+                                        o => o.AuthoriseFor(this.user));
+
+            Assert.NotNull(projectTaskFromDb);
+        }
+        
 
         private void Setup(bool nullScopeReferenceTypes = false, bool doNotAddProjectsToScopeHierarchy = false)
         {
             // Given
-            var scopeHierarchy = ScopeHierarchy.Create().WithScopeLevel<Company>(x => Guid.Empty).WithScopeLevel<CompanyDivision>(x => x.CompanyId)
-                                               .WithScopeLevel<CompanyOffice>(x => x.CompanyDivisionId);
+            var scopeHierarchy = ScopeHierarchy.Create()
+                                               .WithScopeLevel<Company>()
+                                               .WithScopeLevel<CompanyDivision>()
+                                               .WithScopeLevel<CompanyOffice>();
             if (!doNotAddProjectsToScopeHierarchy)
             {
-                scopeHierarchy.WithScopeLevel<Project>(x => x.CompanyDivisionId);
+                scopeHierarchy.WithScopeLevel<Project>();
             }
 
             var dataStoreOptions = DataStoreOptions.Create().WithSecurity(scopeHierarchy);
@@ -234,7 +251,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             var companyBDivision2 = new CompanyDivision("companyB_D2", Guid.NewGuid(), companyB.id);
             this.testHarness.AddItemDirectlyToUnderlyingDb(companyBDivision2);
 
-            this.companyBDivision2Office1 = new CompanyOffice("companyB_D2_O1", Guid.NewGuid(), companyBDivision2.id);
+            this.companyBDivision2Office1 = new CompanyOffice("companyB_D2_O1", Guid.NewGuid(), new List<Guid>() { companyBDivision2.id, Guid.NewGuid() });
             this.testHarness.AddItemDirectlyToUnderlyingDb(this.companyBDivision2Office1);
 
             var companyBDivision2Office2 = new CompanyOffice("companyB_D2_O2", Guid.NewGuid(), companyBDivision2.id);

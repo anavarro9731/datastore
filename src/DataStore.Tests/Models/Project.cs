@@ -9,7 +9,7 @@ namespace DataStore.Tests.Models
     /// </summary>
     public class Project : Aggregate
     {
-        public Project(string name, Guid myId, Guid companyDivisionId)
+        public Project(string name, Guid myId, Guid? companyDivisionId)
         {
             CompanyDivisionId = companyDivisionId;
             Name = name;
@@ -21,7 +21,7 @@ namespace DataStore.Tests.Models
         }
 
         [ScopeObjectReference(typeof(CompanyDivision))]
-        public Guid CompanyDivisionId { get; set; }
+        public Guid? CompanyDivisionId { get; set; }
 
         public string Name { get; set; }
     }
