@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>DataStore.Interfaces Class Library</Description>
     <Authors>Aaron Navarro</Authors>
-    <Copyright>Copyright (c) 2017 Aaron Navarro</Copyright>
+    <Copyright>Copyright (c) 2022 Aaron Navarro</Copyright>
     <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
     <AssemblyName>DataStore.Interfaces</AssemblyName>
     <PackageId>DataStore.Interfaces</PackageId>

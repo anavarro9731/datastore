@@ -1,6 +1,6 @@
 # DataStore
 
-A Data Access Framework, with a Azure CosmosDb implementation that expands on the features of the native .NET SDK
+A Data Access Framework, with a Azure Cosmos DB implementation that expands on the features of the native .NET SDK
 
 [Change Log](ChangeLog.md)
 
@@ -8,7 +8,8 @@ Support for other databases is possible if you are willing to write a provider i
 
 ## Overview
 
-DataStore is an easy-to-use, data-access framework for C# which extends the basic LINQ query
+DataStore is an easy-to-use, data-access framework for C# which extends the basic LINQ query support available in Cosmos DB.
+
 capabilities on C# POCO objects with many additional features including:
 
 * Paging with continuation tokens
@@ -31,10 +32,7 @@ DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and
 ## Roadmap
 * Better documentation of API features
 * Update Version History on instances in the current session post-commit
-* Add Performance Tracing
-* Partitioned Collection Support 
-  Currently on a single partition is supported. Azure does allow partitions to grow
-  without restriction now, and manages this for you, but some may prefer partitioning on Id or ClassName)
+* Partitioned Collection Support beyond Id
 * MartenDB implementation
 
 ## Usage

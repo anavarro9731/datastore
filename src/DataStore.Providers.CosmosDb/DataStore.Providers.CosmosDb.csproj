@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Description>Azure CosmosDb Implementation of DataStore</Description>
+    <Description>Azure Cosmos DB Implementation of DataStore</Description>
     <Authors>Aaron Navarro</Authors>
-    <Copyright>Copyright (c) 2019 Aaron Navarro, Frans Lytzen</Copyright>
+    <Copyright>Copyright (c) 2022 Aaron Navarro, Frans Lytzen</Copyright>
     <Authors>Aaron Navarro</Authors>
     <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
     <AssemblyName>DataStore.Providers.CosmosDb</AssemblyName>
