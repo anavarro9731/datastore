@@ -1,16 +1,3 @@
-## v15
-
-### Breaking Changes
-- Bugfix: The MillisecondsFromEpochTime on Aggregates was mistakenly saving seconds in many cases. This has been fixed but will mean existing data will be incorrect
-- DatabasePermission Ids have been removed. The name is used as the Id.
-### Bug Fixes
-- Fix bug in deletebyid/deletewhere where items created in this session were not considered
-### Features
-- Allowing for container and database name in CosmosDb to be different
-- Added .Exists() extension to IDocumentRepository
-- Fixed a missing await in HardDelete function that could have meant items were not deleted
-### Other
-- Reverted to Newtonsoft Json.Net
 
 ##  v16
 
@@ -25,3 +12,17 @@ class has been replaced with SecurableOperations which are now just string.
 ### Features
 - Projections support. The underlying Azure provider has has this for a long time, but you can now pass a mapping function similar to .Select(orig => mapped)
 - The CosmosClientOptions are now exposed when creating the CosmosSettings object 
+
+## v15
+
+### Breaking Changes
+- Bugfix: The MillisecondsFromEpochTime on Aggregates was mistakenly saving seconds in many cases. This has been fixed but will mean existing data will be incorrect
+- DatabasePermission Ids have been removed. The name is used as the Id.
+### Bug Fixes
+- Fix bug in deletebyid/deletewhere where items created in this session were not considered
+### Features
+- Allowing for container and database name in CosmosDb to be different
+- Added .Exists() extension to IDocumentRepository
+- Fixed a missing await in HardDelete function that could have meant items were not deleted
+### Other
+- Reverted to Newtonsoft Json.Net
