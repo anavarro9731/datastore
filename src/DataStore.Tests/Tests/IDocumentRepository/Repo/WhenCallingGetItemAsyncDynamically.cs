@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Models;
+    using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
@@ -29,7 +30,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Repo
             this.newCar = new Car
             {
                 id = Guid.NewGuid(), Make = "Volvo"
-            };
+            }.Op(x => x.PartitionKey = x.id.ToString())
+            ;
 
             //When
             await this.testHarness.DataStore.DocumentRepository.CreateAsync(this.newCar, "Test");

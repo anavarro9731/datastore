@@ -54,7 +54,7 @@
             var clone = aggregate.Clone();
             (clone as IEtagUpdated).EtagUpdated = newTag => aggregate.Etag = newTag;
             
-            //DataStoreCreateCapabilities.ForceProperties(clone.ReadOnly, clone);
+            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly);
 
             var newAggregate = new QueuedCreateOperation<T>(
                 nameof(AddItemDirectlyToUnderlyingDb),

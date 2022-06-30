@@ -6,7 +6,7 @@
 
     public class DataStoreMessageAggregator : IMessageAggregator
     {
-        public Dictionary<string, object> ReturnValues = new Dictionary<string, object>();
+        public readonly Dictionary<string, object> ReturnValues = new Dictionary<string, object>();
 
         private readonly List<IMessage> allMessages = new List<IMessage>();
 

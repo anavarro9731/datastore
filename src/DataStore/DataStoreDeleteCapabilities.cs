@@ -129,7 +129,7 @@
                                o.DisableOptimisticConcurrency();
                                o.OverwriteReadonly();
                                }),
-                       methodName);
+                       methodName).ConfigureAwait(false);
         }
     }
 }

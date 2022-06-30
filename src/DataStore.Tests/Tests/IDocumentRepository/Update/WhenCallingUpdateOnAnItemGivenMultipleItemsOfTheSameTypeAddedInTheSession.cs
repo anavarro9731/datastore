@@ -90,10 +90,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
             var c2r1 = await this.testHarness.DataStore.Create(car2);
             this.car2PostCreatePreUpdateEtag = c2r1.Etag;
 
-            //* update CAR 2
+            //* update CAR 2  
             car2.Make = "BMW";
-            var c2r2 = await this.testHarness.DataStore.Update(car2);
-            this.car2PostUpdateEtag = c2r2.Etag;
+             var c2r2 = await this.testHarness.DataStore.Update(car2);  /* this line in this test does a very important job it test the failure in the update method 
+             of the developer adding but forgetting to add a new restricted property on the Aggregate base class to the list of excluded properties when cloning 
+             during the Update() method */
+             
+             this.car2PostUpdateEtag = c2r2.Etag;
 
             Assert.Equal(0, this.testHarness.DataStore.QueuedOperations.Count(x => x is QueuedUpdateOperation<Car>));
             Assert.Equal(2, this.testHarness.DataStore.QueuedOperations.Count(x => x is QueuedCreateOperation<Car>));

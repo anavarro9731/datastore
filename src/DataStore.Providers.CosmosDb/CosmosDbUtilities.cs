@@ -3,6 +3,7 @@ namespace DataStore.Providers.CosmosDb
     using System.Collections;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
+    using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.Cosmos;
 
     public class CosmosDbUtilities : IDatabaseUtilities
@@ -23,7 +24,8 @@ namespace DataStore.Providers.CosmosDb
                 await db.Database.CreateContainerIfNotExistsAsync(
                     new ContainerProperties
                     {
-                        PartitionKeyPath = "/PartitionKey", Id = cosmosStoreSettings.ContainerName
+                        PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey), 
+                        Id = cosmosStoreSettings.ContainerName
                     }).ConfigureAwait(false);
             }
             else
@@ -32,7 +34,8 @@ namespace DataStore.Providers.CosmosDb
                 await db.CreateContainerIfNotExistsAsync(
                     new ContainerProperties
                     {
-                        PartitionKeyPath = "/PartitionKey", Id = cosmosStoreSettings.ContainerName
+                        PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey), 
+                        Id = cosmosStoreSettings.ContainerName
                     }).ConfigureAwait(false);
             }
 

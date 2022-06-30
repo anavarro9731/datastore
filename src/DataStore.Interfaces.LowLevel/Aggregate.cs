@@ -19,13 +19,14 @@
     /// </summary>
     public abstract class Aggregate : Entity, IAggregate, IEtagUpdated
     {
-        public const string PartitionKeyValue = "shared";
-
         protected Aggregate()
         {
-            //Properties are set here (or as defaults) when they could be set in Create because a lot of the tests which
-            //create classes without create() depend on these defaults and it is a significant convenience for it
-            //to be set correctly by default.
+            /* Properties are set here (or as defaults) when they could be set in Create
+             because if you set them there you can't determine on a boolean if they wanted
+             them to be false unless we make them nullable which means they have to be accessed
+             with .Value all the time. While it might seem odd to create an item that is not active
+             tests in particular do this often.             
+            */
             Active = true;
         }
 
@@ -37,7 +38,7 @@
 
         public double ModifiedAsMillisecondsEpochTime { get; set; }
 
-        public string PartitionKey { get; set; } = PartitionKeyValue;
+        public string PartitionKey { get; set; }
 
         public bool ReadOnly { get; set; }
 

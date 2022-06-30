@@ -5,7 +5,9 @@
     using System.Collections.ObjectModel;
     using System.Data;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Net;
+    using System.Reflection;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -69,7 +71,7 @@
         {
             var result = await this.container.DeleteItemAsync<T>(
                              aggregateHardDeleted.Model.id.ToString(),
-                             new PartitionKey(Aggregate.PartitionKeyValue)).ConfigureAwait(false);
+                             new PartitionKey(aggregateHardDeleted.Model.PartitionKey)).ConfigureAwait(false);
 
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
             aggregateHardDeleted.Model.Etag = "item was deleted";
@@ -79,6 +81,7 @@
         {
             this.client?.Dispose();
         }
+        
 
         public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
             where T : class, IAggregate, new()
@@ -100,14 +103,13 @@
                 So for now we convert the CosmosLINQQueryable into a generic one. */
 
                 using (var setIterator = this.container.GetItemQueryIterator<dynamic>(
-                    aggregatesQueried.Query.ToQueryDefinition(),
-                    (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
-                    new QueryRequestOptions
-                    {
-                        MaxItemCount = (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
-                        ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
-                        PartitionKey = new PartitionKey(Aggregate.PartitionKeyValue)
-                    }))
+                           aggregatesQueried.Query.ToQueryDefinition(),
+                           (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
+                           new QueryRequestOptions
+                           {
+                               MaxItemCount = (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
+                               ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
+                           }))
                 {
                     while (HaveLessRecordsThanUserRequested() && setIterator.HasMoreResults)
                     {
@@ -219,14 +221,26 @@
 
         public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
         {
-            var query = CreateQueryable<T>();
-            var count = await query.Where(d => d.id == aggregateQueriedById.Id).CountAsync().ConfigureAwait(false);
-            if (count == 0) return default;
-
-            var result = await this.container.ReadItemAsync<T>(
+            /*
+            TODO  FINISH DELETE CAPABILITIES BY ID RETEST EVERYTHING
+            ADD READMANY TO BACKLOG FOR PERF
+            MESSAGELOG IN SOAP SHOULD GO TO ITS OWN CONTAINER, YOU DONT WANT A CRAZY BIRST OF MESSAGE SPAWING LOADS OF PHYSICAL PARTITIONS THAT YOU CANT UNDO
+            FOR NOT THOUGH ON QSEES ITS OK TILL YOU CAN LATER IMPLEMENT, AS A STOP GAP YOU COULD DO MESSAGELOG-MONTH IF ITS A MESSAGELOG
+            AND FOR BACKWARDS COMPAT YOU HAVE TO PASS PARTITION KEY VIA AGG QUERIED PARAMS , FIX THAT TOMORROW!
+            
+             */
+            
+            ItemResponse<T> result = null;
+            try {
+                    result = await this.container.ReadItemAsync<T>(
                              aggregateQueriedById.Id.ToString(),
-                             new PartitionKey(Aggregate.PartitionKeyValue)).ConfigureAwait(false);
+                             new PartitionKey(aggregateQueriedById.Id.ToString())).ConfigureAwait(false);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
 
+            if (result == null) return default;
+            
+            
             var asT = ((T)(dynamic)result)
                 /* set eTag */
                 .Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
@@ -245,7 +259,7 @@
                 var result = await this.container.ReplaceItemAsync(
                                  aggregateUpdated.Model,
                                  aggregateUpdated.Model.id.ToString(),
-                                 new PartitionKey(Aggregate.PartitionKeyValue),
+                                 new PartitionKey(aggregateUpdated.Model.PartitionKey),
                                  new ItemRequestOptions
                                  {
                                      IfMatchEtag = preSaveTag //* can be null, note made for reference on conversion to v3 SDK

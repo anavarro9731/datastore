@@ -10,5 +10,7 @@ namespace DataStore.Interfaces.LowLevel
         bool ReadOnly { get; set; }
 
         List<Aggregate.AggregateVersionInfo> VersionHistory { get; set; }
+
+        string PartitionKey { get; set; }
     }
 }

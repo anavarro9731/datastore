@@ -42,7 +42,7 @@
                     await CreateFullAggregateRecordIfEnabled(
                         model,
                         historyRecordEntry,
-                        $"{methodName}.{nameof(IncrementAggregateVersionOfItemToBeQueued)}");
+                        $"{methodName}.{nameof(IncrementAggregateVersionOfItemToBeQueued)}").ConfigureAwait(false);
                 }
             }
 
