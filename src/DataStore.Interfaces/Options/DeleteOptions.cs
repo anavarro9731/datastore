@@ -22,7 +22,7 @@
         public abstract void Permanently();
     }
 
-    public class DeleteOptionsLibrarySide
+    public class DeleteOptionsLibrarySide  : ISecurityOptions
     {
         public IIdentityWithDatabasePermissions Identity { get; set; }
 

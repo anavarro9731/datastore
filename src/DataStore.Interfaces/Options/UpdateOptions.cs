@@ -22,7 +22,7 @@
         public abstract void BypassSecurity(string reason);
     }
 
-    public class UpdateOptionsLibrarySide
+    public class UpdateOptionsLibrarySide : ISecurityOptions
     {
         public bool AllowReadonlyOverwriting { get; set; }
 
