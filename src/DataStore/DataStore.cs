@@ -9,7 +9,6 @@
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
-    using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
     using global::DataStore.MessageAggregator;
@@ -22,46 +21,29 @@
     /// </summary>
     public class DataStore : IDataStore
     {
-        private static void AppendMethodName(ref string current, string add)
-        {
-            if (string.IsNullOrWhiteSpace(current))
-            {
-                current += add;
-            }
-            else
-            {
-                current += "+" + add;
-            }
-        }
+        private readonly DataStoreOptions dataStoreOptions;
 
-        public DataStore(
-            IDocumentRepository documentRepository,
-            IMessageAggregator eventAggregator = null,
-            DataStoreOptions dataStoreOptions = null)
+        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, DataStoreOptions dataStoreOptions = null)
         {
             {
                 ValidateOptions(dataStoreOptions);
-
                 {
-                    // init vars
                     MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
-                    this.dataStoreOptions = dataStoreOptions ?? global::DataStore.Options.DataStoreOptions.Create();
+                    this.dataStoreOptions = dataStoreOptions ?? Options.DataStoreOptions.Create();
+
                     DocumentRepository = documentRepository;
 
                     var incrementVersions = new IncrementVersions(this);
 
-                    QueryCapabilities = new DataStoreQueryCapabilities(DocumentRepository, MessageAggregator);
-                    UpdateCapabilities = new DataStoreUpdateCapabilities(
-                        DocumentRepository,
-                        MessageAggregator,
-                        DataStoreOptions,
-                        incrementVersions);
+                    QueryCapabilities = new DataStoreQueryCapabilities(DocumentRepository, MessageAggregator, DataStoreOptions);
+                    UpdateCapabilities = new DataStoreUpdateCapabilities(DocumentRepository, MessageAggregator, DataStoreOptions, incrementVersions);
                     DeleteCapabilities = new DataStoreDeleteCapabilities(
                         DocumentRepository,
                         UpdateCapabilities,
                         MessageAggregator,
+                        DataStoreOptions,
                         incrementVersions);
-                    CreateCapabilities = new DataStoreCreateCapabilities(DocumentRepository, MessageAggregator, incrementVersions);
+                    CreateCapabilities = new DataStoreCreateCapabilities(DocumentRepository, MessageAggregator, DataStoreOptions, incrementVersions);
 
                     ControlFunctions = new ControlFunctions(this);
                 }
@@ -72,15 +54,12 @@
                 //not sure how to handle disabling version history when its already been enabled??
             }
         }
-        
-        public IDataStoreOptions DataStoreOptions => this.dataStoreOptions;
 
-        private readonly DataStoreOptions dataStoreOptions;
+        public IDataStoreOptions DataStoreOptions => this.dataStoreOptions;
 
         public IDocumentRepository DocumentRepository { get; }
 
-        public IReadOnlyList<IDataStoreOperation> ExecutedOperations =>
-            MessageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
+        public IReadOnlyList<IDataStoreOperation> ExecutedOperations => MessageAggregator.AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
 
         public IMessageAggregator MessageAggregator { get; }
 
@@ -88,14 +67,14 @@
         {
             get
             {
-                var queued = MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false)
-                                              .ToList().AsReadOnly();
+                var queued = MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().Where(o => o.Committed == false).ToList().AsReadOnly();
 
                 return queued;
             }
         }
 
-        
+        public IWithoutEventReplay WithoutEventReplay => new WithoutEventReplay(DocumentRepository, MessageAggregator, ControlFunctions, DataStoreOptions);
+
         internal ControlFunctions ControlFunctions { get; }
 
         private DataStoreCreateCapabilities CreateCapabilities { get; }
@@ -106,13 +85,16 @@
 
         private DataStoreUpdateCapabilities UpdateCapabilities { get; }
 
-        public IDataStoreReadOnly AsReadOnly() => new DataStoreReadOnly(this);
+        public IDataStoreReadOnly AsReadOnly()
+        {
+            return new DataStoreReadOnly(this);
+        }
 
-        public IDataStoreWriteOnly AsWriteOnlyScoped<T>() where T : class, IAggregate, new() => new DataStoreWriteOnly<T>(this);
+        public IDataStoreWriteOnly AsWriteOnlyScoped<T>() where T : class, IAggregate, new()
+        {
+            return new DataStoreWriteOnly<T>(this);
+        }
 
-        public IWithoutEventReplay WithoutEventReplay =>
-            new WithoutEventReplay(DocumentRepository, MessageAggregator, ControlFunctions, DataStoreOptions);
-        
         public async Task CommitChanges()
         {
             {
@@ -127,9 +109,7 @@
                     await dataStoreWriteEvent.CommitClosure().ConfigureAwait(false);
             }
 
-            void FilterEvents(
-                out List<IQueuedDataStoreWriteOperation> committableEvents,
-                out List<IQueuedDataStoreWriteOperation> committedEvents)
+            void FilterEvents(out List<IQueuedDataStoreWriteOperation> committableEvents, out List<IQueuedDataStoreWriteOperation> committedEvents)
             {
                 var dsEvents = MessageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation>().ToList();
                 committableEvents = dsEvents.Where(e => !e.Committed).ToList();
@@ -150,19 +130,19 @@
 
             var result = await CreateCapabilities.Create(model, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.CREATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.CREATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                               .ConfigureAwait(false);
+            }
 
             return result;
         }
 
-        public Task<T> Create<T>(T model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            Create<T, DefaultCreateOptions>(model, setOptions, methodName);
+        public Task<T> Create<T>(T model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            return Create<T, DefaultCreateOptions>(model, setOptions, methodName);
+        }
 
         //* Delete
         public async Task<T> Delete<T, O>(T instance, Action<O> setOptions = null, string methodName = null)
@@ -174,19 +154,19 @@
 
             var result = await DeleteCapabilities.Delete(instance, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.DELETE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.DELETE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                               .ConfigureAwait(false);
+            }
 
             return result;
         }
 
-        public Task<T> Delete<T>(T instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            Delete<T, DefaultDeleteOptions>(instance, setOptions, methodName);
+        public Task<T> Delete<T>(T instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            return Delete<T, DefaultDeleteOptions>(instance, setOptions, methodName);
+        }
 
         //* DeleteById
         public async Task<T> DeleteById<T, O>(Guid id, Action<O> setOptions = null, string methodName = null)
@@ -198,25 +178,23 @@
 
             var result = await DeleteCapabilities.DeleteById<T, DeleteOptionsLibrarySide>(id, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.DELETE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.DELETE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                               .ConfigureAwait(false);
+            }
 
             return result;
         }
 
-        public Task<T> DeleteById<T>(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            DeleteById<T, DefaultDeleteOptions>(id, setOptions, methodName);
+        public Task<T> DeleteById<T>(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            return DeleteById<T, DefaultDeleteOptions>(id, setOptions, methodName);
+        }
 
         //* DeleteWhere
-        public async Task<IEnumerable<T>> DeleteWhere<T, O>(
-            Expression<Func<T, bool>> predicate,
-            Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : DeleteOptionsClientSide, new()
+        public async Task<IEnumerable<T>> DeleteWhere<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : DeleteOptionsClientSide, new()
         {
             DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -224,27 +202,24 @@
 
             var results = await DeleteCapabilities.DeleteWhere(predicate, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                results = await ControlFunctions.AuthoriseData(results, SecurableOperations.DELETE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                results = await ControlFunctions.AuthoriseData(results, SecurableOperations.DELETE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                .ConfigureAwait(false);
+            }
 
             return results;
         }
 
-        public Task<IEnumerable<T>> DeleteWhere<T>(
-            Expression<Func<T, bool>> predicate,
-            Action<DeleteOptionsClientSide> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() =>
-            DeleteWhere<T, DefaultDeleteOptions>(predicate, setOptions, methodName);
+        public Task<IEnumerable<T>> DeleteWhere<T>(Expression<Func<T, bool>> predicate, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new()
+        {
+            return DeleteWhere<T, DefaultDeleteOptions>(predicate, setOptions, methodName);
+        }
 
         //* Read
-        public async Task<IEnumerable<T>> Read<T, O>(
-            Expression<Func<T, bool>> predicate = null,
-            Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+        public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -252,37 +227,32 @@
 
             var result = await QueryCapabilities.Read(predicate, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            if (SecurityShouldBeApplied<T>(options))
             {
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
-                if (hasPii)
+                if (HasPii<T>())
                 {
-                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                   .ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                   .ConfigureAwait(false);
                 }
             }
 
             return result;
         }
 
-        public Task<IEnumerable<T>> Read<T>(
-            Expression<Func<T, bool>> predicate = null,
-            Action<ReadOptionsClientSide> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() =>
-            Read<T, DefaultReadOptions>(predicate, setOptions, methodName);
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new()
+        {
+            return Read<T, DefaultReadOptions>(predicate, setOptions, methodName);
+        }
 
         //*ReadActive
-        public async Task<IEnumerable<T>> ReadActive<T, O>(
-            Expression<Func<T, bool>> predicate = null,
-            Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+        public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null, string methodName = null)
+            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -290,20 +260,17 @@
 
             var result = await QueryCapabilities.ReadActive(predicate, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            if (SecurityShouldBeApplied<T>(options))
             {
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
-                if (hasPii)
+                if (HasPii<T>())
                 {
-                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                   .ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseData(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                   .ConfigureAwait(false);
                 }
             }
 
@@ -313,8 +280,10 @@
         public Task<IEnumerable<T>> ReadActive<T>(
             Expression<Func<T, bool>> predicate = null,
             Action<ReadOptionsClientSide> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() =>
-            ReadActive<T, DefaultReadOptions>(predicate, setOptions, methodName);
+            string methodName = null) where T : class, IAggregate, new()
+        {
+            return ReadActive<T, DefaultReadOptions>(predicate, setOptions, methodName);
+        }
 
         //ReadActiveById
         public async Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
@@ -324,33 +293,31 @@
 
             AppendMethodName(ref methodName, nameof(ReadActiveById));
 
-            var result = await QueryCapabilities.ReadActiveById<T, ReadOptionsLibrarySide>(modelId, options, methodName)
-                                                .ConfigureAwait(false);
+            var result = await QueryCapabilities.ReadActiveById<T, ReadOptionsLibrarySide>(modelId, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            if (SecurityShouldBeApplied<T>(options))
             {
-
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
-                if (hasPii)
+                if (HasPii<T>())
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(
+                                 result,
+                                 SecurableOperations.READPII,
+                                 options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                   .ConfigureAwait(false);
                 }
             }
 
             return result;
         }
 
-        public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            ReadActiveById<T, DefaultReadOptions>(modelId, setOptions, methodName);
+        public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            return ReadActiveById<T, DefaultReadOptions>(modelId, setOptions, methodName);
+        }
 
         //ReadById
         public async Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
@@ -362,29 +329,35 @@
 
             var result = await QueryCapabilities.ReadById<T, ReadOptionsLibrarySide>(modelId, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
+            if (SecurityShouldBeApplied<T>(options))
             {
-                var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
-                if (hasPii)
+                if (HasPii<T>())
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READPII, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(
+                                 result,
+                                 SecurableOperations.READPII,
+                                 options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+                    result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.READ, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                   .ConfigureAwait(false);
                 }
             }
 
             return result;
         }
 
-        public Task<T> ReadById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            ReadById<T, DefaultReadOptions>(modelId, setOptions, methodName);
+        private static bool HasPii<T>() where T : class, IAggregate, new()
+        {
+            var hasPii = typeof(T).GetProperties().Any(x => x.GetCustomAttribute(typeof(PIIAttribute), false) != null);
+            return hasPii;
+        }
+
+        public Task<T> ReadById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            return ReadById<T, DefaultReadOptions>(modelId, setOptions, methodName);
+        }
 
         //* Update
         public async Task<T> Update<T, O>(T src, Action<O> setOptions = null, string methodName = null)
@@ -396,19 +369,19 @@
 
             var result = await UpdateCapabilities.Update(src, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.UPDATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.UPDATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                               .ConfigureAwait(false);
+            }
 
             return result;
         }
 
-        public Task<T> Update<T>(T src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            Update<T, DefaultUpdateOptions>(src, setOptions, methodName);
+        public Task<T> Update<T>(T src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            return Update<T, DefaultUpdateOptions>(src, setOptions, methodName);
+        }
 
         //* UpdateById
         public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null)
@@ -420,19 +393,20 @@
 
             var result = await UpdateCapabilities.UpdateById(id, action, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.UPDATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                result = await ControlFunctions.AuthoriseDatum(result, SecurableOperations.UPDATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                               .ConfigureAwait(false);
+            }
 
             return result;
         }
 
         public Task<T> UpdateById<T>(Guid id, Action<T> action, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() =>
-            UpdateById<T, DefaultUpdateOptions>(id, action, setOptions, methodName);
+            where T : class, IAggregate, new()
+        {
+            return UpdateById<T, DefaultUpdateOptions>(id, action, setOptions, methodName);
+        }
 
         //* UpdateWhere
         public async Task<IEnumerable<T>> UpdateWhere<T, O>(
@@ -447,12 +421,11 @@
 
             var results = await UpdateCapabilities.UpdateWhere(predicate, action, options, methodName).ConfigureAwait(false);
 
-            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
-            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
-            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
-                
-            if (applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall)
-                results = await ControlFunctions.AuthoriseData(results, SecurableOperations.UPDATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor).ConfigureAwait(false);
+            if (SecurityShouldBeApplied<T>(options))
+            {
+                results = await ControlFunctions.AuthoriseData(results, SecurableOperations.UPDATE, options.Identity ?? this.dataStoreOptions.Security.SecuredFor)
+                                                .ConfigureAwait(false);
+            }
 
             return results;
         }
@@ -461,7 +434,29 @@
             Expression<Func<T, bool>> predicate,
             Action<T> action,
             Action<UpdateOptionsClientSide> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() =>
-            UpdateWhere<T, DefaultUpdateOptions>(predicate, action, setOptions, methodName);
+            string methodName = null) where T : class, IAggregate, new()
+        {
+            return UpdateWhere<T, DefaultUpdateOptions>(predicate, action, setOptions, methodName);
+        }
+
+        private static void AppendMethodName(ref string current, string add)
+        {
+            if (string.IsNullOrWhiteSpace(current))
+            {
+                current += add;
+            }
+            else
+            {
+                current += "+" + add;
+            }
+        }
+
+        private bool SecurityShouldBeApplied<T>(ISecurityOptions options) where T : class, IAggregate, new()
+        {
+            var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);
+            var bypassSecurityEnabledForThisAggregate = typeof(T).GetCustomAttributes(false).ToList().Exists(x => x.GetType() == typeof(BypassSecurity));
+            var bypassSecurityEnabledForThisCall = options.BypassSecurity;
+            return applySecurity && !bypassSecurityEnabledForThisAggregate && !bypassSecurityEnabledForThisCall;
+        }
     }
 }
