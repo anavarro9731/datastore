@@ -17,6 +17,7 @@ namespace DataStore
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
+    using global::DataStore.Options;
 
     //methods return the enriched object as it was added to the database
 
@@ -26,14 +27,16 @@ namespace DataStore
 
         private readonly IMessageAggregator messageAggregator;
 
-       
+        private readonly IDataStoreOptions dataStoreOptions;
 
         public DataStoreCreateCapabilities(
             IDocumentRepository dataStoreConnection,
             IMessageAggregator messageAggregator,
+            IDataStoreOptions dataStoreOptions,
             IncrementVersions incrementVersions)
         {
             this.messageAggregator = messageAggregator;
+            this.dataStoreOptions = dataStoreOptions;
             this.incrementVersions = incrementVersions;
             DsConnection = dataStoreConnection;
         }
@@ -47,7 +50,7 @@ namespace DataStore
             //and affects the commit and/or the resulting events
             var newObject = model.Clone();
 
-            newObject.ForcefullySetMandatoryPropertyValues(options.SetReadonlyFlag);
+            newObject.ForcefullySetMandatoryPropertyValues(options.SetReadonlyFlag, this.dataStoreOptions.PartitionKeySettings);
 
             Guard.Against(
                 this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>()

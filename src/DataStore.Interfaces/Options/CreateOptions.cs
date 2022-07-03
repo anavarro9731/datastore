@@ -3,7 +3,7 @@
     using CircuitBoard;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public class CreateOptionsLibrarySide
+    public class CreateOptionsLibrarySide : ISecurityOptions
     {
         public IIdentityWithDatabasePermissions Identity { get; set; }
 

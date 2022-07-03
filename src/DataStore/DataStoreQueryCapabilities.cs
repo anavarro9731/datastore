@@ -11,6 +11,7 @@
     using global::DataStore.Interfaces.Options;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
+    using global::DataStore.Options;
 
     //methods return the latest version of an object including uncommitted session changes
 
@@ -20,9 +21,12 @@
 
         private readonly IMessageAggregator messageAggregator;
 
-        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator)
+        private readonly IDataStoreOptions dataStoreOptions;
+
+        public DataStoreQueryCapabilities(IDocumentRepository dataStoreConnection, IMessageAggregator messageAggregator, IDataStoreOptions dataStoreOptions)
         {
             this.messageAggregator = messageAggregator;
+            this.dataStoreOptions = dataStoreOptions;
             this.eventReplay = new EventReplay(messageAggregator);
             DbConnection = dataStoreConnection;
         }
@@ -74,7 +78,7 @@
         {
             if (modelId == Guid.Empty) return null;
 
-            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, modelId))
+            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, modelId, this.dataStoreOptions.PartitionKeySettings))
                                    .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             bool Predicate(T a) => a.Active && a.id == modelId;
@@ -98,7 +102,7 @@
         {
             if (modelId == Guid.Empty) return null;
 
-            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperation(methodName, modelId))
+            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, modelId, this.dataStoreOptions.PartitionKeySettings))
                                    .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             bool Predicate(T a) => a.id == modelId;

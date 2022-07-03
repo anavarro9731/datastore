@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.Operations;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -29,7 +30,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
         public async void ItShouldReturnThatItem()
         {
             await Setup();
-            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateQueriedByIdOperation));
+            Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is IDataStoreReadByIdOperation));
             Assert.NotNull(this.newCarFromSession);
             Assert.Equal(this.fordId, this.newCarFromSession.id);
         }

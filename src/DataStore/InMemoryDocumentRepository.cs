@@ -15,6 +15,8 @@
     {
         public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
 
+        public IDataStoreOptions Options { get; set; }
+
         public IDatabaseSettings ConnectionSettings => new Settings(this);
 
         public Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new()
@@ -110,15 +112,15 @@
             return Task.FromResult(result);
         }
 
-        public Task<bool> Exists(IDataStoreReadById aggregateQueriedById)
+        public Task<bool> Exists(IDataStoreReadByIdOperation aggregateQueriedByIdOperation)
         {
-            return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedById.Id));
+            return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedByIdOperation.Id));
         }
 
-        public Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
+        public Task<T> GetItemAsync<T>(IDataStoreReadByIdOperation aggregateQueriedByIdOperation) where T : class, IAggregate, new()
         {
             var aggregate = Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>()
-                                      .SingleOrDefault(a => a.id == aggregateQueriedById.Id);
+                                      .SingleOrDefault(a => a.id == aggregateQueriedByIdOperation.Id);
 
             //clone otherwise its to easy to change the referenced object in test code affecting results
             return Task.FromResult(aggregate?.Clone());

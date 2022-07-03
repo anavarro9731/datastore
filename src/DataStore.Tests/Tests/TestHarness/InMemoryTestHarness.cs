@@ -32,7 +32,7 @@
             //and affects the commit and/or the resulting events
             var clone = aggregate.Clone();
 
-            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly);
+            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly, DataStore.DataStoreOptions.PartitionKeySettings);
 
             DocumentRepository.Aggregates.Add(clone);
             clone.Etag = Guid.NewGuid().ToString(); //fake etag update internally

@@ -1,6 +1,7 @@
 ﻿namespace DataStore.Options
 {
     using System;
+    using System.Collections.Generic;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.PureFunctions;
@@ -13,6 +14,8 @@
         {
         }
 
+        
+
         public bool OptimisticConcurrency { get; private set; } = true;
 
         public SecuritySettings Security { get; private set; }
@@ -23,6 +26,14 @@
         {
             Style = VersionHistorySettings.VersioningStyle.AggregateHeaderInfoOnly
         };
+
+        public PartitionKeySettings PartitionKeySettings { get; private set; } = new PartitionKeySettings();
+
+        public DataStoreOptions UseHierarchicalPartitionKeys()
+        {
+            this.PartitionKeySettings.UseHierarchicalKeys = true;
+            return this;
+        }
 
         public DataStoreOptions DisableOptimisticConcurrency()
         {

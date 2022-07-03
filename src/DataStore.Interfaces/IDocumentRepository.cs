@@ -9,6 +9,7 @@ namespace DataStore.Interfaces
 
     public interface IDocumentRepository : IDisposable
     {
+
         IDatabaseSettings ConnectionSettings { get; }
 
         Task AddAsync<T>(IDataStoreWriteOperation<T> aggregateAdded) where T : class, IAggregate, new();
@@ -25,7 +26,7 @@ namespace DataStore.Interfaces
 
         Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new();
 
-        Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new();
+        Task<T> GetItemAsync<T>(IDataStoreReadByIdOperation aggregateQueriedByIdOperation) where T : class, IAggregate, new();
 
         Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new();
     }

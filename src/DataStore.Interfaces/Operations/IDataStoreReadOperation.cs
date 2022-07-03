@@ -12,8 +12,9 @@
         object QueryOptions { get; set; }
     }
 
-    public interface IDataStoreReadById : IDataStoreReadOperation
+    public interface IDataStoreReadByIdOperation : IDataStoreReadOperation
     {
+        string PartitionKey { get; set; }
         Guid Id { get; set; }
     }
 

@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
     using System.Linq;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
+    using global::DataStore.Interfaces.Operations;
     using global::DataStore.Models.Messages;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -24,7 +25,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Query
             Assert.Equal(
                 1,
                 this.testHarness.DataStore.ExecutedOperations.Count(
-                    e => e is AggregateQueriedByIdOperation && e.MethodCalled == nameof(DataStore.ReadActiveById)));
+                    e => e is IDataStoreReadByIdOperation && e.MethodCalled == nameof(DataStore.ReadActiveById)));
             Assert.Equal(this.activeCarId, this.activeCarFromDatabase.id);
         }
 

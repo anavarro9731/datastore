@@ -24,6 +24,8 @@
 
         private readonly CosmosSettings settings;
 
+        public IDataStoreOptions Options { get; set; } //* setter injection by parent see DataStore ctor
+
         private CosmosClient client;
 
         public CosmosDbRepository(CosmosSettings settings)
@@ -31,7 +33,6 @@
             CosmosDbUtilities.CreateClient(settings, out this.client);
             this.container = this.client.GetContainer(settings.DatabaseName, settings.ContainerName);
             this.settings = settings;
-            
         }
 
         public IDatabaseSettings ConnectionSettings => this.settings;
@@ -219,22 +220,16 @@
             }
         }
 
-        public async Task<T> GetItemAsync<T>(IDataStoreReadById aggregateQueriedById) where T : class, IAggregate, new()
+
+
+        public async Task<T> GetItemAsync<T>(IDataStoreReadByIdOperation aggregateQueriedByIdOperation) where T : class, IAggregate, new()
         {
-            /*
-            TODO  FINISH DELETE CAPABILITIES BY ID RETEST EVERYTHING
-            ADD READMANY TO BACKLOG FOR PERF
-            MESSAGELOG IN SOAP SHOULD GO TO ITS OWN CONTAINER, YOU DONT WANT A CRAZY BIRST OF MESSAGE SPAWING LOADS OF PHYSICAL PARTITIONS THAT YOU CANT UNDO
-            FOR NOT THOUGH ON QSEES ITS OK TILL YOU CAN LATER IMPLEMENT, AS A STOP GAP YOU COULD DO MESSAGELOG-MONTH IF ITS A MESSAGELOG
-            AND FOR BACKWARDS COMPAT YOU HAVE TO PASS PARTITION KEY VIA AGG QUERIED PARAMS , FIX THAT TOMORROW!
-            
-             */
             
             ItemResponse<T> result = null;
             try {
                     result = await this.container.ReadItemAsync<T>(
-                             aggregateQueriedById.Id.ToString(),
-                             new PartitionKey(aggregateQueriedById.Id.ToString())).ConfigureAwait(false);
+                             aggregateQueriedByIdOperation.Id.ToString(),
+                             new PartitionKey(aggregateQueriedByIdOperation.PartitionKey)).ConfigureAwait(false);
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
 

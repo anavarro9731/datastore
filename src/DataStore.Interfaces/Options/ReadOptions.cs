@@ -20,7 +20,7 @@
         public abstract void BypassSecurity(string reason);
     }
 
-    public class ReadOptionsLibrarySide
+    public class ReadOptionsLibrarySide : ISecurityOptions
     {
         public IIdentityWithDatabasePermissions Identity { get; set; }
 

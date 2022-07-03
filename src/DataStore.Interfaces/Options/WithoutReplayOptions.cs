@@ -34,14 +34,12 @@
         public abstract void BypassSecurity(string reason);
     }
 
-    public class WithoutReplayOptionsLibrarySide<T>
+    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions
     {
         public readonly Queue<(string, bool)> ThenByQueue = new Queue<(string, bool)>();
 
         public ContinuationToken CurrentContinuationToken;
-
-        public IIdentityWithDatabasePermissions Identity;
-
+        
         public int? MaxTake;
 
         public ContinuationToken NextContinuationToken;
@@ -53,6 +51,8 @@
         public ContinuationToken NextContinuationTokenValue { set => this.NextContinuationToken.Value = value.Value; }
 
         public List<(string, bool)> OrderByParameters { get; } = new List<(string, bool)>();
+
+        public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool BypassSecurity { get; set; }
 

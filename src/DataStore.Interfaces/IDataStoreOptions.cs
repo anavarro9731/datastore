@@ -1,5 +1,9 @@
 namespace DataStore.Interfaces
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.LowLevel.Permissions;
 
     public interface IDataStoreOptions
@@ -12,8 +16,15 @@ namespace DataStore.Interfaces
 
         VersionHistorySettings VersionHistory { get; }
         
+        PartitionKeySettings PartitionKeySettings { get; }
+        
     }
-    
+
+    public class PartitionKeySettings 
+    {
+        public bool UseHierarchicalKeys { get; set; }
+    }
+
     public class SecuritySettings 
     {
         public IScopeHierarchy ScopeHierarchy { get; set; }

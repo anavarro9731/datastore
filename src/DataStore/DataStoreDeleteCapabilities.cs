@@ -24,6 +24,8 @@
 
         private readonly IMessageAggregator messageAggregator;
 
+        private readonly IDataStoreOptions dataStoreOptions;
+
         private readonly DataStoreUpdateCapabilities updateCapabilities;
 
         public static void CheckWasObjectAlreadyHardDeleted<T>(IMessageAggregator messageAggregator, Guid aggregateId)
@@ -46,10 +48,12 @@
             IDocumentRepository dataStoreConnection,
             DataStoreUpdateCapabilities updateCapabilities,
             IMessageAggregator messageAggregator,
+            IDataStoreOptions dataStoreOptions,
             IncrementVersions incrementVersions)
         {
             this.updateCapabilities = updateCapabilities;
             this.messageAggregator = messageAggregator;
+            this.dataStoreOptions = dataStoreOptions;
             this.incrementVersions = incrementVersions;
             DsConnection = dataStoreConnection;
             this.eventReplay = new EventReplay(messageAggregator);
@@ -64,7 +68,39 @@
         public async Task<T> DeleteById<T, O>(Guid id, O options, string methodName = null)
             where T : class, IAggregate, new() where O : DeleteOptionsLibrarySide, new()
         {
-            return (await DeleteWhere<T, O>(x => x.id == id, options, methodName).ConfigureAwait(false)).SingleOrDefault();
+            
+            {
+                if (options.IsHardDelete)
+                {
+                    var objectToBeDeletedFromDb = await this.messageAggregator
+                                                            .CollectAndForward(
+                                                                new AggregateQueriedByIdOperationOperation<T>(
+                                                                        methodName,
+                                                                id, this.dataStoreOptions.PartitionKeySettings)).To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
+
+                    var objectsToDelete = (objectToBeDeletedFromDb == default
+                                               ? Array.Empty<T>()
+                                               : new[]
+                                               {
+                                                   objectToBeDeletedFromDb
+                                               }).ToList();
+
+                    return (await HardDeleteItems<T, O>(x => x.id == id, methodName, objectsToDelete).ConfigureAwait(false)).SingleOrDefault();
+                }
+                else
+                {
+                    return await this.updateCapabilities.UpdateById<T, UpdateOptionsLibrarySide>(
+                               id,
+                               MarkAsSoftDeleted,
+                               new DefaultUpdateOptions().Op(
+                                   o =>
+                                       {
+                                       o.DisableOptimisticConcurrency();
+                                       o.OverwriteReadonly();
+                                       }),
+                               methodName).ConfigureAwait(false);
+                }
+            }
         }
 
         public async Task<IEnumerable<T>> DeleteWhere<T, O>(Expression<Func<T, bool>> predicate, O options, string methodName = null)
@@ -73,63 +109,63 @@
             {
                 if (options.IsHardDelete)
                 {
-                    List<T> objectsToDelete = null;
+                    List<T> objectsToDelete = await GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate).ConfigureAwait(false);
 
-                    this.eventReplay.RemoveQueuedOperationsMatchingPredicate(predicate.Compile(), out var itemsCreatedInThisSession);
-
-                    await GetObjectFromDatabaseThatMatchPredicateForDeletion(predicate, v => objectsToDelete = v).ConfigureAwait(false);
-
-                    if (!objectsToDelete.Any()) return itemsCreatedInThisSession;
-
-                    var results = new List<T>(itemsCreatedInThisSession); //* clone otherwise its too easy to change the referenced object before committing
-
-                    foreach (var modelToPersist in objectsToDelete)
-                    {
- 
-                        this.messageAggregator.Collect(
-                            new QueuedHardDeleteOperation<T>(
-                                methodName,
-                                modelToPersist,
-                                DsConnection,
-                                this.messageAggregator
-                                ));
-
-                        await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName).ConfigureAwait(false); 
-                        await this.incrementVersions.DeleteAggregateHistory<T>(modelToPersist.id, methodName).ConfigureAwait(false);
-
-                        var clone = modelToPersist.Clone();
-                        clone.Etag = "waiting to be committed";
-                        (modelToPersist as IEtagUpdated).EtagUpdated += s => clone.Etag = s;
-                        results.Add(clone);
-                    }
-
-                    return results;
+                    return await HardDeleteItems<T, O>(predicate, methodName, objectsToDelete).ConfigureAwait(false);
                 }
-
-                async Task GetObjectFromDatabaseThatMatchPredicateForDeletion(
-                    Expression<Func<T, bool>> predicate1,
-                    Action<List<T>> setObjectsToBeDeleted) 
+                else
                 {
-                    var objectToBeDeletedFromDb = await this.messageAggregator
-                                                            .CollectAndForward(
-                                                                new AggregatesQueriedOperation<T>(
-                                                                    methodName,
-                                                                    DsConnection.CreateQueryable<T>().Where(predicate1)))
-                                                            .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
-                    setObjectsToBeDeleted(objectToBeDeletedFromDb.ToList());
+                    return await this.updateCapabilities.UpdateWhere(
+                               predicate,
+                               MarkAsSoftDeleted,
+                               (UpdateOptionsLibrarySide)new DefaultUpdateOptions().Op(
+                                   o =>
+                                       {
+                                       o.DisableOptimisticConcurrency();
+                                       o.OverwriteReadonly();
+                                       }),
+                               methodName).ConfigureAwait(false);
                 }
             }
+            
+            async Task<List<T>> GetObjectFromDatabaseThatMatchPredicateForDeletion(
+                Expression<Func<T, bool>> predicate1) 
+            {
+                var objectToBeDeletedFromDb = await this.messageAggregator
+                                                        .CollectAndForward(
+                                                            new AggregatesQueriedOperation<T>(
+                                                                methodName,
+                                                                DsConnection.CreateQueryable<T>().Where(predicate1)))
+                                                        .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
+                return objectToBeDeletedFromDb.ToList();
+            }
 
-            return await this.updateCapabilities.UpdateWhere(
-                       predicate,
-                       MarkAsSoftDeleted,
-                       (UpdateOptionsLibrarySide)new DefaultUpdateOptions().Op(
-                           o =>
-                               {
-                               o.DisableOptimisticConcurrency();
-                               o.OverwriteReadonly();
-                               }),
-                       methodName).ConfigureAwait(false);
+
+        }
+
+        private async Task<IEnumerable<T>> HardDeleteItems<T, O>(Expression<Func<T, bool>> predicate, string methodName, List<T> objectsToDelete)
+            where T : class, IAggregate, new() where O : DeleteOptionsLibrarySide, new()
+        {
+            this.eventReplay.RemoveQueuedOperationsMatchingPredicate(predicate.Compile(), out var itemsCreatedInThisSession);
+
+            if (!objectsToDelete.Any()) return itemsCreatedInThisSession;
+
+            var results = new List<T>(itemsCreatedInThisSession); //* clone otherwise its too easy to change the referenced object before committing
+
+            foreach (var modelToPersist in objectsToDelete)
+            {
+                this.messageAggregator.Collect(new QueuedHardDeleteOperation<T>(methodName, modelToPersist, DsConnection, this.messageAggregator));
+
+                await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName).ConfigureAwait(false);
+                await this.incrementVersions.DeleteAggregateHistory<T>(modelToPersist.id, methodName).ConfigureAwait(false);
+
+                var clone = modelToPersist.Clone();
+                clone.Etag = "waiting to be committed";
+                (modelToPersist as IEtagUpdated).EtagUpdated += s => clone.Etag = s;
+                results.Add(clone);
+            }
+
+            return results;
         }
     }
 }

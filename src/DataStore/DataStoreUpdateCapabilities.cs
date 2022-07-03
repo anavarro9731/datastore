@@ -75,7 +75,7 @@
         {
             var matchingObjectFromDb = await this.eventAggregator
                                                   .CollectAndForward(
-                                                      new AggregateQueriedByIdOperation(methodName, id))
+                                                      new AggregateQueriedByIdOperationOperation<T>(methodName, id, this.dataStoreOptions.PartitionKeySettings))
                                                   .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
             
             return (await ProcessUpdateOfObjects(x => x.id == id, action, options, methodName, (matchingObjectFromDb == default ? Array.Empty<T>() : new []{matchingObjectFromDb})).ConfigureAwait(false)).SingleOrDefault();
@@ -189,5 +189,7 @@
 
             return results;
         }
+
+        
     }
 }

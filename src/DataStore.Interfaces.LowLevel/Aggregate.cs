@@ -40,6 +40,8 @@
 
         public string PartitionKey { get; set; }
 
+        public HierarchicalPartitionKey PartitionKeys { get; set; }
+
         public bool ReadOnly { get; set; }
 
         public List<AggregateReference> ScopeReferences
@@ -96,7 +98,7 @@
 
         //* Json.NET ignores explicit implementations and we kind of want to hide this anyway
         Action<string> IEtagUpdated.EtagUpdated { get; set; }
-
+        
         public class AggregateVersionInfo
         {
             public Guid? AggegateHistoryItemId { get; set; }
@@ -108,6 +110,15 @@
             public DateTime Timestamp { get; set; }
 
             public string UnitOfWorkId { get; set; }
+        }
+
+        public class HierarchicalPartitionKey
+        {
+            public string Key1 { get; set; }
+
+            public string Key2 { get; set; }
+
+            public string Key3 { get; set; }
         }
     }
 }
