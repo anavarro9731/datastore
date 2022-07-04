@@ -1,37 +1,7 @@
 namespace DataStore.Models.PartitionKeyAttributes
 {
     using System;
-
-    // public class PartitionKeyTimeInterval : IPartitionKey
-    // {
-    //     public PartitionKeyTimeInterval(TimeIntervalPartitionKey attribute)
-    //     {
-    //         var intervalType = attribute.IntervalType;
-    //         
-    //         Value = intervalType == PartitionKeyTimeIntervalEnum.Years ? DateTime.UtcNow.Year.ToString() :
-    //                 intervalType == PartitionKeyTimeIntervalEnum.Months ? DateTime.UtcNow.Year + DateTime.UtcNow.Month.ToString() :
-    //                 intervalType == PartitionKeyTimeIntervalEnum.Days ? DateTime.UtcNow.Year + DateTime.UtcNow.DayOfYear.ToString() :
-    //                 intervalType == PartitionKeyTimeIntervalEnum.Seconds ? DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() :
-    //                 intervalType == PartitionKeyTimeIntervalEnum.Milliseconds ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString() :
-    //                 throw new ArgumentOutOfRangeException();
-    //     }
-    //
-    //     public string Value { get; internal set; }
-    // }
-    //
-    // public class PartitionKeyTenant : IPartitionKey
-    // {
-    //     public PartitionKeyTenant()
-    //     {
-    //     }
-    //
-    //     public string Value { get; }
-    // }
-    //
-    // public interface IPartitionKey
-    // {
-    //     string Value { get; }
-    // }
+    using DataStore.Models.PureFunctions;
 
     public enum PartitionKeyTimeIntervalEnum
     {
@@ -46,32 +16,44 @@ namespace DataStore.Models.PartitionKeyAttributes
         Milliseconds
     }
     
+    
+    /// <summary>
+    /// When no tenantId exists
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class PartitionKey_Type_AggregateId : Attribute
+    public class PartitionKey__Type_Id : Attribute
     {
     }
     
+    /// <summary>
+    /// When you have an immutable tenant id that you will have present at time of query 
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class PartitionKey_Type_ImmutableTenantId_AggregateId : Attribute
+    public class PartitionKey__Type_ImmutableTenantId_Id : Attribute
     {
-        public string PropertyForTenantId { get; }
+        public string PropertyWithTenantId { get; }
 
-        public PartitionKey_Type_ImmutableTenantId_AggregateId(string propertyForTenantId)
+        public PartitionKey__Type_ImmutableTenantId_Id(string propertyWithTenantId)
         {
-            PropertyForTenantId = propertyForTenantId;
+            Guard.Against(string.IsNullOrWhiteSpace(propertyWithTenantId), $"You must provide a {propertyWithTenantId} to use this attribute. Use {nameof(PartitionKey__Type_Id)} instead if you don't have one.");
+            PropertyWithTenantId = propertyWithTenantId;
         }
     }
     
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class PartitionKey_Type_ImmutableTimePeriod_AggregateId : Attribute
+    public class PartitionKey__Type_ImmutableTenantId_TimePeriod : Attribute
     {
-        public string PropertyForTimePeriod { get; }
+        public string PropertyWithTenantId { get; }
+
+        public string PropertyWithDateTime { get; }
 
         public PartitionKeyTimeIntervalEnum PartitionKeyTimeInterval { get; }
 
-        public PartitionKey_Type_ImmutableTimePeriod_AggregateId(string propertyForTimePeriod, PartitionKeyTimeIntervalEnum partitionKeyTimeInterval)
+        public PartitionKey__Type_ImmutableTenantId_TimePeriod(string propertyWithTenantId, string propertyWithDateTime, PartitionKeyTimeIntervalEnum partitionKeyTimeInterval)
         {
-            PropertyForTimePeriod = propertyForTimePeriod;
+            Guard.Against(string.IsNullOrWhiteSpace(propertyWithDateTime), $"You must provide a {propertyWithDateTime} to use this attribute. Use {nameof(PartitionKey__Type_ImmutableTenantId_Id)} or {nameof(PartitionKey__Type_Id)} instead if you don't have one.");
+            PropertyWithTenantId = propertyWithTenantId;
+            PropertyWithDateTime = propertyWithDateTime;
             PartitionKeyTimeInterval = partitionKeyTimeInterval;
         }
     }
