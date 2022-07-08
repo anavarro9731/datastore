@@ -7,7 +7,7 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public abstract class WithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
+    public abstract class WithoutReplayOptionsClientSide<T>  where T : class, IAggregate, new() 
     {
         public static implicit operator WithoutReplayOptionsLibrarySide<T>(WithoutReplayOptionsClientSide<T> options) =>
             options.LibrarySide;
@@ -34,7 +34,7 @@
         public abstract void BypassSecurity(string reason);
     }
 
-    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions
+    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions
     {
         public readonly Queue<(string, bool)> ThenByQueue = new Queue<(string, bool)>();
 

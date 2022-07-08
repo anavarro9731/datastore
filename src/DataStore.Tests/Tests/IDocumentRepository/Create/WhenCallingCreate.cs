@@ -3,10 +3,13 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.Messages;
+    using global::DataStore.Models.PartitionKeyAttributes;
+    using global::DataStore.Providers.CosmosDb;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
@@ -28,6 +31,21 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
             Assert.Single(this.versionHistory);
         }
 
+        [Fact]
+        public async void TheDefaultPartitionKeyShouldBeUsedIfNoAttributeIsProvided()
+        {
+            
+            Assert.False(typeof(Car).GetCustomAttribute<PartitionKey__Type_Id>() != null);
+            Assert.False(typeof(Car).GetCustomAttribute<PartitionKey__Type_TimePeriod_Id>() != null);
+            Assert.False(typeof(Car).GetCustomAttribute<PartitionKey__Type_ImmutableTenantId_Id>() != null);
+            Assert.False(typeof(Car).GetCustomAttribute<PartitionKey__Type_ImmutableTenantId_TimePeriod>() != null);
+            await Setup();
+            var cars = await this.testHarness.DataStore.ReadActive<Car>();
+            var first = cars.First();
+            Assert.Null(first.PartitionKeys);
+            Assert.Equal($"{first.GetType().FullName}_{first.id}", first.PartitionKey);
+        }
+        
         [Fact]
         public async void ItShouldFlushTheQueue()
         {
@@ -66,7 +84,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Create
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCreate));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCreate), useHierarchicalPartitionKey:false);
 
             this.newCarId = Guid.NewGuid();
             var newCar = new Car

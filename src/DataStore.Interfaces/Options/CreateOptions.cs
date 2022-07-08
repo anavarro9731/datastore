@@ -3,7 +3,7 @@
     using CircuitBoard;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public class CreateOptionsLibrarySide : ISecurityOptions
+    public class CreateOptionsLibrarySide : ISecurityOptions, IQueryOptions
     {
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
@@ -12,7 +12,7 @@
         public bool BypassSecurity { get; set; }
     }
 
-    public abstract class CreateOptionsClientSide
+    public abstract class CreateOptionsClientSide 
     {
         public static implicit operator CreateOptionsLibrarySide(CreateOptionsClientSide options) => options.LibrarySide;
 

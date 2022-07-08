@@ -1,29 +1,27 @@
 ﻿namespace DataStore.Models.Messages
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options;
 
     public class AggregateQueriedByIdOperationOperation<T> : IDataStoreReadByIdOperation where T: IAggregate
     {
-        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, PartitionKeySettings partitionKeySettings, Type type = null)
+        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, IQueryOptions queryOptions, Type type = null)
         {
             
             MethodCalled = methodCalled;
             Id = id;
-            PartitionKey = partitionKeySettings.GetKey<T>(id);
+            QueryOptions = queryOptions;
             TypeName = type?.FullName;
             Created = DateTime.UtcNow;
         }
 
         public DateTime Created { get; set; }
 
-        public Guid Id { get; set; }
+        public object QueryOptions { get; set; }
 
-        public string PartitionKey { get; set; }
+        public Guid Id { get; set; }
 
         public string MethodCalled { get; set; }
 
@@ -40,17 +38,19 @@
     
     public class AggregateQueriedByIdOperationOperation: IDataStoreReadByIdOperation
     {
-        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, string partitionKey, Type type = null)
+        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, IQueryOptions queryOptions = null, Type type = null)
         {
             
             MethodCalled = methodCalled;
             Id = id;
-            PartitionKey = partitionKey;
+            QueryOptions = queryOptions;
             TypeName = type?.FullName;
             Created = DateTime.UtcNow;
         }
 
         public DateTime Created { get; set; }
+
+        public object QueryOptions { get; set; }
 
         public Guid Id { get; set; }
 

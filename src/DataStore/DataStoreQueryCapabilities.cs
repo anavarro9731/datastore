@@ -50,7 +50,7 @@
                 predicate = a => true;
             }
 
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable))
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable, options))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
             return this.eventReplay.ApplyQueuedOperations(results, predicate.Compile());
@@ -65,7 +65,7 @@
 
             var queryable = DbConnection.CreateQueryable<T>().Where(predicate);
 
-            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable))
+            var results = await this.messageAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable, options))
                                     .To(DbConnection.ExecuteQuery).ConfigureAwait(false);
 
             return this.eventReplay.ApplyQueuedOperations(results, predicate.Compile());
@@ -78,7 +78,7 @@
         {
             if (modelId == Guid.Empty) return null;
 
-            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, modelId, this.dataStoreOptions.PartitionKeySettings))
+            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, modelId, options))
                                    .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             bool Predicate(T a) => a.Active && a.id == modelId;
@@ -102,7 +102,7 @@
         {
             if (modelId == Guid.Empty) return null;
 
-            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, modelId, this.dataStoreOptions.PartitionKeySettings))
+            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, modelId, options))
                                    .To(DbConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             bool Predicate(T a) => a.id == modelId;

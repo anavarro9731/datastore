@@ -14,7 +14,8 @@
 
     public interface IDataStoreReadByIdOperation : IDataStoreReadOperation
     {
-        string PartitionKey { get; set; }
+        object QueryOptions { get; set; }
+        
         Guid Id { get; set; }
     }
 

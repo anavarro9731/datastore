@@ -4,10 +4,11 @@
     using System.Linq;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options;
 
     public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T> where T : class, IAggregate, new()
     {
-        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, object queryOptions = null)
+        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions queryOptions = null)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;

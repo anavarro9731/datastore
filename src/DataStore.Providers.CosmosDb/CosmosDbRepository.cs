@@ -5,14 +5,13 @@
     using System.Collections.ObjectModel;
     using System.Data;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Net;
-    using System.Reflection;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+    using DataStore.Models.PureFunctions;
     using DataStore.Models.PureFunctions.Extensions;
     using Microsoft.Azure.Cosmos;
     using Microsoft.Azure.Cosmos.Linq;
@@ -24,8 +23,6 @@
 
         private readonly CosmosSettings settings;
 
-        public IDataStoreOptions Options { get; set; } //* setter injection by parent see DataStore ctor
-
         private CosmosClient client;
 
         public CosmosDbRepository(CosmosSettings settings)
@@ -34,6 +31,8 @@
             this.container = this.client.GetContainer(settings.DatabaseName, settings.ContainerName);
             this.settings = settings;
         }
+
+        public bool UseHierarchicalPartitionKeys => this.settings.UseHierarchicalPartitionKeys;
 
         public IDatabaseSettings ConnectionSettings => this.settings;
 
@@ -44,9 +43,10 @@
                 throw new ArgumentNullException(nameof(aggregateAdded));
             }
 
+            //* will get partition key from model
             var result = await this.container.CreateItemAsync(aggregateAdded.Model).ConfigureAwait(false);
 
-            aggregateAdded.Model.Etag = result.ETag; //- update it
+            aggregateAdded.Model.Etag = result.ETag; //* update it
 
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
@@ -70,9 +70,8 @@
 
         public async Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            var result = await this.container.DeleteItemAsync<T>(
-                             aggregateHardDeleted.Model.id.ToString(),
-                             new PartitionKey(aggregateHardDeleted.Model.PartitionKey)).ConfigureAwait(false);
+            var result = await this.container.DeleteItemAsync<T>(aggregateHardDeleted.Model.id.ToString(), GetPartitionKeyFromExistingItem(aggregateHardDeleted.Model))
+                                   .ConfigureAwait(false);
 
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
             aggregateHardDeleted.Model.Etag = "item was deleted";
@@ -83,9 +82,9 @@
             this.client?.Dispose();
         }
         
+        
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried)
-            where T : class, IAggregate, new()
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new()
         {
             var results = new List<T>();
             {
@@ -100,7 +99,7 @@
 
                 /* it would be quite a lot easier to just use the AggregatesQueried.Query.ToIterator()
                 but that would give you a typed iterator, and no way to get back an untyped feed response
-                which you must have in order to at the udpated ETag and copy it back to our customer eTag property.
+                which you must have in order to at the updated ETag and copy it back to our customer eTag property.
                 So for now we convert the CosmosLINQQueryable into a generic one. */
 
                 using (var setIterator = this.container.GetItemQueryIterator<dynamic>(
@@ -108,8 +107,9 @@
                            (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
                            new QueryRequestOptions
                            {
+                               PartitionKey =  GetPartitionKeyFromExistingItemType<T>(aggregatesQueried.QueryOptions as IPartitionKeyOptions),
                                MaxItemCount = (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
-                               ConsistencyLevel = ConsistencyLevel.Session, //should be the default anyway
+                               ConsistencyLevel = ConsistencyLevel.Session //should be the default anyway
                            }))
                 {
                     while (HaveLessRecordsThanUserRequested() && setIterator.HasMoreResults)
@@ -141,6 +141,8 @@
 
                 return results;
             }
+            
+            
 
             bool HaveLessRecordsThanUserRequested()
             {
@@ -151,8 +153,7 @@
 
             void SetContinuationToken(FeedResponse<dynamic> result)
             {
-                if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> continueAndTakeOptions
-                    && continueAndTakeOptions.MaxTake != null)
+                if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> continueAndTakeOptions && continueAndTakeOptions.MaxTake != null)
                 {
                     continueAndTakeOptions.NextContinuationTokenValue = new ContinuationToken(result.ContinuationToken);
                 }
@@ -167,28 +168,24 @@
                 var newCompositeIndex = new Collection<CompositePath>();
 
                 foreach (var valueTuple in fieldName_IsDescending)
-                {
                     newCompositeIndex.Add(
                         new CompositePath
                         {
-                            Path = $"/{valueTuple.Item1}",
-                            Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
+                            Path = $"/{valueTuple.Item1}", Order = valueTuple.Item2 ? CompositePathSortOrder.Descending : CompositePathSortOrder.Ascending
                         });
-                }
 
                 var exists = containerResponse.Resource.IndexingPolicy.CompositeIndexes.Any(
                     existingCompositeIndex =>
                         {
-                        
                         //* this existing index doesn't match the new one
                         if (newCompositeIndex.Count != existingCompositeIndex.Count) return false;
 
-                        for (int i = 0; i < existingCompositeIndex.Count; i++)
-                        {
+                        for (var i = 0; i < existingCompositeIndex.Count; i++)
                             //* this existing index doesn't match the new one
-                            if (existingCompositeIndex[i].Path != newCompositeIndex[i].Path || existingCompositeIndex[i].Order != newCompositeIndex[i].Order) 
-                                return false; 
-                        }
+                            if (existingCompositeIndex[i].Path != newCompositeIndex[i].Path || existingCompositeIndex[i].Order != newCompositeIndex[i].Order)
+                            {
+                                return false;
+                            }
 
                         //* if we have the same number of fields, and all the paths and orders match, then it exists
                         return true;
@@ -211,31 +208,30 @@
                                                 }).ConfigureAwait(false);
 
                         // retrieve the index transformation progress from the result
-                        indexTransformationProgress =
-                            long.Parse(containerResponse.Headers["x-ms-documentdb-collection-index-transformation-progress"]);
+                        indexTransformationProgress = long.Parse(containerResponse.Headers["x-ms-documentdb-collection-index-transformation-progress"]);
                     }
                     while (indexTransformationProgress < 100);
                 }
-                
             }
         }
 
-
-
         public async Task<T> GetItemAsync<T>(IDataStoreReadByIdOperation aggregateQueriedByIdOperation) where T : class, IAggregate, new()
         {
-            
             ItemResponse<T> result = null;
-            try {
-                    result = await this.container.ReadItemAsync<T>(
-                             aggregateQueriedByIdOperation.Id.ToString(),
-                             new PartitionKey(aggregateQueriedByIdOperation.PartitionKey)).ConfigureAwait(false);
+            try
+            {
+                
+                var key = GetPartitionKeyFromExistingItemId<T>(aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions as IPartitionKeyOptions);
+
+                result = await this.container.ReadItemAsync<T>(aggregateQueriedByIdOperation.Id.ToString(), key)
+                                   .ConfigureAwait(false);
             }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+            }
 
             if (result == null) return default;
-            
-            
+
             var asT = ((T)(dynamic)result)
                 /* set eTag */
                 .Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
@@ -254,7 +250,7 @@
                 var result = await this.container.ReplaceItemAsync(
                                  aggregateUpdated.Model,
                                  aggregateUpdated.Model.id.ToString(),
-                                 new PartitionKey(aggregateUpdated.Model.PartitionKey),
+                                 GetPartitionKeyFromExistingItem(aggregateUpdated.Model),
                                  new ItemRequestOptions
                                  {
                                      IfMatchEtag = preSaveTag //* can be null, note made for reference on conversion to v3 SDK
@@ -281,8 +277,32 @@
         async Task IResetData.NonTransactionalReset()
         {
             await new CosmosDbUtilities().ResetDatabase(ConnectionSettings).ConfigureAwait(false);
-            CosmosDbUtilities.CreateClient(settings, out this.client);
+            CosmosDbUtilities.CreateClient(this.settings, out this.client);
         }
 
+        private PartitionKey GetPartitionKeyFromExistingItem<T>(T model) where T : class, IAggregate, new()
+        {
+            var key = this.settings.UseHierarchicalPartitionKeys ? new Aggregate.HierarchicalPartitionKey()
+            {
+                Key1 = model.PartitionKeys.Key1,
+                Key2 = model.PartitionKeys.Key2,
+                Key3 = model.PartitionKeys.Key3
+            }.ToCosmosPartitionKey() : new PartitionKey(model.PartitionKey);
+            return key;
+        }
+        
+        private PartitionKey GetPartitionKeyFromExistingItemType<T>(IPartitionKeyOptions partitionKeyOptions) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.GetKeysForExistingItemFromType<T>(this.settings.UseHierarchicalPartitionKeys, partitionKeyOptions);
+            var key = this.settings.UseHierarchicalPartitionKeys ? keys.PartitionKeys.ToCosmosPartitionKey() : new PartitionKey(keys.PartitionKey);
+            return key;
+        }
+        
+        private PartitionKey GetPartitionKeyFromExistingItemId<T>(Guid id, IPartitionKeyOptions partitionKeyOptions) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(this.settings.UseHierarchicalPartitionKeys, id, partitionKeyOptions);
+            var key = this.settings.UseHierarchicalPartitionKeys ? keys.PartitionKeys.ToCosmosPartitionKey() : new PartitionKey(keys.PartitionKey);
+            return key;
+        }
     }
 }

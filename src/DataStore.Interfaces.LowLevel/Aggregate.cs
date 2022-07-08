@@ -119,6 +119,7 @@
             public string Key2 { get; set; }
 
             public string Key3 { get; set; }
+            
         }
     }
 }

@@ -5,8 +5,6 @@
 namespace DataStore
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
@@ -17,7 +15,6 @@ namespace DataStore
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
-    using global::DataStore.Options;
 
     //methods return the enriched object as it was added to the database
 
@@ -50,7 +47,7 @@ namespace DataStore
             //and affects the commit and/or the resulting events
             var newObject = model.Clone();
 
-            newObject.ForcefullySetMandatoryPropertyValues(options.SetReadonlyFlag, this.dataStoreOptions.PartitionKeySettings);
+            newObject.ForcefullySetMandatoryPropertyValues(options.SetReadonlyFlag, this.DsConnection.UseHierarchicalPartitionKeys);
 
             Guard.Against(
                 this.messageAggregator.AllMessages.OfType<IQueuedDataStoreWriteOperation<T>>()
@@ -72,9 +69,9 @@ namespace DataStore
             
             var itemToReturnToCaller = newObject.Clone(); //* return clones otherwise its to easy to change the referenced object before committing    
             itemToReturnToCaller.Etag = "waiting to be committed";
-            (newObject as IEtagUpdated).EtagUpdated += newTag => itemToReturnToCaller.Etag = newTag; 
+            newObject.As<IEtagUpdated>().EtagUpdated += newTag => itemToReturnToCaller.Etag = newTag; 
             
-            await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(newObject, methodName);
+            await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(newObject, methodName).ConfigureAwait(false);
 
             //for the same reason as the above we want a new object, but we want to return the enriched one, so we clone it,
             //essentially no external client should be able to get a reference to the instance we use internally

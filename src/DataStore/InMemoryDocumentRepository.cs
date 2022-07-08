@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
@@ -13,9 +14,21 @@
 
     public class InMemoryDocumentRepository : IDocumentRepository, IResetData
     {
-        public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
+        public InMemoryDocumentRepository(bool useHierarchicalPartitionKeys = false)
+        {
+            UseHierarchicalPartitionKeys = useHierarchicalPartitionKeys;
+        }
 
-        public IDataStoreOptions Options { get; set; }
+        public bool UseHierarchicalPartitionKeys { get; } = false;
+
+        
+        /*TODO change to namevaluecollection by partition key and filter results that way in tests
+        add partitionkey_type_id to existing type, 
+        create new types for others and write specific tests
+        then test against latest emulator, then it's good!
+        consider how to make work against existing databases if ids are already set to "shared"
+        */
+        public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
 
         public IDatabaseSettings ConnectionSettings => new Settings(this);
 

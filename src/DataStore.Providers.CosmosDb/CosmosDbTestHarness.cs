@@ -13,16 +13,16 @@
 
     public class CosmosDbTestHarness : ITestHarness
     {
-        public static async Task<ITestHarness> Create(string testName, IDataStore dataStore)
+        public static async Task<ITestHarness> Create(string testName, Func<IDataStoreOptions, CosmosSettings, IDataStore> createDataStore, IDataStoreOptions options, bool useHierarchicalPartitionKey)
         {
-            var cosmosStoreSettings = GetCosmosStoreSettings(testName);
+            var cosmosStoreSettings = GetCosmosStoreSettings(testName, useHierarchicalPartitionKey);
 
             await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings /**/).ConfigureAwait(false);
 
-            return new CosmosDbTestHarness(dataStore);
+            return new CosmosDbTestHarness(createDataStore(options, cosmosStoreSettings));
         }
 
-        public static CosmosSettings GetCosmosStoreSettings(string testName)
+        public static CosmosSettings GetCosmosStoreSettings(string testName, bool useHierarchicalPartitionKey)
         {
             var settingsFile = "CosmosDbSettings.json";
             /*
@@ -31,14 +31,14 @@
             {
                 "AuthKey": "<authkey>",
                 "DatabaseName": "<dbname>",
-                "EndpointUrl": "<endpointurl>"
+                "EndpointUrl": "<endpointurl>",
             }
             */
             var location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settingsFile);
 
             var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
-
-            return new CosmosSettings(cosmosSettings.AuthKey, testName, cosmosSettings.DatabaseName, cosmosSettings.EndpointUrl);
+            
+            return new CosmosSettings(cosmosSettings.AuthKey, testName, cosmosSettings.DatabaseName, cosmosSettings.EndpointUrl, useHierarchicalPartitionKey);
         }
 
         private CosmosDbTestHarness(IDataStore dataStore)
@@ -54,7 +54,7 @@
             var clone = aggregate.Clone();
             (clone as IEtagUpdated).EtagUpdated = newTag => aggregate.Etag = newTag;
             
-            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly, DataStore.DataStoreOptions.PartitionKeySettings);
+            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly, DataStore.DocumentRepository.UseHierarchicalPartitionKeys);
 
             var newAggregate = new QueuedCreateOperation<T>(
                 nameof(AddItemDirectlyToUnderlyingDb),

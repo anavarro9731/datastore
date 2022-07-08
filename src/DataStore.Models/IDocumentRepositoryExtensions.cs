@@ -16,7 +16,7 @@ namespace DataStore.Models
         {
             var type = model.GetType();
 
-            var aggregateQueried = new AggregateQueriedByIdOperationOperation(methodCalled, model.id, model.PartitionKey);
+            var aggregateQueried = new AggregateQueriedByIdOperationOperation(methodCalled, model.id);
 
             var getItemAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.GetItemAsync)).MakeGenericMethod(type);
             

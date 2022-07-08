@@ -5,13 +5,15 @@
 
     public class CosmosSettings : IDatabaseSettings
     {
-        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl, CosmosClientOptions clientOptions = null)
+        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl, bool useHierarchicalPartitionKeys, CosmosClientOptions clientOptions = null)
         {
             AuthKey = authKey;
             DatabaseName = databaseName;
             EndpointUrl = endpointUrl;
+            UseHierarchicalPartitionKeys = useHierarchicalPartitionKeys;
             ContainerName = containerName;
             ClientOptions = clientOptions;
+            
         }
         
         public CosmosClientOptions ClientOptions { get; }
@@ -23,6 +25,8 @@
         public string ContainerName { get; }
 
         public string EndpointUrl { get; }
+
+        public bool UseHierarchicalPartitionKeys { get; }
 
         public int MaxItemsPerBatchClientDefault => 100;
 

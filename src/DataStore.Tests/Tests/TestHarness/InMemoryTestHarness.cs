@@ -14,11 +14,11 @@
     {
         private readonly IMessageAggregator messageAggregator = DataStoreMessageAggregator.Create();
 
-        public static ITestHarness Create(DataStoreOptions dataStoreOptions = null) => new InMemoryTestHarness(dataStoreOptions);
+        public static ITestHarness Create(bool useHierarchicalPartitionKeys, DataStoreOptions dataStoreOptions = null) => new InMemoryTestHarness(dataStoreOptions, useHierarchicalPartitionKeys);
 
-        private InMemoryTestHarness(DataStoreOptions dataStoreOptions)
+        private InMemoryTestHarness(DataStoreOptions dataStoreOptions, bool useHierarchicalPartitionKeys)
         {
-            DocumentRepository = new InMemoryDocumentRepository();
+            DocumentRepository = new InMemoryDocumentRepository(useHierarchicalPartitionKeys);
             DataStore = new DataStore(DocumentRepository, this.messageAggregator, dataStoreOptions);
         }
 
@@ -32,7 +32,7 @@
             //and affects the commit and/or the resulting events
             var clone = aggregate.Clone();
 
-            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly, DataStore.DataStoreOptions.PartitionKeySettings);
+            clone.ForcefullySetMandatoryPropertyValues(clone.ReadOnly, DataStore.DocumentRepository.UseHierarchicalPartitionKeys);
 
             DocumentRepository.Aggregates.Add(clone);
             clone.Etag = Guid.NewGuid().ToString(); //fake etag update internally

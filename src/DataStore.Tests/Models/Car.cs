@@ -3,7 +3,9 @@
     using System;
     using System.Collections.Generic;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.PartitionKeyAttributes;
 
+    
     public class Car : Aggregate
     {
         public string FriendlyId { get; set; }

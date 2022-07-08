@@ -1,15 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>DataStore.Models Class Library</Description>
     <Copyright>Copyright (c) 2022 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
     <AssemblyName>DataStore.Models</AssemblyName>
     <PackageId>DataStore.Models</PackageId>
     <PackageTags>DocumentDb;Azure;Data Access;Transactions;Profiling;LINQ</PackageTags>
     <PackageProjectUrl>https://github.com/anavarro9731/datastore</PackageProjectUrl>
     <Version>16.16.0-alpha</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataStore.Interfaces\DataStore.Interfaces.csproj" />

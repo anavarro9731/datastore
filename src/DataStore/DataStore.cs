@@ -21,14 +21,15 @@
     /// </summary>
     public class DataStore : IDataStore
     {
-        private readonly DataStoreOptions dataStoreOptions;
+        private readonly IDataStoreOptions dataStoreOptions;
 
-        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, DataStoreOptions dataStoreOptions = null)
+        public DataStore(IDocumentRepository documentRepository, IMessageAggregator eventAggregator = null, IDataStoreOptions dataStoreOptions = null)
         {
             {
                 ValidateOptions(dataStoreOptions);
                 {
                     MessageAggregator = eventAggregator ?? DataStoreMessageAggregator.Create();
+                    
                     this.dataStoreOptions = dataStoreOptions ?? Options.DataStoreOptions.Create();
 
                     DocumentRepository = documentRepository;
@@ -49,9 +50,12 @@
                 }
             }
 
-            void ValidateOptions(DataStoreOptions options)
+            void ValidateOptions(IDataStoreOptions options)
             {
+                //TODO
                 //not sure how to handle disabling version history when its already been enabled??
+                //should also be checking that partitionkeys settings cannot be changed
+                //probably need to save these in an aggregate somewhere
             }
         }
 
@@ -175,7 +179,7 @@
             DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
             AppendMethodName(ref methodName, nameof(DeleteById));
-
+    
             var result = await DeleteCapabilities.DeleteById<T, DeleteOptionsLibrarySide>(id, options, methodName).ConfigureAwait(false);
 
             if (SecurityShouldBeApplied<T>(options))

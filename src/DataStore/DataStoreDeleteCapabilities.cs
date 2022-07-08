@@ -76,7 +76,7 @@
                                                             .CollectAndForward(
                                                                 new AggregateQueriedByIdOperationOperation<T>(
                                                                         methodName,
-                                                                id, this.dataStoreOptions.PartitionKeySettings)).To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
+                                                                        id, options)).To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
                     var objectsToDelete = (objectToBeDeletedFromDb == default
                                                ? Array.Empty<T>()
@@ -135,7 +135,7 @@
                                                         .CollectAndForward(
                                                             new AggregatesQueriedOperation<T>(
                                                                 methodName,
-                                                                DsConnection.CreateQueryable<T>().Where(predicate1)))
+                                                                DsConnection.CreateQueryable<T>().Where(predicate1), options))
                                                         .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
                 return objectToBeDeletedFromDb.ToList();
             }

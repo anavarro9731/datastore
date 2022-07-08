@@ -184,7 +184,7 @@ namespace DataStore
         {
             WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
 
-            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(nameof(ReadById), modelId, this.dataStoreOptions.PartitionKeySettings))
+            var result = await this.messageAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(nameof(ReadById), modelId, options))
                                    .To(this.dataStoreConnection.GetItemAsync<T>).ConfigureAwait(false);
 
             var applySecurity = this.dataStoreOptions.Security != null && (options.Identity != null || this.dataStoreOptions.Security.SecuredFor != null);

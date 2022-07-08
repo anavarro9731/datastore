@@ -1,6 +1,7 @@
 namespace DataStore.Providers.CosmosDb
 {
     using System.Collections;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -21,12 +22,24 @@ namespace DataStore.Providers.CosmosDb
             if (!databases.Contains(cosmosStoreSettings.DatabaseName))
             {
                 var db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
-                await db.Database.CreateContainerIfNotExistsAsync(
-                    new ContainerProperties
+                var containerProperties = new ContainerProperties
+                {
+                    Id = cosmosStoreSettings.ContainerName
+                };
+
+                if (cosmosStoreSettings.UseHierarchicalPartitionKeys)
+                {
+                    containerProperties.PartitionKeyPaths = new List<string>
                     {
-                        PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey), 
-                        Id = cosmosStoreSettings.ContainerName
-                    }).ConfigureAwait(false);
+                        $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key1)}",
+                        $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key2)}",
+                        $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key3)}"
+                    };
+                } else {
+                    containerProperties.PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey);
+                }
+                
+                await db.Database.CreateContainerIfNotExistsAsync(containerProperties).ConfigureAwait(false);
             }
             else
             {

@@ -9,7 +9,7 @@
     {
         private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.InMemory;
 
-        public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null)
+        public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null, bool useHierarchicalPartitionKey = true)
         {
             switch (BackingStore)
             {
@@ -18,15 +18,13 @@
                     return Task.Run(
                         async () => await CosmosDbTestHarness.Create(
                                                                  testName,
-                                                                 new DataStore(
-                                                                     new CosmosDbRepository(
-                                                                         CosmosDbTestHarness.GetCosmosStoreSettings(testName)),
-                                                                     dataStoreOptions: dataStoreOptions))
+                                                                 (options, settings) => new DataStore(settings.CreateRepository(), dataStoreOptions: options),
+                                                                 dataStoreOptions, useHierarchicalPartitionKey)
                                                              .ConfigureAwait(false)).Result;
 
                 case TestHarnessBackingStore.InMemory:
                 default:
-                    return InMemoryTestHarness.Create(dataStoreOptions);
+                    return InMemoryTestHarness.Create(useHierarchicalPartitionKey, dataStoreOptions);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿namespace DataStore.Interfaces.Options
 {
+    using System;
     using DataStore.Interfaces.LowLevel.Permissions;
 
     public abstract class ReadOptionsClientSide
@@ -18,12 +19,21 @@
         public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
 
         public abstract void BypassSecurity(string reason);
+
+        public abstract void ProvidePartitionKeyValues(Guid tenantId);
+        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
+        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
+        
     }
 
-    public class ReadOptionsLibrarySide : ISecurityOptions
+    public class ReadOptionsLibrarySide : ISecurityOptions, IPartitionKeyOptions, IQueryOptions
     {
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool BypassSecurity { get; set; }
+
+        public Guid? PartitionKeyTenantId { get; set; }
+
+        public PartitionKeyTimeInterval PartitionKeyTimeInterval { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace DataStore.Interfaces
 
     public interface IDocumentRepository : IDisposable
     {
+        bool UseHierarchicalPartitionKeys { get; }
 
         IDatabaseSettings ConnectionSettings { get; }
 

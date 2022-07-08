@@ -15,14 +15,7 @@ namespace DataStore.Interfaces
         string UnitOfWorkId { get; }
 
         VersionHistorySettings VersionHistory { get; }
-        
-        PartitionKeySettings PartitionKeySettings { get; }
-        
-    }
 
-    public class PartitionKeySettings 
-    {
-        public bool UseHierarchicalKeys { get; set; }
     }
 
     public class SecuritySettings 
