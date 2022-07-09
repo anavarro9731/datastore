@@ -2,18 +2,42 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Data;
     using System.Linq;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Models.PartitionKeys;
+    using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
 
     public class InMemoryDocumentRepository : IDocumentRepository, IResetData
     {
+        private PartitionKeyValues GetPartitionKeyFromExistingItem<T>(T model) where T : class, IAggregate, new()
+        {
+            var keys = new PartitionKeyValues(
+                partitionKey : model.PartitionKey,
+                partitionKeys : model.PartitionKeys
+            );
+            
+            return keys;
+        }
+        
+        private PartitionKeyValues GetPartitionKeyForLinqQuery<T>(IPartitionKeyOptions partitionKeyOptions) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.GetKeysForLinqQuery<T>(UseHierarchicalPartitionKeys, partitionKeyOptions);
+            return keys;
+        }
+        
+        private PartitionKeyValues GetPartitionKeyFromExistingItemId<T>(Guid id, IPartitionKeyOptions partitionKeyOptions) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(UseHierarchicalPartitionKeys, id, partitionKeyOptions);
+            return keys;
+        }
+        
         public InMemoryDocumentRepository(bool useHierarchicalPartitionKeys = false)
         {
             UseHierarchicalPartitionKeys = useHierarchicalPartitionKeys;
@@ -22,13 +46,12 @@
         public bool UseHierarchicalPartitionKeys { get; } = false;
 
         
-        /*TODO change to namevaluecollection by partition key and filter results that way in tests
+        /*TODO 
         add partitionkey_type_id to existing type, 
         create new types for others and write specific tests
         then test against latest emulator, then it's good!
-        consider how to make work against existing databases if ids are already set to "shared"
         */
-        public List<IAggregate> Aggregates { get; set; } = new List<IAggregate>();
+        public Dictionary<PartitionKeyValues, List<IAggregate>> AggregatesByLogicalPartition { get; set; } = new Dictionary<PartitionKeyValues, List<IAggregate>>();
 
         public IDatabaseSettings ConnectionSettings => new Settings(this);
 
@@ -39,7 +62,15 @@
             //- fake eTag change
             toAdd.Etag = Guid.NewGuid().ToString();
 
-            Aggregates.Add(toAdd);
+            var partitionKeyValues = GetPartitionKeyFromExistingItem(aggregateAdded.Model);
+            if (AggregatesByLogicalPartition.ContainsKey(partitionKeyValues))
+            {
+                AggregatesByLogicalPartition[partitionKeyValues].Add(aggregateAdded.Model);
+            }
+            else
+            {
+                AggregatesByLogicalPartition.Add(partitionKeyValues, new List<IAggregate>() {aggregateAdded.Model});
+            }
 
             return Task.CompletedTask;
         }
@@ -53,15 +84,61 @@
             return Task.FromResult(count);
         }
 
-        public IQueryable<T> CreateQueryable<T>(object queryOptions = null) where T : class, IAggregate, new()
+        public IQueryable<T> CreateQueryable<T>(IQueryOptions queryOptions = null) where T : class, IAggregate, new()
         {
-            //clone otherwise its to easy to change the referenced object in test code affecting results
-            return Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>().Clone().AsQueryable();
+            //* this will limit the range of the queryable to the partitions which match the partition keys constructable from the supplied data
+            var partitionKeyValues = GetPartitionKeyForLinqQuery<T>(queryOptions.As<IPartitionKeyOptions>());
+
+            //* this will return the partitions to search, if the PK is null for and mode synthetic, then this will be all partitions by default
+            var partitions = FindPartitionsFromKeys<T>(partitionKeyValues);
+            
+            //* find all aggregates in all matching partitions where the type matches
+            var aggregates = AggregatesByLogicalPartition.Where(x => partitions.Contains(x.Key)).SelectMany(x => x.Value).Where(x => x.Schema == typeof(T).FullName).Cast<T>();
+            
+            //* clone otherwise its to easy to change the referenced object in test code affecting results
+            return aggregates.Clone().AsQueryable();
+            
+        }
+
+        private List<PartitionKeyValues> FindPartitionsFromKeys<T>(PartitionKeyValues partitionKeyValues) where T : class, IAggregate, new()
+        {
+            switch (AggregatesByLogicalPartition.ContainsKey(partitionKeyValues))
+            {
+                case false when UseHierarchicalPartitionKeys:
+                    {
+                        //* search for partial fanout
+                        var reducedKey = partitionKeyValues.PartitionKeys.Reduce();
+                        while (reducedKey != null)
+                        {
+                            var matchingPartitions = AggregatesByLogicalPartition.Where(x => x.Key.PartitionKeys.IsAssignableToReducedKey(reducedKey)).ToList();
+                            if (matchingPartitions.Any()) return matchingPartitions.Select(x => x.Key).ToList();
+                            
+                            reducedKey = partitionKeyValues.PartitionKeys.Reduce();
+                        }
+
+                        //* nothing found 
+                        return new List<PartitionKeyValues>();
+                    }
+                case false when !UseHierarchicalPartitionKeys:
+                    {
+                        //* full fan out no key data supplied
+                        return partitionKeyValues.PartitionKey == null ? AggregatesByLogicalPartition.Keys.ToList() : new List<PartitionKeyValues>();
+                    }
+                default:
+                    return new List<PartitionKeyValues>()
+                    {
+                        partitionKeyValues
+                    };
+            }
         }
 
         public Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new()
         {
-            Aggregates.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
+            var partitionKeyValues = GetPartitionKeyFromExistingItem(aggregateHardDeleted.Model);
+            Guard.Against(AggregatesByLogicalPartition.ContainsKey(partitionKeyValues) == false, "Cannot find the partition(s) containing the requested operation");
+            
+            var partitions = AggregatesByLogicalPartition[partitionKeyValues];
+            partitions.RemoveAll(a => a.id == aggregateHardDeleted.Model.id);
 
             aggregateHardDeleted.Model.Etag = "item was deleted";
 
@@ -70,7 +147,7 @@
 
         public void Dispose()
         {
-            Aggregates.Clear();
+            AggregatesByLogicalPartition.Clear();
         }
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new()
@@ -125,24 +202,35 @@
             return Task.FromResult(result);
         }
 
-        public Task<bool> Exists(IDataStoreReadByIdOperation aggregateQueriedByIdOperation)
-        {
-            return Task.FromResult(Aggregates.Exists(a => a.id == aggregateQueriedByIdOperation.Id));
-        }
-
         public Task<T> GetItemAsync<T>(IDataStoreReadByIdOperation aggregateQueriedByIdOperation) where T : class, IAggregate, new()
         {
-            var aggregate = Aggregates.Where(x => x.Schema == typeof(T).FullName).Cast<T>()
-                                      .SingleOrDefault(a => a.id == aggregateQueriedByIdOperation.Id);
+            //* with getbyid we will expect exact and full partitions 
+            var partitionKeyValues = GetPartitionKeyFromExistingItemId<T>(aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions.As<IPartitionKeyOptions>());
 
-            //clone otherwise its to easy to change the referenced object in test code affecting results
-            return Task.FromResult(aggregate?.Clone());
+            if (AggregatesByLogicalPartition.ContainsKey(partitionKeyValues))
+            {
+                var partitions = AggregatesByLogicalPartition[partitionKeyValues];
+            
+                var aggregate = partitions.Where(x => x.Schema == typeof(T).FullName).Cast<T>()
+                                          .SingleOrDefault(a => a.id == aggregateQueriedByIdOperation.Id);
+                
+                //clone otherwise its to easy to change the referenced object in test code affecting results
+                return Task.FromResult(aggregate?.Clone());
+            }
+
+            return Task.FromResult((T)null);
         }
 
         public Task UpdateAsync<T>(IDataStoreWriteOperation<T> aggregateUpdated) where T : class, IAggregate, new()
         {
             var updatedRecord = aggregateUpdated.Model;
-            var existingRecord = Aggregates.Single(x => x.id == updatedRecord.id);
+            
+            var partitionKeyValues = GetPartitionKeyFromExistingItem(updatedRecord);
+            Guard.Against(AggregatesByLogicalPartition.ContainsKey(partitionKeyValues) == false, "Cannot find the partition(s) containing the requested operation");
+            
+            var partitions = AggregatesByLogicalPartition[partitionKeyValues];
+            
+            var existingRecord = partitions.Single(x => x.id == updatedRecord.id);
 
             var optimisticConcurrencyDisabled = updatedRecord.Etag == null;
             if (updatedRecord.Etag != existingRecord.Etag && !optimisticConcurrencyDisabled)
@@ -163,7 +251,7 @@
 
         Task IResetData.NonTransactionalReset()
         {
-            Aggregates.Clear();
+            AggregatesByLogicalPartition.Clear();
 
             return Task.CompletedTask;
         }

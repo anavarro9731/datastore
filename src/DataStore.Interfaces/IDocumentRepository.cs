@@ -6,6 +6,7 @@ namespace DataStore.Interfaces
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options;
 
     public interface IDocumentRepository : IDisposable
     {
@@ -18,10 +19,10 @@ namespace DataStore.Interfaces
         Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new();
 
         IQueryable<T> CreateQueryable<T>(
-            object /* take as an object here so that you can take the more
+            IQueryOptions /* take as an IQueryOptions here so that you can take the more
                                                      * restrictive I..ClientSide interface at the entry point
                                                      * and dramatically cleanup the intellisense experience */
-                queryOptions = null) where T : class, IAggregate, new();
+                queryOptions) where T : class, IAggregate, new();
 
         Task DeleteAsync<T>(IDataStoreWriteOperation<T> aggregateHardDeleted) where T : class, IAggregate, new();
 

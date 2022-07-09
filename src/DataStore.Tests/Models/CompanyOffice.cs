@@ -3,7 +3,9 @@
     using System;
     using System.Collections.Generic;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.PartitionKeys;
 
+    [PartitionKey__Type_Id]
     public class CompanyOffice : Aggregate
     {
         public CompanyOffice(string name, Guid myId, Guid companyDivisionId)

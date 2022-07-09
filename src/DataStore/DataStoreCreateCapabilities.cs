@@ -55,13 +55,20 @@ namespace DataStore
                 $"An item with the same ID of {newObject.id} is already queued to be created",
                 Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
 
-            var count = await DsConnection.CountAsync(new AggregateCountedOperation<T>(methodName, t => t.id == newObject.id))
-                                          .ConfigureAwait(false);
+            //TODO
+            var existsAlready = (await DsConnection.GetItemAsync<T>(
+                new AggregateQueriedByIdOperationOperation(
+                    methodName,
+                    model.id,
+                    new ReadOptionsLibrarySide()
+                    {
 
-            var existsAlready = count > 0;
+                    })).ConfigureAwait(false)) != null;
+
+            
             Guard.Against(
                 existsAlready,
-                $"An item with the same ID of {newObject.id} already exists",
+                $"An item with the same ID of {newObject.id} already exists in this partition",
                 Guid.Parse("cfe3ebc2-4677-432b-9ded-0ef498b9f59d"));
 
             this.messageAggregator.Collect(

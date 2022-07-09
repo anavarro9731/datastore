@@ -94,7 +94,7 @@
                                                       .CollectAndForward(
                                                           new AggregatesQueriedOperation<T>(
                                                               methodName,
-                                                              DsConnection.CreateQueryable<T>().Where(predicate), options))
+                                                              DsConnection.CreateQueryable<T>(options).Where(predicate), options))
                                                       .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
                 return await ProcessUpdateOfObjects(predicate, action, options, methodName, matchingObjectsFromDb).ConfigureAwait(false);

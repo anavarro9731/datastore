@@ -62,5 +62,21 @@
             //* reason is only for reading the source code
             LibrarySide.BypassSecurity = true;
         }
+
+        public override void ProvidePartitionKeyValues(Guid tenantId)
+        {
+            LibrarySide.PartitionKeyTenantId = tenantId;
+        }
+
+        public override void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval)
+        {
+            LibrarySide.PartitionKeyTimeInterval = timeInterval;
+        }
+
+        public override void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval)
+        {
+            LibrarySide.PartitionKeyTenantId = tenantId;
+            LibrarySide.PartitionKeyTimeInterval = timeInterval;
+        }
     }
 }

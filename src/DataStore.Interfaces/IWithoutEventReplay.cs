@@ -9,9 +9,15 @@ namespace DataStore.Interfaces
 
     public interface IWithoutEventReplay
     {
+
+
         Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new();
 
         Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new();
+        
+        Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new();
+
+        Task<int> CountActive<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new();
 
 
 

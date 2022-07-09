@@ -1,21 +1,8 @@
-// -----------------------------------------------------------------------
-// <copyright file="$FILENAME$" company="$COMPANYNAME$">
-// $COPYRIGHT$
-// </copyright>
-// <summary>
-// $SUMMARY$
-// </summary>
-
-
 namespace DataStore.Providers.CosmosDb
 {
-    using System;
     using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.Cosmos;
 
-    /// <summary>
-    /// $SUMMARY$
-    /// </summary>
     public static class Ext
     {
         public static PartitionKey ToCosmosPartitionKey(this Aggregate.HierarchicalPartitionKey hierarchicalPartitionKey)

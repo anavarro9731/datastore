@@ -3,14 +3,16 @@
     using System;
     using System.Linq.Expressions;
     using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options;
 
     public class AggregateCountedOperation<T> : IDataStoreCountFromQueryable<T>
     {
-        public AggregateCountedOperation(string methodCalled, Expression<Func<T, bool>> predicate = null)
+        public AggregateCountedOperation(string methodCalled, Expression<Func<T, bool>> predicate = null, IQueryOptions queryOptions = null)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;
             Predicate = predicate;
+            QueryOptions = queryOptions;
             Created = DateTime.UtcNow;
         }
 
@@ -19,6 +21,8 @@
         public string MethodCalled { get; set; }
 
         public Expression<Func<T, bool>> Predicate { get; set; }
+
+        public IQueryOptions QueryOptions { get; set; }
 
         public double StateOperationCost { get; set; }
 

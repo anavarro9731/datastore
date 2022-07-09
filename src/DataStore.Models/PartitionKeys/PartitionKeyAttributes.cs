@@ -1,9 +1,17 @@
-namespace DataStore.Models.PartitionKeyAttributes
+namespace DataStore.Models.PartitionKeys
 {
     using System;
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions;
 
+    /// <summary>
+    /// When no tenantId exists
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class PartitionKey__Shared : Attribute
+    {
+    }
+    
     
     /// <summary>
     /// When no tenantId exists

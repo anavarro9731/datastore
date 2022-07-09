@@ -131,13 +131,13 @@
             async Task<List<T>> GetObjectFromDatabaseThatMatchPredicateForDeletion(
                 Expression<Func<T, bool>> predicate1) 
             {
-                var objectToBeDeletedFromDb = await this.messageAggregator
+                var objectsToBeDeletedFromDb = await this.messageAggregator
                                                         .CollectAndForward(
                                                             new AggregatesQueriedOperation<T>(
                                                                 methodName,
-                                                                DsConnection.CreateQueryable<T>().Where(predicate1), options))
+                                                                DsConnection.CreateQueryable<T>(options).Where(predicate1), options))
                                                         .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
-                return objectToBeDeletedFromDb.ToList();
+                return objectsToBeDeletedFromDb.ToList();
             }
 
 

@@ -29,7 +29,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
         public async void ItShouldSetTheEtagsCorrectly()
         {
             await Setup();
-            Assert.Equal("waiting to be committed", this.result.Etag);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Assert.Equal("waiting to be committed", this.result.Etag);
         }
 
         private async Task Setup()

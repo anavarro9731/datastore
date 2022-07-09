@@ -19,7 +19,7 @@
 
         public DateTime Created { get; set; }
 
-        public object QueryOptions { get; set; }
+        public IQueryOptions QueryOptions { get; set; }
 
         public Guid Id { get; set; }
 
@@ -50,7 +50,7 @@
 
         public DateTime Created { get; set; }
 
-        public object QueryOptions { get; set; }
+        public IQueryOptions QueryOptions { get; set; }
 
         public Guid Id { get; set; }
 

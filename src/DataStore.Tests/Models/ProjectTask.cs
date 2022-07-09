@@ -3,7 +3,9 @@ namespace DataStore.Tests.Models
 {
     using System;
     using global::DataStore.Interfaces.LowLevel;
-    
+    using global::DataStore.Models.PartitionKeys;
+
+    [PartitionKey__Type_Id]
     public class ProjectTask : Aggregate
     {
         public ProjectTask(string name, Guid myId, Guid projectId)

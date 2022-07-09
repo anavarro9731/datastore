@@ -23,7 +23,7 @@
 
         public IQueryable<T> Query { get; set; }
 
-        public object QueryOptions { get; set; }
+        public IQueryOptions QueryOptions { get; set; }
 
         public double StateOperationCost { get; set; }
 

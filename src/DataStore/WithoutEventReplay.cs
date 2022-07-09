@@ -37,26 +37,34 @@ namespace DataStore
             this.dataStoreOptions = dataStoreOptions;
         }
 
-        //* Count (no options)
-        public async Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        //* Count
+        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => Count<T, DefaultReadOptions>(predicate);
+
+        public async Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
         {
-            var result = await this.messageAggregator.CollectAndForward(new AggregateCountedOperation<T>(nameof(Count), predicate))
+            ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
+
+            var result = await this.messageAggregator.CollectAndForward(new AggregateCountedOperation<T>(nameof(Count), predicate, options))
                                    .To(this.dataStoreConnection.CountAsync).ConfigureAwait(false);
 
             return result;
         }
 
-        //* CountActive (no options)
-        public async Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new()
+        //* CountActive
+        public Task<int> CountActive<T,O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
+            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
         {
             predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
-            var result = await this.messageAggregator.CollectAndForward(new AggregateCountedOperation<T>(nameof(CountActive), predicate))
-                                   .To(this.dataStoreConnection.CountAsync).ConfigureAwait(false);
-
-            return result;
+            return Count(predicate, setOptions);
         }
+        
+        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => 
+            CountActive<T, DefaultReadOptions>(predicate);
+        
 
+        
+        
         //* Read
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
             where T : class, IAggregate, new()
@@ -76,16 +84,9 @@ namespace DataStore
             where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<R>, new() where R : class, IAggregate, new()
         {
             /* T is Aggregate, R is a possible Projection */
-            WithoutReplayOptionsLibrarySide<R> options;
-            if (setOptions == null)
-            {
-                options = new DefaultWithoutReplayOptions<R>();
-            }
-            else
-            {
-                options = new O().Op(setOptions);
-            }
-
+            
+            WithoutReplayOptionsLibrarySide<R> options = (setOptions == null) ? new O() : new O().Op(setOptions);
+            
             if (map != null)
             {
                 map = Expressions.Combine(

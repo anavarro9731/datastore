@@ -7,6 +7,7 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
+    using global::DataStore.Models;
     using global::DataStore.Models.PureFunctions.Extensions;
 
     public class IncrementVersions

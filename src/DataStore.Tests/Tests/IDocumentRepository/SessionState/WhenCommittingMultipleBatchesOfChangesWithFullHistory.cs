@@ -6,6 +6,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.SessionState
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models;

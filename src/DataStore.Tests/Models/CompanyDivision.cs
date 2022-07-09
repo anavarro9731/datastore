@@ -2,7 +2,9 @@
 {
     using System;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.PartitionKeys;
 
+    [PartitionKey__Type_ImmutableTenantId_Id(nameof(CompanyDivision.CompanyId))]
     public class CompanyDivision : Aggregate
     {
         public CompanyDivision(string name, Guid myId, Guid companyId)

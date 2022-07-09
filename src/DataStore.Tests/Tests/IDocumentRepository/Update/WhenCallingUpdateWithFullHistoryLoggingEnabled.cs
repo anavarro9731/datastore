@@ -5,6 +5,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models;
     using global::DataStore.Models.Messages;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models;

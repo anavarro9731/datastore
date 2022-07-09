@@ -2,15 +2,6 @@ namespace DataStore.Interfaces
 {
     using System;
 
-    public enum PartitionKeyTimeIntervalEnum
-    {
-        Year,
-        Month,
-        Day,
-        Hour,
-        Minute
-    }
-    
     public class MonthInterval : PartitionKeyTimeInterval
     {
         public MonthInterval(int year, int month)

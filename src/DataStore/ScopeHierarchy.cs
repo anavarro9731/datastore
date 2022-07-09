@@ -137,7 +137,7 @@
                                          SettableScopeReferences = x.ScopeReferences /* this mapping will take place server side 
                                          with the LINQ just translating this to cosmos SQL API, and since newtonsoft serialises
                                          calculated properties, you can get back the refs this way*/
-                                     }, null).ConfigureAwait(false);
+                                     }).ConfigureAwait(false);  //* this is expensive, x-partition, and may fanout
 
                 Debug.WriteLine($"Hydrating scope level {typeof(T).FullName} cost {stopWatch.ElapsedMilliseconds} milliseconds");
 

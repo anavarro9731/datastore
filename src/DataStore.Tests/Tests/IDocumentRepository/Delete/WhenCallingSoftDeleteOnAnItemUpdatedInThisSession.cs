@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.IDocumentRepository.Update
+namespace DataStore.Tests.Tests.IDocumentRepository.Delete
 {
     using System;
     using System.Linq;

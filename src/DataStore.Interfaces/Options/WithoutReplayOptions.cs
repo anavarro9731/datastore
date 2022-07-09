@@ -32,9 +32,13 @@
         public abstract WithoutReplayOptionsClientSide<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
 
         public abstract void BypassSecurity(string reason);
+        
+        public abstract void ProvidePartitionKeyValues(Guid tenantId);
+        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
+        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
     }
 
-    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions
+    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions, IPartitionKeyOptions
     {
         public readonly Queue<(string, bool)> ThenByQueue = new Queue<(string, bool)>();
 
@@ -116,5 +120,9 @@
                 return (IOrderedQueryable<TEntity>)source.Provider.CreateQuery<TEntity>(resultExpression);
             }
         }
+
+        public Guid? PartitionKeyTenantId { get; set; }
+
+        public PartitionKeyTimeInterval PartitionKeyTimeInterval { get; set; }
     }
 }

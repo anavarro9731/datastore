@@ -114,12 +114,62 @@
 
         public class HierarchicalPartitionKey
         {
+            public HierarchicalPartitionKey Reduce()
+            {
+                if (!string.IsNullOrWhiteSpace(this.Key3))
+                {
+                    return new HierarchicalPartitionKey()
+                    {
+                        Key1 = this.Key1, Key2 = this.Key2
+                    };
+                }
+                else if (!string.IsNullOrWhiteSpace(this.Key2))
+                {
+                    return new HierarchicalPartitionKey()
+                    {
+                        Key1 = this.Key1
+                    };
+                } 
+                else
+                {
+                    return null;
+                }
+            }
+            
             public string Key1 { get; set; }
 
             public string Key2 { get; set; }
 
             public string Key3 { get; set; }
-            
+
+            protected bool Equals(HierarchicalPartitionKey other)
+            {
+                return Key1 == other.Key1 && Key2 == other.Key2 && Key3 == other.Key3;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((HierarchicalPartitionKey)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hashCode = (Key1 != null ? Key1.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (Key2 != null ? Key2.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (Key3 != null ? Key3.GetHashCode() : 0);
+                    return hashCode;
+                }
+            }
+
+            public bool IsAssignableToReducedKey(HierarchicalPartitionKey reducedKey)
+            {
+                return reducedKey.Key1 == Key1 && (string.IsNullOrWhiteSpace(reducedKey.Key2) || reducedKey.Key2 == Key2);
+            }
         }
     }
 }

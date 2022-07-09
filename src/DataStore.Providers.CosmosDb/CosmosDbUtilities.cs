@@ -47,6 +47,8 @@ namespace DataStore.Providers.CosmosDb
                 await db.CreateContainerIfNotExistsAsync(
                     new ContainerProperties
                     {
+                        
+                        PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2,
                         PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey), 
                         Id = cosmosStoreSettings.ContainerName
                     }).ConfigureAwait(false);

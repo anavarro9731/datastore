@@ -5,7 +5,7 @@ namespace DataStore.Models.PureFunctions.Extensions
     using System.Collections.Generic;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using DataStore.Models.PartitionKeyAttributes;
+    using DataStore.Models.PartitionKeys;
 
     public static class IAggregateExt
     {
@@ -18,14 +18,13 @@ namespace DataStore.Models.PureFunctions.Extensions
                 typeof(T).FullName; //will be defaulted by Aggregate but needs to be forced as it is subject since the setter is accessible for serialisation purposes
             newObject.ReadOnly = readOnly;
 
+            WalkGraphAndUpdateEntityMeta(newObject);
+            
             var keys = PartitionKeyHelpers.GetKeysForNewInstance(newObject, useHierarchicalPartitionKeys);
             newObject.PartitionKey = keys.PartitionKey;
             newObject.PartitionKeys = keys.PartitionKeys;
            
             newObject.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, still best not to allow any invalid state
-
-            WalkGraphAndUpdateEntityMeta(newObject);
-
             newObject.Modified = newObject.Created;
             newObject.ModifiedAsMillisecondsEpochTime = newObject.CreatedAsMillisecondsEpochTime;
         }

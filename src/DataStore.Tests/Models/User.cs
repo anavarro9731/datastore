@@ -4,7 +4,9 @@
     using System.Collections.Generic;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
+    using global::DataStore.Models.PartitionKeys;
 
+    [PartitionKey__Shared]
     public class User : IIdentityWithDatabasePermissions
     {
         public User(Guid id, string userName)

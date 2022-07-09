@@ -6,6 +6,7 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Delete
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
