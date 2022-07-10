@@ -7,5 +7,6 @@ namespace DataStore.Tests.Models.PartitionKeyTestModels
     [PartitionKey__Type_TimePeriod_Id(nameof(Created), PartitionKeyTimeIntervalEnum.Day)]
     public class AggregateWithTypeTimePeriodIdKey : Aggregate
     {
+        public int TestValue { get; set; }
     }
 }

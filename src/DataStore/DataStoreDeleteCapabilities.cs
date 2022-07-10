@@ -92,9 +92,10 @@
                     return await this.updateCapabilities.UpdateById<T, UpdateOptionsLibrarySide>(
                                id,
                                MarkAsSoftDeleted,
-                               new DefaultUpdateOptions().Op(
+                               new DefaultClientSideUpdateOptions().Op(
                                    o =>
                                        {
+                                       o.ProvidePartitionKeyValues(options.PartitionKeyTenantId, options.PartitionKeyTimeInterval);
                                        o.DisableOptimisticConcurrency();
                                        o.OverwriteReadonly();
                                        }),
@@ -118,9 +119,10 @@
                     return await this.updateCapabilities.UpdateWhere(
                                predicate,
                                MarkAsSoftDeleted,
-                               (UpdateOptionsLibrarySide)new DefaultUpdateOptions().Op(
+                               (UpdateOptionsLibrarySide)new DefaultClientSideUpdateOptions().Op(
                                    o =>
                                        {
+                                       o.ProvidePartitionKeyValues(options.PartitionKeyTenantId, options.PartitionKeyTimeInterval);
                                        o.DisableOptimisticConcurrency();
                                        o.OverwriteReadonly();
                                        }),

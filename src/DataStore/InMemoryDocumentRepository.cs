@@ -46,15 +46,20 @@
         public bool UseHierarchicalPartitionKeys { get; } = false;
 
         
-        /*TODO tests
-        run each datastore operation in synthetic and hierarchical mode for an aggregate with each type of attribute
+        /*TODO tests      
+        run test for all read operations, including without event replay in both synthetic and hierarchical mode for each type of attribute
+        
+        test you can't update PK values
         run test for not having multiple or no attributes
         run tests for not populating fields with values
         run tests for not providing query options
-        try the different time period intervals
+        try the different time period intervals and make sure they resolve correctly
+        run test to make sure that if you provide the wrong interval you get notified, use regex
         test reduce functionality on HKs
+        test that the exception when create duplicates works when using advanced partition keys
+        
         run against latest emulator live
-        create duplicate exception works when using advanced partition keys
+        
         */
         public Dictionary<PartitionKeyValues, List<IAggregate>> AggregatesByLogicalPartition { get; set; } = new Dictionary<PartitionKeyValues, List<IAggregate>>();
 

@@ -8,5 +8,6 @@ namespace DataStore.Tests.Models.PartitionKeyTestModels
     public class AggregateWithTypeTenantIdKey : Aggregate
     {
         public Guid TenantId { get; set; }
+        public int TestValue { get; set; }
     }
 }

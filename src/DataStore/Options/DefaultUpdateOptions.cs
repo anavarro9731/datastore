@@ -5,9 +5,9 @@
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
 
-    public class DefaultUpdateOptions : UpdateOptionsClientSide
+    public class DefaultClientSideUpdateOptions : ClientSideUpdateOptions
     {
-        public DefaultUpdateOptions()
+        public DefaultClientSideUpdateOptions()
             : base(new UpdateOptionsLibrarySide())
         {
             /* use constructors on derived classes to input a more advanced library side
@@ -53,6 +53,12 @@
         {
             LibrarySide.PartitionKeyTenantId = tenantId.ToString();
             LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
+        }
+        
+        internal void ProvidePartitionKeyValues(string tenantId, string timeInterval)
+        {
+            LibrarySide.PartitionKeyTenantId = tenantId;
+            LibrarySide.PartitionKeyTimeInterval = timeInterval;
         }
     }
 }

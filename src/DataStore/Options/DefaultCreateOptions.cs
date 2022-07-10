@@ -4,9 +4,9 @@
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
 
-    public class DefaultCreateOptions : CreateOptionsClientSide
+    public class DefaultClientSideCreateOptions : ClientSideCreateOptions
     {
-        public DefaultCreateOptions()
+        public DefaultClientSideCreateOptions()
             : base(new CreateOptionsLibrarySide())
         {
             /* use constructors on derived classes to input a more advanced library side

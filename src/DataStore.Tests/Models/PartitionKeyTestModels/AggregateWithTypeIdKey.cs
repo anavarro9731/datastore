@@ -6,5 +6,6 @@ namespace DataStore.Tests.Models.PartitionKeyTestModels
     [PartitionKey__Type_Id]
     public class AggregateWithTypeIdKey : Aggregate
     {
+        public int TestValue { get; set; }
     }
 }

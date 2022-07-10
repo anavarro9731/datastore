@@ -6,5 +6,6 @@ namespace DataStore.Tests.Models.PartitionKeyTestModels
     [PartitionKey__Shared]
     public class AggregateWithSharedKey : Aggregate
     {
+        public int TestValue { get; set; }
     }
 }

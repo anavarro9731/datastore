@@ -5,9 +5,9 @@
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
 
-    public class DefaultReadOptions : ReadOptionsClientSide
+    public class Default : ClientSideReadOptions
     {
-        public DefaultReadOptions()
+        public Default()
             : base(new ReadOptionsLibrarySide())
         {
             /* use constructors on derived classes to input a more advanced library side

@@ -14,7 +14,7 @@ namespace DataStore.Interfaces
 
         public int Year { get; }
 
-        public static MonthInterval FromDatTime(DateTime dateTime)
+        public static MonthInterval FromDateTime(DateTime dateTime)
         {
             return new MonthInterval(dateTime.Year, dateTime.Month);
         }

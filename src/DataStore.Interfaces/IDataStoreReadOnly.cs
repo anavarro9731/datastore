@@ -14,33 +14,33 @@ namespace DataStore.Interfaces
          Task<IEnumerable<T>> Read<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new();
+            string methodName = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new();
 
          Task<IEnumerable<T>> Read<T>(
             Expression<Func<T, bool>> predicate = null,
-            Action<ReadOptionsClientSide> setOptions = null,
+            Action<ClientSideReadOptions> setOptions = null,
             string methodName = null) where T : class, IAggregate, new();
 
          Task<IEnumerable<T>> ReadActive<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new();
+            string methodName = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new();
 
          Task<IEnumerable<T>> ReadActive<T>(
             Expression<Func<T, bool>> predicate = null,
-            Action<ReadOptionsClientSide> setOptions = null,
+            Action<ClientSideReadOptions> setOptions = null,
             string methodName = null) where T : class, IAggregate, new();
 
          Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new();
+            where T : class, IAggregate, new() where O : ClientSideReadOptions, new();
 
-         Task<T> ReadActiveById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
+         Task<T> ReadActiveById<T>(Guid modelId, Action<ClientSideReadOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new();
 
          Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new();
+            where T : class, IAggregate, new() where O : ClientSideReadOptions, new();
 
-         Task<T> ReadById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
+         Task<T> ReadById<T>(Guid modelId, Action<ClientSideReadOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new();
     }
 }

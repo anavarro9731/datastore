@@ -3,16 +3,19 @@
     using System;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public abstract class DeleteOptionsClientSide 
+    public abstract class ClientSideDeleteOptions
     {
-        public static implicit operator DeleteOptionsLibrarySide(DeleteOptionsClientSide options) => options.LibrarySide;
-
-        protected DeleteOptionsClientSide(DeleteOptionsLibrarySide librarySide)
+        protected ClientSideDeleteOptions(DeleteOptionsLibrarySide librarySide)
         {
             LibrarySide = librarySide;
         }
 
         protected DeleteOptionsLibrarySide LibrarySide { get; }
+
+        public static implicit operator DeleteOptionsLibrarySide(ClientSideDeleteOptions options)
+        {
+            return options.LibrarySide;
+        }
 
         //* visible members
 
@@ -21,20 +24,21 @@
         public abstract void BypassSecurity(string reason);
 
         public abstract void Permanently();
-        
-        public abstract void ProvidePartitionKeyValues(Guid tenantId);
-        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
-        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
 
+        public abstract void ProvidePartitionKeyValues(Guid tenantId);
+
+        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
+
+        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
     }
 
     public class DeleteOptionsLibrarySide : ISecurityOptions, IQueryOptions, IPartitionKeyOptions
     {
+        public bool BypassSecurity { get; set; }
+
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool IsHardDelete { get; set; }
-
-        public bool BypassSecurity { get; set; }
 
         public string PartitionKeyTenantId { get; set; }
 

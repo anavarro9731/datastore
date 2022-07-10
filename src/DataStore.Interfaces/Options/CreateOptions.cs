@@ -1,35 +1,35 @@
 ﻿namespace DataStore.Interfaces.Options
 {
-    using CircuitBoard;
     using DataStore.Interfaces.LowLevel.Permissions;
 
     public class CreateOptionsLibrarySide : ISecurityOptions, IQueryOptions
     {
+        public bool BypassSecurity { get; set; }
+
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool SetReadonlyFlag { get; set; }
-        
-        public bool BypassSecurity { get; set; }
     }
 
-    public abstract class CreateOptionsClientSide 
+    public abstract class ClientSideCreateOptions
     {
-        public static implicit operator CreateOptionsLibrarySide(CreateOptionsClientSide options) => options.LibrarySide;
-
-        protected CreateOptionsClientSide(CreateOptionsLibrarySide librarySide)
+        protected ClientSideCreateOptions(CreateOptionsLibrarySide librarySide)
         {
             LibrarySide = librarySide;
         }
 
         protected CreateOptionsLibrarySide LibrarySide { get; }
 
+        public static implicit operator CreateOptionsLibrarySide(ClientSideCreateOptions options)
+        {
+            return options.LibrarySide;
+        }
+
         //* visible members
         public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
 
-        public abstract void CreateReadonly();
-
         public abstract void BypassSecurity(string reason);
-    }
 
-    
+        public abstract void CreateReadonly();
+    }
 }

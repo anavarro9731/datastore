@@ -38,9 +38,9 @@ namespace DataStore
         }
 
         //* Count
-        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => Count<T, DefaultReadOptions>(predicate);
+        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => Count<T, Default>(predicate);
 
-        public async Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+        public async Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -52,7 +52,7 @@ namespace DataStore
 
         //* CountActive
         public Task<int> CountActive<T,O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSide, new()
+            where T : class, IAggregate, new() where O : ClientSideReadOptions, new()
         {
             predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
@@ -60,28 +60,28 @@ namespace DataStore
         }
         
         public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => 
-            CountActive<T, DefaultReadOptions>(predicate);
+            CountActive<T, Default>(predicate);
         
 
         
         
         //* Read
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideWithoutReplayOptions<T>> setOptions = null)
             where T : class, IAggregate, new()
         {
-            return Read<T, DefaultWithoutReplayOptions<T>, T>(null, predicate, setOptions);
+            return Read<T, DefaultClientSideWithoutReplayOptions<T>, T>(null, predicate, setOptions);
         }
 
         public Task<IEnumerable<R>> Read<T, R>(
             Expression<Func<T, R>> map,
             Expression<Func<T, bool>> predicate = null,
-            Action<WithoutReplayOptionsClientSide<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
+            Action<ClientSideWithoutReplayOptions<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
         {
-            return Read<T, DefaultWithoutReplayOptions<R>, R>(map, predicate, setOptions);
+            return Read<T, DefaultClientSideWithoutReplayOptions<R>, R>(map, predicate, setOptions);
         }
 
         public async Task<IEnumerable<R>> Read<T, O, R>(Expression<Func<T, R>> map = null, Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<R>, new() where R : class, IAggregate, new()
+            where T : class, IAggregate, new() where O : ClientSideWithoutReplayOptions<R>, new() where R : class, IAggregate, new()
         {
             /* T is Aggregate, R is a possible Projection */
             
@@ -159,7 +159,7 @@ namespace DataStore
         }
 
         //* ReadActive
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideWithoutReplayOptions<T>> setOptions = null)
             where T : class, IAggregate, new()
         {
             return Read(predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
@@ -168,20 +168,20 @@ namespace DataStore
         public Task<IEnumerable<R>> ReadActive<T, R>(
             Expression<Func<T, R>> map,
             Expression<Func<T, bool>> predicate = null,
-            Action<WithoutReplayOptionsClientSide<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
+            Action<ClientSideWithoutReplayOptions<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
         {
             return Read(map, predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
         }
 
         public Task<IEnumerable<R>> ReadActive<T, O, R>(Expression<Func<T, R>> map, Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<R>, new() where R : class, IAggregate, new()
+            where T : class, IAggregate, new() where O : ClientSideWithoutReplayOptions<R>, new() where R : class, IAggregate, new()
         {
             return Read(map, predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
         }
 
         //* ReadById (no map)
         public async Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSide<T>, new()
+            where T : class, IAggregate, new() where O : ClientSideWithoutReplayOptions<T>, new()
         {
             WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -200,9 +200,9 @@ namespace DataStore
             return result;
         }
 
-        public Task<T> ReadById<T>(Guid modelId, Action<WithoutReplayOptionsClientSide<T>> setOptions = null) where T : class, IAggregate, new()
+        public Task<T> ReadById<T>(Guid modelId, Action<ClientSideWithoutReplayOptions<T>> setOptions = null) where T : class, IAggregate, new()
         {
-            return ReadById<T, DefaultWithoutReplayOptions<T>>(modelId, setOptions);
+            return ReadById<T, DefaultClientSideWithoutReplayOptions<T>>(modelId, setOptions);
         }
     }
 

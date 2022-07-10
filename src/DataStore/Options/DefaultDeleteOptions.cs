@@ -5,9 +5,9 @@
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
 
-    public class DefaultDeleteOptions : DeleteOptionsClientSide
+    public class DefaultClientSideDeleteOptions : ClientSideDeleteOptions
     {
-        public DefaultDeleteOptions()
+        public DefaultClientSideDeleteOptions()
             : base(new DeleteOptionsLibrarySide())
         {
             /* use constructors on derived classes to input a more advanced library side
