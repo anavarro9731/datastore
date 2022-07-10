@@ -46,10 +46,15 @@
         public bool UseHierarchicalPartitionKeys { get; } = false;
 
         
-        /*TODO 
-        add partitionkey_type_id to existing type, 
-        create new types for others and write specific tests
-        then test against latest emulator, then it's good!
+        /*TODO tests
+        run each datastore operation in synthetic and hierarchical mode for an aggregate with each type of attribute
+        run test for not having multiple or no attributes
+        run tests for not populating fields with values
+        run tests for not providing query options
+        try the different time period intervals
+        test reduce functionality on HKs
+        run against latest emulator live
+        create duplicate exception works when using advanced partition keys
         */
         public Dictionary<PartitionKeyValues, List<IAggregate>> AggregatesByLogicalPartition { get; set; } = new Dictionary<PartitionKeyValues, List<IAggregate>>();
 
@@ -106,15 +111,15 @@
             {
                 case false when UseHierarchicalPartitionKeys:
                     {
-                        //* search for partial fanout
-                        var reducedKey = partitionKeyValues.PartitionKeys.Reduce();
-                        while (reducedKey != null)
+                        //* search for partial fan out
+                        var key = partitionKeyValues.PartitionKeys;
+                        do
                         {
-                            var matchingPartitions = AggregatesByLogicalPartition.Where(x => x.Key.PartitionKeys.IsAssignableToReducedKey(reducedKey)).ToList();
+                            var matchingPartitions = AggregatesByLogicalPartition.Where(x => x.Key.PartitionKeys.IsAssignableToReducedKey(key)).ToList();
                             if (matchingPartitions.Any()) return matchingPartitions.Select(x => x.Key).ToList();
-                            
-                            reducedKey = partitionKeyValues.PartitionKeys.Reduce();
+                            key = key.Reduce();
                         }
+                        while (key != null);
 
                         //* nothing found 
                         return new List<PartitionKeyValues>();

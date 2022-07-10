@@ -41,18 +41,18 @@
         
         public override void ProvidePartitionKeyValues(Guid tenantId)
         {
-            LibrarySide.PartitionKeyTenantId = tenantId;
+            LibrarySide.PartitionKeyTenantId = tenantId.ToString();
         }
 
         public override void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval)
         {
-            LibrarySide.PartitionKeyTimeInterval = timeInterval;
+            LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
         }
 
         public override void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval)
         {
-            LibrarySide.PartitionKeyTenantId = tenantId;
-            LibrarySide.PartitionKeyTimeInterval = timeInterval;
+            LibrarySide.PartitionKeyTenantId = tenantId.ToString();
+            LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
         }
     }
 }

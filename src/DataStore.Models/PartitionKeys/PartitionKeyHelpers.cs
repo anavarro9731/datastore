@@ -11,8 +11,30 @@ namespace DataStore.Models.PartitionKeys
     using DataStore.Models.PureFunctions;
     using DataStore.Models.PureFunctions.Extensions;
 
+    
+    /*     
+     * in the methods below i take an approach where when using synthetic keys, which i do not expect
+     * to be the default going forward as hierarchical is a more progressive approach and i dont see
+     * the feature not surviving, i have added the id property as the 3rd level key, with the one
+     * exception where we already fill all levels with other data.
+     * this means that in synthetic key mode you always have to have the id or do a full fan out query
+     * which is expensive. there is an option of revising the code to offer less cardinality when using synthetics
+     * e.g. making the the key "{Type}" only basically staying only with the data you have but
+     * while that would work often its not really safe because if you have a type with over 20GB
+     * data then you are going to have a big problem. when you have the full cardinality you are
+     * taking this risk away.
+     */
+
     public static class PartitionKeyHelpers
     {
+        public static class PartitionKeyPrefixes
+        {
+            public const string Type = "TP:";
+            public const string TenantId = "TN:";
+            public const string TimePeriod = "TM:";
+            public const string AggregateId = "ID:";
+        }
+        
         //* always requires full partition key in either mode
         public static PartitionKeyValues GetKeysForExistingItemFromId<T>(bool useHierarchicalPartitionKeys, Guid id, IPartitionKeyOptions partitionKeyOptions)
             where T : IAggregate
@@ -47,8 +69,8 @@ namespace DataStore.Models.PartitionKeys
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = id.ToString();
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.AggregateId + id;
                 }
                 else if (tenantPartitionKeyAttributes.Any())
                 {
@@ -57,9 +79,9 @@ namespace DataStore.Models.PartitionKeys
                         partitionKeyOptions?.PartitionKeyTenantId == null,
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Tenant Id but you have not provided one in the query options. "
                         + "Please use the options => option.ProvidePartitionKeyValues(tenantId) method on this query.");
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = partitionKeyOptions.PartitionKeyTenantId.ToString();
-                    keys.Key3 = id.ToString();
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
+                    keys.Key3 = PartitionKeyPrefixes.AggregateId + id;
                 }
                 else if (timePeriodPartitionKeyAttributes.Any())
                 {
@@ -68,9 +90,9 @@ namespace DataStore.Models.PartitionKeys
                         partitionKeyOptions?.PartitionKeyTimeInterval == null,
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Time Period but you have not provided one in the query options. "
                         + "Please use the options => option.ProvidePartitionKeyValues(timePeriod) method on this query.");
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = partitionKeyOptions.PartitionKeyTimeInterval.ToString();
-                    keys.Key3 = id.ToString();
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval;
+                    keys.Key3 = PartitionKeyPrefixes.AggregateId + id;
                 }
                 else if (tenantAndTimePeriodPartitionKeyAttributes.Any())
                 {
@@ -79,9 +101,9 @@ namespace DataStore.Models.PartitionKeys
                         partitionKeyOptions?.PartitionKeyTimeInterval == null || partitionKeyOptions?.PartitionKeyTenantId == null,
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Tenant Id and a Time Period but you have not provided these in the query options. "
                         + "Please use the options => option.ProvidePartitionKeyValues(tenantId, timePeriod) method on this query.");
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = partitionKeyOptions.PartitionKeyTenantId.ToString();
-                    keys.Key3 = partitionKeyOptions.PartitionKeyTimeInterval.ToString();
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
+                    keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval;
                 }
                 else
                 {
@@ -131,7 +153,7 @@ namespace DataStore.Models.PartitionKeys
                             we will not have the L2 ID without parsing the expression tree which I am not going to do 
                             or adding a pointless id value to the ProvidePartitionKeyValues() method when the user can
                             just use ReadById or ReadManyById if they have that.*/
-                        keys.Key1 = typeof(T).FullName; //* broaden search to L1
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName; //* broaden search to L1
                     }
                     else
                     {
@@ -142,14 +164,15 @@ namespace DataStore.Models.PartitionKeys
                 {
                     if (useHierarchicalPartitionKeys)
                     {
-                        keys.Key1 = typeof(T).FullName;  
-                        if (partitionKeyOptions?.PartitionKeyTenantId != null) keys.Key2 = partitionKeyOptions.PartitionKeyTenantId.ToString(); //* constrain search with L2
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                        if (partitionKeyOptions?.PartitionKeyTenantId != null) keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId; //* constrain search with L2
                     }
                     else
                     {
                         /* if we are in synthetic mode, we can't compose the whole key we need to return nothing
                              this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
-                             and you want to ensure limitless growth of logical partitions */
+                             and you want to ensure limitless growth of logical partitions                          
+                         */
 
                             keys = null; //* reset to fan out
                     }
@@ -158,8 +181,8 @@ namespace DataStore.Models.PartitionKeys
                 {
                     if (useHierarchicalPartitionKeys)
                     {
-                        keys.Key1 = typeof(T).FullName; 
-                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null) keys.Key2 = partitionKeyOptions.PartitionKeyTimeInterval.ToString(); //* constrain to L2
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null) keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L2
                     }
                     else
                     {
@@ -174,9 +197,9 @@ namespace DataStore.Models.PartitionKeys
                 {
                     if (useHierarchicalPartitionKeys)
                     {
-                        keys.Key1 = typeof(T).FullName; 
-                        if (partitionKeyOptions?.PartitionKeyTenantId != null) keys.Key2 = partitionKeyOptions.PartitionKeyTenantId.ToString();
-                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null) keys.Key3 = partitionKeyOptions.PartitionKeyTimeInterval.ToString(); //* constrain to L3
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                        if (partitionKeyOptions?.PartitionKeyTenantId != null) keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
+                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null) keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
                     }
                     else
                     {
@@ -196,7 +219,7 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
-        public static PartitionKeyValues GetKeysForNewInstance<T>(T instance, bool useHierarchicalPartitionKeys) where T : IAggregate
+        public static PartitionKeyValues GetKeysForNewModel<T>(T instance, bool useHierarchicalPartitionKeys) where T : IAggregate
         {
             return new PartitionKeyValues(
                 useHierarchicalPartitionKeys ? null : GenerateHierarchicalKeys(instance, false).ToSyntheticKey(),
@@ -230,8 +253,8 @@ namespace DataStore.Models.PartitionKeys
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = newInstance.id.ToString();
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.AggregateId + newInstance.id;
                 }
                 else if (tenantPartitionKeyAttributes.Any())
                 {
@@ -239,8 +262,8 @@ namespace DataStore.Models.PartitionKeys
                     var tenantProperty = typeof(T).GetProperty(attribute.PropertyWithTenantId);
                     var tenantString = ValidateTenantAttributeExistsAndHasAValue(newInstance, tenantProperty);
 
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = tenantString;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.TenantId + tenantString;
                     keys.Key3 = newInstance.id.ToString();
                 }
                 else if (timePeriodPartitionKeyAttributes.Any())
@@ -249,9 +272,9 @@ namespace DataStore.Models.PartitionKeys
                     var timePeriodProperty = typeof(T).GetProperty(attribute.PropertyWithDateTime);
                     var timePeriodString = ValidateTimePeriodAttributeExistsAndHasAValue(newInstance, timePeriodProperty, attribute.PartitionKeyTimeInterval);
 
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = timePeriodString;
-                    keys.Key3 = newInstance.id.ToString();
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.TimePeriod + timePeriodString;
+                    keys.Key3 = PartitionKeyPrefixes.AggregateId + newInstance.id;
                 }
                 else if (tenantAndTimePeriodPartitionKeyAttributes.Any())
                 {
@@ -262,9 +285,9 @@ namespace DataStore.Models.PartitionKeys
                     var timePeriodProperty = typeof(T).GetProperty(attribute.PropertyWithDateTime);
                     var timePeriodString = ValidateTimePeriodAttributeExistsAndHasAValue(newInstance, timePeriodProperty, attribute.PartitionKeyTimeInterval);
 
-                    keys.Key1 = typeof(T).FullName;
-                    keys.Key2 = tenantString;
-                    keys.Key3 = timePeriodString;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key2 = PartitionKeyPrefixes.TenantId + tenantString;
+                    keys.Key3 = PartitionKeyPrefixes.TimePeriod + timePeriodString;
                 }
                 else
                 {

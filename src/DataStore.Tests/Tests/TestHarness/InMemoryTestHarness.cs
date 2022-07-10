@@ -43,7 +43,7 @@
             {
                 TypeName = typeof(T).FullName,
                 Created = DateTime.UtcNow,
-                Model = aggregate
+                Model = clone
             });
             clone.Etag = Guid.NewGuid().ToString(); //fake etag update internally
             aggregate.Etag = clone.Etag; //fake etag update externally

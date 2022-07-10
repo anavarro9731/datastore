@@ -92,7 +92,8 @@ namespace DataStore.Tests.Tests.IDocumentRepository.Update
 
             //* update CAR 2  
             car2.Make = "BMW";
-             var c2r2 = await this.testHarness.DataStore.Update(car2);  /* this line in this test does a very important job it test the failure in the update method 
+             var c2r2 = await this.testHarness.DataStore.Update(car2);  /* this line in this test does a very important job 
+             it tests the failure in the update method to find uncommitted items in the session which must work and also
              of the developer adding but forgetting to add a new restricted property on the Aggregate base class to the list of excluded properties when cloning 
              during the Update() method */
              

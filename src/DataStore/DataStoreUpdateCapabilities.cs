@@ -60,7 +60,8 @@
                 nameof(IAggregate.Modified),
                 nameof(IAggregate.ModifiedAsMillisecondsEpochTime),
                 nameof(IAggregate.VersionHistory),
-                nameof(IAggregate.PartitionKey)
+                nameof(IAggregate.PartitionKey),
+                nameof(IAggregate.PartitionKeys)
             };
 
             return UpdateById<T, UpdateOptionsLibrarySide>(

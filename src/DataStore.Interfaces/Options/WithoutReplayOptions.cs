@@ -7,11 +7,8 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public abstract class WithoutReplayOptionsClientSide<T>  where T : class, IAggregate, new() 
+    public abstract class WithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
     {
-        public static implicit operator WithoutReplayOptionsLibrarySide<T>(WithoutReplayOptionsClientSide<T> options) =>
-            options.LibrarySide;
-
         protected WithoutReplayOptionsClientSide(WithoutReplayOptionsLibrarySide<T> librarySide)
         {
             LibrarySide = librarySide;
@@ -19,23 +16,30 @@
 
         protected WithoutReplayOptionsLibrarySide<T> LibrarySide { get; }
 
+        public static implicit operator WithoutReplayOptionsLibrarySide<T>(WithoutReplayOptionsClientSide<T> options)
+        {
+            return options.LibrarySide;
+        }
+
         //* visible members
 
         public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
+
+        public abstract void BypassSecurity(string reason);
 
         public abstract WithoutReplayOptionsClientSide<T> ContinueFrom(ContinuationToken currentContinuationToken);
 
         public abstract WithoutReplayOptionsClientSide<T> OrderBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
 
+        public abstract void ProvidePartitionKeyValues(Guid tenantId);
+
+        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
+
+        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
+
         public abstract WithoutReplayOptionsClientSide<T> Take(int take, ref ContinuationToken newContinuationToken);
 
         public abstract WithoutReplayOptionsClientSide<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
-
-        public abstract void BypassSecurity(string reason);
-        
-        public abstract void ProvidePartitionKeyValues(Guid tenantId);
-        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
-        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
     }
 
     public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions, IPartitionKeyOptions
@@ -43,7 +47,7 @@
         public readonly Queue<(string, bool)> ThenByQueue = new Queue<(string, bool)>();
 
         public ContinuationToken CurrentContinuationToken;
-        
+
         public int? MaxTake;
 
         public ContinuationToken NextContinuationToken;
@@ -52,13 +56,17 @@
 
         public bool OrderDescending;
 
+        public bool BypassSecurity { get; set; }
+
+        public IIdentityWithDatabasePermissions Identity { get; set; }
+
         public ContinuationToken NextContinuationTokenValue { set => this.NextContinuationToken.Value = value.Value; }
 
         public List<(string, bool)> OrderByParameters { get; } = new List<(string, bool)>();
 
-        public IIdentityWithDatabasePermissions Identity { get; set; }
+        public string PartitionKeyTenantId { get; set; }
 
-        public bool BypassSecurity { get; set; }
+        public string PartitionKeyTimeInterval { get; set; }
 
         public IQueryable<T> AddOrderBy(IQueryable<T> queryable)
         {
@@ -120,9 +128,5 @@
                 return (IOrderedQueryable<TEntity>)source.Provider.CreateQuery<TEntity>(resultExpression);
             }
         }
-
-        public Guid? PartitionKeyTenantId { get; set; }
-
-        public PartitionKeyTimeInterval PartitionKeyTimeInterval { get; set; }
     }
 }

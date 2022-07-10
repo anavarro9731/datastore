@@ -4,7 +4,7 @@ namespace DataStore.Interfaces.Options
 
     public interface IPartitionKeyOptions
     {
-        Guid? PartitionKeyTenantId { get; set; }
-        PartitionKeyTimeInterval PartitionKeyTimeInterval { get; set; }
+        string PartitionKeyTenantId { get; set; }
+        string PartitionKeyTimeInterval { get; set; }
     }
 }

@@ -32,8 +32,8 @@
 
         public bool BypassSecurity { get; set; }
 
-        public Guid? PartitionKeyTenantId { get; set; }
+        public string PartitionKeyTenantId { get; set; }
 
-        public PartitionKeyTimeInterval PartitionKeyTimeInterval { get; set; }
+        public string PartitionKeyTimeInterval { get; set; }
     }
 }

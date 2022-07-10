@@ -20,7 +20,7 @@ namespace DataStore.Models.PureFunctions.Extensions
 
             WalkGraphAndUpdateEntityMeta(newObject);
             
-            var keys = PartitionKeyHelpers.GetKeysForNewInstance(newObject, useHierarchicalPartitionKeys);
+            var keys = PartitionKeyHelpers.GetKeysForNewModel(newObject, useHierarchicalPartitionKeys);
             newObject.PartitionKey = keys.PartitionKey;
             newObject.PartitionKeys = keys.PartitionKeys;
            
