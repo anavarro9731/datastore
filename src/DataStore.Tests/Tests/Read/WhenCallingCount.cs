@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.Query
+namespace DataStore.Tests.Tests.Read
 {
     using System;
     using System.Linq;
@@ -9,24 +9,24 @@ namespace DataStore.Tests.Tests.Query
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
 
-    public class WhenCallingCountActive
+    public class WhenCallingCount
     {
         private int countOfCars;
 
         private ITestHarness testHarness;
 
         [Fact]
-        public async void ItShouldReturnACountOf1()
+        public async void ItShouldReturnACountOf2()
         {
             await Setup();
             Assert.NotNull(this.testHarness.DataStore.ExecutedOperations.SingleOrDefault(e => e is AggregateCountedOperation<Car>));
-            Assert.Equal(1, this.countOfCars);
+            Assert.Equal(2, this.countOfCars);
         }
 
         private async Task Setup()
         {
             // Given
-            this.testHarness = TestHarness.Create(nameof(WhenCallingCountActive));
+            this.testHarness = TestHarness.Create(nameof(WhenCallingCount));
 
             var activeCarId = Guid.NewGuid();
             var activeExistingCar = new Car
@@ -43,7 +43,7 @@ namespace DataStore.Tests.Tests.Query
             this.testHarness.AddItemDirectlyToUnderlyingDb(inactiveExistingCar);
 
             // When
-            this.countOfCars = await this.testHarness.DataStore.WithoutEventReplay.CountActive<Car>(car => car.Make == "Volvo");
+            this.countOfCars = await this.testHarness.DataStore.WithoutEventReplay.Count<Car>(car => car.Make == "Volvo");
         }
     }
 }

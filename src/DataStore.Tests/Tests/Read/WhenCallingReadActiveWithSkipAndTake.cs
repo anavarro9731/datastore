@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.Query
+namespace DataStore.Tests.Tests.Read
 {
     using System;
     using System.Collections.Generic;

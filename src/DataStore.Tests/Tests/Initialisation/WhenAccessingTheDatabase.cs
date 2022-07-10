@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.Initialise
+namespace DataStore.Tests.Tests.Initialisation
 {
     using System.Linq;
     using global::DataStore.Interfaces;

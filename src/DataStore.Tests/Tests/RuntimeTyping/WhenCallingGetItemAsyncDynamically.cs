@@ -1,4 +1,4 @@
-namespace DataStore.Tests.Tests.Repo
+namespace DataStore.Tests.Tests.RuntimeTyping
 {
     using System;
     using global::DataStore.Interfaces;
