@@ -264,7 +264,7 @@ namespace DataStore.Models.PartitionKeys
 
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + tenantString;
-                    keys.Key3 = newInstance.id.ToString();
+                    keys.Key3 = PartitionKeyPrefixes.AggregateId + newInstance.id;
                 }
                 else if (timePeriodPartitionKeyAttributes.Any())
                 {

@@ -114,6 +114,12 @@
 
         public class HierarchicalPartitionKey
         {
+            public List<string> AsList() =>
+                new List<string>()
+                {
+                    Key1, Key2, Key3
+                };
+            
             public HierarchicalPartitionKey Reduce()
             {
                 if (!string.IsNullOrWhiteSpace(this.Key3))

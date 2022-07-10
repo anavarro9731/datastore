@@ -7,6 +7,7 @@ namespace DataStore
     using System;
     using System.Linq;
     using System.Reflection;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
@@ -58,7 +59,7 @@ namespace DataStore
                     $"An item with the same ID of {newObject.id} is already queued to be created",
                     Guid.Parse("63328bcd-d58d-446a-bc85-fedfde43d2e2"));
 
-                var existsAlreadyOptions = BuildReadOptionsLibrarySideFromModel(model);
+                var existsAlreadyOptions = BuildReadOptionsLibrarySideFromModel(newObject, this.DsConnection.UseHierarchicalPartitionKeys);
                 var existsAlready = (await DsConnection.GetItemAsync<T>(new AggregateQueriedByIdOperationOperation(methodName, model.id, existsAlreadyOptions))
                                                        .ConfigureAwait(false)) != null;
                 Guard.Against(
@@ -79,25 +80,41 @@ namespace DataStore
                 return itemToReturnToCaller;
             }
 
-            ReadOptionsLibrarySide BuildReadOptionsLibrarySideFromModel(IAggregate aggregate)
+            ReadOptionsLibrarySide BuildReadOptionsLibrarySideFromModel(IAggregate aggregate, bool dsConnectionUseHierarchicalPartitionKeys)
             {
                 var existsAlreadyOptions = new ReadOptionsLibrarySide();
                 
-                CheckForTenantId(aggregate.PartitionKeys?.Key2, ref existsAlreadyOptions);
-                CheckForTenantId(aggregate.PartitionKeys?.Key3, ref existsAlreadyOptions);
-                CheckForTimePeriod(aggregate.PartitionKeys?.Key2, ref existsAlreadyOptions);
-                CheckForTimePeriod(aggregate.PartitionKeys?.Key3, ref existsAlreadyOptions);
+                CheckForTenantId(ref existsAlreadyOptions);
+                CheckForTimePeriod(ref existsAlreadyOptions);
 
-                void CheckForTenantId(string key, ref ReadOptionsLibrarySide optionsToSet1)
+                void CheckForTenantId(ref ReadOptionsLibrarySide optionsToSet1)
                 {
-                    if (key != null && key.StartsWith(PartitionKeyHelpers.PartitionKeyPrefixes.TenantId))
-                        optionsToSet1.PartitionKeyTenantId = key.Substring(PartitionKeyHelpers.PartitionKeyPrefixes.TenantId.Length - 1);
+                    var tenantPrefix = PartitionKeyHelpers.PartitionKeyPrefixes.TenantId;
+                    if (dsConnectionUseHierarchicalPartitionKeys)
+                    {
+                        var tenantId = aggregate.PartitionKeys.AsList().SingleOrDefault(p => p != null && p.StartsWith(tenantPrefix))?.SubstringAfter(tenantPrefix);
+                        optionsToSet1.PartitionKeyTenantId = tenantId;
+                    }
+                    else
+                    {
+                        var tenantId = Regex.Match(aggregate.PartitionKey, $"(?<={tenantPrefix}).*(?=_)").Value;
+                        optionsToSet1.PartitionKeyTenantId = tenantId;
+                    }
                 }
 
-                 void CheckForTimePeriod(string key, ref ReadOptionsLibrarySide optionsToSet1)
+                 void CheckForTimePeriod(ref ReadOptionsLibrarySide optionsToSet1)
                 {
-                    if (key != null && key.StartsWith(PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod))
-                        optionsToSet1.PartitionKeyTimeInterval = key.Substring(PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod.Length - 1);
+                    var timePeriodPrefix = PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod;
+                    if (dsConnectionUseHierarchicalPartitionKeys)
+                    {
+                        var tenantId = aggregate.PartitionKeys.AsList().SingleOrDefault(p => p != null && p.StartsWith(timePeriodPrefix))?.SubstringAfter(timePeriodPrefix);
+                        optionsToSet1.PartitionKeyTimeInterval = tenantId;
+                    }
+                    else
+                    {
+                        var tenantId = Regex.Match(aggregate.PartitionKey, $"(?<={timePeriodPrefix}).*(?=_)").Value;
+                        optionsToSet1.PartitionKeyTimeInterval = tenantId;
+                    }
                 }
 
                 return existsAlreadyOptions;
