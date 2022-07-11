@@ -97,7 +97,7 @@ namespace DataStore
                     }
                     else
                     {
-                        var tenantId = Regex.Match(aggregate.PartitionKey, $"(?<={tenantPrefix}).*(?=_)").Value;
+                        var tenantId = Regex.Match(aggregate.PartitionKey, $"(?<={tenantPrefix})[^_]*").Value;
                         optionsToSet1.PartitionKeyTenantId = tenantId;
                     }
                 }
@@ -107,13 +107,13 @@ namespace DataStore
                     var timePeriodPrefix = PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod;
                     if (dsConnectionUseHierarchicalPartitionKeys)
                     {
-                        var tenantId = aggregate.PartitionKeys.AsList().SingleOrDefault(p => p != null && p.StartsWith(timePeriodPrefix))?.SubstringAfter(timePeriodPrefix);
-                        optionsToSet1.PartitionKeyTimeInterval = tenantId;
+                        var timePeriod = aggregate.PartitionKeys.AsList().SingleOrDefault(p => p != null && p.StartsWith(timePeriodPrefix))?.SubstringAfter(timePeriodPrefix);
+                        optionsToSet1.PartitionKeyTimeInterval = timePeriod;
                     }
                     else
                     {
-                        var tenantId = Regex.Match(aggregate.PartitionKey, $"(?<={timePeriodPrefix}).*(?=_)").Value;
-                        optionsToSet1.PartitionKeyTimeInterval = tenantId;
+                        var timePeriod = Regex.Match(aggregate.PartitionKey, $"(?<={timePeriodPrefix})[^_]*").Value;
+                        optionsToSet1.PartitionKeyTimeInterval = timePeriod;
                     }
                 }
 

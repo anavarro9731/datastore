@@ -93,7 +93,7 @@ namespace DataStore.Tests.Tests.Partitions.Update
             
 
             //when
-            var result = await testHarness.DataStore.UpdateWhere<AggregateWithTypeTenantIdKey>(x => x.id == newId, a => a.TestValue = 1, options => options.ProvidePartitionKeyValues(tenantId));
+            var result = await testHarness.DataStore.UpdateWhere<AggregateWithTypeTenantIdKey>(x => x.id == newId, a => a.TestValue = 1);
             Assert.NotNull(result);
             
             await testHarness.DataStore.CommitChanges();
@@ -125,7 +125,7 @@ namespace DataStore.Tests.Tests.Partitions.Update
             
 
             //when
-            var result = await testHarness.DataStore.UpdateWhere<AggregateWithTypeTimePeriodIdKey>(x => x.id == newId, a => a.TestValue = 1, options => options.ProvidePartitionKeyValues(dayInterval));
+            var result = await testHarness.DataStore.UpdateWhere<AggregateWithTypeTimePeriodIdKey>(x => x.id == newId, a => a.TestValue = 1);
             Assert.NotNull(result);
             
             await testHarness.DataStore.CommitChanges();

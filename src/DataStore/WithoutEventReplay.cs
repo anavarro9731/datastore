@@ -38,7 +38,8 @@ namespace DataStore
         }
 
         //* Count
-        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => Count<T, Default>(predicate);
+        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideReadOptions> setOptions = null) where T : class, IAggregate, new() => 
+            Count<T, DefaultClientSideReadOptions>(predicate, setOptions);
 
         public async Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new()
         {
@@ -59,8 +60,8 @@ namespace DataStore
             return Count(predicate, setOptions);
         }
         
-        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new() => 
-            CountActive<T, Default>(predicate);
+        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null,Action<ClientSideReadOptions> setOptions = null) where T : class, IAggregate, new() => 
+            CountActive<T, DefaultClientSideReadOptions>(predicate, setOptions);
         
 
         
@@ -200,9 +201,24 @@ namespace DataStore
             return result;
         }
 
-        public Task<T> ReadById<T>(Guid modelId, Action<ClientSideWithoutReplayOptions<T>> setOptions = null) where T : class, IAggregate, new()
+        public Task<T> ReadById<T>(Guid modelId, Action<ClientSideWithoutReplayOptions<T>> setOptions = null) 
+            where T : class, IAggregate, new()
         {
             return ReadById<T, DefaultClientSideWithoutReplayOptions<T>>(modelId, setOptions);
+        }
+
+        public async Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null)
+            where T : class, IAggregate, new() where O : ClientSideWithoutReplayOptions<T>, new()
+        {
+            var result = await ReadById<T, O>(modelId, setOptions).ConfigureAwait(false);
+            if (result == null || !result.Active) return null;
+            return result;
+        }
+
+        public Task<T> ReadActiveById<T>(Guid modelId, Action<ClientSideWithoutReplayOptions<T>> setOptions = null) 
+            where T : class, IAggregate, new()
+        {
+            return ReadActiveById<T, DefaultClientSideWithoutReplayOptions<T>>(modelId, setOptions);
         }
     }
 

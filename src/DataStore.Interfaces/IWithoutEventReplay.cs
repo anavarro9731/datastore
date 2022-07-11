@@ -11,15 +11,14 @@ namespace DataStore.Interfaces
     {
 
 
-        Task<int> Count<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new();
+        Task<int> Count<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideReadOptions> setOptions = null) where T : class, IAggregate, new();
 
-        Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null) where T : class, IAggregate, new();
+        Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideReadOptions> setOptions = null) where T : class, IAggregate, new();
         
         Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new();
 
         Task<int> CountActive<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new();
-
-
+        
 
         Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideWithoutReplayOptions<T>> setOptions = null)
             where T : class, IAggregate, new();
@@ -46,5 +45,10 @@ namespace DataStore.Interfaces
             where T : class, IAggregate, new() where O : ClientSideWithoutReplayOptions<T>, new();
 
         Task<T> ReadById<T>(Guid modelId, Action<ClientSideWithoutReplayOptions<T>> setOptions = null) where T : class, IAggregate, new();
+        
+        Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null)
+            where T : class, IAggregate, new() where O : ClientSideWithoutReplayOptions<T>, new();
+
+        Task<T> ReadActiveById<T>(Guid modelId, Action<ClientSideWithoutReplayOptions<T>> setOptions = null) where T : class, IAggregate, new();
     }
 }

@@ -251,7 +251,7 @@
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideReadOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new()
         {
-            return Read<T, Default>(predicate, setOptions, methodName);
+            return Read<T, DefaultClientSideReadOptions>(predicate, setOptions, methodName);
         }
 
         //*ReadActive
@@ -286,7 +286,7 @@
             Action<ClientSideReadOptions> setOptions = null,
             string methodName = null) where T : class, IAggregate, new()
         {
-            return ReadActive<T, Default>(predicate, setOptions, methodName);
+            return ReadActive<T, DefaultClientSideReadOptions>(predicate, setOptions, methodName);
         }
 
         //ReadActiveById
@@ -320,7 +320,7 @@
 
         public Task<T> ReadActiveById<T>(Guid modelId, Action<ClientSideReadOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return ReadActiveById<T, Default>(modelId, setOptions, methodName);
+            return ReadActiveById<T, DefaultClientSideReadOptions>(modelId, setOptions, methodName);
         }
 
         //ReadById
@@ -360,7 +360,7 @@
 
         public Task<T> ReadById<T>(Guid modelId, Action<ClientSideReadOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return ReadById<T, Default>(modelId, setOptions, methodName);
+            return ReadById<T, DefaultClientSideReadOptions>(modelId, setOptions, methodName);
         }
 
         //* Update

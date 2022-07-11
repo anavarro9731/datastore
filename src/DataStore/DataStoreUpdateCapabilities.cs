@@ -122,7 +122,7 @@
 
                 var originalObjectId = objectToUpdate.id;
 
-                var restrictedIdBefore = objectToUpdate.id + objectToUpdate.Schema + objectToUpdate.PartitionKey;
+                var restrictedIdBefore = objectToUpdate.id + objectToUpdate.Schema + objectToUpdate.PartitionKey + objectToUpdate.PartitionKeys.ToJsonString();
                 var restrictedCreatedBefore = objectToUpdate.Created.ToString(CultureInfo.InvariantCulture) + objectToUpdate.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedBefore = objectToUpdate.Modified.ToString(CultureInfo.InvariantCulture) + objectToUpdate.ModifiedAsMillisecondsEpochTime;
                 var restrictedVersionInfo = objectToUpdate.VersionHistory.ToJsonString();
@@ -133,7 +133,7 @@
                 objectToUpdate.WalkGraphAndUpdateEntityMeta();
                 DisableOptimisticConcurrencyIfRequested(objectToUpdate); //- has to happen after action
 
-                var restrictedIdAfter = objectToUpdate.id + objectToUpdate.Schema + objectToUpdate.PartitionKey;
+                var restrictedIdAfter = objectToUpdate.id + objectToUpdate.Schema + objectToUpdate.PartitionKey + objectToUpdate.PartitionKeys.ToJsonString();
                 var restrictedCreatedAfter = objectToUpdate.Created.ToString(CultureInfo.InvariantCulture) + objectToUpdate.CreatedAsMillisecondsEpochTime;
                 var restrictedModifiedAfter = objectToUpdate.Modified.ToString(CultureInfo.InvariantCulture) + objectToUpdate.ModifiedAsMillisecondsEpochTime;
                 var restrictedVersionInfoAfter = objectToUpdate.VersionHistory.ToJsonString();
@@ -141,7 +141,7 @@
 
                 Guard.Against(
                     restrictedIdBefore != restrictedIdAfter,
-                    "Cannot change restricted properties [" + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, {nameof(objectToUpdate.PartitionKey)} "
+                    "Cannot change restricted properties [" + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, {nameof(objectToUpdate.PartitionKey)}, {nameof(objectToUpdate.PartitionKeys)} "
                                                             + $"{nameof(Aggregate.Created)}, {nameof(Aggregate.CreatedAsMillisecondsEpochTime)}, "
                                                             + $"{nameof(Aggregate.Modified)}, {nameof(Aggregate.ModifiedAsMillisecondsEpochTime)},  "
                                                             + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObjectId}");

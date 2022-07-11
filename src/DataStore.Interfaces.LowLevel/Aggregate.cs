@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Reflection;
     using DataStore.Interfaces.LowLevel.Permissions;
+    using Newtonsoft.Json;
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -98,6 +99,8 @@
 
         //* Json.NET ignores explicit implementations and we kind of want to hide this anyway
         Action<string> IEtagUpdated.EtagUpdated { get; set; }
+
+        public string GetLongPartitionedId() => string.IsNullOrWhiteSpace(PartitionKey) ? PartitionKeys.ToSyntheticKey() : PartitionKey;
         
         public class AggregateVersionInfo
         {
@@ -119,27 +122,15 @@
                 {
                     Key1, Key2, Key3
                 };
-            
-            public HierarchicalPartitionKey Reduce()
+
+            public string ToSyntheticKey()
             {
-                if (!string.IsNullOrWhiteSpace(this.Key3))
-                {
-                    return new HierarchicalPartitionKey()
-                    {
-                        Key1 = this.Key1, Key2 = this.Key2
-                    };
-                }
-                else if (!string.IsNullOrWhiteSpace(this.Key2))
-                {
-                    return new HierarchicalPartitionKey()
-                    {
-                        Key1 = this.Key1
-                    };
-                } 
-                else
-                {
-                    return null;
-                }
+                return Key1 + Key2 + Key3;
+            }
+            
+            public bool IsAssignableToReducedKey(HierarchicalPartitionKey reducedKey)
+            {
+                return reducedKey.Key1 == Key1 && (string.IsNullOrWhiteSpace(reducedKey.Key2) || reducedKey.Key2 == Key2);
             }
             
             public string Key1 { get; set; }
@@ -172,10 +163,7 @@
                 }
             }
 
-            public bool IsAssignableToReducedKey(HierarchicalPartitionKey reducedKey)
-            {
-                return reducedKey.Key1 == Key1 && (string.IsNullOrWhiteSpace(reducedKey.Key2) || reducedKey.Key2 == Key2);
-            }
+
         }
     }
 }

@@ -29,7 +29,7 @@
 
         public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
     }
-
+    
     public class ReadOptionsLibrarySide : ISecurityOptions, IPartitionKeyOptions, IQueryOptions
     {
         public bool BypassSecurity { get; set; }

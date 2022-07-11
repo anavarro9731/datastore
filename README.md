@@ -30,10 +30,8 @@ Some features such as Continue/Take, and OrderBy/ThenBy are available only Witho
 DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and does not require .NET Core.
 
 ## Roadmap
-* Better documentation of API features
 * Update Version History on instances in the current session post-commit
-* Partitioned Collection Support beyond Id
-* MartenDB implementation
+* ReadMany function with partition support
 
 ## Usage
 

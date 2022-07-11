@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
 {
     using System;
     using global::DataStore.Interfaces;
+    using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
@@ -55,7 +56,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeIdKey>(newId);
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
-            Assert.Equal($"TP:{typeof(AggregateWithTypeIdKey).FullName}_ID:{newId}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
         }
         
         
@@ -83,7 +84,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTenantIdKey>(newId, side => side.ProvidePartitionKeyValues(tenantId));
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
-            Assert.Equal($"TP:{typeof(AggregateWithTypeTenantIdKey).FullName}_TN:{tenantId}_ID:{newId}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
         }
         
         [Fact]
@@ -112,7 +113,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTenantTimePeriodKey>(newId, side => side.ProvidePartitionKeyValues(tenantId, monthInterval));
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
-            Assert.Equal($"TP:{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}_TN:{tenantId}_TM:{monthInterval}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}", result.PartitionKey);
         }
         
         [Fact]
@@ -138,7 +139,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTimePeriodIdKey>(newId, side => side.ProvidePartitionKeyValues(dayInterval));
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
-            Assert.Equal($"TP:{typeof(AggregateWithTypeTimePeriodIdKey).FullName}_TM:{dayInterval}_ID:{newId}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
         }
     }
 }

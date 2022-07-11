@@ -4,6 +4,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
     using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
+    using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
@@ -11,11 +12,11 @@ namespace DataStore.Tests.Tests.Partitions.Create
     public class WhenCallingCreateWithHierarchicalKeys
     {
         [Fact]
-        private async void AndAttributeWithSharedKeyItShouldSaveTheRightKeys()
+        private async void AndAttributeWithSharedKeyItShouldThrowError()
         {
             // Given
             var testHarness = TestHarness.Create(
-                nameof(WhenCallingCreateWithHierarchicalKeys) + nameof(AndAttributeWithSharedKeyItShouldSaveTheRightKeys),
+                nameof(WhenCallingCreateWithHierarchicalKeys) + nameof(AndAttributeWithSharedKeyItShouldThrowError),
                 useHierarchicalPartitionKey: true);
 
             var newId = Guid.NewGuid();
@@ -54,7 +55,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new Aggregate.HierarchicalPartitionKey
                 {
-                    Key1 = $"TP:{typeof(AggregateWithTypeIdKey).FullName}", Key2 = $"ID:{newId}"
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}", Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}"
                 },
                 result.PartitionKeys);
         }
@@ -87,7 +88,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new Aggregate.HierarchicalPartitionKey
                 {
-                    Key1 = $"TP:{typeof(AggregateWithTypeTenantIdKey).FullName}", Key2 = $"TN:{tenantId}", Key3 = $"ID:{newId}"
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}", 
+                    Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}", 
+                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}"
                 },
                 result.PartitionKeys);
         }
@@ -121,7 +124,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new Aggregate.HierarchicalPartitionKey
                 {
-                    Key1 = $"TP:{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}", Key2 = $"TN:{tenantId}", Key3 = $"TM:{monthInterval}"
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}", 
+                    Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}", 
+                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}"
                 },
                 result.PartitionKeys);
         }
@@ -154,7 +159,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new Aggregate.HierarchicalPartitionKey
                 {
-                    Key1 = $"TP:{typeof(AggregateWithTypeTimePeriodIdKey).FullName}", Key2 = $"TM:{dayInterval}", Key3 = $"ID:{newId}"
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}", 
+                    Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}", 
+                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId }{newId}"
                 },
                 result.PartitionKeys);
         }

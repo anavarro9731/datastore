@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Threading.Tasks;
     using CircuitBoard;
     using global::DataStore.Interfaces;
@@ -47,18 +48,19 @@
 
         
         /*TODO tests      
-        run test for all read operations, including without event replay in both synthetic and hierarchical mode for each type of attribute
+                   
+        overload to take a full synthetic key for the ID and parse into options when calling by ID methods 
+        move logic out of aggregate base class
         
-        test you can't update PK values
         run test for not having multiple or no attributes
         run tests for not populating fields with values
         run tests for not providing query options
         try the different time period intervals and make sure they resolve correctly
         run test to make sure that if you provide the wrong interval you get notified, use regex
-        test reduce functionality on HKs
         test that the exception when create duplicates works when using advanced partition keys
         
         run against latest emulator live
+        scope levels performance
         
         */
         public Dictionary<PartitionKeyValues, List<IAggregate>> AggregatesByLogicalPartition { get; set; } = new Dictionary<PartitionKeyValues, List<IAggregate>>();
@@ -87,8 +89,8 @@
 
         public Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new()
         {
-            var query = CreateQueryable<T>();
-
+            var query = CreateQueryable<T>(aggregatesCounted.QueryOptions);
+            
             var count = aggregatesCounted.Predicate == null ? query.Count() : query.Count(aggregatesCounted.Predicate);
 
             return Task.FromResult(count);
@@ -118,14 +120,12 @@
                     {
                         //* search for partial fan out
                         var key = partitionKeyValues.PartitionKeys;
-                        do
+                        var matchingPartitions = AggregatesByLogicalPartition.Where(x => x.Key.PartitionKeys.IsAssignableToReducedKey(key)).ToList();
+                        if (matchingPartitions.Any())
                         {
-                            var matchingPartitions = AggregatesByLogicalPartition.Where(x => x.Key.PartitionKeys.IsAssignableToReducedKey(key)).ToList();
-                            if (matchingPartitions.Any()) return matchingPartitions.Select(x => x.Key).ToList();
-                            key = key.Reduce();
+                            return matchingPartitions.Select(x => x.Key).ToList();
                         }
-                        while (key != null);
-
+                            
                         //* nothing found 
                         return new List<PartitionKeyValues>();
                     }

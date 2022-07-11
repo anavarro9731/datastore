@@ -88,7 +88,7 @@ namespace DataStore.Tests.Tests.Partitions.Delete
             
 
             //when
-            var result = await testHarness.DataStore.DeleteWhere<AggregateWithTypeTenantIdKey>(x => x.id == newId, options => options.ProvidePartitionKeyValues(tenantId));
+            var result = await testHarness.DataStore.DeleteWhere<AggregateWithTypeTenantIdKey>(x => x.id == newId);
             Assert.NotNull(result);
             
             await testHarness.DataStore.CommitChanges();
@@ -118,7 +118,7 @@ namespace DataStore.Tests.Tests.Partitions.Delete
             
 
             //when
-            var result = await testHarness.DataStore.DeleteWhere<AggregateWithTypeTimePeriodIdKey>(x => x.id == newId, options => options.ProvidePartitionKeyValues(dayInterval));
+            var result = await testHarness.DataStore.DeleteWhere<AggregateWithTypeTimePeriodIdKey>(x => x.id == newId);
             Assert.NotNull(result);
             
             await testHarness.DataStore.CommitChanges();

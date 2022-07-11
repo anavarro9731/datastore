@@ -5,9 +5,9 @@
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
 
-    public class Default : ClientSideReadOptions
+    public class DefaultClientSideReadOptions : ClientSideReadOptions
     {
-        public Default()
+        public DefaultClientSideReadOptions()
             : base(new ReadOptionsLibrarySide())
         {
             /* use constructors on derived classes to input a more advanced library side
@@ -45,4 +45,5 @@
             LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
         }
     }
+    
 }
