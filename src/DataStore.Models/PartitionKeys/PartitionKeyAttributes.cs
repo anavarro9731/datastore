@@ -35,12 +35,19 @@ namespace DataStore.Models.PartitionKeys
             PropertyWithTenantId = propertyWithTenantId;
         }
     }
-    
+
+    public interface IPartitionKeyWithTimePeriod
+    {
+        string PropertyWithDateTime { get; }
+        
+        PartitionKeyTimeIntervalEnum PartitionKeyTimeInterval { get; }
+    }
+
     /// <summary>
     /// When you want to query by time period and there is no possible tenant id on this aggregate (it is global) 
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class PartitionKey__Type_TimePeriod_Id : Attribute
+    public class PartitionKey__Type_TimePeriod_Id : Attribute, IPartitionKeyWithTimePeriod
     {
         public string PropertyWithDateTime { get; }
 
@@ -55,7 +62,7 @@ namespace DataStore.Models.PartitionKeys
     }
     
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class PartitionKey__Type_ImmutableTenantId_TimePeriod : Attribute
+    public class PartitionKey__Type_ImmutableTenantId_TimePeriod : Attribute, IPartitionKeyWithTimePeriod
     {
         public string PropertyWithTenantId { get; }
 

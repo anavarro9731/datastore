@@ -226,7 +226,7 @@
 
                 result = await this.container.ReadItemAsync<T>(aggregateQueriedByIdOperation.Id.ToString(), key).ConfigureAwait(false);
             }
-            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound || (ex.StatusCode == HttpStatusCode.BadRequest && ex.Message.Contains("Partition")))
             {
             }
 

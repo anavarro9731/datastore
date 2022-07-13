@@ -4,6 +4,7 @@ namespace DataStore.Interfaces
     {
         Year,
         Month,
+        Week,
         Day,
         Hour,
         Minute

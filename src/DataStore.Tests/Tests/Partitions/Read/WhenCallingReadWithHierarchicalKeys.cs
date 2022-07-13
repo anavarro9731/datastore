@@ -2,7 +2,9 @@ namespace DataStore.Tests.Tests.Partitions.Read
 {
     using System;
     using System.Linq;
+    using CircuitBoard;
     using global::DataStore.Interfaces;
+    using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Options;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -137,6 +139,10 @@ namespace DataStore.Tests.Tests.Partitions.Read
 
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>();
             Assert.Equal(2, results.Count());
+            
+            var xCircuitException = await Assert.ThrowsAsync<CircuitException>( async () =>await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(
+                null, options => options.ProvidePartitionKeyValues(Guid.NewGuid(), MinuteInterval.FromDateTime(DateTime.UtcNow))));
+            Assert.Equal(PartitionKeyHelpers.ErrorCodes.UsedIncorrectTimeInterval.ToString(), xCircuitException.Error.Key);
         }
         
         [Fact]
@@ -169,6 +175,10 @@ namespace DataStore.Tests.Tests.Partitions.Read
             var results = await testHarness.DataStore.Read<AggregateWithTypeTimePeriodIdKey>(
                               null, options => options.ProvidePartitionKeyValues(DayInterval.FromDateTime(DateTime.UtcNow)));
             Assert.Equal(2, results.Count());
+            
+            var xCircuitException = await Assert.ThrowsAsync<CircuitException>( async () => await testHarness.DataStore.Read<AggregateWithTypeTimePeriodIdKey>(
+                null, options => options.ProvidePartitionKeyValues(MonthInterval.FromDateTime(DateTime.UtcNow))));
+            Assert.Equal(PartitionKeyHelpers.ErrorCodes.UsedIncorrectTimeInterval.ToString(), xCircuitException.Error.Key);
             
             results = await testHarness.DataStore.Read<AggregateWithTypeTimePeriodIdKey>(
                               null, options => options.ProvidePartitionKeyValues(DayInterval.FromDateTime(DateTime.UnixEpoch)));

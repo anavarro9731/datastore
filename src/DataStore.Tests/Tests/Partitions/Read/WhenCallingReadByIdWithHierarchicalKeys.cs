@@ -41,6 +41,7 @@ namespace DataStore.Tests.Tests.Partitions.Read
             
             result = await testHarness.DataStore.ReadById<AggregateWithTypeIdKey>(Guid.NewGuid());
             Assert.Null(result);
+            
         }
         
         

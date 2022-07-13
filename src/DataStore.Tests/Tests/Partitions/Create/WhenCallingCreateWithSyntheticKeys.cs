@@ -1,6 +1,8 @@
 namespace DataStore.Tests.Tests.Partitions.Create
 {
     using System;
+    using System.Threading.Tasks;
+    using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
@@ -32,6 +34,10 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
             Assert.Equal("shared", result.PartitionKey);
+            
+            await AndShouldNotCreateDuplicates();
+            async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
+
         }
         
         [Fact]
@@ -57,6 +63,10 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
+            
+            await AndShouldNotCreateDuplicates();
+            async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
+
         }
         
         
@@ -85,6 +95,10 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
+            
+            await AndShouldNotCreateDuplicates();
+            async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
+
         }
         
         [Fact]
@@ -114,6 +128,10 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}", result.PartitionKey);
+            
+            await AndShouldNotCreateDuplicates();
+            async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
+
         }
         
         [Fact]
@@ -140,6 +158,10 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.NotNull(result);
             Assert.Null(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
+            
+            await AndShouldNotCreateDuplicates();
+            async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
+
         }
     }
 }

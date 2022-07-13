@@ -11,7 +11,6 @@ namespace DataStore.Models.PartitionKeys
     using DataStore.Models.PureFunctions;
     using DataStore.Models.PureFunctions.Extensions;
 
-    
     /*     
      * in the methods below i take an approach where when using synthetic keys, which i do not expect
      * to be the default going forward as hierarchical is a more progressive approach and i dont see
@@ -27,20 +26,6 @@ namespace DataStore.Models.PartitionKeys
 
     public static class PartitionKeyHelpers
     {
-        public static class PartitionKeyPrefixes
-        {
-            public const string Type = "_tp_";
-            public const string TenantId = "_tt_";
-            public const string TimePeriod = "_tm_";
-            public const string AggregateId = "_id_";
-        }
-        
-        static bool HasTenantIdOption(this IPartitionKeyOptions options) => options != null && !string.IsNullOrWhiteSpace(options.PartitionKeyTenantId);
-        static bool HasTimePeriodOption(this IPartitionKeyOptions options) => options != null && !string.IsNullOrWhiteSpace(options.PartitionKeyTimeInterval);
-        static bool HasSpecifiedAtLeastOneOption(this IPartitionKeyOptions options) => options.HasTenantIdOption() || options.HasTimePeriodOption();
-        static bool HasNotSpecifiedAnyOptions(this IPartitionKeyOptions options) => !options.HasTenantIdOption() && !options.HasTimePeriodOption();
-        static bool HasSpecifiedBothOptions(this IPartitionKeyOptions options) => options.HasTenantIdOption() && options.HasTimePeriodOption();
-        
         //* always requires full partition key in either mode
         public static PartitionKeyValues GetKeysForExistingItemFromId<T>(bool useHierarchicalPartitionKeys, Guid id, IPartitionKeyOptions partitionKeyOptions)
             where T : IAggregate
@@ -52,7 +37,7 @@ namespace DataStore.Models.PartitionKeys
             static Aggregate.HierarchicalPartitionKey GenerateHierarchicalKeys(Guid id, IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
             {
                 var keys = new Aggregate.HierarchicalPartitionKey();
-                
+
                 PartitionKeyTypeIds<T>(
                     out var sharedPartitionKeyAttributes,
                     out var idPartitionKeyAttributes,
@@ -69,22 +54,22 @@ namespace DataStore.Models.PartitionKeys
                             $"If you have aggregates using the legacy {nameof(PartitionKey__Shared)} attribute you cannot use Hierarchical Partition Keys. "
                             + "Please ensure the UseHierarchicalPartitionKeys property on the DocumentRepository resolves to false. This is usually set through a"
                             + " parameter on the database settings class that is used to create the repository");
-                    } 
+                    }
+
                     Guard.Against(
                         partitionKeyOptions.HasSpecifiedAtLeastOneOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Shared)}." + 
-                        $"This does not require any partition key Options, please do not provide them.");
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Shared)}."
+                        + "This does not require any partition key Options, please do not provide them.");
 
-                    keys.Key1 = "shared"; 
+                    keys.Key1 = "shared";
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
                     Guard.Against(
                         partitionKeyOptions.HasSpecifiedAtLeastOneOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_Id)}." + 
-                        $"This does not require any partition key Options, please do not provide them.");
-                    
-                    
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_Id)}."
+                        + "This does not require any partition key Options, please do not provide them.");
+
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.AggregateId + id;
                 }
@@ -95,11 +80,11 @@ namespace DataStore.Models.PartitionKeys
                         !partitionKeyOptions.HasTenantIdOption(),
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Tenant Id but you have not provided one in the query options. "
                         + "Please use the options => option.ProvidePartitionKeyValues(tenantId) method on this query.");
-                    
+
                     Guard.Against(
                         partitionKeyOptions.HasTimePeriodOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)}." + 
-                        $"This does not require a time period partition key Option, please do not provide it.");
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)}."
+                        + "This does not require a time period partition key Option, please do not provide it.");
 
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
@@ -112,11 +97,13 @@ namespace DataStore.Models.PartitionKeys
                         !partitionKeyOptions.HasTimePeriodOption(),
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Time Period but you have not provided one in the query options. "
                         + "Please use the options => option.ProvidePartitionKeyValues(timePeriod) method on this query.");
-                    
+
                     Guard.Against(
                         partitionKeyOptions.HasTenantIdOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)}." + 
-                        $"This does not require a tenant partition key Option, please do not provide it.");
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)}."
+                        + "This does not require a tenant partition key Option, please do not provide it.");
+
+                    ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
                     
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval;
@@ -129,6 +116,8 @@ namespace DataStore.Models.PartitionKeys
                         !partitionKeyOptions.HasSpecifiedBothOptions(),
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Tenant Id and a Time Period but you have not provided these in the query options. "
                         + "Please use the options => option.ProvidePartitionKeyValues(tenantId, timePeriod) method on this query.");
+                    
+                    ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
                     
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
@@ -143,8 +132,7 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
-        public static PartitionKeyValues GetKeysForLinqQuery<T>(bool useHierarchicalPartitionKeys, IPartitionKeyOptions partitionKeyOptions)
-            where T : IAggregate
+        public static PartitionKeyValues GetKeysForLinqQuery<T>(bool useHierarchicalPartitionKeys, IPartitionKeyOptions partitionKeyOptions) where T : IAggregate
         {
             return new PartitionKeyValues(
                 useHierarchicalPartitionKeys ? null : GenerateHierarchicalKeys(partitionKeyOptions, false)?.ToSyntheticKey(),
@@ -171,11 +159,11 @@ namespace DataStore.Models.PartitionKeys
                             + "Please ensure the UseHierarchicalPartitionKeys property on the DocumentRepository resolves to false. This is usually set through a"
                             + " parameter on the database settings class that is used to create the repository");
                     }
-                    
+
                     Guard.Against(
                         partitionKeyOptions.HasSpecifiedAtLeastOneOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Shared)}." + 
-                        $"This does not require any partition key Options, please do not provide them.");
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Shared)}."
+                        + "This does not require any partition key Options, please do not provide them.");
 
                     keys.Key1 = "shared";
                 }
@@ -183,9 +171,9 @@ namespace DataStore.Models.PartitionKeys
                 {
                     Guard.Against(
                         partitionKeyOptions.HasSpecifiedAtLeastOneOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_Id)}." + 
-                        $"This does not require any partition key Options, please do not provide them.");
-                    
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_Id)}."
+                        + "This does not require any partition key Options, please do not provide them.");
+
                     if (useHierarchicalPartitionKeys)
                     {
                         /* if the class is partitioned by id and we are searching by type with LINQ predicates,
@@ -201,24 +189,26 @@ namespace DataStore.Models.PartitionKeys
                 }
                 else if (tenantPartitionKeyAttributes.Any())
                 {
-                    
                     Guard.Against(
                         partitionKeyOptions.HasTimePeriodOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)}." + 
-                        $"This does not require a time period partition key Option, please do not provide it.");
-                    
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)}."
+                        + "This does not require a time period partition key Option, please do not provide it.");
+
                     if (useHierarchicalPartitionKeys)
                     {
                         keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
-                        if (partitionKeyOptions?.PartitionKeyTenantId != null) keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId; //* constrain search with L2
+                        if (partitionKeyOptions?.PartitionKeyTenantId != null)
+                        {
+                            keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId; //* constrain search with L2
+                        }
                     }
                     else
                     {
                         Guard.Against(
                             partitionKeyOptions.HasTenantIdOption(),
-                            $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)} " + 
-                            $"without Hierarchical keys. Either use ReadById or ReadyByIds if you have them, or do not provide the TenantId and a full cross partition query will be used.");
-                        
+                            $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)} "
+                            + "without Hierarchical keys. Either use ReadById or ReadyByIds if you have them, or do not provide the TenantId and a full cross partition query will be used.");
+
                         /* if we are in synthetic mode, we can't compose the whole key we need to return nothing
                              this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
                              and you want to ensure limitless growth of logical partitions                          
@@ -231,23 +221,25 @@ namespace DataStore.Models.PartitionKeys
                 {
                     Guard.Against(
                         partitionKeyOptions.HasTenantIdOption(),
-                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)}." + 
-                        $"This does not require a tenant partition key Option, please do not provide it.");
-
+                        $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)}."
+                        + "This does not require a tenant partition key Option, please do not provide it.");
                     
                     if (useHierarchicalPartitionKeys)
                     {
                         keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
-                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null) keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L2
+                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
+                        {
+                            ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
+                            keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L2
+                        }
                     }
                     else
                     {
-                        
                         Guard.Against(
                             partitionKeyOptions.HasTimePeriodOption(),
-                            $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)} " + 
-                            $"without Hierarchical keys. Either use ReadById or ReadyByIds if you have them, or do not provide the TimePeriod and a full cross partition query will be used.");
-                        
+                            $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)} "
+                            + "without Hierarchical keys. Either use ReadById or ReadyByIds if you have them, or do not provide the TimePeriod and a full cross partition query will be used.");
+
                         /* if we are in synthetic mode, we can't compose the whole key we need to return nothing
                              this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
                              and you want to ensure limitless growth of logical partitions */
@@ -260,31 +252,42 @@ namespace DataStore.Models.PartitionKeys
                     if (useHierarchicalPartitionKeys)
                     {
                         keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
-                        if (partitionKeyOptions?.PartitionKeyTenantId != null) keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
-                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null) keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
+                        if (partitionKeyOptions?.PartitionKeyTenantId != null)
+                        {
+                            keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
+                        }
+                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
+                        {
+                            ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
+
+                            keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
+                        }
                     }
                     else
                     {
-                            /* if we are in synthetic mode, and we can't compose the whole key we need to return nothing
-                                 this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
-                                 and you want to ensure limitless growth of logical partitions */
-                            if (partitionKeyOptions.HasNotSpecifiedAnyOptions())
-                            {
-                                keys = null; //* broaden to fan out
-                            } else if (partitionKeyOptions.HasSpecifiedBothOptions())
-                            {
-                                //* force exact key usage
-                                keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
-                                keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
-                                keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
-                            }
-                            else
-                            {
-                                //* must always provide in the options when querying by id if the class requires it
-                                throw new CircuitException(
-                                    $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Tenant Id and a Time Period but you have not provided these in the query options. "
-                                    + "Please use the options => option.ProvidePartitionKeyValues(tenantId, timePeriod) method on this query.");
-                            }
+                        /* if we are in synthetic mode, and we can't compose the whole key we need to return nothing
+                             this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
+                             and you want to ensure limitless growth of logical partitions */
+                        if (partitionKeyOptions.HasNotSpecifiedAnyOptions())
+                        {
+                            keys = null; //* broaden to fan out
+                        }
+                        else if (partitionKeyOptions.HasSpecifiedBothOptions())
+                        {
+                            ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
+                            
+                            //* force exact key usage
+                            keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                            keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
+                            keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
+                        }
+                        else
+                        {
+                            //* must always provide in the options when querying by id if the class requires it
+                            throw new CircuitException(
+                                $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute requiring a Tenant Id and a Time Period but you have not provided these in the query options. "
+                                + "Please use the options => option.ProvidePartitionKeyValues(tenantId, timePeriod) method on this query.");
+                        }
                     }
                 }
                 else
@@ -305,7 +308,7 @@ namespace DataStore.Models.PartitionKeys
             static Aggregate.HierarchicalPartitionKey GenerateHierarchicalKeys(T newInstance, bool useHierarchicalPartitionKeys)
             {
                 Guard.Against(newInstance.id == Guid.Empty, "Instance must have Id set before you can create Partition Keys");
-                
+
                 var keys = new Aggregate.HierarchicalPartitionKey();
 
                 PartitionKeyTypeIds<T>(
@@ -375,6 +378,31 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
+        private static bool HasNotSpecifiedAnyOptions(this IPartitionKeyOptions options)
+        {
+            return !options.HasTenantIdOption() && !options.HasTimePeriodOption();
+        }
+
+        private static bool HasSpecifiedAtLeastOneOption(this IPartitionKeyOptions options)
+        {
+            return options.HasTenantIdOption() || options.HasTimePeriodOption();
+        }
+
+        private static bool HasSpecifiedBothOptions(this IPartitionKeyOptions options)
+        {
+            return options.HasTenantIdOption() && options.HasTimePeriodOption();
+        }
+
+        private static bool HasTenantIdOption(this IPartitionKeyOptions options)
+        {
+            return options != null && !string.IsNullOrWhiteSpace(options.PartitionKeyTenantId);
+        }
+
+        private static bool HasTimePeriodOption(this IPartitionKeyOptions options)
+        {
+            return options != null && !string.IsNullOrWhiteSpace(options.PartitionKeyTimeInterval);
+        }
+
         private static void PartitionKeyTypeIds<T>(
             out List<PartitionKey__Shared> sharedPartitionKeyAttributes,
             out List<PartitionKey__Type_Id> idPartitionKeyAttributes,
@@ -398,7 +426,59 @@ namespace DataStore.Models.PartitionKeys
                 + tenantAndTimePeriodPartitionKeyAttributes.Count() + sharedPartitionKeyAttributes.Count() == 0,
                 $"You must have at least one PartitionKey attribute on class {typeof(T).FullName}");
         }
+        
+        public static class ErrorCodes
+        {
+            public static readonly Guid UsedIncorrectTimeInterval = Guid.Parse("2EDA6D08-C034-4925-AD58-84404F851202");
+        }
 
+        private static void ValidateCorrectIntervalType(IEnumerable<Attribute> attributes, string intervalString)
+        {
+            var attribute = attributes.Single() as IPartitionKeyWithTimePeriod;
+            if (attribute != null)
+            {
+                var intervalType = attribute.PartitionKeyTimeInterval;
+                var warning =
+                    $"You have provided an interval value {intervalString} that does not match that format. Please check Interval class used in the options for this query";
+                 
+                if (intervalType == PartitionKeyTimeIntervalEnum.Year)
+                {
+                    Guard.Against(
+                        !YearInterval.IsValidString(intervalString),
+                        $"The aggregate type you have used has a Partition Key with a Time Interval segment of type YEAR. {warning}", ErrorCodes.UsedIncorrectTimeInterval);
+                }
+                else if (intervalType == PartitionKeyTimeIntervalEnum.Month)
+                {
+                    Guard.Against(
+                        !MonthInterval.IsValidString(intervalString),
+                        $"The aggregate type you have used has a Partition Key with a Time Interval segment of type MONTH. {warning}",ErrorCodes.UsedIncorrectTimeInterval);
+                }
+                else if (intervalType == PartitionKeyTimeIntervalEnum.Week)
+                {
+                    Guard.Against(
+                        !WeekInterval.IsValidString(intervalString),
+                        $"The aggregate type you have used has a Partition Key with a Time Interval segment of type WEEK. {warning}",ErrorCodes.UsedIncorrectTimeInterval);
+                }
+                else if (intervalType == PartitionKeyTimeIntervalEnum.Day)
+                {
+                    Guard.Against(
+                        !DayInterval.IsValidString(intervalString),
+                        $"The aggregate type you have used has a Partition Key with a Time Interval segment of type DAY. {warning}",ErrorCodes.UsedIncorrectTimeInterval);
+                }
+                else if (intervalType == PartitionKeyTimeIntervalEnum.Hour)
+                {
+                    Guard.Against(
+                        !HourInterval.IsValidString(intervalString),
+                        $"The aggregate type you have used has a Partition Key with a Time Interval segment of type HOUR. {warning}",ErrorCodes.UsedIncorrectTimeInterval);
+                }
+                else if (intervalType == PartitionKeyTimeIntervalEnum.Minute)
+                {
+                    Guard.Against(
+                        !MinuteInterval.IsValidString(intervalString),
+                        $"The aggregate type you have used has a Partition Key with a Time Interval segment of type MINUTE. {warning}",ErrorCodes.UsedIncorrectTimeInterval);
+                }
+            }
+        }
 
         private static string ValidateTenantAttributeExistsAndHasAValue<T>(T newInstance, PropertyInfo property) where T : IAggregate
         {
@@ -423,39 +503,33 @@ namespace DataStore.Models.PartitionKeys
             Guard.Against(
                 timePeriodPropertyValue.GetValueOrDefault() == default,
                 $"The PartitionKey property value you specified for {nameof(PartitionKey__Type_TimePeriod_Id.PropertyWithDateTime)} is empty. Provide a value or use {nameof(PartitionKey__Type_Id)} instead.");
+
             var timePeriodString = GetTimePeriodString(timePeriodPropertyValue, timeInterval);
             return timePeriodString;
 
             static string GetTimePeriodString(DateTime? timePeriodPropertyValue, PartitionKeyTimeIntervalEnum interval)
             {
                 var timePeriodPropertyValueNonNull = timePeriodPropertyValue.Value;
-                var timePeriodString = interval == PartitionKeyTimeIntervalEnum.Year
-                                           ? new YearInterval(timePeriodPropertyValueNonNull.Year).ToString()
-                                           :
-                                           interval == PartitionKeyTimeIntervalEnum.Month
-                                               ?
-                                               new MonthInterval(timePeriodPropertyValueNonNull.Year, timePeriodPropertyValueNonNull.Month).ToString()
-                                               : interval == PartitionKeyTimeIntervalEnum.Day
-                                                   ? new DayInterval(
-                                                       timePeriodPropertyValueNonNull.Year,
-                                                       timePeriodPropertyValueNonNull.Month,
-                                                       timePeriodPropertyValueNonNull.Day).ToString()
-                                                   : interval == PartitionKeyTimeIntervalEnum.Hour
-                                                       ? new HourInterval(
-                                                           timePeriodPropertyValueNonNull.Year,
-                                                           timePeriodPropertyValueNonNull.Month,
-                                                           timePeriodPropertyValueNonNull.Day,
-                                                           timePeriodPropertyValueNonNull.Hour).ToString()
-                                                       : interval == PartitionKeyTimeIntervalEnum.Minute
-                                                           ? new MinuteInterval(
-                                                               timePeriodPropertyValueNonNull.Year,
-                                                               timePeriodPropertyValueNonNull.Month,
-                                                               timePeriodPropertyValueNonNull.Day,
-                                                               timePeriodPropertyValueNonNull.Hour,
-                                                               timePeriodPropertyValueNonNull.Minute).ToString()
-                                                           : throw new ArgumentOutOfRangeException();
+                var timePeriodString = interval == PartitionKeyTimeIntervalEnum.Year ? YearInterval.FromDateTime(timePeriodPropertyValueNonNull).ToString() :
+                                       interval == PartitionKeyTimeIntervalEnum.Month ? MonthInterval.FromDateTime(timePeriodPropertyValueNonNull).ToString() :
+                                       interval == PartitionKeyTimeIntervalEnum.Week ? WeekInterval.FromDateTime(timePeriodPropertyValueNonNull).ToString() :
+                                       interval == PartitionKeyTimeIntervalEnum.Day ? DayInterval.FromDateTime(timePeriodPropertyValueNonNull).ToString() :
+                                       interval == PartitionKeyTimeIntervalEnum.Hour ? HourInterval.FromDateTime(timePeriodPropertyValueNonNull).ToString() :
+                                       interval == PartitionKeyTimeIntervalEnum.Minute ? MinuteInterval.FromDateTime(timePeriodPropertyValueNonNull).ToString() :
+                                       throw new ArgumentOutOfRangeException();
                 return timePeriodString;
             }
+        }
+
+        public static class PartitionKeyPrefixes
+        {
+            public const string AggregateId = "_id_";
+
+            public const string TenantId = "_tt_";
+
+            public const string TimePeriod = "_tm_";
+
+            public const string Type = "_tp_";
         }
     }
 }

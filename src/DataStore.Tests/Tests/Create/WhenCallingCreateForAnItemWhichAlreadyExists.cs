@@ -2,6 +2,7 @@ namespace DataStore.Tests.Tests.Create
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
@@ -9,7 +10,7 @@ namespace DataStore.Tests.Tests.Create
 
     public class WhenCallingCreateForAnItemWhichAlreadyExists
     {
-        private Exception exception;
+        private CircuitException exception;
 
         private Guid newCarId;
 
@@ -19,7 +20,7 @@ namespace DataStore.Tests.Tests.Create
         public async void ItShouldThrowAnError()
         {
             await Setup();
-            Assert.Contains("cfe3ebc2-4677-432b-9ded-0ef498b9f59d", this.exception.Message);
+            Assert.Equal("cfe3ebc2-4677-432b-9ded-0ef498b9f59d", this.exception.Error.Key);
         }
 
         private async Task Setup()
@@ -37,7 +38,7 @@ namespace DataStore.Tests.Tests.Create
             await this.testHarness.DataStore.CommitChanges();
 
             //when
-            this.exception = await Assert.ThrowsAnyAsync<Exception>(async () => await this.testHarness.DataStore.Create(newCar));
+            this.exception = await Assert.ThrowsAnyAsync<CircuitException>(async () => await this.testHarness.DataStore.Create(newCar));
         }
     }
 }

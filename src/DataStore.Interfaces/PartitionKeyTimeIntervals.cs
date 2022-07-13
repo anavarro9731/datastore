@@ -1,6 +1,8 @@
 namespace DataStore.Interfaces
 {
     using System;
+    using System.Globalization;
+    using System.Text.RegularExpressions;
 
     public class MonthInterval : PartitionKeyTimeInterval
     {
@@ -19,9 +21,13 @@ namespace DataStore.Interfaces
             return new MonthInterval(dateTime.Year, dateTime.Month);
         }
 
+        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}$").IsMatch(s);
+        
+        public static MonthInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+
         public override string ToString()
         {
-            return $"Y{Year}:M{Month}:D:H:M";
+            return $"Y{Year}:M{Month}";
         }
     }
 
@@ -34,14 +40,49 @@ namespace DataStore.Interfaces
 
         public int Year { get; }
 
+        public static bool IsValidString(string s) => new Regex("^Y\\d{4}$").IsMatch(s);
+        
         public static YearInterval FromDateTime(DateTime dateTime)
         {
             return new YearInterval(dateTime.Year);
         }
+        
+        public static YearInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
 
         public override string ToString()
         {
-            return $"Y{Year}:M:D:H:M";
+            return $"Y{Year}";
+        }
+    }
+
+    public class WeekInterval : PartitionKeyTimeInterval
+    {
+        public WeekInterval(int year, int month, int week)
+        {
+            Year = year;
+            Month = month;
+            Week = week;
+        }
+
+        public int Month { get; }
+
+        public int Week { get; }
+
+        public int Year { get; }
+
+        public static WeekInterval FromDateTime(DateTime dateTime)
+        {
+            var weekOfYear = new GregorianCalendar(GregorianCalendarTypes.Localized).GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            return new WeekInterval(dateTime.Year, dateTime.Month, weekOfYear);
+        }
+        
+        public static WeekInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+
+        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:W\\d{1,2}$").IsMatch(s);
+        
+        public override string ToString()
+        {
+            return $"Y{Year}:W{Week}";
         }
     }
 
@@ -65,9 +106,14 @@ namespace DataStore.Interfaces
             return new DayInterval(dateTime.Year, dateTime.Month, dateTime.Day);
         }
 
+        public static DayInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+        
+        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}$").IsMatch(s);
+
+        
         public override string ToString()
         {
-            return $"Y{Year}:M{Month}:D{Day}:H:M";
+            return $"Y{Year}:M{Month}:D{Day}";
         }
     }
 
@@ -93,10 +139,15 @@ namespace DataStore.Interfaces
         {
             return new HourInterval(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour);
         }
+        
+        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}:H\\d{1,2}$").IsMatch(s);
+        
+        public static HourInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+
 
         public override string ToString()
         {
-            return $"Y{Year}:M{Month}:D{Day}:H{Hour}:M";
+            return $"Y{Year}:M{Month}:D{Day}:H{Hour}";
         }
     }
 
@@ -125,10 +176,14 @@ namespace DataStore.Interfaces
         {
             return new MinuteInterval(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute);
         }
+        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}:H\\d{1,2}:I\\d{1,2}$").IsMatch(s);
+        
+        public static MinuteInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+
 
         public override string ToString()
         {
-            return $"Y{Year}:M{Month}:D{Day}:H{Hour}:M{Minute}";
+            return $"Y{Year}:M{Month}:D{Day}:H{Hour}:I{Minute}";
         }
     }
 

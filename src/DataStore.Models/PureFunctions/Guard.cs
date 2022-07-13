@@ -7,12 +7,12 @@
     {
         public static void Against(Func<bool> test, string errorMessage, Guid? code = null)
         {
-            if (test()) throw new CircuitException(errorMessage + " " + code);
+            if (test()) throw new CircuitException(errorMessage + " " + code, ErrorCode.Create(code.GetValueOrDefault()));
         }
 
         public static void Against(bool test, string errorMessage, Guid? code = null)
         {
-            if (test) throw new CircuitException(errorMessage + " " + code);
+            if (test) throw new CircuitException(errorMessage + " " + code, ErrorCode.Create(code.GetValueOrDefault()));
         }
     }
 }

@@ -9,6 +9,40 @@ namespace DataStore.Providers.CosmosDb
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
+        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
+        {
+            {
+                CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);
+                await CreateDb(cosmosClient, (CosmosSettings)cosmosStoreSettings).ConfigureAwait(false);
+            }
+        }
+
+        public async Task ResetDatabase(IDatabaseSettings cosmosStoreSettings)
+        {
+            {
+                var cosmosSettings = (CosmosSettings)cosmosStoreSettings;
+
+                CreateClient(cosmosSettings, out var cosmosClient);
+                await DeleteDbIfExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
+                await CreateDb(cosmosClient, cosmosSettings).ConfigureAwait(false);
+            }
+
+            async Task DeleteDbIfExists(CosmosClient client, CosmosSettings cosmosSettings)
+            {
+                var databases = await ListDatabases(client).ConfigureAwait(false);
+
+                if (databases.Contains(cosmosSettings.DatabaseName))
+                {
+                    var db = client.GetDatabase(cosmosSettings.DatabaseName);
+                    var containers = await ListContainers(db).ConfigureAwait(false);
+                    if (containers.Contains(cosmosSettings.ContainerName))
+                    {
+                        await db.GetContainer(cosmosSettings.ContainerName).DeleteContainerAsync().ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
         internal static void CreateClient(CosmosSettings cosmosSettings, out CosmosClient client)
         {
             client = new CosmosClient(cosmosSettings.EndpointUrl, cosmosSettings.AuthKey, cosmosSettings.ClientOptions);
@@ -17,45 +51,54 @@ namespace DataStore.Providers.CosmosDb
         private static async Task CreateDb(CosmosClient client, CosmosSettings cosmosStoreSettings)
         {
             var databases = await ListDatabases(client).ConfigureAwait(false);
-            ;
+
+            Database db;
 
             if (!databases.Contains(cosmosStoreSettings.DatabaseName))
             {
-                var db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName).ConfigureAwait(false);
-                var containerProperties = new ContainerProperties
-                {
-                    Id = cosmosStoreSettings.ContainerName
-                };
-
-                if (cosmosStoreSettings.UseHierarchicalPartitionKeys)
-                {
-                    containerProperties.PartitionKeyPaths = new List<string>
-                    {
-                        $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key1)}",
-                        $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key2)}",
-                        $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key3)}"
-                    };
-                } else {
-                    containerProperties.PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey);
-                }
-                
-                await db.Database.CreateContainerIfNotExistsAsync(containerProperties).ConfigureAwait(false);
+                db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName, ThroughputProperties.CreateAutoscaleThroughput(400)).ConfigureAwait(false);
             }
             else
             {
-                var db = client.GetDatabase(cosmosStoreSettings.DatabaseName);
-                await db.CreateContainerIfNotExistsAsync(
-                    new ContainerProperties
-                    {
-                        
-                        PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2,
-                        PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey), 
-                        Id = cosmosStoreSettings.ContainerName
-                    }).ConfigureAwait(false);
+                db = client.GetDatabase(cosmosStoreSettings.DatabaseName);
             }
 
+            await CreateContainerIfNotExists(cosmosStoreSettings, db).ConfigureAwait(false);
+
             await Task.Delay(5000).ConfigureAwait(false);
-            ; //the above call seems to be fire-and-forget and i need it complete reliably
+
+            //the above call seems to be fire-and-forget and i need it complete reliably
+        }
+
+        public static async Task CreateContainerIfNotExists(CosmosSettings cosmosSettings)
+        {
+            CreateClient(cosmosSettings, out var cosmosClient);
+
+            await CreateContainerIfNotExists(cosmosSettings, cosmosClient.GetDatabase(cosmosSettings.DatabaseName)).ConfigureAwait(false);
+        }
+
+        private static async Task CreateContainerIfNotExists(CosmosSettings cosmosStoreSettings, Database db)
+        {
+            var containerProperties = new ContainerProperties
+            {
+                Id = cosmosStoreSettings.ContainerName, PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2
+            };
+
+            if (cosmosStoreSettings.UseHierarchicalPartitionKeys)
+            {
+                containerProperties.PartitionKeyPaths = new List<string>
+                {
+                    $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key1)}",
+                    $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key2)}",
+                    $"/{nameof(Aggregate.PartitionKeys)}/{nameof(Aggregate.PartitionKeys.Key3)}"
+                };
+            }
+            else
+            {
+                containerProperties.PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey);
+            }
+
+            await db.CreateContainerIfNotExistsAsync(containerProperties).ConfigureAwait(false);
         }
 
         private static async Task<ArrayList> ListContainers(Database database)
@@ -87,40 +130,5 @@ namespace DataStore.Providers.CosmosDb
 
             return databases;
         }
-
-        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
-        {
-            {
-                CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);
-                await CreateDb(cosmosClient, (CosmosSettings)cosmosStoreSettings).ConfigureAwait(false);
-            }
-        }
-
-        public async Task ResetDatabase(IDatabaseSettings cosmosStoreSettings)
-        {
-            {
-                var cosmosSettings = (CosmosSettings)cosmosStoreSettings;
-
-                CreateClient(cosmosSettings, out var cosmosClient);
-                await DeleteDbIfExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
-                await CreateDb(cosmosClient, cosmosSettings).ConfigureAwait(false);
-            }
-
-            async Task DeleteDbIfExists(CosmosClient client, CosmosSettings cosmosSettings)
-            {
-                var databases = await ListDatabases(client).ConfigureAwait(false);
-                
-                if (databases.Contains(cosmosSettings.DatabaseName))
-                {
-                    var db = client.GetDatabase(cosmosSettings.DatabaseName);
-                    var containers = await ListContainers(db).ConfigureAwait(false);
-                    if (containers.Contains(cosmosSettings.ContainerName))
-                    {
-                        await db.GetContainer(cosmosSettings.ContainerName).DeleteContainerAsync().ConfigureAwait(false);
-                    }
-                }
-            }
-        }
     }
 }
-

@@ -16,7 +16,7 @@
     ///     Furthermore, if you expose add any logic to the base class, even that which is
     ///     serialisation safe, if a client has models assemblies each with a different version
     ///     of this logic, your code could start producing unexpected results.
-    ///     So, NO LOGIC of any kind in these abstract classes.
+    ///     So, no logic kind in these abstract classes.
     /// </summary>
     public abstract class Aggregate : Entity, IAggregate, IEtagUpdated
     {
@@ -128,10 +128,7 @@
                 return Key1 + Key2 + Key3;
             }
             
-            public bool IsAssignableToReducedKey(HierarchicalPartitionKey reducedKey)
-            {
-                return reducedKey.Key1 == Key1 && (string.IsNullOrWhiteSpace(reducedKey.Key2) || reducedKey.Key2 == Key2);
-            }
+            
             
             public string Key1 { get; set; }
 
