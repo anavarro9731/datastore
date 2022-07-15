@@ -1,9 +1,13 @@
 namespace DataStore.Interfaces
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using DataStore.Interfaces.LowLevel;
+
+    #endregion
 
     public interface ITestHarness
     {

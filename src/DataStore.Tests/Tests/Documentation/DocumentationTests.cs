@@ -1,13 +1,14 @@
 ﻿namespace DataStore.Tests.Tests.Documentation
 {
+    #region
+
     using System;
     using System.Linq;
     using global::DataStore.Models.Messages;
-    using global::DataStore.Models.PartitionKeys;
-    using global::DataStore.Models.PureFunctions;
-    using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Tests.Models;
     using Xunit;
+
+    #endregion
 
     public class DocumentationTests
     {

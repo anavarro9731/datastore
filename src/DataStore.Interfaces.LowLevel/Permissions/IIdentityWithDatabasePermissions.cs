@@ -1,8 +1,10 @@
 ﻿namespace DataStore.Interfaces.LowLevel.Permissions
 {
+    #region
+
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Security;
+
+    #endregion
 
     public interface IIdentityWithDatabasePermissions 
     {

@@ -1,10 +1,14 @@
 namespace DataStore.Tests.Tests.Partitions.Update
 {
+    #region
+
     using System;
     using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingUpdateWhereWithSyntheticKeys
     {
@@ -91,8 +95,7 @@ namespace DataStore.Tests.Tests.Partitions.Update
             await testHarness.DataStore.Create(agg);
             await testHarness.DataStore.CommitChanges();
             
-
-            //when
+            //When
             var result = await testHarness.DataStore.UpdateWhere<AggregateWithTypeTenantIdKey>(x => x.id == newId, a => a.TestValue = 1);
             Assert.NotNull(result);
             

@@ -1,8 +1,12 @@
 ﻿namespace DataStore.Interfaces.Operations
 {
+    #region
+
     using System.Collections.Generic;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.LowLevel;
+
+    #endregion
 
     public interface IDataStoreWriteOperation<T> : IDataStoreWriteOperation where T : class, IAggregate, new()
     {

@@ -1,13 +1,17 @@
 namespace DataStore.Interfaces
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq.Expressions;
-    using System.Threading.Tasks;
-    using DataStore.Interfaces.LowLevel;
-    using DataStore.Interfaces.Options;
+   #region
 
-    public interface IDataStoreReadOnly
+   using System;
+   using System.Collections.Generic;
+   using System.Linq.Expressions;
+   using System.Threading.Tasks;
+   using DataStore.Interfaces.LowLevel;
+   using DataStore.Interfaces.Options;
+
+   #endregion
+
+   public interface IDataStoreReadOnly
     {
          IWithoutEventReplay WithoutEventReplay { get; }
 

@@ -1,9 +1,13 @@
 ﻿namespace DataStore.Interfaces.Operations
 {
+    #region
+
     using System;
     using System.Linq.Expressions;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public interface IDataStoreCountOperation : IDataStoreOperation, IRequestState
     {

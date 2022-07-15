@@ -1,5 +1,7 @@
 ﻿namespace DataStore.Models.Messages
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -8,6 +10,8 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public class QueuedHardDeleteOperation<T> : IQueuedDataStoreWriteOperation<T> where T : class, IAggregate, new()
     {

@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -9,6 +11,8 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public class ScopeHierarchy : IScopeHierarchy
     {

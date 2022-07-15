@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
@@ -8,6 +10,8 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
+
+    #endregion
 
     /// <summary>
     ///     Limits writes to a single aggregate type

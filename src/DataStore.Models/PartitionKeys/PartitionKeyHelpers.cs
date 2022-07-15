@@ -1,8 +1,11 @@
 namespace DataStore.Models.PartitionKeys
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Reflection;
     using CircuitBoard;
     using DataStore.Interfaces;
@@ -10,6 +13,8 @@ namespace DataStore.Models.PartitionKeys
     using DataStore.Interfaces.Options;
     using DataStore.Models.PureFunctions;
     using DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     /*     
      * in the methods below i take an approach where when using synthetic keys, which i do not expect
@@ -27,16 +32,15 @@ namespace DataStore.Models.PartitionKeys
     public static class PartitionKeyHelpers
     {
         //* always requires full partition key in either mode
-        public static PartitionKeyValues GetKeysForExistingItemFromId<T>(bool useHierarchicalPartitionKeys, Guid id, IPartitionKeyOptions partitionKeyOptions)
+        public static HierarchicalPartitionKey GetKeysForExistingItemFromId<T>(bool useHierarchicalPartitionKeys, Guid id, IPartitionKeyOptions partitionKeyOptions)
             where T : IAggregate
         {
-            return new PartitionKeyValues(
-                useHierarchicalPartitionKeys ? null : GenerateHierarchicalKeys(id, partitionKeyOptions, false)?.ToSyntheticKey(),
-                useHierarchicalPartitionKeys ? GenerateHierarchicalKeys(id, partitionKeyOptions, true) : null);
+            return GenerateHierarchicalKeys(id, partitionKeyOptions, useHierarchicalPartitionKeys);
 
-            static Aggregate.HierarchicalPartitionKey GenerateHierarchicalKeys(Guid id, IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
+
+            static HierarchicalPartitionKey GenerateHierarchicalKeys(Guid id, IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
             {
-                var keys = new Aggregate.HierarchicalPartitionKey();
+                var keys = new HierarchicalPartitionKey();
 
                 PartitionKeyTypeIds<T>(
                     out var sharedPartitionKeyAttributes,
@@ -61,7 +65,9 @@ namespace DataStore.Models.PartitionKeys
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Shared)}."
                         + "This does not require any partition key Options, please do not provide them.");
 
-                    keys.Key1 = "shared";
+                    keys.Key1 = "sh";
+                    keys.Key2 = "ar";
+                    keys.Key3 = "ed";
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
@@ -72,6 +78,7 @@ namespace DataStore.Models.PartitionKeys
 
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.AggregateId + id;
+                    keys.Key3 = "_na";
                 }
                 else if (tenantPartitionKeyAttributes.Any())
                 {
@@ -132,15 +139,22 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
-        public static PartitionKeyValues GetKeysForLinqQuery<T>(bool useHierarchicalPartitionKeys, IPartitionKeyOptions partitionKeyOptions) where T : IAggregate
+        public static Expression<Func<T, bool>> ToPredicate<T>(this HierarchicalPartitionKey key) where T : IAggregate
         {
-            return new PartitionKeyValues(
-                useHierarchicalPartitionKeys ? null : GenerateHierarchicalKeys(partitionKeyOptions, false)?.ToSyntheticKey(),
-                useHierarchicalPartitionKeys ? GenerateHierarchicalKeys(partitionKeyOptions, true) : null);
+            Expression<Func<T, bool>> pred = t => t.PartitionKeys.Key1 == key.Key1;
+                if (!string.IsNullOrWhiteSpace(key.Key2)) pred = pred.And(t => t.PartitionKeys.Key2 == key.Key2);
+                if (!string.IsNullOrWhiteSpace(key.Key3)) pred = pred.And(t => t.PartitionKeys.Key3 == key.Key3);
 
-            static Aggregate.HierarchicalPartitionKey GenerateHierarchicalKeys(IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
+                return pred;
+        }
+        
+        public static HierarchicalPartitionKey GetKeysForLinqQuery<T>(bool useHierarchicalPartitionKeys, IPartitionKeyOptions partitionKeyOptions) where T : IAggregate
+        {
+            return GenerateHierarchicalKeys(partitionKeyOptions, useHierarchicalPartitionKeys);
+
+            static HierarchicalPartitionKey GenerateHierarchicalKeys(IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
             {
-                var keys = new Aggregate.HierarchicalPartitionKey();
+                var keys = new HierarchicalPartitionKey();
 
                 PartitionKeyTypeIds<T>(
                     out var sharedPartitionKeyAttributes,
@@ -165,7 +179,9 @@ namespace DataStore.Models.PartitionKeys
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Shared)}."
                         + "This does not require any partition key Options, please do not provide them.");
 
-                    keys.Key1 = "shared";
+                    keys.Key1 = "sh";
+                    keys.Key2 = "ar";
+                    keys.Key3 = "ed";
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
@@ -184,7 +200,7 @@ namespace DataStore.Models.PartitionKeys
                     }
                     else
                     {
-                        keys = null; //* fallback to full fanout
+                        return keys; //* fallback to full fanout
                     }
                 }
                 else if (tenantPartitionKeyAttributes.Any())
@@ -214,7 +230,7 @@ namespace DataStore.Models.PartitionKeys
                              and you want to ensure limitless growth of logical partitions                          
                          */
 
-                        keys = null; //* reset to fan out
+                        return keys; //* reset to fan out
                     }
                 }
                 else if (timePeriodPartitionKeyAttributes.Any())
@@ -244,7 +260,7 @@ namespace DataStore.Models.PartitionKeys
                              this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
                              and you want to ensure limitless growth of logical partitions */
 
-                        keys = null; //* broaden to fan out
+                        return keys; //* broaden to fan out
                     }
                 }
                 else if (tenantAndTimePeriodPartitionKeyAttributes.Any())
@@ -255,13 +271,14 @@ namespace DataStore.Models.PartitionKeys
                         if (partitionKeyOptions?.PartitionKeyTenantId != null)
                         {
                             keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
-                        }
-                        if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
-                        {
-                            ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
+                            if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
+                            {
+                                ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
 
-                            keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
+                                keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
+                            }
                         }
+                        
                     }
                     else
                     {
@@ -270,7 +287,7 @@ namespace DataStore.Models.PartitionKeys
                              and you want to ensure limitless growth of logical partitions */
                         if (partitionKeyOptions.HasNotSpecifiedAnyOptions())
                         {
-                            keys = null; //* broaden to fan out
+                            return keys; //* broaden to fan out
                         }
                         else if (partitionKeyOptions.HasSpecifiedBothOptions())
                         {
@@ -299,17 +316,15 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
-        public static PartitionKeyValues GetKeysForNewModel<T>(T instance, bool useHierarchicalPartitionKeys) where T : IAggregate
+        public static HierarchicalPartitionKey GetKeysForNewModel<T>(T instance, bool useHierarchicalPartitionKeys) where T : IAggregate
         {
-            return new PartitionKeyValues(
-                useHierarchicalPartitionKeys ? null : GenerateHierarchicalKeys(instance, false).ToSyntheticKey(),
-                useHierarchicalPartitionKeys ? GenerateHierarchicalKeys(instance, true) : null);
+            return GenerateHierarchicalKeys(instance, useHierarchicalPartitionKeys);
 
-            static Aggregate.HierarchicalPartitionKey GenerateHierarchicalKeys(T newInstance, bool useHierarchicalPartitionKeys)
+            static HierarchicalPartitionKey GenerateHierarchicalKeys(T newInstance, bool useHierarchicalPartitionKeys)
             {
                 Guard.Against(newInstance.id == Guid.Empty, "Instance must have Id set before you can create Partition Keys");
 
-                var keys = new Aggregate.HierarchicalPartitionKey();
+                var keys = new HierarchicalPartitionKey();
 
                 PartitionKeyTypeIds<T>(
                     out var sharedPartitionKeyAttributes,
@@ -329,12 +344,15 @@ namespace DataStore.Models.PartitionKeys
                             + " parameter on the database settings class that is used to create the repository");
                     }
 
-                    keys.Key1 = "shared";
+                    keys.Key1 = "sh";
+                    keys.Key2 = "ar";
+                    keys.Key3 = "ed";
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
                     keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
                     keys.Key2 = PartitionKeyPrefixes.AggregateId + newInstance.id;
+                    keys.Key3 = "_na";
                 }
                 else if (tenantPartitionKeyAttributes.Any())
                 {

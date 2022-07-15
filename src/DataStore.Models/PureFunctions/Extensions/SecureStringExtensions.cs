@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Models.PureFunctions.Extensions
 {
+    #region
+
     using System.Security;
+
+    #endregion
 
     internal static class SecureStringExtensions
     {

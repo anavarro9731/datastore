@@ -1,15 +1,16 @@
 ﻿namespace DataStore
 {
-    using System;
+    #region
+
     using System.Collections.Generic;
     using System.Linq;
-    using System.Security;
     using System.Threading.Tasks;
     using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
-    using global::DataStore.Options;
+
+    #endregion
 
     public class ControlFunctions
     {

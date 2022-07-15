@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Partitions.Create
 {
+    #region
+
     using System;
     using System.Threading.Tasks;
     using CircuitBoard;
@@ -9,6 +11,8 @@ namespace DataStore.Tests.Tests.Partitions.Create
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingCreateWithHierarchicalKeys
     {
@@ -54,19 +58,21 @@ namespace DataStore.Tests.Tests.Partitions.Create
             await testHarness.DataStore.CommitChanges();
 
             //when
+                
+            var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeIdKey>(newId);
+            Assert.NotNull(result);
+            Assert.NotNull(result.PartitionKey);
+            Assert.Equal(
+                new HierarchicalPartitionKey
+                {
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}", 
+                    Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}",
+                    Key3 = "_na"
+                },
+                result.PartitionKeys);
             
-        //     var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeIdKey>(newId);
-        //     Assert.NotNull(result);
-        //     Assert.Null(result.PartitionKey);
-        //     Assert.Equal(
-        //         new Aggregate.HierarchicalPartitionKey
-        //         {
-        //             Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}", Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}"
-        //         },
-        //         result.PartitionKeys);
-        //     
-        //     await AndShouldNotCreateDuplicates();
-        //     async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
+            await AndShouldNotCreateDuplicates();
+            async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
         }
 
         [Fact]
@@ -93,9 +99,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
                              newId,
                              side => side.ProvidePartitionKeyValues(tenantId));
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKey);
+            Assert.NotNull(result.PartitionKey);
             Assert.Equal(
-                new Aggregate.HierarchicalPartitionKey
+                new HierarchicalPartitionKey
                 {
                     Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}", 
                     Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}", 
@@ -133,9 +139,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
                              newId,
                              side => side.ProvidePartitionKeyValues(tenantId, monthInterval));
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKey);
+            Assert.NotNull(result.PartitionKey);
             Assert.Equal(
-                new Aggregate.HierarchicalPartitionKey
+                new HierarchicalPartitionKey
                 {
                     Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}", 
                     Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}", 
@@ -172,9 +178,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
                              newId,
                              side => side.ProvidePartitionKeyValues(dayInterval));
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKey);
+            Assert.NotNull(result.PartitionKey);
             Assert.Equal(
-                new Aggregate.HierarchicalPartitionKey
+                new HierarchicalPartitionKey
                 {
                     Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}", 
                     Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}", 

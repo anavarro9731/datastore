@@ -1,10 +1,14 @@
 namespace DataStore.Tests.Tests.Partitions.Delete
 {
+    #region
+
     using System;
     using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingDeleteWhereWithSyntheticKeys
     {
@@ -106,8 +110,6 @@ namespace DataStore.Tests.Tests.Partitions.Delete
                 useHierarchicalPartitionKey: false);
 
             var newId = Guid.NewGuid();
-            var dayInterval = DayInterval.FromDateTime(DateTime.UtcNow);
-            
             var agg = new AggregateWithTypeTimePeriodIdKey()
             {
                 id = newId

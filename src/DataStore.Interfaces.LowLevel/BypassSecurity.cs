@@ -1,8 +1,12 @@
 namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    #endregion
 
     [AttributeUsage(AttributeTargets.Class)]
     //* permission still required but no scope match is required

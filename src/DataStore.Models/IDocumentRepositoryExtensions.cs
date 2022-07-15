@@ -1,5 +1,7 @@
 namespace DataStore.Models
 {
+    #region
+
     using System;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -8,6 +10,8 @@ namespace DataStore.Models
     using DataStore.Interfaces.Operations;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public static class DocumentRepositoryExtensions
     {

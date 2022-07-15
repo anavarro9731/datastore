@@ -1,13 +1,17 @@
 ﻿namespace DataStore.Tests.Tests.TestHarness
 {
+    #region
+
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Options;
     using global::DataStore.Providers.CosmosDb;
 
+    #endregion
+
     public static class TestHarness
     {
-        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.CosmosDb;
+        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.InMemory;
 
         public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null, bool useHierarchicalPartitionKey = true)
         {

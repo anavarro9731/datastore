@@ -1,5 +1,7 @@
 namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -14,6 +16,8 @@ namespace DataStore
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
+
+    #endregion
 
     public class WithoutEventReplay : IWithoutEventReplay
     {
@@ -62,9 +66,6 @@ namespace DataStore
         
         public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null,Action<ClientSideReadOptions> setOptions = null) where T : class, IAggregate, new() => 
             CountActive<T, DefaultClientSideReadOptions>(predicate, setOptions);
-        
-
-        
         
         //* Read
         public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ClientSideWithoutReplayOptions<T>> setOptions = null)

@@ -1,11 +1,15 @@
 ﻿namespace DataStore.Interfaces.Options
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.LowLevel.Permissions;
+
+    #endregion
 
     public abstract class ClientSideWithoutReplayOptions<T> where T : class, IAggregate, new()
     {

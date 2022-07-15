@@ -1,11 +1,15 @@
 namespace DataStore.Interfaces
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public interface IWithoutEventReplay
     {

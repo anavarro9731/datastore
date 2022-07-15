@@ -1,8 +1,12 @@
 namespace DataStore.Tests.Tests.Partitions
 {
+    #region
+
     using System;
     using global::DataStore.Interfaces;
     using Xunit;
+
+    #endregion
 
     public class WhenCreatingTimePeriodIntervals
     {

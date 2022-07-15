@@ -1,8 +1,12 @@
 ﻿namespace DataStore.MessageAggregator
 {
+    #region
+
     using System.Collections.Generic;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
+
+    #endregion
 
     public class DataStoreMessageAggregator : IMessageAggregator
     {

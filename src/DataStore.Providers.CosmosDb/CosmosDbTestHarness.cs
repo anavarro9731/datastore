@@ -1,5 +1,7 @@
 ﻿namespace DataStore.Providers.CosmosDb
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -11,13 +13,15 @@
     using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
 
+    #endregion
+
     public class CosmosDbTestHarness : ITestHarness
     {
         public static async Task<ITestHarness> Create(string testName, Func<IDataStoreOptions, CosmosSettings, IDataStore> createDataStore, IDataStoreOptions options, bool useHierarchicalPartitionKey)
         {
             var cosmosStoreSettings = GetCosmosStoreSettings(testName, useHierarchicalPartitionKey);
 
-            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings /**/).ConfigureAwait(false);
+            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings).ConfigureAwait(false);
 
             return new CosmosDbTestHarness(createDataStore(options, cosmosStoreSettings));
         }

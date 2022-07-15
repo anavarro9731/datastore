@@ -1,5 +1,7 @@
 ﻿namespace DataStore.Tests.Tests.TestHarness
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -8,9 +10,10 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.Messages;
-    using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
+
+    #endregion
 
     public class InMemoryTestHarness : ITestHarness
     {

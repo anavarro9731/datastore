@@ -1,9 +1,11 @@
 ﻿namespace DataStore.Models.Messages
 {
+    #region
+
     using System;
-    using CircuitBoard.MessageAggregator;
-    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+
+    #endregion
 
     public interface ICanBeUpdatedWhileQueued<T> where T : class, IAggregate, new()
     {

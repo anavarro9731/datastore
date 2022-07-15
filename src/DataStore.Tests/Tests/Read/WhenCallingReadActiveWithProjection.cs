@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Read
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -9,6 +11,8 @@ namespace DataStore.Tests.Tests.Read
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingReadActiveWithProjection
     {
@@ -89,6 +93,7 @@ namespace DataStore.Tests.Tests.Read
             this.testHarness.AddItemDirectlyToUnderlyingDb(fourthExistingCar);
         }
 
+        
         public class CarProjection : Aggregate
         {
             public Guid CarId { get; set; }

@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Interfaces
 {
+    #region
+
     using System;
+
+    #endregion
 
     public class ContinuationToken
     {

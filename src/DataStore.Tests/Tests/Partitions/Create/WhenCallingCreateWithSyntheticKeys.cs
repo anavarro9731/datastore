@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Partitions.Create
 {
+    #region
+
     using System;
     using System.Threading.Tasks;
     using CircuitBoard;
@@ -8,6 +10,8 @@ namespace DataStore.Tests.Tests.Partitions.Create
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingCreateWithSyntheticKeys
     {
@@ -32,7 +36,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             //when
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithSharedKey>(newId);
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKeys);
+            Assert.NotNull(result.PartitionKeys);
             Assert.Equal("shared", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
@@ -61,8 +65,8 @@ namespace DataStore.Tests.Tests.Partitions.Create
             //when
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeIdKey>(newId);
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKeys);
-            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
+            Assert.NotNull(result.PartitionKeys);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}_na", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
             async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
@@ -93,7 +97,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             //when
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTenantIdKey>(newId, side => side.ProvidePartitionKeyValues(tenantId));
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKeys);
+            Assert.NotNull(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
@@ -126,7 +130,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             //when
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTenantTimePeriodKey>(newId, side => side.ProvidePartitionKeyValues(tenantId, monthInterval));
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKeys);
+            Assert.NotNull(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
@@ -156,7 +160,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             //when
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTimePeriodIdKey>(newId, side => side.ProvidePartitionKeyValues(dayInterval));
             Assert.NotNull(result);
-            Assert.Null(result.PartitionKeys);
+            Assert.NotNull(result.PartitionKeys);
             Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();

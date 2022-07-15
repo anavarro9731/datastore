@@ -1,7 +1,11 @@
 ﻿namespace DataStore.Interfaces.Options
 {
+    #region
+
     using System;
     using DataStore.Interfaces.LowLevel.Permissions;
+
+    #endregion
 
     public abstract class ClientSideReadOptions
     {

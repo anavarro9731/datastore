@@ -1,7 +1,11 @@
 ﻿namespace DataStore.MessageAggregator
 {
+    #region
+
     using System.Collections.Generic;
     using CircuitBoard.MessageAggregator;
+
+    #endregion
 
     public class DataStoreValueReturner : IValueReturner
     {

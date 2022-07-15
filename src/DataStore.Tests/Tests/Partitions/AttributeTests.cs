@@ -1,9 +1,13 @@
 namespace DataStore.Tests.Tests.Partitions
 {
+    #region
+
     using CircuitBoard;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenTryToUseTypeThatHasNoPartitionAttributes
     {

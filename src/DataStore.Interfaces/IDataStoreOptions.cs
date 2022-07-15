@@ -1,10 +1,10 @@
 namespace DataStore.Interfaces
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using DataStore.Interfaces.LowLevel;
+    #region
+
     using DataStore.Interfaces.LowLevel.Permissions;
+
+    #endregion
 
     public interface IDataStoreOptions
     {

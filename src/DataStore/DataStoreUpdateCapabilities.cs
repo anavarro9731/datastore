@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -13,6 +15,8 @@
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     //methods return object after changes have been applied, including previous uncommitted session changes
 

@@ -1,14 +1,14 @@
 ﻿namespace DataStore.Interfaces
 {
-    using System;
+    #region
+
     using System.Collections.Generic;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces.LowLevel;
-    using DataStore.Interfaces.LowLevel.Permissions;
     using DataStore.Interfaces.Operations;
-    using DataStore.Interfaces.Options;
+
+    #endregion
 
     public interface IDataStore : IDataStoreReadOnly, IDataStoreWriteOnly
     {

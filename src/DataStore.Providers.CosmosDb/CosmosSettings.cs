@@ -1,7 +1,11 @@
 ﻿namespace DataStore.Providers.CosmosDb
 {
+    #region
+
     using DataStore.Interfaces;
     using Microsoft.Azure.Cosmos;
+
+    #endregion
 
     public class CosmosSettings : IDatabaseSettings
     {

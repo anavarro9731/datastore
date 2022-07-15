@@ -1,14 +1,17 @@
 namespace DataStore.Tests.Tests.Partitions.Read
 {
+    #region
+
     using System;
     using System.Linq;
     using CircuitBoard;
     using global::DataStore.Interfaces;
     using global::DataStore.Models.PartitionKeys;
-    using global::DataStore.Options;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingReadWithHierarchicalKeys
     {
@@ -135,8 +138,10 @@ namespace DataStore.Tests.Tests.Partitions.Read
             
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(
                               null, options => options.ProvidePartitionKeyValues(MonthInterval.FromDateTime(DateTime.UtcNow)));
-            Assert.Equal(2, results.Count()); //since it's last in the hierarchy it's ignored for filtering even though its provided
-
+            Assert.Equal(2, results.Count()); //since it's last in the hierarchy and we haven't provided the middle tier
+                                              //it's ignored for filtering even though its provided and should fall back to just type
+                                              
+            
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>();
             Assert.Equal(2, results.Count());
             

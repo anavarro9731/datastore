@@ -1,13 +1,17 @@
 namespace DataStore.Interfaces
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq.Expressions;
-    using System.Threading.Tasks;
-    using DataStore.Interfaces.LowLevel;
-    using DataStore.Interfaces.Options;
+   #region
 
-    public interface IDataStoreWriteOnly
+   using System;
+   using System.Collections.Generic;
+   using System.Linq.Expressions;
+   using System.Threading.Tasks;
+   using DataStore.Interfaces.LowLevel;
+   using DataStore.Interfaces.Options;
+
+   #endregion
+
+   public interface IDataStoreWriteOnly
     {
          Task<T1> Create<T1, O>(T1 model, Action<O> setOptions = null, string methodName = null)
             where T1 : class, IAggregate, new() where O : ClientSideCreateOptions, new();

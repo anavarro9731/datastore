@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using System;
+
+    #endregion
 
     /// <summary>
     ///     Only works on Guid or IEnumerable Guid property types

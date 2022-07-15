@@ -1,10 +1,13 @@
 ﻿namespace DataStore.Providers.CosmosDb
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Data;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Net;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
@@ -17,6 +20,8 @@
     using Microsoft.Azure.Cosmos;
     using Microsoft.Azure.Cosmos.Linq;
     using Newtonsoft.Json.Linq;
+
+    #endregion
 
     public class CosmosDbRepository : IDocumentRepository, IResetData
     {
@@ -45,9 +50,9 @@
             }
 
             //* will get partition key from model
-            var result = await this.container.CreateItemAsync(aggregateAdded.Model).ConfigureAwait(false);
+            var result = await this.container.CreateItemAsync(aggregateAdded.Model, aggregateAdded.Model.PartitionKeys.ToCosmosPartitionKey(UseHierarchicalPartitionKeys)).ConfigureAwait(false);
 
-            aggregateAdded.Model.Etag = result.ETag; //* update it
+              aggregateAdded.Model.Etag = result.ETag; //* update it
 
             aggregateAdded.StateOperationCost = result.RequestCharge;
         }
@@ -64,12 +69,14 @@
         public IQueryable<T> CreateQueryable<T>(IQueryOptions queryOptions) where T : class, IAggregate, new()
         {
             var schema = typeof(T).FullName;
-            var query = this.container.GetItemLinqQueryable<T>(
-                requestOptions: new QueryRequestOptions
-                {
-                    PartitionKey = GetPartitionKeyForLinqQuery<T>(queryOptions.As<IPartitionKeyOptions>())
-                }).Where(i => i.Schema == schema);
-
+            Expression<Func<T,bool>> predicate = i => i.Schema == schema;
+            
+            var key = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptions>());
+            var fanout = key.IsEmpty();
+            if (!fanout)  predicate = predicate.And(key.ToPredicate<T>());
+            
+            var query = this.container.GetItemLinqQueryable<T>().Where(predicate);
+            
             return query;
         }
 
@@ -77,7 +84,7 @@
         {
             var result = await this.container.DeleteItemAsync<T>(
                              aggregateHardDeleted.Model.id.ToString(),
-                             GetPartitionKeyFromExistingItem(aggregateHardDeleted.Model)).ConfigureAwait(false);
+                             aggregateHardDeleted.Model.PartitionKeys.ToCosmosPartitionKey(UseHierarchicalPartitionKeys)).ConfigureAwait(false);
 
             aggregateHardDeleted.StateOperationCost = result.RequestCharge;
             aggregateHardDeleted.Model.Etag = "item was deleted";
@@ -111,7 +118,6 @@
                            (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
                            new QueryRequestOptions
                            {
-                               PartitionKey = GetPartitionKeyForLinqQuery<T>(aggregatesQueried.QueryOptions as IPartitionKeyOptions),
                                MaxItemCount = (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.MaxTake,
                                ConsistencyLevel = ConsistencyLevel.Session //should be the default anyway
                            }))
@@ -222,9 +228,9 @@
             ItemResponse<T> result = null;
             try
             {
-                var key = GetPartitionKeyForExistingItemId<T>(aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions as IPartitionKeyOptions);
+                var key = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(UseHierarchicalPartitionKeys, aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions as IPartitionKeyOptions);
 
-                result = await this.container.ReadItemAsync<T>(aggregateQueriedByIdOperation.Id.ToString(), key).ConfigureAwait(false);
+                result = await this.container.ReadItemAsync<T>(aggregateQueriedByIdOperation.Id.ToString(), key.ToCosmosPartitionKey(UseHierarchicalPartitionKeys)).ConfigureAwait(false);
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound || (ex.StatusCode == HttpStatusCode.BadRequest && ex.Message.Contains("Partition")))
             {
@@ -250,7 +256,7 @@
                 var result = await this.container.ReplaceItemAsync(
                                  aggregateUpdated.Model,
                                  aggregateUpdated.Model.id.ToString(),
-                                 GetPartitionKeyFromExistingItem(aggregateUpdated.Model),
+                                 aggregateUpdated.Model.PartitionKeys.ToCosmosPartitionKey(UseHierarchicalPartitionKeys),
                                  new ItemRequestOptions
                                  {
                                      IfMatchEtag = preSaveTag //* can be null, note made for reference on conversion to v3 SDK
@@ -279,38 +285,6 @@
             await new CosmosDbUtilities().ResetDatabase(ConnectionSettings).ConfigureAwait(false);
             CosmosDbUtilities.CreateClient(this.settings, out this.client);
         }
-
-        private PartitionKey GetPartitionKeyFromExistingItem<T>(T model) where T : class, IAggregate, new()
-        {
-            var key = this.settings.UseHierarchicalPartitionKeys
-                          ? new Aggregate.HierarchicalPartitionKey
-                          {
-                              Key1 = model.PartitionKeys.Key1, Key2 = model.PartitionKeys.Key2, Key3 = model.PartitionKeys.Key3
-                          }.ToCosmosPartitionKey()
-                          : model.PartitionKey == null ? (PartitionKey?)null : new PartitionKey(model.PartitionKey);
-            
-            Guard.Against(!key.HasValue, "Partition Keys for existing items should never be null");
-            
-            return key.Value;
-        }
-
-        private PartitionKey GetPartitionKeyForExistingItemId<T>(Guid id, IPartitionKeyOptions partitionKeyOptions) where T : class, IAggregate, new()
-        {
-            var keys = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(this.settings.UseHierarchicalPartitionKeys, id, partitionKeyOptions);
-            var key = this.settings.UseHierarchicalPartitionKeys ? keys.PartitionKeys.ToCosmosPartitionKey() : keys.PartitionKey == null ? (PartitionKey?)null : new PartitionKey(keys.PartitionKey);
-            
-            Guard.Against(!key.HasValue, "Partition Keys for existing items should never be null");
-            
-            return key.Value;
-        }
-
-        private PartitionKey? GetPartitionKeyForLinqQuery<T>(IPartitionKeyOptions partitionKeyOptions) where T : class, IAggregate, new()
-        {
-            var keys = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.settings.UseHierarchicalPartitionKeys, partitionKeyOptions);
-            var key = this.settings.UseHierarchicalPartitionKeys ? keys.PartitionKeys.ToCosmosPartitionKey() : keys.PartitionKey == null ? (PartitionKey?)null : new PartitionKey(keys.PartitionKey);
-            
-            //* key could be null here when synthetic and not all parts where provided
-            return key;
-        }
+        
     }
 }

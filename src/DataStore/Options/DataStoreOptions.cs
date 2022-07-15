@@ -1,10 +1,12 @@
 ﻿namespace DataStore.Options
 {
+    #region
+
     using System;
-    using System.Collections.Generic;
     using global::DataStore.Interfaces;
-    using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.PureFunctions;
+
+    #endregion
 
     public class DataStoreOptions : IDataStoreOptions
     {

@@ -1,11 +1,15 @@
 namespace DataStore.Tests.Tests.SessionState
 {
+    #region
+
     using System;
     using System.Threading.Tasks;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Newtonsoft.Json;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingReadCommittedByIdOnAnItemDeletedInTheCurrentSession
     {

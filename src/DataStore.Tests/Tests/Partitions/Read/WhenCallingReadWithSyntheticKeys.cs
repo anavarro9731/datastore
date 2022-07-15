@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Partitions.Read
 {
+    #region
+
     using System;
     using System.Linq;
     using CircuitBoard;
@@ -8,6 +10,8 @@ namespace DataStore.Tests.Tests.Partitions.Read
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingReadWithSyntheticKeys
     {

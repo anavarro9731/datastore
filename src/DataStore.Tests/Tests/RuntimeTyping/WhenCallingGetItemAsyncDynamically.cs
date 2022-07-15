@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.RuntimeTyping
 {
+    #region
+
     using System;
     using global::DataStore.Interfaces;
     using global::DataStore.Models;
@@ -7,6 +9,8 @@ namespace DataStore.Tests.Tests.RuntimeTyping
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingGetItemAsyncDynamically
     {
@@ -26,7 +30,9 @@ namespace DataStore.Tests.Tests.RuntimeTyping
                 id = Guid.NewGuid(), Make = "Volvo"
             };
 
-            this.newCar.PartitionKeys = PartitionKeyHelpers.GetKeysForNewModel(this.newCar, useHierarchicalPartitionKeys: true).PartitionKeys;
+            var key = PartitionKeyHelpers.GetKeysForNewModel(this.newCar, useHierarchicalPartitionKeys: false);
+            this.newCar.PartitionKeys = key;
+            this.newCar.PartitionKey = key.ToSyntheticKeyString();
 
             //When
             await this.testHarness.DataStore.DocumentRepository.CreateAsync(this.newCar, "Test");
@@ -47,7 +53,9 @@ namespace DataStore.Tests.Tests.RuntimeTyping
                 id = Guid.NewGuid(), Make = "Volvo"
             };
 
-            this.newCar.PartitionKey = PartitionKeyHelpers.GetKeysForNewModel(this.newCar, useHierarchicalPartitionKeys: false).PartitionKey;
+            var key = PartitionKeyHelpers.GetKeysForNewModel(this.newCar, useHierarchicalPartitionKeys: false);
+            this.newCar.PartitionKeys = key;
+            this.newCar.PartitionKey = key.ToSyntheticKeyString();
 
             //When
             await this.testHarness.DataStore.DocumentRepository.CreateAsync(this.newCar, "Test");

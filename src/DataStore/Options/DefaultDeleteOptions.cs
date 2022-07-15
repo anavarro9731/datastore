@@ -1,9 +1,13 @@
 ﻿namespace DataStore.Options
 {
+    #region
+
     using System;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
+
+    #endregion
 
     public class DefaultClientSideDeleteOptions : ClientSideDeleteOptions
     {

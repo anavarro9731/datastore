@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Update
 {
+    #region
+
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -7,6 +9,8 @@ namespace DataStore.Tests.Tests.Update
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenChangingTheItemsReturnedFromUpdateById
     {

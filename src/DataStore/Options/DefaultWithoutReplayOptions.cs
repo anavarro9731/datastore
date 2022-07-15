@@ -1,5 +1,7 @@
 ﻿namespace DataStore.Options
 {
+    #region
+
     using System;
     using System.Linq.Expressions;
     using global::DataStore.Interfaces;
@@ -7,6 +9,8 @@
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Interfaces.Options;
     using global::DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public class DefaultClientSideWithoutReplayOptions<T> : ClientSideWithoutReplayOptions<T> where T : class, IAggregate, new()
     {

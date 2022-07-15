@@ -1,8 +1,12 @@
 namespace DataStore.Models.PartitionKeys
 {
+    #region
+
     using System;
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions;
+
+    #endregion
 
     /// <summary>
     /// When no tenantId exists

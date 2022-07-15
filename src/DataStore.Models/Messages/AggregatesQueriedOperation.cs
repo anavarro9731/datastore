@@ -1,10 +1,14 @@
 ﻿namespace DataStore.Models.Messages
 {
+    #region
+
     using System;
     using System.Linq;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T> where T : class, IAggregate, new()
     {

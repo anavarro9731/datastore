@@ -1,11 +1,14 @@
 namespace DataStore.Models.PureFunctions.Extensions
 {
+    #region
+
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Models.PartitionKeys;
+
+    #endregion
 
     public static class IAggregateExt
     {
@@ -21,8 +24,8 @@ namespace DataStore.Models.PureFunctions.Extensions
             WalkGraphAndUpdateEntityMeta(newObject);
             
             var keys = PartitionKeyHelpers.GetKeysForNewModel(newObject, useHierarchicalPartitionKeys);
-            newObject.PartitionKey = keys.PartitionKey;
-            newObject.PartitionKeys = keys.PartitionKeys;
+            newObject.PartitionKey = keys.ToSyntheticKeyString();
+            newObject.PartitionKeys = keys;
            
             newObject.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, still best not to allow any invalid state
             newObject.Modified = newObject.Created;

@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -11,7 +13,8 @@
     using global::DataStore.Interfaces.Options;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
-    using global::DataStore.Options;
+
+    #endregion
 
     //methods return the latest version of an object including uncommitted session changes
 

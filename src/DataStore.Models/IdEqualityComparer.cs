@@ -1,7 +1,11 @@
 namespace DataStore.Models
 {
+    #region
+
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel;
+
+    #endregion
 
     public class IdEqualityComparer : IEqualityComparer<IHaveAUniqueId>
     {

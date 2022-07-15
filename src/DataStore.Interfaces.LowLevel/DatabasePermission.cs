@@ -1,8 +1,12 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel.Permissions;
     using Newtonsoft.Json;
+
+    #endregion
 
     public class DatabasePermission : SecurableOperation
     {

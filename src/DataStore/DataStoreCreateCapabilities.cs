@@ -1,12 +1,17 @@
-﻿using System.Runtime.CompilerServices;
+﻿#region
+
+using System.Runtime.CompilerServices;
+
+#endregion
 
 [assembly: InternalsVisibleTo("DataStore.Tests")]
 
 namespace DataStore
 {
+    #region
+
     using System;
     using System.Linq;
-    using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
@@ -18,6 +23,8 @@ namespace DataStore
     using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     //methods return the enriched object as it was added to the database
 

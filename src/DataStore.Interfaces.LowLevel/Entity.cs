@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using System;
+
+    #endregion
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up

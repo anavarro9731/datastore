@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -9,6 +11,8 @@
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Models;
     using global::DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public class IncrementVersions
     {

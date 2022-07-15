@@ -1,10 +1,14 @@
 namespace DataStore.MessageAggregator
 {
+    #region
+
     using System;
     using System.Diagnostics;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using global::DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public class DataStoreMessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {

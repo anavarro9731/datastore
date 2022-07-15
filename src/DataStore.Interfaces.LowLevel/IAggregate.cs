@@ -1,8 +1,11 @@
 namespace DataStore.Interfaces.LowLevel
 {
-    using System;
+    #region
+
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel.Permissions;
+
+    #endregion
 
     public interface IAggregate : IHaveScope, IEntity, IRememberWhenIWasModified, IHaveAnETag
     {
@@ -10,7 +13,7 @@ namespace DataStore.Interfaces.LowLevel
 
         string PartitionKey { get; set; }
 
-        Aggregate.HierarchicalPartitionKey PartitionKeys { get; set; }
+        HierarchicalPartitionKey PartitionKeys { get; set; }
 
         bool ReadOnly { get; set; }
 

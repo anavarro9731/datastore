@@ -1,10 +1,14 @@
 namespace DataStore.Tests.Tests.Initialisation
 {
+    #region
+
     using System.Linq;
     using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenAccessingTheDatabase
     {

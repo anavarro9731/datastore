@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.RuntimeTyping
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -7,9 +9,12 @@ namespace DataStore.Tests.Tests.RuntimeTyping
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models;
+    using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingAddAsyncDynamically
     {
@@ -49,6 +54,10 @@ namespace DataStore.Tests.Tests.RuntimeTyping
                 id = this.newCarId, Make = "Volvo"
             };
 
+            var key = PartitionKeyHelpers.GetKeysForNewModel(newCar, useHierarchicalPartitionKeys: false);
+            newCar.PartitionKeys = key;
+            newCar.PartitionKey = key.ToSyntheticKeyString();
+            
             //When
             await this.testHarness.DataStore.DocumentRepository.CreateAsync(newCar, "Test");
 

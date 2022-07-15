@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using Newtonsoft.Json;
+
+    #endregion
 
     public class SecurableOperation
     {

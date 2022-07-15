@@ -1,11 +1,15 @@
 namespace DataStore.Tests.Tests.Read
 {
+    #region
+
     using System;
     using System.Threading.Tasks;
     using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingExistsOnAnItemThatHasBeenDeletedInTheCurrentSession
     {

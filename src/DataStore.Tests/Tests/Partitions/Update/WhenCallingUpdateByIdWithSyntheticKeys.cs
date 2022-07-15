@@ -1,10 +1,14 @@
 namespace DataStore.Tests.Tests.Partitions.Update
 {
+    #region
+
     using System;
     using global::DataStore.Interfaces;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingUpdateByIdWithSyntheticKeys
     {

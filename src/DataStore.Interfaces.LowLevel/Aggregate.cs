@@ -1,11 +1,14 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using DataStore.Interfaces.LowLevel.Permissions;
-    using Newtonsoft.Json;
+
+    #endregion
 
     /// <summary>
     ///     This abstract class is here for convenience, so as not to clutter up
@@ -100,7 +103,7 @@
         //* Json.NET ignores explicit implementations and we kind of want to hide this anyway
         Action<string> IEtagUpdated.EtagUpdated { get; set; }
 
-        public string GetLongPartitionedId() => string.IsNullOrWhiteSpace(PartitionKey) ? PartitionKeys.ToSyntheticKey() : PartitionKey;
+        public string GetLongPartitionedId() => string.IsNullOrWhiteSpace(PartitionKey) ? PartitionKeys.ToSyntheticKeyString() : PartitionKey;
         
         public class AggregateVersionInfo
         {
@@ -113,54 +116,6 @@
             public DateTime Timestamp { get; set; }
 
             public string UnitOfWorkId { get; set; }
-        }
-
-        public class HierarchicalPartitionKey
-        {
-            public List<string> AsList() =>
-                new List<string>()
-                {
-                    Key1, Key2, Key3
-                };
-
-            public string ToSyntheticKey()
-            {
-                return Key1 + Key2 + Key3;
-            }
-            
-            
-            
-            public string Key1 { get; set; }
-
-            public string Key2 { get; set; }
-
-            public string Key3 { get; set; }
-
-            protected bool Equals(HierarchicalPartitionKey other)
-            {
-                return Key1 == other.Key1 && Key2 == other.Key2 && Key3 == other.Key3;
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != this.GetType()) return false;
-                return Equals((HierarchicalPartitionKey)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                unchecked
-                {
-                    var hashCode = (Key1 != null ? Key1.GetHashCode() : 0);
-                    hashCode = (hashCode * 397) ^ (Key2 != null ? Key2.GetHashCode() : 0);
-                    hashCode = (hashCode * 397) ^ (Key3 != null ? Key3.GetHashCode() : 0);
-                    return hashCode;
-                }
-            }
-
-
         }
     }
 }

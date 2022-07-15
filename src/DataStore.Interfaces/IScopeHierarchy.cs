@@ -1,8 +1,12 @@
 namespace DataStore.Interfaces
 {
+    #region
+
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel.Permissions;
+
+    #endregion
 
     public interface IScopeHierarchy
     {

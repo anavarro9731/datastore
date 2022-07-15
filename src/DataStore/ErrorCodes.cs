@@ -1,7 +1,11 @@
 namespace DataStore
 {
+    #region
+
     using System;
     using CircuitBoard;
+
+    #endregion
 
     /// <summary>
     /// $SUMMARY$

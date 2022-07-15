@@ -1,7 +1,11 @@
 namespace DataStore.Models.PureFunctions.Extensions
 {
+    #region
+
     using System.Collections.Generic;
     using System.Linq;
+
+    #endregion
 
     public static class Collections
     {

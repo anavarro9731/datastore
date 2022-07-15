@@ -1,10 +1,14 @@
 ﻿namespace DataStore.Interfaces.Operations
 {
+    #region
+
     using System;
     using System.Linq;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public interface IDataStoreReadFromQueryable<T> : IDataStoreReadOperation where T : class, IAggregate, new()
     {

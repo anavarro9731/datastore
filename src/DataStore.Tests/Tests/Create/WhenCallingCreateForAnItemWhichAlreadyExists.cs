@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Create
 {
+    #region
+
     using System;
     using System.Threading.Tasks;
     using CircuitBoard;
@@ -7,6 +9,8 @@ namespace DataStore.Tests.Tests.Create
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingCreateForAnItemWhichAlreadyExists
     {

@@ -1,10 +1,14 @@
 ﻿namespace DataStore.Tests.Models
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.LowLevel.Permissions;
     using global::DataStore.Models.PartitionKeys;
+
+    #endregion
 
     [PartitionKey__Shared]
     public class User : IIdentityWithDatabasePermissions

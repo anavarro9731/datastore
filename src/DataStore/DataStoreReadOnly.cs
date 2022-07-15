@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
@@ -7,6 +9,8 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Options;
+
+    #endregion
 
     public class DataStoreReadOnly : IDataStoreReadOnly
     {

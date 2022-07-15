@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Read
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -9,6 +11,8 @@ namespace DataStore.Tests.Tests.Read
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingRead
     {

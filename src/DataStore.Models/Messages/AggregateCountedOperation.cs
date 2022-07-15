@@ -1,9 +1,13 @@
 ﻿namespace DataStore.Models.Messages
 {
+    #region
+
     using System;
     using System.Linq.Expressions;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public class AggregateCountedOperation<T> : IDataStoreCountFromQueryable<T>
     {

@@ -1,8 +1,12 @@
 namespace DataStore.Interfaces
 {
+    #region
+
     using System;
     using System.Globalization;
     using System.Text.RegularExpressions;
+
+    #endregion
 
     public class MonthInterval : PartitionKeyTimeInterval
     {

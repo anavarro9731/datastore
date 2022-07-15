@@ -1,5 +1,7 @@
 namespace DataStore.Interfaces
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -7,6 +9,8 @@ namespace DataStore.Interfaces
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public interface IDocumentRepository : IDisposable
     {

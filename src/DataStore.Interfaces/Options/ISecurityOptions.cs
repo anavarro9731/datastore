@@ -1,6 +1,10 @@
 namespace DataStore.Interfaces.Options
 {
+    #region
+
     using DataStore.Interfaces.LowLevel.Permissions;
+
+    #endregion
 
     public interface ISecurityOptions
     {

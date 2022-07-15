@@ -1,11 +1,15 @@
 ﻿namespace DataStore.Models.PureFunctions.Extensions
 {
+    #region
+
     using System;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using Newtonsoft.Json;
+
+    #endregion
 
     internal static class Objects
     {

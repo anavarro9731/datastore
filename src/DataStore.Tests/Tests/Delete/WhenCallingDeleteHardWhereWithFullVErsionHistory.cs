@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Delete
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -11,6 +13,8 @@ namespace DataStore.Tests.Tests.Delete
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingDeleteHardWhereWithFullVersionHistory
     {

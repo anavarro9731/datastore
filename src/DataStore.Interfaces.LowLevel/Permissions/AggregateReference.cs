@@ -1,7 +1,11 @@
 ﻿namespace DataStore.Interfaces.LowLevel.Permissions
 {
+    #region
+
     using System;
     using Newtonsoft.Json;
+
+    #endregion
 
     public class AggregateReference : IEquatable<AggregateReference>
     {

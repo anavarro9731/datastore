@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Interfaces.LowLevel
 {
+    #region
+
     using System;
+
+    #endregion
 
     public interface IHaveAUniqueId
     {

@@ -1,9 +1,13 @@
 ﻿namespace DataStore.Models.Messages
 {
+    #region
+
     using System;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+
+    #endregion
 
     public class AggregateQueriedByIdOperationOperation<T> : IDataStoreReadByIdOperation where T: IAggregate
     {

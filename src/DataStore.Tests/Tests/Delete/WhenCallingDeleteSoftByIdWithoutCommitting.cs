@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Delete
 {
+    #region
+
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -8,6 +10,8 @@ namespace DataStore.Tests.Tests.Delete
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingDeleteSoftByIdWithoutCommitting
     {

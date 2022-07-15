@@ -1,5 +1,7 @@
 namespace DataStore.Models.Messages
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -8,6 +10,8 @@ namespace DataStore.Models.Messages
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Models.PureFunctions.Extensions;
+
+    #endregion
 
     public class QueuedCreateOperation<T> : IQueuedDataStoreWriteOperation<T>, ICanBeUpdatedWhileQueued<T>
         where T : class, IAggregate, new()

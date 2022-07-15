@@ -1,5 +1,7 @@
 ﻿namespace DataStore
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -14,6 +16,8 @@
     using global::DataStore.MessageAggregator;
     using global::DataStore.Models.PureFunctions.Extensions;
     using global::DataStore.Options;
+
+    #endregion
 
     /// <summary>
     ///     Facade over querying and unit of work capabilities

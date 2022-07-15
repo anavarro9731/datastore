@@ -1,8 +1,12 @@
 
 namespace DataStore.Tests.Models.PartitionKeyTestModels
 {
+    #region
+
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PartitionKeys;
+
+    #endregion
 
     public class AggregateWithNoKeyDefined : Aggregate
     {

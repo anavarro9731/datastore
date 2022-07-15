@@ -1,6 +1,10 @@
 namespace DataStore.Models
 {
+    #region
+
     using System;
+
+    #endregion
 
     public class DatabaseException : Exception
     {

@@ -1,11 +1,15 @@
 namespace DataStore.Tests.Tests.Partitions.Update
 {
+    #region
+
     using System;
     using CircuitBoard;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingUpdate
     {
@@ -28,7 +32,7 @@ namespace DataStore.Tests.Tests.Partitions.Update
             //when
             await Assert.ThrowsAsync<CircuitException>(
                 async () => await testHarness.DataStore.UpdateById<AggregateWithTypeIdKey>(newId, a => a.PartitionKey = "new key"));
-            await Assert.ThrowsAsync<CircuitException>(async () => await testHarness.DataStore.UpdateById<AggregateWithTypeIdKey>(newId, a => a.PartitionKeys = new Aggregate.HierarchicalPartitionKey()
+            await Assert.ThrowsAsync<CircuitException>(async () => await testHarness.DataStore.UpdateById<AggregateWithTypeIdKey>(newId, a => a.PartitionKeys = new HierarchicalPartitionKey()
             {
                 Key1 = "new key"
             }));
@@ -53,7 +57,7 @@ namespace DataStore.Tests.Tests.Partitions.Update
             //when
             await Assert.ThrowsAsync<CircuitException>(
                 async () => await testHarness.DataStore.UpdateById<AggregateWithTypeIdKey>(newId, a => a.PartitionKey = "new key"));
-            await Assert.ThrowsAsync<CircuitException>(async () => await testHarness.DataStore.UpdateById<AggregateWithTypeIdKey>(newId, a => a.PartitionKeys = new Aggregate.HierarchicalPartitionKey()
+            await Assert.ThrowsAsync<CircuitException>(async () => await testHarness.DataStore.UpdateById<AggregateWithTypeIdKey>(newId, a => a.PartitionKeys = new HierarchicalPartitionKey()
             {
                 Key1 = "new key"
             }));

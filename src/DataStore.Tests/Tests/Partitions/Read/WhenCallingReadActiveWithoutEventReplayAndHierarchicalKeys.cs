@@ -1,12 +1,15 @@
 namespace DataStore.Tests.Tests.Partitions.Read
 {
+    #region
+
     using System;
     using System.Linq;
     using global::DataStore.Interfaces;
-    using global::DataStore.Options;
     using global::DataStore.Tests.Models.PartitionKeyTestModels;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingReadActiveWithoutEventReplayAndHierarchicalKeys
     {

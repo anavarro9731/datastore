@@ -1,19 +1,31 @@
 namespace DataStore.Providers.CosmosDb
 {
+    #region
+
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.Cosmos;
 
+    #endregion
+
     public class CosmosDbUtilities : IDatabaseUtilities
     {
+        public static async Task CreateContainerIfNotExists(CosmosSettings cosmosSettings)
+        {
+            CreateClient(cosmosSettings, out var cosmosClient);
+
+            await CreateContainerIfNotExists(cosmosSettings, cosmosClient.GetDatabase(cosmosSettings.DatabaseName)).ConfigureAwait(false);
+        }
+
         public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
         {
             {
                 CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);
-                await CreateDb(cosmosClient, (CosmosSettings)cosmosStoreSettings).ConfigureAwait(false);
+                await CreateDbAndContainerIfNotExists(cosmosClient, (CosmosSettings)cosmosStoreSettings).ConfigureAwait(false);
             }
         }
 
@@ -23,11 +35,11 @@ namespace DataStore.Providers.CosmosDb
                 var cosmosSettings = (CosmosSettings)cosmosStoreSettings;
 
                 CreateClient(cosmosSettings, out var cosmosClient);
-                await DeleteDbIfExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
-                await CreateDb(cosmosClient, cosmosSettings).ConfigureAwait(false);
+                await DeleteContainerIfDbExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
+                await CreateDbAndContainerIfNotExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
             }
 
-            async Task DeleteDbIfExists(CosmosClient client, CosmosSettings cosmosSettings)
+            async Task DeleteContainerIfDbExists(CosmosClient client, CosmosSettings cosmosSettings)
             {
                 var databases = await ListDatabases(client).ConfigureAwait(false);
 
@@ -46,35 +58,6 @@ namespace DataStore.Providers.CosmosDb
         internal static void CreateClient(CosmosSettings cosmosSettings, out CosmosClient client)
         {
             client = new CosmosClient(cosmosSettings.EndpointUrl, cosmosSettings.AuthKey, cosmosSettings.ClientOptions);
-        }
-
-        private static async Task CreateDb(CosmosClient client, CosmosSettings cosmosStoreSettings)
-        {
-            var databases = await ListDatabases(client).ConfigureAwait(false);
-
-            Database db;
-
-            if (!databases.Contains(cosmosStoreSettings.DatabaseName))
-            {
-                db = await client.CreateDatabaseAsync(cosmosStoreSettings.DatabaseName, ThroughputProperties.CreateAutoscaleThroughput(400)).ConfigureAwait(false);
-            }
-            else
-            {
-                db = client.GetDatabase(cosmosStoreSettings.DatabaseName);
-            }
-
-            await CreateContainerIfNotExists(cosmosStoreSettings, db).ConfigureAwait(false);
-
-            await Task.Delay(5000).ConfigureAwait(false);
-
-            //the above call seems to be fire-and-forget and i need it complete reliably
-        }
-
-        public static async Task CreateContainerIfNotExists(CosmosSettings cosmosSettings)
-        {
-            CreateClient(cosmosSettings, out var cosmosClient);
-
-            await CreateContainerIfNotExists(cosmosSettings, cosmosClient.GetDatabase(cosmosSettings.DatabaseName)).ConfigureAwait(false);
         }
 
         private static async Task CreateContainerIfNotExists(CosmosSettings cosmosStoreSettings, Database db)
@@ -99,6 +82,38 @@ namespace DataStore.Providers.CosmosDb
             }
 
             await db.CreateContainerIfNotExistsAsync(containerProperties).ConfigureAwait(false);
+        }
+
+        private static async Task CreateDbAndContainerIfNotExists(CosmosClient client, CosmosSettings cosmosStoreSettings)
+        {
+            var databases = await ListDatabases(client).ConfigureAwait(false);
+
+            Database db;
+
+            if (!databases.Contains(cosmosStoreSettings.DatabaseName))
+            {
+                db = await client.CreateDatabaseAsync(
+                         cosmosStoreSettings.DatabaseName /* WARNING if you set the throughput here manually units are 
+                unable to create more than 25 containers in the emulator. Im not sure what setting this is affecting but straying from the defaults
+                really causes pain */).ConfigureAwait(false);
+            }
+            else
+            {
+                db = client.GetDatabase(cosmosStoreSettings.DatabaseName);
+            }
+
+            await CreateContainerIfNotExists(cosmosStoreSettings, db).ConfigureAwait(false);
+
+            //the above call seems to be fire-and-forget and i need it complete reliably
+            var iterator = db.GetContainerQueryIterator<ContainerProperties>();
+            var containers = await iterator.ReadNextAsync().ConfigureAwait(false);
+
+            while (containers.All(x => x.Id != cosmosStoreSettings.ContainerName))
+            {
+                await Task.Delay(1000).ConfigureAwait(false);
+                iterator = db.GetContainerQueryIterator<ContainerProperties>();
+                containers = await iterator.ReadNextAsync().ConfigureAwait(false);
+            }
         }
 
         private static async Task<ArrayList> ListContainers(Database database)

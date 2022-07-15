@@ -1,6 +1,10 @@
 ﻿namespace DataStore.Interfaces.Operations
 {
+    #region
+
     using System;
+
+    #endregion
 
     public interface IDataStoreOperation
     {

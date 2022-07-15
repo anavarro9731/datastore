@@ -1,5 +1,7 @@
 namespace DataStore.Tests.Tests.Create
 {
+    #region
+
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -10,6 +12,8 @@ namespace DataStore.Tests.Tests.Create
     using global::DataStore.Tests.Models;
     using global::DataStore.Tests.Tests.TestHarness;
     using Xunit;
+
+    #endregion
 
     public class WhenCallingCreateWithFullHistoryLoggingEnabled
     {
