@@ -12,7 +12,5 @@ to get the right flags above set.
 
 
 /*TODO tests
-LINQ queries o => o.AcceptCrossPartitionQueryCost();
-overload to take a full synthetic key for the ID and parse into options when calling by ID methods                         
-scope levels performance (cache in static var?)
+idatasto                         
 */

@@ -58,7 +58,12 @@
             LibrarySide.PartitionKeyTenantId = tenantId.ToString();
             LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
         }
-        
+
+        public override void AcceptCrossPartitionQueryCost()
+        {
+            LibrarySide.AcceptCrossPartitionQueryCost = true;
+        }
+
         internal void ProvidePartitionKeyValues(string tenantId, string timeInterval)
         {
             LibrarySide.PartitionKeyTenantId = tenantId;

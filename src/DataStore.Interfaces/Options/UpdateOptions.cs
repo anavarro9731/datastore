@@ -7,7 +7,7 @@
 
     #endregion
 
-    public abstract class ClientSideUpdateOptions
+    public abstract class ClientSideUpdateOptions : IPartitionKeyOptionsClientSide
     {
         protected ClientSideUpdateOptions(UpdateOptionsLibrarySide librarySide)
         {
@@ -34,9 +34,11 @@
         public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
 
         public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
+
+        public abstract void AcceptCrossPartitionQueryCost();
     }
 
-    public class UpdateOptionsLibrarySide : ISecurityOptions, IQueryOptions, IPartitionKeyOptions
+    public class UpdateOptionsLibrarySide : ISecurityOptions, IQueryOptions, IPartitionKeyOptionsLibrarySide
     {
         public bool AllowReadonlyOverwriting { get; set; }
 
@@ -49,5 +51,7 @@
         public string PartitionKeyTenantId { get; set; }
 
         public string PartitionKeyTimeInterval { get; set; }
+
+        public bool AcceptCrossPartitionQueryCost { get; set; }
     }
 }

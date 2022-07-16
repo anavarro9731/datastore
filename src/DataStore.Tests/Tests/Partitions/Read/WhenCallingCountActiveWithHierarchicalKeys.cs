@@ -140,7 +140,7 @@ namespace DataStore.Tests.Tests.Partitions.Read
             await testHarness.DataStore.CommitChanges();
 
             //when
-            var result = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTimePeriodIdKey>();
+            var result = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTimePeriodIdKey>(setOptions:o =>o.AcceptCrossPartitionQueryCost());
             Assert.Equal(2, result);
         }
     }

@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Reflection;
     using DataStore.Interfaces.LowLevel.Permissions;
+    using Newtonsoft.Json;
 
     #endregion
 
@@ -103,7 +104,8 @@
         //* Json.NET ignores explicit implementations and we kind of want to hide this anyway
         Action<string> IEtagUpdated.EtagUpdated { get; set; }
 
-        public string GetLongPartitionedId() => string.IsNullOrWhiteSpace(PartitionKey) ? PartitionKeys.ToSyntheticKeyString() : PartitionKey;
+        [JsonIgnore]
+        public string idWithPartitionInfo => PartitionKeys.ToSyntheticKeyString();
         
         public class AggregateVersionInfo
         {

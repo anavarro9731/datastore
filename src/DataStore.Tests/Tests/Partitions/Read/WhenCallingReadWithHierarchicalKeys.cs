@@ -84,7 +84,7 @@ namespace DataStore.Tests.Tests.Partitions.Read
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantIdKey>(null, options => options.ProvidePartitionKeyValues(Guid.NewGuid()));
             Assert.Empty(results);
             
-            results = await testHarness.DataStore.Read<AggregateWithTypeTenantIdKey>();
+            results = await testHarness.DataStore.Read<AggregateWithTypeTenantIdKey>(setOptions:o =>o.AcceptCrossPartitionQueryCost());
             Assert.Equal(2, results.Count());
         }
         
@@ -129,20 +129,32 @@ namespace DataStore.Tests.Tests.Partitions.Read
             Assert.Empty(results);
             
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(
-                              null, options => options.ProvidePartitionKeyValues(tenantId));
+                              null, options =>
+                                  {
+                                  options.AcceptCrossPartitionQueryCost();
+                                  options.ProvidePartitionKeyValues(tenantId);
+                                  });
             Assert.Equal(2, results.Count());
             
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(
-                          null, options => options.ProvidePartitionKeyValues(Guid.NewGuid()));
+                          null, options =>
+                              {
+                              options.AcceptCrossPartitionQueryCost();
+                              options.ProvidePartitionKeyValues(Guid.NewGuid());
+                              });
             Assert.Empty(results);
             
             results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(
-                              null, options => options.ProvidePartitionKeyValues(MonthInterval.FromDateTime(DateTime.UtcNow)));
+                              null, options =>
+                                  {
+                                  options.AcceptCrossPartitionQueryCost();
+                                  options.ProvidePartitionKeyValues(MonthInterval.FromDateTime(DateTime.UtcNow));
+                                  });
             Assert.Equal(2, results.Count()); //since it's last in the hierarchy and we haven't provided the middle tier
                                               //it's ignored for filtering even though its provided and should fall back to just type
                                               
             
-            results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>();
+            results = await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(setOptions:options =>options.AcceptCrossPartitionQueryCost());
             Assert.Equal(2, results.Count());
             
             var xCircuitException = await Assert.ThrowsAsync<CircuitException>( async () =>await testHarness.DataStore.Read<AggregateWithTypeTenantTimePeriodKey>(
@@ -189,7 +201,7 @@ namespace DataStore.Tests.Tests.Partitions.Read
                               null, options => options.ProvidePartitionKeyValues(DayInterval.FromDateTime(DateTime.UnixEpoch)));
             Assert.Empty(results);
             
-            results = await testHarness.DataStore.Read<AggregateWithTypeTimePeriodIdKey>();
+            results = await testHarness.DataStore.Read<AggregateWithTypeTimePeriodIdKey>(setOptions:options =>options.AcceptCrossPartitionQueryCost());
             Assert.Equal(2, results.Count());
         }
     }

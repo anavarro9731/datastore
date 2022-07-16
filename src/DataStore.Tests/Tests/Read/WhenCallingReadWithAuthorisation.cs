@@ -136,7 +136,11 @@ namespace DataStore.Tests.Tests.Read
 
             // When
             var projectTaskFromDb = await this.testHarness.DataStore.ReadById<ProjectTask>(this.task1.id, 
-                                    o => o.AuthoriseFor(this.user));
+                                    o =>
+                                        {
+                                        
+                                        o.AuthoriseFor(this.user);
+                                        });
 
             Assert.NotNull(projectTaskFromDb);
         }
@@ -205,7 +209,7 @@ namespace DataStore.Tests.Tests.Read
         private void Setup(bool nullScopeReferenceTypes = false, bool doNotAddProjectsToScopeHierarchy = false)
         {
             // Given
-            var scopeHierarchy = ScopeHierarchy.Create()
+            var scopeHierarchy = ScopeHierarchy.Create(new ScopeHierarchy.InstanceStore())
                                                .WithScopeLevel<Company>()
                                                .WithScopeLevel<CompanyDivision>()
                                                .WithScopeLevel<CompanyOffice>();

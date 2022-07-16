@@ -25,9 +25,9 @@ namespace DataStore.Interfaces.LowLevel
 
         public string Key2 { get; set; } 
 
-        public string Key3 { get; set; } 
+        public string Key3 { get; set; }
 
-        protected bool PropertiesAreEqual(HierarchicalPartitionKey other)
+        private bool PropertiesAreEqual(HierarchicalPartitionKey other)
         {
             return Key1 == other.Key1 && Key2 == other.Key2 && Key3 == other.Key3;
         }

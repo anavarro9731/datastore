@@ -71,7 +71,7 @@
             var schema = typeof(T).FullName;
             Expression<Func<T,bool>> predicate = i => i.Schema == schema;
             
-            var key = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptions>());
+            var key = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptionsLibrarySide>());
             var fanout = key.IsEmpty();
             if (!fanout)  predicate = predicate.And(key.ToPredicate<T>());
             
@@ -228,7 +228,7 @@
             ItemResponse<T> result = null;
             try
             {
-                var key = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(UseHierarchicalPartitionKeys, aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions as IPartitionKeyOptions);
+                var key = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(UseHierarchicalPartitionKeys, aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions as IPartitionKeyOptionsLibrarySide);
 
                 result = await this.container.ReadItemAsync<T>(aggregateQueriedByIdOperation.Id.ToString(), key.ToCosmosPartitionKey(UseHierarchicalPartitionKeys)).ConfigureAwait(false);
             }

@@ -7,7 +7,7 @@
 
     #endregion
 
-    public abstract class ClientSideDeleteOptions
+    public abstract class ClientSideDeleteOptions : IPartitionKeyOptionsClientSide
     {
         protected ClientSideDeleteOptions(DeleteOptionsLibrarySide librarySide)
         {
@@ -34,9 +34,12 @@
         public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
 
         public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
+
+        public abstract void AcceptCrossPartitionQueryCost();
+
     }
 
-    public class DeleteOptionsLibrarySide : ISecurityOptions, IQueryOptions, IPartitionKeyOptions
+    public class DeleteOptionsLibrarySide : ISecurityOptions, IQueryOptions, IPartitionKeyOptionsLibrarySide
     {
         public bool BypassSecurity { get; set; }
 
@@ -47,5 +50,7 @@
         public string PartitionKeyTenantId { get; set; }
 
         public string PartitionKeyTimeInterval { get; set; }
+
+        public bool AcceptCrossPartitionQueryCost { get; set; }
     }
 }

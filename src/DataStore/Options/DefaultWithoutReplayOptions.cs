@@ -43,6 +43,11 @@
             return this;
         }
 
+        public override void AcceptCrossPartitionQueryCost()
+        {
+            LibrarySide.AcceptCrossPartitionQueryCost = true;
+        }
+
         public override ClientSideWithoutReplayOptions<T> Take(int take, ref ContinuationToken newContinuationToken)
         {
             LibrarySide.MaxTake = take;

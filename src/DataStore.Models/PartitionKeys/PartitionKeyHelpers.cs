@@ -32,13 +32,13 @@ namespace DataStore.Models.PartitionKeys
     public static class PartitionKeyHelpers
     {
         //* always requires full partition key in either mode
-        public static HierarchicalPartitionKey GetKeysForExistingItemFromId<T>(bool useHierarchicalPartitionKeys, Guid id, IPartitionKeyOptions partitionKeyOptions)
+        public static HierarchicalPartitionKey GetKeysForExistingItemFromId<T>(bool useHierarchicalPartitionKeys, Guid id, IPartitionKeyOptionsLibrarySide partitionKeyOptions)
             where T : IAggregate
         {
             return GenerateHierarchicalKeys(id, partitionKeyOptions, useHierarchicalPartitionKeys);
 
 
-            static HierarchicalPartitionKey GenerateHierarchicalKeys(Guid id, IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
+            static HierarchicalPartitionKey GenerateHierarchicalKeys(Guid id, IPartitionKeyOptionsLibrarySide partitionKeyOptions, bool useHierarchicalPartitionKeys)
             {
                 var keys = new HierarchicalPartitionKey();
 
@@ -148,11 +148,11 @@ namespace DataStore.Models.PartitionKeys
                 return pred;
         }
         
-        public static HierarchicalPartitionKey GetKeysForLinqQuery<T>(bool useHierarchicalPartitionKeys, IPartitionKeyOptions partitionKeyOptions) where T : IAggregate
+        public static HierarchicalPartitionKey GetKeysForLinqQuery<T>(bool useHierarchicalPartitionKeys, IPartitionKeyOptionsLibrarySide partitionKeyOptions) where T : IAggregate
         {
             return GenerateHierarchicalKeys(partitionKeyOptions, useHierarchicalPartitionKeys);
 
-            static HierarchicalPartitionKey GenerateHierarchicalKeys(IPartitionKeyOptions partitionKeyOptions, bool useHierarchicalPartitionKeys)
+            static HierarchicalPartitionKey GenerateHierarchicalKeys(IPartitionKeyOptionsLibrarySide partitionKeyOptions, bool useHierarchicalPartitionKeys)
             {
                 var keys = new HierarchicalPartitionKey();
 
@@ -217,13 +217,20 @@ namespace DataStore.Models.PartitionKeys
                         {
                             keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId; //* constrain search with L2
                         }
+                        else if (partitionKeyOptions?.AcceptCrossPartitionQueryCost != true)
+                        {
+                            throw new CircuitException(
+                                $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)}."
+                                + "You have not provided a Tenant Id which will result in a cross partition query across all Tenants. This will be a progressively expensive"
+                                + "query as the system grows. Please acknowledge your acceptance of the query cost by setting the options => options.AcceptCrossPartitionQueryCost() parameter");
+                        }
                     }
                     else
                     {
                         Guard.Against(
                             partitionKeyOptions.HasTenantIdOption(),
                             $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)} "
-                            + "without Hierarchical keys. Either use ReadById or ReadyByIds if you have them, or do not provide the TenantId and a full cross partition query will be used.");
+                            + "without Hierarchical keys. Either use ReadById or ReadyByIds if you have them, alternative do not provide the TenantId and a fanout query will be used instead.");
 
                         /* if we are in synthetic mode, we can't compose the whole key we need to return nothing
                              this will result in an expensive full fan out query, but that is the problem with not using hierarchical keys
@@ -247,6 +254,13 @@ namespace DataStore.Models.PartitionKeys
                         {
                             ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
                             keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L2
+                        }                       
+                        else if (partitionKeyOptions?.AcceptCrossPartitionQueryCost != true)
+                        {
+                            throw new CircuitException(
+                                $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_TimePeriod_Id)}."
+                                + "You have not provided a Time Period which will result in a cross partition query across all Time Periods. This will be a progressively expensive"
+                                + "query as the system grows. Please acknowledge your acceptance of the query cost by setting the options => options.AcceptCrossPartitionQueryCost() parameter");
                         }
                     }
                     else
@@ -276,7 +290,19 @@ namespace DataStore.Models.PartitionKeys
                                 ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
 
                                 keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
+                            } else if (partitionKeyOptions?.AcceptCrossPartitionQueryCost != true)
+                            {
+                                throw new CircuitException(
+                                    $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_TimePeriod)}."
+                                    + "You have not provided a Time Period which will result in a cross partition query across all Time Periods. This will be a progressively expensive"
+                                    + "query as the system grows. Please acknowledge your acceptance of the query cost by setting the options => options.AcceptCrossPartitionQueryCost() parameter");
                             }
+                        } else if (partitionKeyOptions?.AcceptCrossPartitionQueryCost != true)
+                        {
+                            throw new CircuitException(
+                                $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_TimePeriod)}."/**/
+                                + "You have not provided a Tenant Id which will result in a cross partition query across all Tenants. This will be a progressively expensive"
+                                + "query as the system grows. Please acknowledge your acceptance of the query cost by setting the options => options.AcceptCrossPartitionQueryCost() parameter");
                         }
                         
                     }
@@ -396,27 +422,27 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
-        private static bool HasNotSpecifiedAnyOptions(this IPartitionKeyOptions options)
+        private static bool HasNotSpecifiedAnyOptions(this IPartitionKeyOptionsLibrarySide options)
         {
             return !options.HasTenantIdOption() && !options.HasTimePeriodOption();
         }
 
-        private static bool HasSpecifiedAtLeastOneOption(this IPartitionKeyOptions options)
+        private static bool HasSpecifiedAtLeastOneOption(this IPartitionKeyOptionsLibrarySide options)
         {
             return options.HasTenantIdOption() || options.HasTimePeriodOption();
         }
 
-        private static bool HasSpecifiedBothOptions(this IPartitionKeyOptions options)
+        private static bool HasSpecifiedBothOptions(this IPartitionKeyOptionsLibrarySide options)
         {
             return options.HasTenantIdOption() && options.HasTimePeriodOption();
         }
 
-        private static bool HasTenantIdOption(this IPartitionKeyOptions options)
+        private static bool HasTenantIdOption(this IPartitionKeyOptionsLibrarySide options)
         {
             return options != null && !string.IsNullOrWhiteSpace(options.PartitionKeyTenantId);
         }
 
-        private static bool HasTimePeriodOption(this IPartitionKeyOptions options)
+        private static bool HasTimePeriodOption(this IPartitionKeyOptionsLibrarySide options)
         {
             return options != null && !string.IsNullOrWhiteSpace(options.PartitionKeyTimeInterval);
         }

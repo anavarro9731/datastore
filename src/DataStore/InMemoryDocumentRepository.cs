@@ -68,7 +68,7 @@
         public IQueryable<T> CreateQueryable<T>(IQueryOptions queryOptions = null) where T : class, IAggregate, new()
         {
             //* this will limit the range of the queryable to the partitions which match the partition keys constructable from the supplied data
-            var keys = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptions>());
+            var keys = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptionsLibrarySide>());
 
             //* this will return the partitions to search, if the PK is empty and mode synthetic, then this will be all partitions by default
             var partitions = FindPartitionsFromKeys<T>(keys);
@@ -157,7 +157,7 @@
         {
             //* with getbyid we will expect exact and full partitions 
             var keys = PartitionKeyHelpers.GetKeysForExistingItemFromId<T>(this.UseHierarchicalPartitionKeys, 
-                aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions.As<IPartitionKeyOptions>());
+                aggregateQueriedByIdOperation.Id, aggregateQueriedByIdOperation.QueryOptions.As<IPartitionKeyOptionsLibrarySide>());
 
             if (AggregatesByLogicalPartition.ContainsKey(keys))
             {

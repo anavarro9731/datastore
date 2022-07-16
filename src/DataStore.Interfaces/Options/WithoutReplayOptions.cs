@@ -11,7 +11,7 @@
 
     #endregion
 
-    public abstract class ClientSideWithoutReplayOptions<T> where T : class, IAggregate, new()
+    public abstract class ClientSideWithoutReplayOptions<T>: IPartitionKeyOptionsClientSide where T : class, IAggregate, new()
     {
         protected ClientSideWithoutReplayOptions(WithoutReplayOptionsLibrarySide<T> librarySide)
         {
@@ -41,12 +41,14 @@
 
         public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
 
+        public abstract void AcceptCrossPartitionQueryCost();
+
         public abstract ClientSideWithoutReplayOptions<T> Take(int take, ref ContinuationToken newContinuationToken);
 
         public abstract ClientSideWithoutReplayOptions<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
     }
 
-    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions, IPartitionKeyOptions
+    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions, IPartitionKeyOptionsLibrarySide
     {
         public readonly Queue<(string, bool)> ThenByQueue = new Queue<(string, bool)>();
 
@@ -71,6 +73,8 @@
         public string PartitionKeyTenantId { get; set; }
 
         public string PartitionKeyTimeInterval { get; set; }
+
+        public bool AcceptCrossPartitionQueryCost { get; set; }
 
         public IQueryable<T> AddOrderBy(IQueryable<T> queryable)
         {

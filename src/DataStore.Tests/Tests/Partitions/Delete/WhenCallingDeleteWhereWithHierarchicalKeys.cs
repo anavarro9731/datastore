@@ -68,7 +68,7 @@ namespace DataStore.Tests.Tests.Partitions.Delete
             
             await testHarness.DataStore.CommitChanges();
             
-            var count = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTenantIdKey>(x => x.id == newId);
+            var count = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTenantIdKey>(x => x.id == newId, options => options.AcceptCrossPartitionQueryCost());
             Assert.Equal(0, count);
         }
 
@@ -98,7 +98,7 @@ namespace DataStore.Tests.Tests.Partitions.Delete
             
             await testHarness.DataStore.CommitChanges();
             
-            var count = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTimePeriodIdKey>(x => x.id == newId);
+            var count = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTimePeriodIdKey>(x => x.id == newId, options => options.AcceptCrossPartitionQueryCost());
             Assert.Equal(0, count);
         }
 
@@ -132,7 +132,7 @@ namespace DataStore.Tests.Tests.Partitions.Delete
             
             await testHarness.DataStore.CommitChanges();
             
-            var count = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTenantTimePeriodKey>(x => x.id == newId);
+            var count = await testHarness.DataStore.WithoutEventReplay.CountActive<AggregateWithTypeTenantTimePeriodKey>(x => x.id == newId, options => options.AcceptCrossPartitionQueryCost());
             Assert.Equal(0, count);
         }
     }
