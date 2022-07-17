@@ -19,6 +19,7 @@ namespace DataStore
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Interfaces.Options.LibrarySide;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Models.PureFunctions;

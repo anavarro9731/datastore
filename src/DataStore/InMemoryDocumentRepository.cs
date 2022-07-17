@@ -11,6 +11,8 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Interfaces.Options.LibrarySide;
+    using global::DataStore.Interfaces.Options.LibrarySide.Interfaces;
     using global::DataStore.Models.PartitionKeys;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
@@ -65,7 +67,7 @@
             return Task.FromResult(count);
         }
 
-        public IQueryable<T> CreateQueryable<T>(IQueryOptions queryOptions = null) where T : class, IAggregate, new()
+        public IQueryable<T> CreateQueryable<T>(IOptionsLibrarySide queryOptions = null) where T : class, IAggregate, new()
         {
             //* this will limit the range of the queryable to the partitions which match the partition keys constructable from the supplied data
             var keys = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptionsLibrarySide>());

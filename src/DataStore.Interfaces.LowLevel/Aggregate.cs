@@ -99,13 +99,22 @@
             }
         }
 
+        
+        public class PartitionedId
+        {
+            public string Type;
+            
+            public Guid? TenantId;
+
+            public IPartitionKeyTimeInterval TimePeriod;
+
+            public Guid Id;
+        }
+
         public List<AggregateVersionInfo> VersionHistory { get; set; } = new List<AggregateVersionInfo>();
 
         //* Json.NET ignores explicit implementations and we kind of want to hide this anyway
         Action<string> IEtagUpdated.EtagUpdated { get; set; }
-
-        [JsonIgnore]
-        public string idWithPartitionInfo => PartitionKeys.ToSyntheticKeyString();
         
         public class AggregateVersionInfo
         {

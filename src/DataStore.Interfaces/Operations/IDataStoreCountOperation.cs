@@ -6,6 +6,7 @@
     using System.Linq.Expressions;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
     #endregion
 
@@ -17,7 +18,7 @@
     {
         Expression<Func<T, bool>> Predicate { get; set; }
         
-        IQueryOptions QueryOptions { get; set; }
+        IOptionsLibrarySide QueryOptions { get; set; }
 
     }
 }

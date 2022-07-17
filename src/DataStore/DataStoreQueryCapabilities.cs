@@ -11,6 +11,7 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Interfaces.Options.LibrarySide;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
 

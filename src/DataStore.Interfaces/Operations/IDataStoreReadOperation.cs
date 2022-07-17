@@ -7,6 +7,7 @@
     using CircuitBoard.Messages;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
     #endregion
 
@@ -14,12 +15,12 @@
     {
         IQueryable<T> Query { get; set; }
 
-        IQueryOptions QueryOptions { get; set; }
+        IOptionsLibrarySide QueryOptions { get; set; }
     }
 
     public interface IDataStoreReadByIdOperation : IDataStoreReadOperation
     {
-        IQueryOptions QueryOptions { get; set; }
+        IOptionsLibrarySide QueryOptions { get; set; }
         
         Guid Id { get; set; }
     }

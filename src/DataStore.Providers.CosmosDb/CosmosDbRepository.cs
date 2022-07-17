@@ -14,6 +14,8 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
     using DataStore.Models.PartitionKeys;
     using DataStore.Models.PureFunctions;
     using DataStore.Models.PureFunctions.Extensions;
@@ -66,7 +68,7 @@
             return count;
         }
 
-        public IQueryable<T> CreateQueryable<T>(IQueryOptions queryOptions) where T : class, IAggregate, new()
+        public IQueryable<T> CreateQueryable<T>(IOptionsLibrarySide queryOptions) where T : class, IAggregate, new()
         {
             var schema = typeof(T).FullName;
             Expression<Func<T,bool>> predicate = i => i.Schema == schema;

@@ -66,7 +66,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeIdKey>(newId);
             Assert.NotNull(result);
             Assert.NotNull(result.PartitionKeys);
-            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}_na", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).Name}{PartitionKeyHelpers.PartitionKeyPrefixes.IdOptional}{newId}_na", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
             async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
@@ -98,7 +98,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTenantIdKey>(newId, side => side.ProvidePartitionKeyValues(tenantId));
             Assert.NotNull(result);
             Assert.NotNull(result.PartitionKeys);
-            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).Name}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.IdOptional}{newId}", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
             async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
@@ -131,7 +131,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTenantTimePeriodKey>(newId, side => side.ProvidePartitionKeyValues(tenantId, monthInterval));
             Assert.NotNull(result);
             Assert.NotNull(result.PartitionKeys);
-            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).Name}{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
             async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));
@@ -161,7 +161,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             var result = await testHarness.DataStore.WithoutEventReplay.ReadById<AggregateWithTypeTimePeriodIdKey>(newId, side => side.ProvidePartitionKeyValues(dayInterval));
             Assert.NotNull(result);
             Assert.NotNull(result.PartitionKeys);
-            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}", result.PartitionKey);
+            Assert.Equal($"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).Name}{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}{PartitionKeyHelpers.PartitionKeyPrefixes.IdOptional}{newId}", result.PartitionKey);
             
             await AndShouldNotCreateDuplicates();
             async Task AndShouldNotCreateDuplicates() => await Assert.ThrowsAsync<CircuitException>(async () =>  await testHarness.DataStore.Create(agg));

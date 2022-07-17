@@ -9,6 +9,7 @@ namespace DataStore.Interfaces
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
     #endregion
 
@@ -23,7 +24,7 @@ namespace DataStore.Interfaces
         Task<int> CountAsync<T>(IDataStoreCountFromQueryable<T> aggregatesCounted) where T : class, IAggregate, new();
 
         IQueryable<T> CreateQueryable<T>(
-            IQueryOptions /* take as an IQueryOptions here so that you can take the more
+            IOptionsLibrarySide /* take as an IQueryOptions here so that you can take the more
                                                      * restrictive I..ClientSide interface at the entry point
                                                      * and dramatically cleanup the intellisense experience */
                 queryOptions) where T : class, IAggregate, new();

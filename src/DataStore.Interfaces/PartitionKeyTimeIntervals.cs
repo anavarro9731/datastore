@@ -5,10 +5,11 @@ namespace DataStore.Interfaces
     using System;
     using System.Globalization;
     using System.Text.RegularExpressions;
+    using DataStore.Interfaces.LowLevel;
 
     #endregion
 
-    public class MonthInterval : PartitionKeyTimeInterval
+    public class MonthInterval : IPartitionKeyTimeInterval
     {
         public MonthInterval(int year, int month)
         {
@@ -25,9 +26,20 @@ namespace DataStore.Interfaces
             return new MonthInterval(dateTime.Year, dateTime.Month);
         }
 
-        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}$").IsMatch(s);
-        
-        public static MonthInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+        public static MonthInterval FromIntervalParts(IntervalParts intervalParts)
+        {
+            return new MonthInterval(intervalParts.Year, intervalParts.Month);
+        }
+
+        public static MonthInterval FromUtcNow()
+        {
+            return FromDateTime(DateTime.UtcNow);
+        }
+
+        public static bool IsValidString(string s)
+        {
+            return new Regex("^Y\\d{4}:M\\d{1,2}$").IsMatch(s);
+        }
 
         public override string ToString()
         {
@@ -35,7 +47,7 @@ namespace DataStore.Interfaces
         }
     }
 
-    public class YearInterval : PartitionKeyTimeInterval
+    public class YearInterval : IPartitionKeyTimeInterval
     {
         public YearInterval(int year)
         {
@@ -44,14 +56,25 @@ namespace DataStore.Interfaces
 
         public int Year { get; }
 
-        public static bool IsValidString(string s) => new Regex("^Y\\d{4}$").IsMatch(s);
-        
         public static YearInterval FromDateTime(DateTime dateTime)
         {
             return new YearInterval(dateTime.Year);
         }
-        
-        public static YearInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
+
+        public static YearInterval FromIntervalParts(IntervalParts intervalParts)
+        {
+            return new YearInterval(intervalParts.Year);
+        }
+
+        public static YearInterval FromUtcNow()
+        {
+            return FromDateTime(DateTime.UtcNow);
+        }
+
+        public static bool IsValidString(string s)
+        {
+            return new Regex("^Y\\d{4}$").IsMatch(s);
+        }
 
         public override string ToString()
         {
@@ -59,16 +82,13 @@ namespace DataStore.Interfaces
         }
     }
 
-    public class WeekInterval : PartitionKeyTimeInterval
+    public class WeekInterval : IPartitionKeyTimeInterval
     {
-        public WeekInterval(int year, int month, int week)
+        public WeekInterval(int year, int week)
         {
             Year = year;
-            Month = month;
             Week = week;
         }
-
-        public int Month { get; }
 
         public int Week { get; }
 
@@ -77,20 +97,31 @@ namespace DataStore.Interfaces
         public static WeekInterval FromDateTime(DateTime dateTime)
         {
             var weekOfYear = new GregorianCalendar(GregorianCalendarTypes.Localized).GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
-            return new WeekInterval(dateTime.Year, dateTime.Month, weekOfYear);
+            return new WeekInterval(dateTime.Year, weekOfYear);
         }
-        
-        public static WeekInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
 
-        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:W\\d{1,2}$").IsMatch(s);
-        
+        public static WeekInterval FromIntervalParts(IntervalParts intervalParts)
+        {
+            return new WeekInterval(intervalParts.Year, intervalParts.Week);
+        }
+
+        public static WeekInterval FromUtcNow()
+        {
+            return FromDateTime(DateTime.UtcNow);
+        }
+
+        public static bool IsValidString(string s)
+        {
+            return new Regex("^Y\\d{4}:W\\d{1,2}$").IsMatch(s);
+        }
+
         public override string ToString()
         {
             return $"Y{Year}:W{Week}";
         }
     }
 
-    public class DayInterval : PartitionKeyTimeInterval
+    public class DayInterval : IPartitionKeyTimeInterval
     {
         public DayInterval(int year, int month, int day)
         {
@@ -110,18 +141,28 @@ namespace DataStore.Interfaces
             return new DayInterval(dateTime.Year, dateTime.Month, dateTime.Day);
         }
 
-        public static DayInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
-        
-        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}$").IsMatch(s);
+        public static DayInterval FromIntervalParts(IntervalParts intervalParts)
+        {
+            return new DayInterval(intervalParts.Year, intervalParts.Month, intervalParts.Day);
+        }
 
-        
+        public static DayInterval FromUtcNow()
+        {
+            return FromDateTime(DateTime.UtcNow);
+        }
+
+        public static bool IsValidString(string s)
+        {
+            return new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}$").IsMatch(s);
+        }
+
         public override string ToString()
         {
             return $"Y{Year}:M{Month}:D{Day}";
         }
     }
 
-    public class HourInterval : PartitionKeyTimeInterval
+    public class HourInterval : IPartitionKeyTimeInterval
     {
         public HourInterval(int year, int month, int day, int hour)
         {
@@ -143,11 +184,21 @@ namespace DataStore.Interfaces
         {
             return new HourInterval(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour);
         }
-        
-        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}:H\\d{1,2}$").IsMatch(s);
-        
-        public static HourInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
 
+        public static HourInterval FromIntervalParts(IntervalParts intervalParts)
+        {
+            return new HourInterval(intervalParts.Year, intervalParts.Month, intervalParts.Day, intervalParts.Hour);
+        }
+
+        public static HourInterval FromUtcNow()
+        {
+            return FromDateTime(DateTime.UtcNow);
+        }
+
+        public static bool IsValidString(string s)
+        {
+            return new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}:H\\d{1,2}$").IsMatch(s);
+        }
 
         public override string ToString()
         {
@@ -155,7 +206,41 @@ namespace DataStore.Interfaces
         }
     }
 
-    public class MinuteInterval : PartitionKeyTimeInterval
+    public class IntervalParts
+    {
+        public short Day;
+
+        public short Hour;
+
+        public short Minute;
+
+        public short Month;
+
+        public short Week;
+
+        public short Year;
+
+        public static IntervalParts FromString(string s)
+        {
+            var parts = new IntervalParts();
+
+            var regex = new Regex(
+                "^(Y(?'year'\\d{4}):)?((M(?'month'\\d{1,2}):)|(W(?'week'\\d{1,2}):))?(D(?'day'\\d{1,2}):)?(H(?'hour'\\d{1,2}):)?(I(?'minute'\\d{1,2}))?$");
+
+            var result = regex.Match(s);
+
+            if (result.Groups["year"].Success) parts.Year = short.Parse(result.Groups["year"].Value);
+            if (result.Groups["month"].Success) parts.Month = short.Parse(result.Groups["month"].Value);
+            if (result.Groups["week"].Success) parts.Week = short.Parse(result.Groups["week"].Value);
+            if (result.Groups["day"].Success) parts.Day = short.Parse(result.Groups["day"].Value);
+            if (result.Groups["hour"].Success) parts.Hour = short.Parse(result.Groups["hour"].Value);
+            if (result.Groups["minute"].Success) parts.Minute = short.Parse(result.Groups["minute"].Value);
+
+            return parts;
+        }
+    }
+
+    public class MinuteInterval : IPartitionKeyTimeInterval
     {
         public MinuteInterval(int year, int month, int day, int hour, int minute)
         {
@@ -180,19 +265,25 @@ namespace DataStore.Interfaces
         {
             return new MinuteInterval(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute);
         }
-        public static bool IsValidString(string s) => new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}:H\\d{1,2}:I\\d{1,2}$").IsMatch(s);
-        
-        public static MinuteInterval FromUtcNow() => FromDateTime(DateTime.UtcNow);
 
+        public static MinuteInterval FromIntervalParts(IntervalParts intervalParts)
+        {
+            return new MinuteInterval(intervalParts.Year, intervalParts.Month, intervalParts.Day, intervalParts.Hour, intervalParts.Minute);
+        }
+
+        public static MinuteInterval FromUtcNow()
+        {
+            return FromDateTime(DateTime.UtcNow);
+        }
+
+        public static bool IsValidString(string s)
+        {
+            return new Regex("^Y\\d{4}:M\\d{1,2}:D\\d{1,2}:H\\d{1,2}:I\\d{1,2}$").IsMatch(s);
+        }
 
         public override string ToString()
         {
             return $"Y{Year}:M{Month}:D{Day}:H{Hour}:I{Minute}";
         }
-    }
-
-    public interface PartitionKeyTimeInterval
-    {
-        string ToString();
     }
 }

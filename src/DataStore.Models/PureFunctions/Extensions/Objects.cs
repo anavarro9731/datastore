@@ -65,37 +65,6 @@
         public static T FromJsonString<T>(this string source) => source == null ? default : JsonConvert.DeserializeObject<T>(source);
 
         /// <summary>
-        ///     get property name from current instance
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="type"></param>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr) =>
-            // usage: obj.GetPropertyName(o => o.Member)
-            GetPropertyNameCore(propertyRefExpr.Body);
-
-        /// <summary>
-        ///     get property name from any class
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr) =>
-            // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
-            GetPropertyNameCore(propertyRefExpr.Body);
-
-        /// <summary>
-        ///     get static property name from any class
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression) =>
-            // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
-            GetPropertyNameCore(expression);
-
-        /// <summary>
         ///     checks if a class inherits from or implements a base class/interface.
         ///     Superbly supports generic interfaces and types!
         /// </summary>
@@ -157,6 +126,39 @@
 
         public static string ToJsonString(this object source) => source == null ? null : JsonConvert.SerializeObject(source);
 
+        
+        /// <summary>
+        ///     get property name from current instance
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="type"></param>
+        /// <param name="propertyRefExpr"></param>
+        /// <returns></returns>
+        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr) =>
+            // usage: obj.GetPropertyName(o => o.Member)
+            GetPropertyNameCore(propertyRefExpr.Body);
+
+        /// <summary>
+        ///     get property name from any class
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="propertyRefExpr"></param>
+        /// <returns></returns>
+        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr) =>
+            // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
+            GetPropertyNameCore(propertyRefExpr.Body);
+
+        /// <summary>
+        ///     get static property name from any class
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression) =>
+            // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
+            GetPropertyNameCore(expression);
+
+        
         private static string GetPropertyNameCore(Expression propertyRefExpr)
         {
             if (propertyRefExpr == null) throw new ArgumentNullException(nameof(propertyRefExpr), "propertyRefExpr is null.");

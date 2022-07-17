@@ -25,7 +25,7 @@
 
         IDataStoreReadOnly AsReadOnly();
 
-        IDataStoreWriteOnly AsWriteOnlyScoped<T>() where T : class, IAggregate, new();
+        IDataStoreWriteOnly<T> AsWriteOnlyScoped<T>() where T : class, IAggregate, new();
 
         Task CommitChanges();
     }

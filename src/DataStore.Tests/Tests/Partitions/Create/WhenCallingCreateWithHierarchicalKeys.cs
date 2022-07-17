@@ -65,8 +65,8 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new HierarchicalPartitionKey
                 {
-                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).FullName}", 
-                    Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}",
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeIdKey).Name}", 
+                    Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.IdOptional}{newId}",
                     Key3 = "_na"
                 },
                 result.PartitionKeys);
@@ -103,9 +103,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new HierarchicalPartitionKey
                 {
-                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).FullName}", 
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantIdKey).Name}", 
                     Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}", 
-                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId}{newId}"
+                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.IdOptional}{newId}"
                 },
                 result.PartitionKeys);
             
@@ -143,7 +143,7 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new HierarchicalPartitionKey
                 {
-                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).FullName}", 
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTenantTimePeriodKey).Name}", 
                     Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TenantId}{tenantId}", 
                     Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{monthInterval}"
                 },
@@ -182,9 +182,9 @@ namespace DataStore.Tests.Tests.Partitions.Create
             Assert.Equal(
                 new HierarchicalPartitionKey
                 {
-                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).FullName}", 
+                    Key1 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.Type}{typeof(AggregateWithTypeTimePeriodIdKey).Name}", 
                     Key2 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.TimePeriod}{dayInterval}", 
-                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.AggregateId }{newId}"
+                    Key3 = $"{PartitionKeyHelpers.PartitionKeyPrefixes.IdOptional }{newId}"
                 },
                 result.PartitionKeys);
             

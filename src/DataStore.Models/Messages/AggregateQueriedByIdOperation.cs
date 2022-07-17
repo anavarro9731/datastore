@@ -6,12 +6,13 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
     #endregion
 
     public class AggregateQueriedByIdOperationOperation<T> : IDataStoreReadByIdOperation where T: IAggregate
     {
-        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, IQueryOptions queryOptions, Type type = null)
+        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, IOptionsLibrarySide queryOptions, Type type = null)
         {
             
             MethodCalled = methodCalled;
@@ -23,7 +24,7 @@
 
         public DateTime Created { get; set; }
 
-        public IQueryOptions QueryOptions { get; set; }
+        public IOptionsLibrarySide QueryOptions { get; set; }
 
         public Guid Id { get; set; }
 
@@ -42,7 +43,7 @@
     
     public class AggregateQueriedByIdOperationOperation: IDataStoreReadByIdOperation
     {
-        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, IQueryOptions queryOptions = null, Type type = null)
+        public AggregateQueriedByIdOperationOperation(string methodCalled, Guid id, IOptionsLibrarySide queryOptions = null, Type type = null)
         {
             
             MethodCalled = methodCalled;
@@ -54,7 +55,7 @@
 
         public DateTime Created { get; set; }
 
-        public IQueryOptions QueryOptions { get; set; }
+        public IOptionsLibrarySide QueryOptions { get; set; }
 
         public Guid Id { get; set; }
 

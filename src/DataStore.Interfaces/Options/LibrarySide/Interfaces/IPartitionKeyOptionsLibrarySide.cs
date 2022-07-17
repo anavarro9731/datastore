@@ -1,4 +1,4 @@
-namespace DataStore.Interfaces.Options
+namespace DataStore.Interfaces.Options.LibrarySide.Interfaces
 {
     public interface IPartitionKeyOptionsLibrarySide
     {

@@ -11,6 +11,8 @@ if you reset the data, restart it from commandline again after it restarts itsel
 to get the right flags above set.
 
 
-/*TODO tests
-idatasto                         
+/*TODO 
+ReadByIds
+named groups regex
+^(?'type'_tp_[A-Za-z0-9\.]+)(?'tenant'_tn_[A-Za-z0-9-]+)?(?'timeperiod'_tm_[A-Za-z0-9:]+)?(?'id'_id_[A-Za-z0-9-]+)?(_na)?$                     
 */

@@ -12,6 +12,8 @@
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Operations;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Interfaces.Options.ClientSide;
+    using global::DataStore.Interfaces.Options.LibrarySide;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
     using global::DataStore.Models.PureFunctions.Extensions;
@@ -96,13 +98,13 @@
                     return await this.updateCapabilities.UpdateById<T, UpdateOptionsLibrarySide>(
                                id,
                                MarkAsSoftDeleted,
-                               new DefaultClientSideUpdateOptions().Op(
-                                   o =>
-                                       {
-                                       o.ProvidePartitionKeyValues(options.PartitionKeyTenantId, options.PartitionKeyTimeInterval);
-                                       o.DisableOptimisticConcurrency();
-                                       o.OverwriteReadonly();
-                                       }),
+                               new UpdateOptionsLibrarySide()
+                               {
+                                   OptimisticConcurrency = false,
+                                   PartitionKeyTenantId = options.PartitionKeyTenantId,
+                                   PartitionKeyTimeInterval = options.PartitionKeyTimeInterval,
+                                   AllowReadonlyOverwriting = true
+                               },
                                methodName).ConfigureAwait(false);
                 }
             }
@@ -123,13 +125,13 @@
                     return await this.updateCapabilities.UpdateWhere(
                                predicate,
                                MarkAsSoftDeleted,
-                               (UpdateOptionsLibrarySide)new DefaultClientSideUpdateOptions().Op(
-                                   o =>
-                                       {
-                                       o.ProvidePartitionKeyValues(options.PartitionKeyTenantId, options.PartitionKeyTimeInterval);
-                                       o.DisableOptimisticConcurrency();
-                                       o.OverwriteReadonly();
-                                       }),
+                               new UpdateOptionsLibrarySide()
+                               {
+                                   OptimisticConcurrency = false,
+                                   PartitionKeyTenantId = options.PartitionKeyTenantId,
+                                   PartitionKeyTimeInterval = options.PartitionKeyTimeInterval,
+                                   AllowReadonlyOverwriting = true
+                               },
                                methodName).ConfigureAwait(false);
                 }
             }

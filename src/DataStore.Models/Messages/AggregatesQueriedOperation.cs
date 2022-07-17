@@ -7,12 +7,13 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
     #endregion
 
     public class AggregatesQueriedOperation<T> : IDataStoreReadFromQueryable<T> where T : class, IAggregate, new()
     {
-        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IQueryOptions queryOptions = null)
+        public AggregatesQueriedOperation(string methodCalled, IQueryable<T> query, IOptionsLibrarySide queryOptions = null)
         {
             MethodCalled = methodCalled;
             TypeName = typeof(T).FullName;
@@ -27,7 +28,7 @@
 
         public IQueryable<T> Query { get; set; }
 
-        public IQueryOptions QueryOptions { get; set; }
+        public IOptionsLibrarySide QueryOptions { get; set; }
 
         public double StateOperationCost { get; set; }
 

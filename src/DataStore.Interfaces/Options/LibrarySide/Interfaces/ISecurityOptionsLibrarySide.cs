@@ -1,4 +1,4 @@
-namespace DataStore.Interfaces.Options
+namespace DataStore.Interfaces.Options.LibrarySide.Interfaces
 {
     #region
 
@@ -6,7 +6,7 @@ namespace DataStore.Interfaces.Options
 
     #endregion
 
-    public interface ISecurityOptions
+    public interface ISecurityOptionsLibrarySide
     {
         IIdentityWithDatabasePermissions Identity { get; set; }
 

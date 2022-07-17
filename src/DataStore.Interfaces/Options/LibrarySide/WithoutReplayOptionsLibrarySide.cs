@@ -1,54 +1,10 @@
-﻿namespace DataStore.Interfaces.Options
+namespace DataStore.Interfaces.Options.LibrarySide
 {
-    #region
-
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using DataStore.Interfaces.LowLevel;
-    using DataStore.Interfaces.LowLevel.Permissions;
 
-    #endregion
-
-    public abstract class ClientSideWithoutReplayOptions<T>: IPartitionKeyOptionsClientSide where T : class, IAggregate, new()
-    {
-        protected ClientSideWithoutReplayOptions(WithoutReplayOptionsLibrarySide<T> librarySide)
-        {
-            LibrarySide = librarySide;
-        }
-
-        protected WithoutReplayOptionsLibrarySide<T> LibrarySide { get; }
-
-        public static implicit operator WithoutReplayOptionsLibrarySide<T>(ClientSideWithoutReplayOptions<T> options)
-        {
-            return options.LibrarySide;
-        }
-
-        //* visible members
-
-        public abstract void AuthoriseFor(IIdentityWithDatabasePermissions identity);
-
-        public abstract void BypassSecurity(string reason);
-
-        public abstract ClientSideWithoutReplayOptions<T> ContinueFrom(ContinuationToken currentContinuationToken);
-
-        public abstract ClientSideWithoutReplayOptions<T> OrderBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
-
-        public abstract void ProvidePartitionKeyValues(Guid tenantId);
-
-        public abstract void ProvidePartitionKeyValues(PartitionKeyTimeInterval timeInterval);
-
-        public abstract void ProvidePartitionKeyValues(Guid tenantId, PartitionKeyTimeInterval timeInterval);
-
-        public abstract void AcceptCrossPartitionQueryCost();
-
-        public abstract ClientSideWithoutReplayOptions<T> Take(int take, ref ContinuationToken newContinuationToken);
-
-        public abstract ClientSideWithoutReplayOptions<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false);
-    }
-
-    public class WithoutReplayOptionsLibrarySide<T> : ISecurityOptions, IQueryOptions, IPartitionKeyOptionsLibrarySide
+    public class WithoutReplayOptionsLibrarySide<T> : ReadOptionsLibrarySide
     {
         public readonly Queue<(string, bool)> ThenByQueue = new Queue<(string, bool)>();
 
@@ -62,19 +18,9 @@
 
         public bool OrderDescending;
 
-        public bool BypassSecurity { get; set; }
-
-        public IIdentityWithDatabasePermissions Identity { get; set; }
-
         public ContinuationToken NextContinuationTokenValue { set => this.NextContinuationToken.Value = value.Value; }
 
         public List<(string, bool)> OrderByParameters { get; } = new List<(string, bool)>();
-
-        public string PartitionKeyTenantId { get; set; }
-
-        public string PartitionKeyTimeInterval { get; set; }
-
-        public bool AcceptCrossPartitionQueryCost { get; set; }
 
         public IQueryable<T> AddOrderBy(IQueryable<T> queryable)
         {

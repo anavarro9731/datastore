@@ -7,10 +7,12 @@ namespace DataStore.Models.PartitionKeys
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Text.RegularExpressions;
     using CircuitBoard;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
     using DataStore.Models.PureFunctions;
     using DataStore.Models.PureFunctions.Extensions;
 
@@ -76,8 +78,8 @@ namespace DataStore.Models.PartitionKeys
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_Id)}."
                         + "This does not require any partition key Options, please do not provide them.");
 
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
-                    keys.Key2 = PartitionKeyPrefixes.AggregateId + id;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
+                    keys.Key2 = PartitionKeyPrefixes.IdOptional + id;
                     keys.Key3 = "_na";
                 }
                 else if (tenantPartitionKeyAttributes.Any())
@@ -93,9 +95,9 @@ namespace DataStore.Models.PartitionKeys
                         $"You are querying a class type {typeof(T).Name} which has a Partition Key attribute of type {nameof(PartitionKey__Type_ImmutableTenantId_Id)}."
                         + "This does not require a time period partition key Option, please do not provide it.");
 
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
-                    keys.Key3 = PartitionKeyPrefixes.AggregateId + id;
+                    keys.Key3 = PartitionKeyPrefixes.IdOptional + id;
                 }
                 else if (timePeriodPartitionKeyAttributes.Any())
                 {
@@ -112,9 +114,9 @@ namespace DataStore.Models.PartitionKeys
 
                     ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
                     
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                     keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval;
-                    keys.Key3 = PartitionKeyPrefixes.AggregateId + id;
+                    keys.Key3 = PartitionKeyPrefixes.IdOptional + id;
                 }
                 else if (tenantAndTimePeriodPartitionKeyAttributes.Any())
                 {
@@ -126,7 +128,7 @@ namespace DataStore.Models.PartitionKeys
                     
                     ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
                     
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
                     keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval;
                 }
@@ -196,7 +198,7 @@ namespace DataStore.Models.PartitionKeys
                             we will not have the L2 ID without parsing the expression tree which I am not going to do 
                             or adding a pointless id value to the ProvidePartitionKeyValues() method when the user can
                             just use ReadById or ReadManyById if they have that.*/
-                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName; //* broaden search to L1
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name; //* broaden search to L1
                     }
                     else
                     {
@@ -212,7 +214,7 @@ namespace DataStore.Models.PartitionKeys
 
                     if (useHierarchicalPartitionKeys)
                     {
-                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                         if (partitionKeyOptions?.PartitionKeyTenantId != null)
                         {
                             keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId; //* constrain search with L2
@@ -249,7 +251,7 @@ namespace DataStore.Models.PartitionKeys
                     
                     if (useHierarchicalPartitionKeys)
                     {
-                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                         if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
                         {
                             ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
@@ -281,7 +283,7 @@ namespace DataStore.Models.PartitionKeys
                 {
                     if (useHierarchicalPartitionKeys)
                     {
-                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                        keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                         if (partitionKeyOptions?.PartitionKeyTenantId != null)
                         {
                             keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
@@ -320,7 +322,7 @@ namespace DataStore.Models.PartitionKeys
                             ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
                             
                             //* force exact key usage
-                            keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                            keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                             keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
                             keys.Key3 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L3
                         }
@@ -376,8 +378,8 @@ namespace DataStore.Models.PartitionKeys
                 }
                 else if (idPartitionKeyAttributes.Any())
                 {
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
-                    keys.Key2 = PartitionKeyPrefixes.AggregateId + newInstance.id;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
+                    keys.Key2 = PartitionKeyPrefixes.IdOptional + newInstance.id;
                     keys.Key3 = "_na";
                 }
                 else if (tenantPartitionKeyAttributes.Any())
@@ -386,9 +388,9 @@ namespace DataStore.Models.PartitionKeys
                     var tenantProperty = typeof(T).GetProperty(attribute.PropertyWithTenantId);
                     var tenantString = ValidateTenantAttributeExistsAndHasAValue(newInstance, tenantProperty);
 
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + tenantString;
-                    keys.Key3 = PartitionKeyPrefixes.AggregateId + newInstance.id;
+                    keys.Key3 = PartitionKeyPrefixes.IdOptional + newInstance.id;
                 }
                 else if (timePeriodPartitionKeyAttributes.Any())
                 {
@@ -396,9 +398,9 @@ namespace DataStore.Models.PartitionKeys
                     var timePeriodProperty = typeof(T).GetProperty(attribute.PropertyWithDateTime);
                     var timePeriodString = ValidateTimePeriodAttributeExistsAndHasAValue(newInstance, timePeriodProperty, attribute.PartitionKeyTimeInterval);
 
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                     keys.Key2 = PartitionKeyPrefixes.TimePeriod + timePeriodString;
-                    keys.Key3 = PartitionKeyPrefixes.AggregateId + newInstance.id;
+                    keys.Key3 = PartitionKeyPrefixes.IdOptional + newInstance.id;
                 }
                 else if (tenantAndTimePeriodPartitionKeyAttributes.Any())
                 {
@@ -409,7 +411,7 @@ namespace DataStore.Models.PartitionKeys
                     var timePeriodProperty = typeof(T).GetProperty(attribute.PropertyWithDateTime);
                     var timePeriodString = ValidateTimePeriodAttributeExistsAndHasAValue(newInstance, timePeriodProperty, attribute.PartitionKeyTimeInterval);
 
-                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).FullName;
+                    keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                     keys.Key2 = PartitionKeyPrefixes.TenantId + tenantString;
                     keys.Key3 = PartitionKeyPrefixes.TimePeriod + timePeriodString;
                 }
@@ -564,16 +566,89 @@ namespace DataStore.Models.PartitionKeys
                 return timePeriodString;
             }
         }
+        
+        public static string GetLongId(this IAggregate aggregate)
+        {
+            string Base64Encode(string plainText) {
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+                return System.Convert.ToBase64String(plainTextBytes);
+            }
+
+            var longId = !aggregate.PartitionKeys.IsEmpty() ? Base64Encode(aggregate.PartitionKeys.ToSyntheticKeyString() + PartitionKeyPrefixes.IdRequired + aggregate.id) : Base64Encode(PartitionKeyPrefixes.IdRequired + aggregate.id);
+            return longId;
+        }
+
+        public static Aggregate.PartitionedId DestructurePartitionedIdString(string longId)
+        {
+            string Base64Decode(string base64EncodedData)
+            {
+                var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            }
+
+            longId = Base64Decode(longId);
+            var regex = new Regex(
+                "^(?'type'_tp_[A-Za-z0-9]+)?(?'tenant'_tn_[A-Za-z0-9-]+)?(?'timeperiod'_tm_[A-Za-z0-9:]+)?(?'id'_id_[A-Za-z0-9-]+)?(_na)?(?'idrequired'__[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?)$");
+            var result = regex.Match(longId);
+            Guard.Against(result.Success == false || result.Groups["idrequired"].Success == false, "The id value used has an invalid format.");
+
+            var partitionedId = new Aggregate.PartitionedId();
+            if (result.Groups["type"].Success) partitionedId.Type = result.Groups["type"].Value.SubstringAfter(PartitionKeyPrefixes.Type);
+            if (result.Groups["tenant"].Success) partitionedId.TenantId = Guid.Parse(result.Groups["tenant"].Value.SubstringAfter(PartitionKeyPrefixes.TenantId));
+            if (result.Groups["timeperiod"].Success)
+                partitionedId.TimePeriod = TimeIntervalFromString(result.Groups["timeperiod"].Value.SubstringAfter(PartitionKeyPrefixes.TimePeriod));
+            //* id rather than idrequired is used to increase cardinality in the partition key in some cases, but is always a duplicate of required 
+            Guid.Parse(result.Groups["idrequired"].Value.SubstringAfter(PartitionKeyPrefixes.IdRequired));
+
+            return partitionedId;
+
+            IPartitionKeyTimeInterval TimeIntervalFromString(string s)
+            {
+                if (MinuteInterval.IsValidString(s))
+                {
+                    return MinuteInterval.FromIntervalParts(IntervalParts.FromString(s));
+                }
+
+                if (HourInterval.IsValidString(s))
+                {
+                    return HourInterval.FromIntervalParts(IntervalParts.FromString(s));
+                }
+
+                if (DayInterval.IsValidString(s))
+                {
+                    return DayInterval.FromIntervalParts(IntervalParts.FromString(s));
+                }
+
+                if (WeekInterval.IsValidString(s))
+                {
+                    return WeekInterval.FromIntervalParts(IntervalParts.FromString(s));
+                }
+
+                if (MonthInterval.IsValidString(s))
+                {
+                    return MonthInterval.FromIntervalParts(IntervalParts.FromString(s));
+                }
+
+                if (YearInterval.IsValidString(s))
+                {
+                    return YearInterval.FromIntervalParts(IntervalParts.FromString(s));
+                }
+
+                throw new CircuitException("Time interval string does not match any known format");
+            }
+        }
 
         public static class PartitionKeyPrefixes
         {
-            public const string AggregateId = "_id_";
+            public const string IdOptional = "_id_";
 
-            public const string TenantId = "_tt_";
+            public const string TenantId = "_tn_";
 
             public const string TimePeriod = "_tm_";
 
             public const string Type = "_tp_";
+
+            public const string IdRequired = "__";
         }
     }
 }

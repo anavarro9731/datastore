@@ -9,6 +9,8 @@
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Interfaces.Options;
+    using global::DataStore.Interfaces.Options.ClientSide;
+    using global::DataStore.Models.PartitionKeys;
 
     #endregion
 
@@ -27,41 +29,74 @@
         public Task<IEnumerable<T>> Read<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new() =>
+            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new() =>
             this.dataStore.Read(predicate, setOptions, methodName);
 
         public Task<IEnumerable<T>> Read<T>(
             Expression<Func<T, bool>> predicate = null,
-            Action<ClientSideReadOptions> setOptions = null,
+            Action<ReadOptionsClientSide> setOptions = null,
             string methodName = null) where T : class, IAggregate, new() =>
             this.dataStore.Read(predicate, setOptions, methodName);
 
         public Task<IEnumerable<T>> ReadActive<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ClientSideReadOptions, new() =>
+            string methodName = null) where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new() =>
             this.dataStore.ReadActive(predicate, setOptions, methodName);
 
         public Task<IEnumerable<T>> ReadActive<T>(
             Expression<Func<T, bool>> predicate = null,
-            Action<ClientSideReadOptions> setOptions = null,
+            Action<ReadOptionsClientSide> setOptions = null,
             string methodName = null) where T : class, IAggregate, new() =>
             this.dataStore.ReadActive(predicate, setOptions, methodName);
 
         public Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ClientSideReadOptions, new() =>
+            where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new() =>
             this.dataStore.ReadActiveById<T, O>(modelId, setOptions, methodName);
 
-        public Task<T> ReadActiveById<T>(Guid modelId, Action<ClientSideReadOptions> setOptions = null, string methodName = null)
+        public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
             where T : class, IAggregate, new() =>
             this.dataStore.ReadActiveById<T>(modelId, setOptions, methodName);
 
+        public Task<T> ReadActiveById<T>(string longId, Action<ReadOptionsClientSideBase> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
+            return ReadActiveById<T, ReadOptionsClientSide>(
+                keys.Id,
+                SetLongIdOptions<T>(setOptions, keys));
+        }
+
         public Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ClientSideReadOptions, new() =>
+            where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new() =>
             this.dataStore.ReadById<T, O>(modelId, setOptions, methodName);
 
-        public Task<T> ReadById<T>(Guid modelId, Action<ClientSideReadOptions> setOptions = null, string methodName = null)
+        public Task<T> ReadById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
             where T : class, IAggregate, new() =>
             this.dataStore.ReadById<T>(modelId, setOptions, methodName);
+
+        public Task<T> ReadById<T>(string longId, Action<ReadOptionsClientSideBase> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
+            return ReadById<T, ReadOptionsClientSide>(
+                keys.Id,
+                SetLongIdOptions<T>(setOptions, keys));
+        }
+
+        internal static Action<ReadOptionsClientSide> SetLongIdOptions<T>(Action<ReadOptionsClientSideBase> setOptions, Aggregate.PartitionedId keys) where T : class, IAggregate, new()
+        {
+            return o =>
+                {
+                setOptions?.Invoke(o);
+                if (keys.TenantId.HasValue && keys.TimePeriod != default)
+                    o.ProvidePartitionKeyValues(keys.TenantId.Value, keys.TimePeriod);
+                else if (keys.TimePeriod != default)
+                {
+                    o.ProvidePartitionKeyValues(keys.TimePeriod);
+                } else if (keys.TenantId.HasValue)
+                {
+                    o.ProvidePartitionKeyValues(keys.TenantId.Value);
+                }
+                };
+        }
     }
 }
