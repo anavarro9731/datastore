@@ -11,7 +11,7 @@
 
     public static class TestHarness
     {
-        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.CosmosDb;
+        private static readonly TestHarnessBackingStore BackingStore = TestHarnessBackingStore.InMemory;
 
         public static ITestHarness Create(string testName, DataStoreOptions dataStoreOptions = null, bool useHierarchicalPartitionKey = true)
         {
