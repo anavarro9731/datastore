@@ -4,7 +4,6 @@ namespace DataStore.Models.PartitionKeys
 
     using System;
     using DataStore.Interfaces;
-    using DataStore.Models.PureFunctions;
 
     #endregion
 
@@ -35,7 +34,7 @@ namespace DataStore.Models.PartitionKeys
 
         public PartitionKey__Type_ImmutableTenantId_Id(string propertyWithTenantId)
         {
-            Guard.Against(string.IsNullOrWhiteSpace(propertyWithTenantId), $"You must provide a {propertyWithTenantId} to use this attribute. Use {nameof(PartitionKey__Type_Id)} instead if you don't have one.");
+            if (string.IsNullOrWhiteSpace(propertyWithTenantId)) throw new Exception($"You must provide a {propertyWithTenantId} to use this attribute. Use {nameof(PartitionKey__Type_Id)} instead if you don't have one.");
             PropertyWithTenantId = propertyWithTenantId;
         }
     }
@@ -59,7 +58,7 @@ namespace DataStore.Models.PartitionKeys
 
         public PartitionKey__Type_TimePeriod_Id( string propertyWithDateTime, PartitionKeyTimeIntervalEnum partitionKeyTimeIntervalType)
         {
-            Guard.Against(string.IsNullOrWhiteSpace(propertyWithDateTime), $"You must provide a {propertyWithDateTime} to use this attribute. Use {nameof(PartitionKey__Type_Id)} instead if you don't have one.");
+            if (string.IsNullOrWhiteSpace(propertyWithDateTime)) throw new Exception($"You must provide a {propertyWithDateTime} to use this attribute. Use {nameof(PartitionKey__Type_Id)} instead if you don't have one.");
             PropertyWithDateTime = propertyWithDateTime;
             PartitionKeyTimeInterval = partitionKeyTimeIntervalType;
         }
@@ -76,8 +75,8 @@ namespace DataStore.Models.PartitionKeys
 
         public PartitionKey__Type_ImmutableTenantId_TimePeriod(string propertyWithTenantId, string propertyWithDateTime, PartitionKeyTimeIntervalEnum partitionKeyTimeInterval)
         {
-            Guard.Against(string.IsNullOrWhiteSpace(propertyWithDateTime), $"You must provide a {propertyWithDateTime} to use this attribute. Use {nameof(PartitionKey__Type_ImmutableTenantId_Id)} instead if you don't have one.");
-            Guard.Against(string.IsNullOrWhiteSpace(propertyWithTenantId), $"You must provide a {propertyWithTenantId} to use this attribute. Use {nameof(PartitionKey__Type_TimePeriod_Id)} instead if you don't have one.");
+            if (string.IsNullOrWhiteSpace(propertyWithDateTime)) throw new Exception($"You must provide a {propertyWithDateTime} to use this attribute. Use {nameof(PartitionKey__Type_ImmutableTenantId_Id)} instead if you don't have one.");
+            if (string.IsNullOrWhiteSpace(propertyWithTenantId)) throw new Exception($"You must provide a {propertyWithTenantId} to use this attribute. Use {nameof(PartitionKey__Type_TimePeriod_Id)} instead if you don't have one.");
             PropertyWithTenantId = propertyWithTenantId;
             PropertyWithDateTime = propertyWithDateTime;
             PartitionKeyTimeInterval = partitionKeyTimeInterval;        
