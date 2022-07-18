@@ -5,15 +5,15 @@ namespace DataStore.Interfaces.Options.ClientSide
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
     using DataStore.Interfaces.Options.LibrarySide;
 
-    public abstract class UpdateOptionsClientSideBase : ISecurityOptionsClientSide
+    public abstract class UpdateClientSideBaseOptions : ISecurityOptionsClientSide
     {
-        protected UpdateOptionsClientSideBase()
+        protected UpdateClientSideBaseOptions()
         {
             LibrarySide = new UpdateOptionsLibrarySide();
         }
         protected UpdateOptionsLibrarySide LibrarySide { get; }
 
-        public static implicit operator UpdateOptionsLibrarySide(UpdateOptionsClientSideBase options)
+        public static implicit operator UpdateOptionsLibrarySide(UpdateClientSideBaseOptions options)
         {
             return options.LibrarySide;
         }

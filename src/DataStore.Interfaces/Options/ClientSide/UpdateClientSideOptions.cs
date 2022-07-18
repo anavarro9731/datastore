@@ -8,7 +8,7 @@
 
     #endregion
 
-    public class UpdateOptionsClientSide : UpdateOptionsClientSideBase, IPartitionKeyOptionsClientSide
+    public class UpdateClientSideOptions : UpdateClientSideBaseOptions, IPartitionKeyOptionsClientSide
     {
         public void AcceptCrossPartitionQueryCost()
         {

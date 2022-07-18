@@ -254,7 +254,7 @@ namespace DataStore.Models.PartitionKeys
                         keys.Key1 = PartitionKeyPrefixes.Type + typeof(T).Name;
                         if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
                         {
-                            ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
+                            ValidateCorrectIntervalType(timePeriodPartitionKeyAttributes, partitionKeyOptions.PartitionKeyTimeInterval);
                             keys.Key2 = PartitionKeyPrefixes.TimePeriod + partitionKeyOptions.PartitionKeyTimeInterval; //* constrain to L2
                         }                       
                         else if (partitionKeyOptions?.AcceptCrossPartitionQueryCost != true)
@@ -287,7 +287,7 @@ namespace DataStore.Models.PartitionKeys
                         if (partitionKeyOptions?.PartitionKeyTenantId != null)
                         {
                             keys.Key2 = PartitionKeyPrefixes.TenantId + partitionKeyOptions.PartitionKeyTenantId;
-                            if (partitionKeyOptions?.PartitionKeyTimeInterval != null)
+                            if (partitionKeyOptions.PartitionKeyTimeInterval != null)
                             {
                                 ValidateCorrectIntervalType(tenantAndTimePeriodPartitionKeyAttributes, partitionKeyOptions?.PartitionKeyTimeInterval);
 
@@ -590,7 +590,8 @@ namespace DataStore.Models.PartitionKeys
             var regex = new Regex(
                 "^(?'type'_tp_[A-Za-z0-9]+)?(?'tenant'_tn_[A-Za-z0-9-]+)?(?'timeperiod'_tm_[A-Za-z0-9:]+)?(?'id'_id_[A-Za-z0-9-]+)?(_na)?(?'idrequired'__[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?)$");
             var result = regex.Match(longId);
-            Guard.Against(result.Success == false || result.Groups["idrequired"].Success == false, "The id value used has an invalid format.");
+            
+            Guard.Against(result.Success == false || result.Groups["idrequired"].Success == false, "The longId value used has an invalid format.");
 
             var partitionedId = new Aggregate.PartitionedId();
             if (result.Groups["type"].Success) partitionedId.Type = result.Groups["type"].Value.SubstringAfter(PartitionKeyPrefixes.Type);
@@ -598,7 +599,7 @@ namespace DataStore.Models.PartitionKeys
             if (result.Groups["timeperiod"].Success)
                 partitionedId.TimePeriod = TimeIntervalFromString(result.Groups["timeperiod"].Value.SubstringAfter(PartitionKeyPrefixes.TimePeriod));
             //* id rather than idrequired is used to increase cardinality in the partition key in some cases, but is always a duplicate of required 
-            Guid.Parse(result.Groups["idrequired"].Value.SubstringAfter(PartitionKeyPrefixes.IdRequired));
+            partitionedId.Id = Guid.Parse(result.Groups["idrequired"].Value.SubstringAfter(PartitionKeyPrefixes.IdRequired));
 
             return partitionedId;
 

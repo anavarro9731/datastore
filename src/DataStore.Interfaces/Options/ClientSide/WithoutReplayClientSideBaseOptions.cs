@@ -6,16 +6,16 @@ namespace DataStore.Interfaces.Options.ClientSide
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
     using DataStore.Interfaces.Options.LibrarySide;
 
-    public abstract class WithoutReplayOptionsClientSideBase<T> : IPartitionKeyOptionsClientSide, ISecurityOptionsClientSide
+    public abstract class WithoutReplayClientSideBaseOptions<T> : IPartitionKeyOptionsClientSide, ISecurityOptionsClientSide
     {
-        protected WithoutReplayOptionsClientSideBase()
+        protected WithoutReplayClientSideBaseOptions()
         {
             LibrarySide = new WithoutReplayOptionsLibrarySide<T>();
         }
         
         protected WithoutReplayOptionsLibrarySide<T> LibrarySide { get; }
 
-        public static implicit operator WithoutReplayOptionsLibrarySide<T>(WithoutReplayOptionsClientSideBase<T> options)
+        public static implicit operator WithoutReplayOptionsLibrarySide<T>(WithoutReplayClientSideBaseOptions<T> options)
         {
             return options.LibrarySide;
         }

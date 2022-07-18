@@ -4,7 +4,7 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
 
-    public class ReadOptionsClientSide : ReadOptionsClientSideBase, IPartitionKeyOptionsClientSide
+    public class DeleteClientSideOptions : DeleteClientSideBaseOptions, IPartitionKeyOptionsClientSide
     {
         public void AcceptCrossPartitionQueryCost()
         {

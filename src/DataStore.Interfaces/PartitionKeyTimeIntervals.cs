@@ -5,6 +5,7 @@ namespace DataStore.Interfaces
     using System;
     using System.Globalization;
     using System.Text.RegularExpressions;
+    using CircuitBoard;
     using DataStore.Interfaces.LowLevel;
 
     #endregion
@@ -225,10 +226,12 @@ namespace DataStore.Interfaces
             var parts = new IntervalParts();
 
             var regex = new Regex(
-                "^(Y(?'year'\\d{4}):)?((M(?'month'\\d{1,2}):)|(W(?'week'\\d{1,2}):))?(D(?'day'\\d{1,2}):)?(H(?'hour'\\d{1,2}):)?(I(?'minute'\\d{1,2}))?$");
+                "^(Y(?'year'\\d{4}):?)?((M(?'month'\\d{1,2}):?)|(W(?'week'\\d{1,2}):?))?(D(?'day'\\d{1,2}):?)?(H(?'hour'\\d{1,2}):?)?(I(?'minute'\\d{1,2}))?$");
 
             var result = regex.Match(s);
 
+            if (result.Success == false) throw new CircuitException("Could not parse time interval string " + s);
+            
             if (result.Groups["year"].Success) parts.Year = short.Parse(result.Groups["year"].Value);
             if (result.Groups["month"].Success) parts.Month = short.Parse(result.Groups["month"].Value);
             if (result.Groups["week"].Success) parts.Week = short.Parse(result.Groups["week"].Value);

@@ -6,7 +6,7 @@ namespace DataStore.Interfaces.Options.ClientSide
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
 
-    public class WithoutReplayOptionsClientSide<T> : WithoutReplayOptionsClientSideBase<T>, IWithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
+    public class WithoutReplayClientSideOptions<T> : WithoutReplayClientSideBaseOptions<T>, IWithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
     {
         public IWithoutReplayOptionsClientSide<T> ContinueFrom(ContinuationToken currentContinuationToken)
         {

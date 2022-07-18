@@ -5,16 +5,16 @@ namespace DataStore.Interfaces.Options.ClientSide
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
     using DataStore.Interfaces.Options.LibrarySide;
 
-    public class DeleteOptionsClientSideBase : ISecurityOptionsClientSide
+    public class ReadClientSideBaseOptions : ISecurityOptionsClientSide
     {
-        protected DeleteOptionsClientSideBase()
+        protected ReadClientSideBaseOptions()
         {
-            LibrarySide = new DeleteOptionsLibrarySide();
+            LibrarySide = new ReadOptionsLibrarySide();
         }
 
-        protected DeleteOptionsLibrarySide LibrarySide { get; }
+        protected ReadOptionsLibrarySide LibrarySide { get; }
 
-        public static implicit operator DeleteOptionsLibrarySide(DeleteOptionsClientSideBase options)
+        public static implicit operator ReadOptionsLibrarySide(ReadClientSideBaseOptions options)
         {
             return options.LibrarySide;
         }
@@ -33,11 +33,6 @@ namespace DataStore.Interfaces.Options.ClientSide
 
             //* reason is only for reading the source code
             LibrarySide.BypassSecurity = true;
-        }
-
-        public void Permanently()
-        {
-            LibrarySide.IsHardDelete = true;
         }
     }
 }

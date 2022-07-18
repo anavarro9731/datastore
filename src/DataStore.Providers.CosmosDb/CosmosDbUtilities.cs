@@ -6,6 +6,7 @@ namespace DataStore.Providers.CosmosDb
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.Cosmos;
@@ -108,12 +109,16 @@ namespace DataStore.Providers.CosmosDb
             var iterator = db.GetContainerQueryIterator<ContainerProperties>();
             var containers = await iterator.ReadNextAsync().ConfigureAwait(false);
 
-            while (containers.All(x => x.Id != cosmosStoreSettings.ContainerName))
+            int tries = 0;
+            while (containers.All(x => x.Id != cosmosStoreSettings.ContainerName) && tries <= 10)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
                 iterator = db.GetContainerQueryIterator<ContainerProperties>();
                 containers = await iterator.ReadNextAsync().ConfigureAwait(false);
+                tries++;
             }
+
+            if (tries == 10) throw new CircuitException("Container was not created after 10 seconds");
         }
 
         private static async Task<ArrayList> ListContainers(Database database)

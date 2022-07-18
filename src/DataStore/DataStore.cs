@@ -134,7 +134,7 @@
 
         //* Create
         public async Task<T> Create<T, O>(T model, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : CreateOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : CreateClientSideBaseOptions, new()
         {
             CreateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -151,14 +151,14 @@
             return result;
         }
 
-        public Task<T> Create<T>(T model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> Create<T>(T model, Action<CreateClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return Create<T, CreateOptionsClientSide>(model, setOptions, methodName);
+            return Create<T, CreateClientSideOptions>(model, setOptions, methodName);
         }
 
         //* Delete
         public async Task<T> Delete<T, O>(T instance, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : Interfaces.Options.ClientSide.DeleteOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : Interfaces.Options.ClientSide.DeleteClientSideBaseOptions, new()
         {
             DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -175,14 +175,14 @@
             return result;
         }
 
-        public Task<T> Delete<T>(T instance, Action<Interfaces.Options.ClientSide.DeleteOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> Delete<T>(T instance, Action<Interfaces.Options.ClientSide.DeleteClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return Delete<T, DeleteOptionsClientSide>(instance, setOptions, methodName);
+            return Delete<T, DeleteClientSideOptions>(instance, setOptions, methodName);
         }
 
         //* DeleteById
         public async Task<T> DeleteById<T, O>(Guid id, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : Interfaces.Options.ClientSide.DeleteOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : Interfaces.Options.ClientSide.DeleteClientSideBaseOptions, new()
         {
             DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -199,14 +199,21 @@
             return result;
         }
 
-        public Task<T> DeleteById<T>(Guid id, Action<Interfaces.Options.ClientSide.DeleteOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> DeleteById<T>(Guid id, Action<Interfaces.Options.ClientSide.DeleteClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return DeleteById<T, DeleteOptionsClientSide>(id, setOptions, methodName);
+            return DeleteById<T, DeleteClientSideOptions>(id, setOptions, methodName);
+        }
+
+        public Task<T> DeleteById<T>(string longId, Action<DeleteClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
+            Action<DeleteClientSideOptions> longIdUpdateOptions = DataStoreWriteOnly<T>.SetLongIdDeleteOptions(setOptions, keys);
+            return DeleteById<T>(keys.Id, longIdUpdateOptions, methodName);
         }
 
         //* DeleteWhere
         public async Task<IEnumerable<T>> DeleteWhere<T, O>(Expression<Func<T, bool>> predicate, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : Interfaces.Options.ClientSide.DeleteOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : Interfaces.Options.ClientSide.DeleteClientSideBaseOptions, new()
         {
             DeleteOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -223,15 +230,15 @@
             return results;
         }
 
-        public Task<IEnumerable<T>> DeleteWhere<T>(Expression<Func<T, bool>> predicate, Action<Interfaces.Options.ClientSide.DeleteOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<IEnumerable<T>> DeleteWhere<T>(Expression<Func<T, bool>> predicate, Action<Interfaces.Options.ClientSide.DeleteClientSideOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new()
         {
-            return DeleteWhere<T, DeleteOptionsClientSide>(predicate, setOptions, methodName);
+            return DeleteWhere<T, DeleteClientSideOptions>(predicate, setOptions, methodName);
         }
 
         //* Read
         public async Task<IEnumerable<T>> Read<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -256,15 +263,15 @@
             return result;
         }
 
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ReadOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<ReadClientSideOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new()
         {
-            return Read<T, ReadOptionsClientSide>(predicate, setOptions, methodName);
+            return Read<T, ReadClientSideOptions>(predicate, setOptions, methodName);
         }
 
         //*ReadActive
         public async Task<IEnumerable<T>> ReadActive<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -291,15 +298,15 @@
 
         public Task<IEnumerable<T>> ReadActive<T>(
             Expression<Func<T, bool>> predicate = null,
-            Action<ReadOptionsClientSide> setOptions = null,
+            Action<ReadClientSideOptions> setOptions = null,
             string methodName = null) where T : class, IAggregate, new()
         {
-            return ReadActive<T, ReadOptionsClientSide>(predicate, setOptions, methodName);
+            return ReadActive<T, ReadClientSideOptions>(predicate, setOptions, methodName);
         }
 
         //ReadActiveById
         public async Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -326,22 +333,22 @@
             return result;
         }
 
-        public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return ReadActiveById<T, ReadOptionsClientSide>(modelId, setOptions, methodName);
+            return ReadActiveById<T, ReadClientSideOptions>(modelId, setOptions, methodName);
         }
 
-        public Task<T> ReadActiveById<T>(string longId, Action<ReadOptionsClientSideBase> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> ReadActiveById<T>(string longId, Action<ReadClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
-            return ReadActiveById<T, ReadOptionsClientSide>(
+            return ReadActiveById<T>(
                 keys.Id,
-                DataStoreReadOnly.SetLongIdOptions<T>(setOptions, keys));
+                DataStoreReadOnly.SetLongIdOptions(setOptions, keys), methodName);
         }
 
         //ReadById
         public async Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new()
         {
             ReadOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -374,22 +381,22 @@
             return hasPii;
         }
 
-        public Task<T> ReadById<T>(Guid modelId, Action<ReadOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> ReadById<T>(Guid modelId, Action<ReadClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return ReadById<T, ReadOptionsClientSide>(modelId, setOptions, methodName);
+            return ReadById<T, ReadClientSideOptions>(modelId, setOptions, methodName);
         }
 
-        public Task<T> ReadById<T>(string longId, Action<ReadOptionsClientSideBase> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> ReadById<T>(string longId, Action<ReadClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
-            return ReadById<T, ReadOptionsClientSide>(
+            return ReadById<T>(
                 keys.Id,
-                DataStoreReadOnly.SetLongIdOptions<T>(setOptions, keys));
+                DataStoreReadOnly.SetLongIdOptions(setOptions, keys), methodName);
         }
 
         //* Update
         public async Task<T> Update<T, O>(T src, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : UpdateOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : UpdateClientSideBaseOptions, new()
         {
             UpdateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -406,14 +413,14 @@
             return result;
         }
 
-        public Task<T> Update<T>(T src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> Update<T>(T src, Action<UpdateClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
-            return Update<T, UpdateOptionsClientSide>(src, setOptions, methodName);
+            return Update<T, UpdateClientSideOptions>(src, setOptions, methodName);
         }
 
         //* UpdateById
         public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : UpdateOptionsClientSideBase, new()
+            where T : class, IAggregate, new() where O : UpdateClientSideBaseOptions, new()
         {
             UpdateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -430,10 +437,18 @@
             return result;
         }
 
-        public Task<T> UpdateById<T>(Guid id, Action<T> action, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<T> UpdateById<T>(Guid id, Action<T> action, Action<UpdateClientSideOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new()
         {
-            return UpdateById<T, UpdateOptionsClientSide>(id, action, setOptions, methodName);
+            return UpdateById<T, UpdateClientSideOptions>(id, action, setOptions, methodName);
+        }
+
+        public Task<T> UpdateById<T>(string longId, Action<T> action, Action<UpdateClientSideBaseOptions> setOptions = null, string methodName = null) 
+            where T : class, IAggregate, new()
+        {
+            var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
+            Action<UpdateClientSideOptions> longIdUpdateOptions = DataStoreWriteOnly<T>.SetLongIdUpdateOptions(setOptions, keys);
+            return UpdateById(keys.Id, action, longIdUpdateOptions, methodName);
         }
 
         //* UpdateWhere
@@ -441,7 +456,7 @@
             Expression<Func<T, bool>> predicate,
             Action<T> action,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : UpdateOptionsClientSideBase, new()
+            string methodName = null) where T : class, IAggregate, new() where O : UpdateClientSideBaseOptions, new()
         {
             UpdateOptionsLibrarySide options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -461,10 +476,10 @@
         public Task<IEnumerable<T>> UpdateWhere<T>(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            Action<UpdateOptionsClientSide> setOptions = null,
+            Action<UpdateClientSideOptions> setOptions = null,
             string methodName = null) where T : class, IAggregate, new()
         {
-            return UpdateWhere<T, UpdateOptionsClientSide>(predicate, action, setOptions, methodName);
+            return UpdateWhere<T, UpdateClientSideOptions>(predicate, action, setOptions, methodName);
         }
 
         private static void AppendMethodName(ref string current, string add)

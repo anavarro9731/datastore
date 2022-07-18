@@ -14,7 +14,8 @@
 
 ##  v16
 
-### Many aspects of the Security layer have changed.
+### Breaking Changes
+#### Many aspects of the Security layer have changed.
 If you enable security in DataStoreOptions. It is now on by default for ALL Aggregates, whether they have ScopeReferences or not.
 You can bypass this either with the BypassSecurity attribute or by calling the options => options.ByPassSecurity() option when calling a Store method.
 ScopeHierarchy is now optional when using security, and you no longer have to provide a mapping function to find the foreign keys of parent entities.
@@ -23,5 +24,11 @@ Finally the DatabasePermissionInstance class on IIdentityWithDatbasePermissions 
 class has been replaced with SecurableOperations which are now just string.
 
 ### Features
-- Projections support. The underlying Azure provider has has this for a long time, but you can now pass a mapping function similar to .Select(orig => mapped)
-- The CosmosClientOptions are now exposed when creating the CosmosSettings object 
+- Projections support. 
+The underlying Azure provider has has this for a long time, but you can now pass a mapping function similar to .Select(orig => mapped) to the Read functions on DataStore.WithoutEventReplay to get a different structure back.
+- The CosmosClientOptions are now exposed when creating the CosmosSettings object
+#### Partition Key Support
+There are now 5 partition key options with 2 overall modes (hierarchical [uses the new Cosmos Preview feature] and synthetic)
+
+You can use a mix and match of these by placing them attributes on the aggregate classes.
+When you then goto query an aggregate you will need 

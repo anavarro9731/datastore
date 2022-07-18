@@ -13,42 +13,42 @@ namespace DataStore.Interfaces
 
     public interface IDataStoreWriteOnly<T> where T : class, IAggregate, new()
     {
-        Task<T> Create<O>(T model, Action<O> setOptions = null, string methodName = null) where O : CreateOptionsClientSideBase, new();
+        Task<T> Create<O>(T model, Action<O> setOptions = null, string methodName = null) where O : CreateClientSideBaseOptions, new();
 
-        Task<T> Create(T model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null);
+        Task<T> Create(T model, Action<CreateClientSideOptions> setOptions = null, string methodName = null);
 
-        Task<T> Delete<O>(T instance, Action<O> setOptions = null, string methodName = null) where O : DeleteOptionsClientSideBase, new();
+        Task<T> Delete<O>(T instance, Action<O> setOptions = null, string methodName = null) where O : DeleteClientSideBaseOptions, new();
 
-        Task<T> Delete(T instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null);
+        Task<T> Delete(T instance, Action<DeleteClientSideOptions> setOptions = null, string methodName = null);
 
-        Task<T> DeleteById<O>(Guid id, Action<O> setOptions = null, string methodName = null) where O : DeleteOptionsClientSideBase, new();
+        Task<T> DeleteById<O>(Guid id, Action<O> setOptions = null, string methodName = null) where O : DeleteClientSideBaseOptions, new();
 
-        Task<T> DeleteById(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null);
+        Task<T> DeleteById(Guid id, Action<DeleteClientSideOptions> setOptions = null, string methodName = null);
 
-        Task<T> DeleteById(string longId, Action<DeleteOptionsClientSideBase> setOptions = null, string methodName = null);
+        Task<T> DeleteById(string longId, Action<DeleteClientSideBaseOptions> setOptions = null, string methodName = null);
 
         Task<IEnumerable<T>> DeleteWhere<O>(Expression<Func<T, bool>> predicate, Action<O> setOptions = null, string methodName = null)
-            where O : DeleteOptionsClientSideBase, new();
+            where O : DeleteClientSideBaseOptions, new();
 
-        Task<IEnumerable<T>> DeleteWhere(Expression<Func<T, bool>> predicate, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null);
+        Task<IEnumerable<T>> DeleteWhere(Expression<Func<T, bool>> predicate, Action<DeleteClientSideOptions> setOptions = null, string methodName = null);
 
-        Task<T> Update<O>(T src, Action<O> setOptions = null, string methodName = null) where O : UpdateOptionsClientSideBase, new();
+        Task<T> Update<O>(T src, Action<O> setOptions = null, string methodName = null) where O : UpdateClientSideBaseOptions, new();
 
-        Task<T> Update(T src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null);
+        Task<T> Update(T src, Action<UpdateClientSideOptions> setOptions = null, string methodName = null);
 
-        Task<T> UpdateById<O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null) where O : UpdateOptionsClientSideBase, new();
+        Task<T> UpdateById<O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null) where O : UpdateClientSideBaseOptions, new();
 
-        Task<T> UpdateById(Guid id, Action<T> action, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null);
+        Task<T> UpdateById(Guid id, Action<T> action, Action<UpdateClientSideOptions> setOptions = null, string methodName = null);
 
-        Task<T> UpdateById(string longId, Action<T> action, Action<UpdateOptionsClientSideBase> setOptions = null, string methodName = null);
+        Task<T> UpdateById(string longId, Action<T> action, Action<UpdateClientSideBaseOptions> setOptions = null, string methodName = null);
 
         Task<IEnumerable<T>> UpdateWhere<O>(Expression<Func<T, bool>> predicate, Action<T> action, Action<O> setOptions = null, string methodName = null)
-            where O : UpdateOptionsClientSideBase, new();
+            where O : UpdateClientSideBaseOptions, new();
 
         Task<IEnumerable<T>> UpdateWhere(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            Action<UpdateOptionsClientSide> setOptions = null,
+            Action<UpdateClientSideOptions> setOptions = null,
             string methodName = null);
     }
     
@@ -57,58 +57,67 @@ namespace DataStore.Interfaces
    public interface IDataStoreWriteOnly
     {
          Task<T1> Create<T1, O>(T1 model, Action<O> setOptions = null, string methodName = null)
-            where T1 : class, IAggregate, new() where O : CreateOptionsClientSideBase, new();
+            where T1 : class, IAggregate, new() where O : CreateClientSideBaseOptions, new();
 
-         Task<T1> Create<T1>(T1 model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null)
+         Task<T1> Create<T1>(T1 model, Action<CreateClientSideOptions> setOptions = null, string methodName = null)
             where T1 : class, IAggregate, new();
 
          Task<T1> Delete<T1, O>(T1 instance, Action<O> setOptions = null, string methodName = null)
-            where T1 : class, IAggregate, new() where O : DeleteOptionsClientSideBase, new();
+            where T1 : class, IAggregate, new() where O : DeleteClientSideBaseOptions, new();
 
-         Task<T1> Delete<T1>(T1 instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+         Task<T1> Delete<T1>(T1 instance, Action<DeleteClientSideOptions> setOptions = null, string methodName = null)
             where T1 : class, IAggregate, new();
 
          Task<T1> DeleteById<T1, O>(Guid id, Action<O> setOptions = null, string methodName = null)
-            where T1 : class, IAggregate, new() where O : DeleteOptionsClientSideBase, new();
+            where T1 : class, IAggregate, new() where O : DeleteClientSideBaseOptions, new();
 
-         Task<T1> DeleteById<T1>(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+         Task<T1> DeleteById<T1>(Guid id, Action<DeleteClientSideOptions> setOptions = null, string methodName = null)
+            where T1 : class, IAggregate, new();
+         
+         Task<T1> DeleteById<T1>(string longId, Action<DeleteClientSideBaseOptions> setOptions = null, string methodName = null)
             where T1 : class, IAggregate, new();
 
          Task<IEnumerable<T1>> DeleteWhere<T1, O>(
             Expression<Func<T1, bool>> predicate,
             Action<O> setOptions = null,
-            string methodName = null) where T1 : class, IAggregate, new() where O : DeleteOptionsClientSideBase, new();
+            string methodName = null) where T1 : class, IAggregate, new() where O : DeleteClientSideBaseOptions, new();
 
          Task<IEnumerable<T1>> DeleteWhere<T1>(
             Expression<Func<T1, bool>> predicate,
-            Action<DeleteOptionsClientSide> setOptions = null,
+            Action<DeleteClientSideOptions> setOptions = null,
             string methodName = null) where T1 : class, IAggregate, new();
 
          Task<T1> Update<T1, O>(T1 src, Action<O> setOptions = null, string methodName = null)
-            where T1 : class, IAggregate, new() where O : UpdateOptionsClientSideBase, new();
+            where T1 : class, IAggregate, new() where O : UpdateClientSideBaseOptions, new();
 
-         Task<T1> Update<T1>(T1 src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+         Task<T1> Update<T1>(T1 src, Action<UpdateClientSideOptions> setOptions = null, string methodName = null)
             where T1 : class, IAggregate, new();
 
          Task<T1> UpdateById<T1, O>(Guid id, Action<T1> action, Action<O> setOptions = null, string methodName = null)
-            where T1 : class, IAggregate, new() where O : UpdateOptionsClientSideBase, new();
+            where T1 : class, IAggregate, new() where O : UpdateClientSideBaseOptions, new();
 
          Task<T1> UpdateById<T1>(
             Guid id,
             Action<T1> action,
-            Action<UpdateOptionsClientSide> setOptions = null,
+            Action<UpdateClientSideOptions> setOptions = null,
+            string methodName = null) where T1 : class, IAggregate, new();
+         
+         Task<T1> UpdateById<T1>(
+            string longId,
+            Action<T1> action,
+            Action<UpdateClientSideBaseOptions> setOptions = null,
             string methodName = null) where T1 : class, IAggregate, new();
 
          Task<IEnumerable<T1>> UpdateWhere<T1, O>(
             Expression<Func<T1, bool>> predicate,
             Action<T1> action,
             Action<O> setOptions = null,
-            string methodName = null) where T1 : class, IAggregate, new() where O : UpdateOptionsClientSideBase, new();
+            string methodName = null) where T1 : class, IAggregate, new() where O : UpdateClientSideBaseOptions, new();
 
          Task<IEnumerable<T1>> UpdateWhere<T1>(
             Expression<Func<T1, bool>> predicate,
             Action<T1> action,
-            Action<UpdateOptionsClientSide> setOptions = null,
+            Action<UpdateClientSideOptions> setOptions = null,
             string methodName = null) where T1 : class, IAggregate, new();
     }
 }

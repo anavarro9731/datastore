@@ -74,7 +74,9 @@
             Expression<Func<T,bool>> predicate = i => i.Schema == schema;
             
             var key = PartitionKeyHelpers.GetKeysForLinqQuery<T>(this.UseHierarchicalPartitionKeys, queryOptions.As<IPartitionKeyOptionsLibrarySide>());
+            
             var fanout = key.IsEmpty();
+            
             if (!fanout)  predicate = predicate.And(key.ToPredicate<T>());
             
             var query = this.container.GetItemLinqQueryable<T>().Where(predicate);

@@ -3,6 +3,7 @@ namespace DataStore.Interfaces.Options.LibrarySide
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
     public class WithoutReplayOptionsLibrarySide<T> : ReadOptionsLibrarySide
     {

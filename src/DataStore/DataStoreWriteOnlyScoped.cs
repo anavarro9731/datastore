@@ -35,81 +35,81 @@
             return this.dataStore.CommitChanges();
         }
 
-        public Task<T> Create<O>(T model, Action<O> setOptions = null, string methodName = null) where O : CreateOptionsClientSideBase, new()
+        public Task<T> Create<O>(T model, Action<O> setOptions = null, string methodName = null) where O : CreateClientSideBaseOptions, new()
         {
             return this.dataStore.Create(model, setOptions, methodName);
         }
 
-        public Task<T> Create(T model, Action<CreateOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<T> Create(T model, Action<CreateClientSideOptions> setOptions = null, string methodName = null)
         {
             return this.dataStore.Create(model, setOptions, methodName);
         }
 
-        public Task<T> Delete<O>(T instance, Action<O> setOptions = null, string methodName = null) where O : DeleteOptionsClientSideBase, new()
+        public Task<T> Delete<O>(T instance, Action<O> setOptions = null, string methodName = null) where O : DeleteClientSideBaseOptions, new()
         {
             return this.dataStore.Delete(instance, setOptions, methodName);
         }
 
-        public Task<T> Delete(T instance, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<T> Delete(T instance, Action<DeleteClientSideOptions> setOptions = null, string methodName = null)
         {
             return this.dataStore.Delete(instance, setOptions, methodName);
         }
 
-        public Task<T> DeleteById<O>(Guid id, Action<O> setOptions = null, string methodName = null) where O : DeleteOptionsClientSideBase, new()
+        public Task<T> DeleteById<O>(Guid id, Action<O> setOptions = null, string methodName = null) where O : DeleteClientSideBaseOptions, new()
         {
             return this.dataStore.DeleteById<T, O>(id, setOptions, methodName);
         }
 
-        public Task<T> DeleteById(Guid id, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<T> DeleteById(Guid id, Action<DeleteClientSideOptions> setOptions = null, string methodName = null)
         {
             return this.dataStore.DeleteById<T>(id, setOptions, methodName);
         }
 
-        public Task<T> DeleteById(string longId, Action<DeleteOptionsClientSideBase> setOptions = null, string methodName = null) 
+        public Task<T> DeleteById(string longId, Action<DeleteClientSideBaseOptions> setOptions = null, string methodName = null) 
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
-            return DeleteById<DeleteOptionsClientSide>(keys.Id, SetLongIdDeleteOptions(setOptions, keys));
+            return DeleteById(keys.Id, SetLongIdDeleteOptions(setOptions, keys), methodName);
         }
 
         public Task<IEnumerable<T>> DeleteWhere<O>(Expression<Func<T, bool>> predicate, Action<O> setOptions = null, string methodName = null)
-            where O : DeleteOptionsClientSideBase, new()
+            where O : DeleteClientSideBaseOptions, new()
         {
             return this.dataStore.DeleteWhere(predicate, setOptions, methodName);
         }
 
-        public Task<IEnumerable<T>> DeleteWhere(Expression<Func<T, bool>> predicate, Action<DeleteOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<IEnumerable<T>> DeleteWhere(Expression<Func<T, bool>> predicate, Action<DeleteClientSideOptions> setOptions = null, string methodName = null)
         {
             return this.dataStore.DeleteWhere(predicate, setOptions, methodName);
         }
 
-        public Task<T> Update<O>(T src, Action<O> setOptions = null, string methodName = null) where O : UpdateOptionsClientSideBase, new()
+        public Task<T> Update<O>(T src, Action<O> setOptions = null, string methodName = null) where O : UpdateClientSideBaseOptions, new()
         {
             return this.dataStore.Update(src, setOptions, methodName);
         }
 
-        public Task<T> Update(T src, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<T> Update(T src, Action<UpdateClientSideOptions> setOptions = null, string methodName = null)
         {
             return this.dataStore.Update(src, setOptions, methodName);
         }
 
-        public Task<T> UpdateById<O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null) where O : UpdateOptionsClientSideBase, new()
+        public Task<T> UpdateById<O>(Guid id, Action<T> action, Action<O> setOptions = null, string methodName = null) where O : UpdateClientSideBaseOptions, new()
         {
             return this.dataStore.UpdateById(id, action, setOptions, methodName);
         }
 
-        public Task<T> UpdateById(Guid id, Action<T> action, Action<UpdateOptionsClientSide> setOptions = null, string methodName = null)
+        public Task<T> UpdateById(Guid id, Action<T> action, Action<UpdateClientSideOptions> setOptions = null, string methodName = null)
         {
             return this.dataStore.UpdateById(id, action, setOptions, methodName);
         }
 
-        public Task<T> UpdateById(string longId, Action<T> action, Action<UpdateOptionsClientSideBase> setOptions = null, string methodName = null)
+        public Task<T> UpdateById(string longId, Action<T> action, Action<UpdateClientSideBaseOptions> setOptions = null, string methodName = null)
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
-            return UpdateById<UpdateOptionsClientSide>(keys.Id, action, SetLongIdUpdateOptions(setOptions, keys));
+            return UpdateById(keys.Id, action, SetLongIdUpdateOptions(setOptions, keys), methodName);
         }
 
         public Task<IEnumerable<T>> UpdateWhere<O>(Expression<Func<T, bool>> predicate, Action<T> action, Action<O> setOptions = null, string methodName = null)
-            where O : UpdateOptionsClientSideBase, new()
+            where O : UpdateClientSideBaseOptions, new()
         {
             return this.dataStore.UpdateWhere(predicate, action, setOptions, methodName);
         }
@@ -117,13 +117,13 @@
         public Task<IEnumerable<T>> UpdateWhere(
             Expression<Func<T, bool>> predicate,
             Action<T> action,
-            Action<UpdateOptionsClientSide> setOptions = null,
+            Action<UpdateClientSideOptions> setOptions = null,
             string methodName = null)
         {
             return this.dataStore.UpdateWhere(predicate, action, setOptions, methodName);
         }
 
-        private static Action<UpdateOptionsClientSide> SetLongIdUpdateOptions(Action<UpdateOptionsClientSideBase> setOptions, Aggregate.PartitionedId keys)
+        internal static Action<UpdateClientSideOptions> SetLongIdUpdateOptions(Action<UpdateClientSideBaseOptions> setOptions, Aggregate.PartitionedId keys)
         {
             return o =>
                 {
@@ -142,8 +142,8 @@
                 }
                 };
         }
-        
-        private static Action<DeleteOptionsClientSide> SetLongIdDeleteOptions(Action<DeleteOptionsClientSideBase> setOptions, Aggregate.PartitionedId keys)
+
+        internal static Action<DeleteClientSideOptions> SetLongIdDeleteOptions(Action<DeleteClientSideBaseOptions> setOptions, Aggregate.PartitionedId keys)
         {
             return o =>
                 {

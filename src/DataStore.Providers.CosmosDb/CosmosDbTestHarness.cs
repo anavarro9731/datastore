@@ -9,6 +9,7 @@
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Options.LibrarySide;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
@@ -72,7 +73,7 @@
         public List<T> QueryUnderlyingDbDirectly<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null)
             where T : class, IAggregate, new()
         {
-            var query = DataStore.DocumentRepository.CreateQueryable<T>(null); //* going to fanout, should be ok for testing
+            var query = DataStore.DocumentRepository.CreateQueryable<T>(new ReadOptionsLibrarySide()); //* force fanout, should be ok for testing
             
             var updatedQuery = extendQueryable?.Invoke(query) ?? query;
 

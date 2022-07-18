@@ -3,7 +3,7 @@
     using System;
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public class CreateOptionsClientSide : CreateOptionsClientSideBase
+    public class CreateClientSideOptions : CreateClientSideBaseOptions
     {
         public void AuthoriseFor(IIdentityWithDatabasePermissions identity)
         {

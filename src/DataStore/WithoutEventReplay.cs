@@ -46,10 +46,10 @@ namespace DataStore
         }
 
         //* Count
-        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null) where T : class, IAggregate, new() => 
-            Count<T, WithoutReplayOptionsClientSide<T>>(predicate, setOptions);
+        public Task<int> Count<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayClientSideOptions<T>> setOptions = null) where T : class, IAggregate, new() => 
+            Count<T, WithoutReplayClientSideOptions<T>>(predicate, setOptions);
 
-        public async Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSideBase<T>, new()
+        public async Task<int> Count<T, O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null) where T : class, IAggregate, new() where O : WithoutReplayClientSideBaseOptions<T>, new()
         {
             WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -61,33 +61,33 @@ namespace DataStore
 
         //* CountActive
         public Task<int> CountActive<T,O>(Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSideBase<T>, new()
+            where T : class, IAggregate, new() where O : WithoutReplayClientSideBaseOptions<T>, new()
         {
             predicate = predicate == null ? a => a.Active : predicate.And(a => a.Active);
 
             return Count(predicate, setOptions);
         }
         
-        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null,Action<WithoutReplayOptionsClientSide<T>> setOptions = null) where T : class, IAggregate, new() => 
-            CountActive<T, WithoutReplayOptionsClientSide<T>>(predicate, setOptions);
+        public Task<int> CountActive<T>(Expression<Func<T, bool>> predicate = null,Action<WithoutReplayClientSideOptions<T>> setOptions = null) where T : class, IAggregate, new() => 
+            CountActive<T, WithoutReplayClientSideOptions<T>>(predicate, setOptions);
         
         //* Read
-        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
+        public Task<IEnumerable<T>> Read<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayClientSideOptions<T>> setOptions = null)
             where T : class, IAggregate, new()
         {
-            return Read<T, WithoutReplayOptionsClientSide<T>, T>(null, predicate, setOptions);
+            return Read<T, WithoutReplayClientSideOptions<T>, T>(null, predicate, setOptions);
         }
 
         public Task<IEnumerable<R>> Read<T, R>(
             Expression<Func<T, R>> map,
             Expression<Func<T, bool>> predicate = null,
-            Action<WithoutReplayOptionsClientSide<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
+            Action<WithoutReplayClientSideOptions<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
         {
-            return Read<T, WithoutReplayOptionsClientSide<R>, R>(map, predicate, setOptions);
+            return Read<T, WithoutReplayClientSideOptions<R>, R>(map, predicate, setOptions);
         }
 
         public async Task<IEnumerable<R>> Read<T, O, R>(Expression<Func<T, R>> map = null, Expression<Func<T, bool>> predicate = null, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSideBase<R>, new() where R : class, IAggregate, new()
+            where T : class, IAggregate, new() where O : WithoutReplayClientSideBaseOptions<R>, new() where R : class, IAggregate, new()
         {
             /* T is Aggregate, R is a possible Projection */
             
@@ -165,7 +165,7 @@ namespace DataStore
         }
 
         //* ReadActive
-        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayOptionsClientSide<T>> setOptions = null)
+        public Task<IEnumerable<T>> ReadActive<T>(Expression<Func<T, bool>> predicate = null, Action<WithoutReplayClientSideOptions<T>> setOptions = null)
             where T : class, IAggregate, new()
         {
             return Read(predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
@@ -174,20 +174,20 @@ namespace DataStore
         public Task<IEnumerable<R>> ReadActive<T, R>(
             Expression<Func<T, R>> map,
             Expression<Func<T, bool>> predicate = null,
-            Action<WithoutReplayOptionsClientSide<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
+            Action<WithoutReplayClientSideOptions<R>> setOptions = null) where T : class, IAggregate, new() where R : class, IAggregate, new()
         {
             return Read(map, predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
         }
 
         public Task<IEnumerable<R>> ReadActive<T, O, R>(Expression<Func<T, R>> map, Expression<Func<T, bool>> predicate, Action<O> setOptions)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSideBase<R>, new() where R : class, IAggregate, new()
+            where T : class, IAggregate, new() where O : WithoutReplayClientSideBaseOptions<R>, new() where R : class, IAggregate, new()
         {
             return Read(map, predicate == null ? a => a.Active : predicate.And(a => a.Active), setOptions);
         }
 
         //* ReadById (no map)
         public async Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSideBase<T>, new()
+            where T : class, IAggregate, new() where O : WithoutReplayClientSideBaseOptions<T>, new()
         {
             WithoutReplayOptionsLibrarySide<T> options = setOptions == null ? new O() : new O().Op(setOptions);
 
@@ -209,12 +209,12 @@ namespace DataStore
         public Task<T> ReadById<T>(string longId, Action<ISecurityOptionsClientSide> setOptions = null) where T : class, IAggregate, new()
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
-            return ReadById<T, WithoutReplayOptionsClientSideIdOnly<T>>(
+            return ReadById<T, WithoutReplayClientSideIdOnlyOptions<T>>(
                 keys.Id,
                 SetLongIdOptions<T>(setOptions, keys));
         }
 
-        private static Action<WithoutReplayOptionsClientSideIdOnly<T>> SetLongIdOptions<T>(Action<ISecurityOptionsClientSide> setOptions, Aggregate.PartitionedId keys) where T : class, IAggregate, new()
+        private static Action<WithoutReplayClientSideIdOnlyOptions<T>> SetLongIdOptions<T>(Action<ISecurityOptionsClientSide> setOptions, Aggregate.PartitionedId keys) where T : class, IAggregate, new()
         {
             return o =>
                 {
@@ -231,31 +231,31 @@ namespace DataStore
                 };
         }
 
-        public Task<T> ReadById<T>(Guid modelId, Action<WithoutReplayOptionsClientSideIdOnly<T>> setOptions = null) 
+        public Task<T> ReadById<T>(Guid modelId, Action<WithoutReplayClientSideIdOnlyOptions<T>> setOptions = null) 
             where T : class, IAggregate, new()
         {
-            return ReadById<T, WithoutReplayOptionsClientSideIdOnly<T>>(modelId, setOptions);
+            return ReadById<T, WithoutReplayClientSideIdOnlyOptions<T>>(modelId, setOptions);
         }
 
 
         public async Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null)
-            where T : class, IAggregate, new() where O : WithoutReplayOptionsClientSideBase<T>, new()
+            where T : class, IAggregate, new() where O : WithoutReplayClientSideBaseOptions<T>, new()
         {
             var result = await ReadById<T, O>(modelId, setOptions).ConfigureAwait(false);
             if (result == null || !result.Active) return null;
             return result;
         }
 
-        public Task<T> ReadActiveById<T>(Guid modelId, Action<WithoutReplayOptionsClientSideIdOnly<T>> setOptions = null) 
+        public Task<T> ReadActiveById<T>(Guid modelId, Action<WithoutReplayClientSideIdOnlyOptions<T>> setOptions = null) 
             where T : class, IAggregate, new()
         {
-            return ReadActiveById<T, WithoutReplayOptionsClientSideIdOnly<T>>(modelId, setOptions);
+            return ReadActiveById<T, WithoutReplayClientSideIdOnlyOptions<T>>(modelId, setOptions);
         }
 
         public Task<T> ReadActiveById<T>(string longId, Action<ISecurityOptionsClientSide> setOptions = null) where T : class, IAggregate, new()
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
-            return ReadActiveById<T, WithoutReplayOptionsClientSideIdOnly<T>>(
+            return ReadActiveById<T, WithoutReplayClientSideIdOnlyOptions<T>>(
                 keys.Id,
                 SetLongIdOptions<T>(setOptions, keys));
         }
