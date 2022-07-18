@@ -63,7 +63,8 @@
         {
             var query = CreateQueryable<T>(aggregatesCounted.QueryOptions);
 
-            var count = await query.Where(aggregatesCounted.Predicate).CountAsync().ConfigureAwait(false);
+            if (aggregatesCounted.Predicate != default) query = query.Where(aggregatesCounted.Predicate);
+            var count = await query.CountAsync().ConfigureAwait(false);
 
             return count;
         }

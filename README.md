@@ -12,11 +12,12 @@ DataStore is an easy-to-use, data-access framework for C# which extends the basi
 
 capabilities on C# POCO objects with many additional features including:
 
-* Paging with continuation tokens
+* 5 types of Partition Key Support by attribute including support for the new Hierarchical keys (see Partition folder in Tests project) 
 * Increased consistency with session-based unit of work 
 * In-memory database, and event history for testing (e.g. DataStore.ExecutedOperations.Where(o => o...)
+* Version History
 * Optimistic Concurrency supported by default with the ability to disable on a per-query basis
-* Profiling (e.g. Duration and Query Cost in Request Units)
+* Easy support for paging with continuation tokens
 * Automatic ID and timestamp management of object hierarchies 
 * Automatic retries of queries when limits are exceeded
 * Session-based vs Direct-to-Database views of data. 
@@ -24,14 +25,14 @@ Using a feature called "Event Replay" queries by default will reflect all previo
 This is can be circumvented by choosing to use the "WithoutEventReplay" option on any call.
 Some features such as Continue/Take, and OrderBy/ThenBy are available only WithoutEventReplay for obvious reasons.
 * Document-level security (see the WhenCallingReadWithAuthorisation test in Datastore.Tests/IDocumentRepository/Query/)
-
 **[See extensive test suite for examples of these and other features]**
 
 DataStore targets both the NetStandard2.0 and .NET Framework 4.6.1 platforms and does not require .NET Core.
 
 ## Roadmap
-* Update Version History on instances in the current session post-commit
+
 * ReadMany function with partition support
+* Update Version History on instances in the current session post-commit
 
 ## Usage
 
@@ -111,32 +112,32 @@ Calling DataStore.CommitChanges() will commit these events to the database.
         public async void CanUpdateCar()
         {
             var documentRepository = new InMemoryDocumentRepository();
-            var inMemoryDb = documentRepository.Aggregates;
             var dataStore = new DataStore(documentRepository);
 
-            var carId = Guid.NewGuid();
-
             //Given
-            inMemoryDb.Add(new Car
-            {
-                id = carId,
-                Make = "Toyota"
-            });
+                var carId = Guid.NewGuid();
+            
+                await dataStore.Create(
+                    new Car
+                    {
+                        id = carId, Make = "Toyota"
+                    });
+                await dataStore.CommitChanges();
 
             //When
-            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-            await dataStore.CommitChanges();
+                await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+                await dataStore.CommitChanges();
 
             //Then 
 
-            //We have executed an update operation
-            Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+                //We have executed an update operation
+                Assert.NotNull(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
 
-            //We have no queued update operations
-            Assert.Null(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+                //We have no queued update operations
+                Assert.Null(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
-            //The dataStore reads the changes correctly
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+                //The dataStore reads the changes correctly
+                Assert.Equal("Ford", (await dataStore.ReadActiveById<Car>(carId)).Make);
         }
 
 ```
@@ -144,40 +145,41 @@ Calling DataStore.CommitChanges() will commit these events to the database.
 > So the resultset will include any changes already requested (but not yet committed).
 
 ```
-       [Fact]
+        [Fact]
         public async void WhenUpdateCarButDontCommitChangesOnlyTheLocalCacheIsAffected()
         {
             var documentRepository = new InMemoryDocumentRepository();
-            var inMemoryDb = documentRepository.Aggregates;
             var dataStore = new DataStore(documentRepository);
-
-            var carId = Guid.NewGuid();
-
+            
             //Given
-            inMemoryDb.Add(new Car
-            {
-                id = carId,
-                Make = "Toyota"
-            });
+                var carId = Guid.NewGuid();
+                
+                await dataStore.Create(
+                    new Car
+                    {
+                        id = carId, Make = "Toyota"
+                    });
+                await dataStore.CommitChanges();
 
             //When
-            await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
-            //await dataStore.CommitChanges(); don't commit
+                await dataStore.UpdateById<Car>(carId, car => car.Make = "Ford");
+                //await dataStore.CommitChanges(); don't commit
 
             //Then 
 
-            //We have a queued update operation
-            Assert.NotNull(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
+                //We have a queued update operation
+                Assert.NotNull(dataStore.QueuedOperations.SingleOrDefault(e => e is QueuedUpdateOperation<Car>));
 
-            //We have not execute any update operations
-            Assert.Null(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
+                //We have not execute any update operations
+                Assert.Null(dataStore.ExecutedOperations.SingleOrDefault(e => e is UpdateOperation<Car>));
 
-            //The underlying database has NOT changed
-            Assert.Equal("Toyota", inMemoryDb.OfType<Car>().Single(car => car.id == carId).Make);
-
-            //The DataStore instance picks up the change, because it has applied
-            //all the previous changes made during this session to any query.
-            Assert.Equal("Ford", dataStore.ReadActiveById<Car>(carId).Result.Make);
+                //The DataStore instance picks up the change, because it has applied
+                //all the previous changes made during this session to any query.
+                Assert.Equal("Ford", (await dataStore.ReadActiveById<Car>(carId)).Make);
+                
+                //The underlying database has NOT changed
+                var carInDb = await dataStore.WithoutEventReplay.ReadById<Car>(carId);
+                Assert.Equal("Toyota", carInDb.Make);
         }
 ```
 
@@ -204,27 +206,36 @@ There are two levels of settings one at the store level and one at query level.
                     dataStoreOptions: dataStoreOptions))
 ```
 
-##### Query-level 
+##### Query-level
 
-These options are specific as an optional lambda function on most Datastore methods.
-They make possible a number of things including:
+A summary of the most used methods on the main interface is: (most parameters are optional)
+* Read(predicate, map, options), ReadActive(predicate, map, options)
+* ReadById(id, map, options), ReadActiveById(id, map, options)
+* Update(obj, options), UpdateById(id, action, options), UpdateWhere(predicate, action, options)
+* Delete(obj, options), DeleteById(id, options), DeleteWhere(predicate, options)
 
+Count, Skip, Take, OrderBy and ThenBy cannot use the EventReplay session capability and so are only available through the WithoutEventReply property.
 Skip/Take: (see WhenCallingReadActiveWithSkipAndTake.cs)
 ```
 this.carsFromDatabase = await this.testHarness.DataStore.WithoutEventReplay.ReadActive<Car>(
                                         car => car.Make == "Volvo",
                                         o => o.ContinueFrom(firstContinuationToken).Take(2, ref secondContinuationToken));
 ```
-
 Order By: (see WhenCallingReadWithOrderBy.cs)           
 ```
 this.carsFromDatabaseOrderedAscending =
                 await this.testHarness.DataStore.WithoutEventReplay.Read<Car>(car => car.Make == "Volvo", o => o.OrderBy(c => c.id));
 ```
 
+Count:
+```
+var count = 
+    await this.testHarness.DataStore.WithoutEventReplay.Count<Car>(car => car.Make == "Volvo");
+```
+
+
 Security: (see WhenCallingReadWithAuthorisation.cs)
 ```
 await this.testHarness.DataStore.DeleteWhere<Car>(car => car.Make == "Volvo", o => o.AuthoriseFor(this.user));
 ```
-
-and others. The lambda delegate sigature makes the options for a given query discoverable.
+and others. The lambda delegate signature makes the options for a given query discoverable.

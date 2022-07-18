@@ -34,6 +34,7 @@ namespace DataStore.Tests.Tests.Delete
             await this.testHarness.DataStore.CommitChanges();
             var longId = agg.GetLongId();
 
+            
             var count1 = await this.testHarness.DataStore.WithoutEventReplay.Count<AggregateWithTypeTenantTimePeriodKey>(
                              setOptions: options => options.ProvidePartitionKeyValues(tenantId, MonthInterval.FromUtcNow()));
             Assert.Equal(1, count1);
