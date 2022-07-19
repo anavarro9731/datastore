@@ -587,6 +587,13 @@ namespace DataStore.Models.PartitionKeys
             }
 
             longId = Base64Decode(longId);
+            if (longId.StartsWith("shared"))
+            {
+                return new Aggregate.PartitionedId()
+                {
+                    Id = Guid.Parse(longId.SubstringAfter("__"))
+                };
+            }
             var regex = new Regex(
                 "^(?'type'_tp_[A-Za-z0-9]+)?(?'tenant'_tn_[A-Za-z0-9-]+)?(?'timeperiod'_tm_[A-Za-z0-9:]+)?(?'id'_id_[A-Za-z0-9-]+)?(_na)?(?'idrequired'__[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?)$");
             var result = regex.Match(longId);

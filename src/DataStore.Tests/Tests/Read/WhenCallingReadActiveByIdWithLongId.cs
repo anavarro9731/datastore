@@ -47,7 +47,7 @@ namespace DataStore.Tests.Tests.Read
         }
         
         [Fact]
-        public async void ItShouldIgnoreTheLongIdForTypeIdKeys()
+        public async void ItShouldTransferTheOptionsCorrectlyForTypeIdKey()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdWithLongId), useHierarchicalPartitionKey:false);
@@ -70,7 +70,7 @@ namespace DataStore.Tests.Tests.Read
         
                 
         [Fact]
-        public async void ItShouldIgnoreTheLongIdForSharedKeys()
+        public async void ItShouldTransferTheOptionsCorrectlyForSharedKey()
         {
             // Given
             this.testHarness = TestHarness.Create(nameof(WhenCallingReadActiveByIdWithLongId), useHierarchicalPartitionKey:false);
@@ -86,7 +86,8 @@ namespace DataStore.Tests.Tests.Read
             await this.testHarness.DataStore.CommitChanges();
             var longId = agg.GetLongId();
             
-            await Assert.ThrowsAsync<CircuitException>(async () => await this.testHarness.DataStore.ReadById<AggregateWithSharedKey>(longId));
+             var result = await this.testHarness.DataStore.ReadById<AggregateWithSharedKey>(longId);
+             Assert.NotNull(result);
             
             
         }
