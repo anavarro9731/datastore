@@ -11,7 +11,6 @@
     using CircuitBoard.MessageAggregator;
     using global::DataStore.Interfaces;
     using global::DataStore.Interfaces.LowLevel;
-    using global::DataStore.Interfaces.Options;
     using global::DataStore.Interfaces.Options.LibrarySide;
     using global::DataStore.Models.Messages;
     using global::DataStore.Models.PureFunctions;
@@ -47,8 +46,7 @@
         private IDocumentRepository DsConnection { get; }
 
         // .. update using Id; get values from another instance of the same aggregate
-        public Task<T> Update<T, O>(T src, O options, string methodName = null)
-            where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
+        public Task<T> Update<T, O>(T src, O options, string methodName = null) where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
         {
             //clone, we don't want changes made at any point after this call, to affect the commit or the resulting events
             var cloned = src.Clone();
@@ -69,46 +67,50 @@
                 nameof(IAggregate.PartitionKeys)
             };
 
-            return UpdateById<T, UpdateOptionsLibrarySide>(
-                src.id,
-                model => cloned.CopyPropertiesTo(model, excludedParameters),
-                options,
-                methodName);
+            return UpdateById<T, UpdateOptionsLibrarySide>(src.id, model => cloned.CopyPropertiesTo(model, excludedParameters), options, methodName);
         }
 
         public async Task<T> UpdateById<T, O>(Guid id, Action<T> action, O options, string methodName = null)
             where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
         {
-            var matchingObjectFromDb = await this.eventAggregator
-                                                  .CollectAndForward(
-                                                      new AggregateQueriedByIdOperationOperation<T>(methodName, id, options))
-                                                  .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
-            
-            return (await ProcessUpdateOfObjects(x => x.id == id, action, options, methodName, (matchingObjectFromDb == default ? Array.Empty<T>() : new []{matchingObjectFromDb})).ConfigureAwait(false)).SingleOrDefault();
+            var matchingObjectFromDb = await this.eventAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, id, options))
+                                                 .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
+
+            return (await ProcessUpdateOfObjects(
+                        x => x.id == id,
+                        action,
+                        options,
+                        methodName,
+                        matchingObjectFromDb == default
+                            ? Array.Empty<T>()
+                            : new[]
+                            {
+                                matchingObjectFromDb
+                            }).ConfigureAwait(false)).SingleOrDefault();
         }
 
         //* update a DataObject selected with a singular predicate
-        public async Task<IEnumerable<T>> UpdateWhere<T, O>(
-            Expression<Func<T, bool>> predicate,
-            Action<T> action,
-            O options,
-            string methodName = null) where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
+        public async Task<IEnumerable<T>> UpdateWhere<T, O>(Expression<Func<T, bool>> predicate, Action<T> action, O options, string methodName = null)
+            where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
 
         {
             {
-                var matchingObjectsFromDb = await this.eventAggregator
-                                                      .CollectAndForward(
-                                                          new AggregatesQueriedOperation<T>(
-                                                              methodName,
-                                                              DsConnection.CreateQueryable<T>(options).Where(predicate), options))
+                var queryable = DsConnection.CreateQueryable<T>(options);
+                if (predicate != default) queryable = queryable.Where(predicate);
+
+                var matchingObjectsFromDb = await this.eventAggregator.CollectAndForward(new AggregatesQueriedOperation<T>(methodName, queryable, options))
                                                       .To(DsConnection.ExecuteQuery).ConfigureAwait(false);
 
                 return await ProcessUpdateOfObjects(predicate, action, options, methodName, matchingObjectsFromDb).ConfigureAwait(false);
             }
         }
 
-        private async Task<IEnumerable<T>> ProcessUpdateOfObjects<T, O>(Expression<Func<T, bool>> predicate, Action<T> action, O options, string methodName, IEnumerable<T> matchingObjectsFromDb)
-            where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
+        private async Task<IEnumerable<T>> ProcessUpdateOfObjects<T, O>(
+            Expression<Func<T, bool>> predicate,
+            Action<T> action,
+            O options,
+            string methodName,
+            IEnumerable<T> matchingObjectsFromDb) where T : class, IAggregate, new() where O : UpdateOptionsLibrarySide, new()
         {
             void DisableOptimisticConcurrencyIfRequested(T dataObject)
             {
@@ -146,10 +148,11 @@
 
                 Guard.Against(
                     restrictedIdBefore != restrictedIdAfter,
-                    "Cannot change restricted properties [" + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, {nameof(objectToUpdate.PartitionKey)}, {nameof(objectToUpdate.PartitionKeys)} "
-                                                            + $"{nameof(Aggregate.Created)}, {nameof(Aggregate.CreatedAsMillisecondsEpochTime)}, "
-                                                            + $"{nameof(Aggregate.Modified)}, {nameof(Aggregate.ModifiedAsMillisecondsEpochTime)},  "
-                                                            + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObjectId}");
+                    "Cannot change restricted properties ["
+                    + $"{nameof(Aggregate.id)}, {nameof(Aggregate.Schema)}, {nameof(objectToUpdate.PartitionKey)}, {nameof(objectToUpdate.PartitionKeys)} "
+                    + $"{nameof(Aggregate.Created)}, {nameof(Aggregate.CreatedAsMillisecondsEpochTime)}, "
+                    + $"{nameof(Aggregate.Modified)}, {nameof(Aggregate.ModifiedAsMillisecondsEpochTime)},  "
+                    + $"{nameof(Aggregate.VersionHistory)} ] on Aggregate {originalObjectId}");
 
                 objectToUpdate.Modified = DateTime.UtcNow;
                 objectToUpdate.ModifiedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToMillisecondsEpochTime();
@@ -171,7 +174,8 @@
 
                 if (modelQueuedForPersistence != null)
                 {
-                    var itemToReturnToCaller = modelQueuedForPersistence.Clone(); //* return clones otherwise its to easy to change the referenced object before committing 
+                    var itemToReturnToCaller =
+                        modelQueuedForPersistence.Clone(); //* return clones otherwise its to easy to change the referenced object before committing 
                     itemToReturnToCaller.Etag = "waiting to be committed";
                     (modelQueuedForPersistence as IEtagUpdated).EtagUpdated += s => { itemToReturnToCaller.Etag = s; };
                     results.Add(itemToReturnToCaller);
@@ -179,7 +183,8 @@
                 else
                 {
                     var modelToPersist =
-                        originalObject.Clone(); //* clones originalObject so it will always be correct when used as the BeforeModel in the QueuedUpdateOperation below.
+                        originalObject
+                            .Clone(); //* clones originalObject so it will always be correct when used as the BeforeModel in the QueuedUpdateOperation below.
                     PerformUpdateOfProperties(ref modelToPersist);
 
                     await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName).ConfigureAwait(false);
@@ -195,7 +200,5 @@
 
             return results;
         }
-
-        
     }
 }
