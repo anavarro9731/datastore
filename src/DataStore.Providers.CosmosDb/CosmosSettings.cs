@@ -9,7 +9,7 @@
 
     public class CosmosSettings : IDatabaseSettings
     {
-        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl, bool useHierarchicalPartitionKeys, CosmosClientOptions clientOptions = null)
+        public CosmosSettings(string authKey, string containerName, string databaseName, string endpointUrl, CosmosClientOptions clientOptions = null,  bool useHierarchicalPartitionKeys = false)
         {
             AuthKey = authKey;
             DatabaseName = databaseName;

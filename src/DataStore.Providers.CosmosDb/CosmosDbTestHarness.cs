@@ -43,7 +43,7 @@
 
             var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
             
-            return new CosmosSettings(cosmosSettings.AuthKey, testName, cosmosSettings.DatabaseName, cosmosSettings.EndpointUrl, useHierarchicalPartitionKey);
+            return new CosmosSettings(cosmosSettings.AuthKey, testName, cosmosSettings.DatabaseName, cosmosSettings.EndpointUrl, useHierarchicalPartitionKeys: useHierarchicalPartitionKey);
         }
 
         private CosmosDbTestHarness(IDataStore dataStore)
