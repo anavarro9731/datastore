@@ -1,4 +1,4 @@
-WARNING: if you create the Datastore database through the emulator rather than in code 
+WARNING: if you create the Datastore database through the emulator GUI rather than in code 
 OR
 if you start the emulator with out the following flags you might have problems
 /PartitionCount=200 (otherwise you will only be able to run 25 tests per run)

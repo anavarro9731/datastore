@@ -141,9 +141,17 @@ namespace DataStore.Models.PartitionKeys
             }
         }
 
-        public static Expression<Func<T, bool>> ToPredicate<T>(this HierarchicalPartitionKey key) where T : IAggregate
+        public static Expression<Func<T, bool>> ToPredicate<T>(this HierarchicalPartitionKey key, bool useHierarchicalPartitionKeys) where T : IAggregate
         {
-            Expression<Func<T, bool>> pred = t => t.PartitionKeys.Key1 == key.Key1;
+            Expression<Func<T, bool>> pred;
+            if (!useHierarchicalPartitionKeys)
+            {
+                pred = t => t.PartitionKey == key.ToSyntheticKeyString();
+
+                return pred;    
+            }
+            
+            pred = t => t.PartitionKeys.Key1 == key.Key1;
                 if (!string.IsNullOrWhiteSpace(key.Key2)) pred = pred.And(t => t.PartitionKeys.Key2 == key.Key2);
                 if (!string.IsNullOrWhiteSpace(key.Key3)) pred = pred.And(t => t.PartitionKeys.Key3 == key.Key3);
 

@@ -78,7 +78,7 @@
             
             var fanout = key.IsEmpty();
             
-            if (!fanout)  predicate = predicate.And(key.ToPredicate<T>());
+            if (!fanout)  predicate = predicate.And(key.ToPredicate<T>(UseHierarchicalPartitionKeys));
             
             var query = this.container.GetItemLinqQueryable<T>().Where(predicate);
             
