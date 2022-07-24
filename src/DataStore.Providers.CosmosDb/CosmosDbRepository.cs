@@ -246,6 +246,16 @@
             var asT = ((T)(dynamic)result)
                 /* set eTag */
                 .Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
+
+            if (asT.PartitionKey == "shared" && asT.PartitionKeys.IsEmpty())
+            {
+                //* this is an aggregate created before partition key support was introduced
+                asT.PartitionKeys = new HierarchicalPartitionKey()
+                {
+                    Key1 = "sh", Key2 = "ar", Key3 = "ed"
+                };
+            }
+            
             return asT;
         }
 
