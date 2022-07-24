@@ -45,7 +45,7 @@
 
         public string PartitionKey { get; set; }
 
-        public HierarchicalPartitionKey PartitionKeys { get; set; }
+        public HierarchicalPartitionKey PartitionKeys { get; set; } = new HierarchicalPartitionKey();
 
         public bool ReadOnly { get; set; }
 

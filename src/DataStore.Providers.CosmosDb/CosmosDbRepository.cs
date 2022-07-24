@@ -247,7 +247,7 @@
                 /* set eTag */
                 .Op(t => t.As<IHaveAnETag>().Etag = result.ETag);
 
-            if (asT.PartitionKey == "shared" && asT.PartitionKeys.IsEmpty())
+            if (asT.PartitionKey == "shared" && (asT.PartitionKeys == null || asT.PartitionKeys.IsEmpty()))
             {
                 //* this is an aggregate created before partition key support was introduced
                 asT.PartitionKeys = new HierarchicalPartitionKey()
