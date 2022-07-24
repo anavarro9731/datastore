@@ -300,6 +300,5 @@
             await new CosmosDbUtilities().ResetDatabase(ConnectionSettings).ConfigureAwait(false);
             CosmosDbUtilities.CreateClient(this.settings, out this.client);
         }
-        
     }
 }
