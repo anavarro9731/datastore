@@ -4,6 +4,7 @@ namespace DataStore.Providers.CosmosDb
 
     using System.Collections;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard;
@@ -105,18 +106,30 @@ namespace DataStore.Providers.CosmosDb
 
             await CreateContainerIfNotExists(cosmosStoreSettings, db).ConfigureAwait(false);
 
-            //the above call seems to be fire-and-forget and i need it complete reliably
-            var iterator = db.GetContainerQueryIterator<ContainerProperties>();
-            var containers = await iterator.ReadNextAsync().ConfigureAwait(false);
-
+            
+            /* in some tests the above call seemed not to wait for the container to be ready before returning
+             not completely sure if this is still the case, but will keep the check below */
+            
             int tries = 0;
-            while (containers.All(x => x.Id != cosmosStoreSettings.ContainerName) && tries <= 10)
+            while (++tries <= 10)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                iterator = db.GetContainerQueryIterator<ContainerProperties>();
-                containers = await iterator.ReadNextAsync().ConfigureAwait(false);
-                tries++;
-            }
+                using (FeedIterator<ContainerProperties> resultSetIterator = db.GetContainerQueryIterator<ContainerProperties>())
+                {
+                    while (resultSetIterator.HasMoreResults)
+                    {
+                        foreach (ContainerProperties container in await resultSetIterator.ReadNextAsync().ConfigureAwait(false))
+                        {
+                            if (container.Id == cosmosStoreSettings.ContainerName)
+                            {
+                                goto containerFound;
+                            }
+                        }
+                    }
+                }
+                
+            } 
+            containerFound:
 
             if (tries == 10) throw new CircuitException("Container was not created after 10 seconds");
         }
