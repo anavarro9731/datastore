@@ -88,13 +88,13 @@
                                 }
                         }
                     }
-
-                    /* you always get yourself as a scope as well, so by default any document is scoped only by itself
-                     and if you are using database security you would need to give a permissions specific to this document
-                     or attach a wider scope to it in order for it to be accessible by a user */
-                    scopeReferences.Add(new AggregateReference(id, Schema));
                 }
-
+                
+                /* you always get yourself as a scope as well, so by default any document is scoped only by itself
+                 and if you are using database security you would need to give a permissions specific to this document
+                 or attach a wider scope to it in order for it to be accessible by a user */
+                scopeReferences.Add(new AggregateReference(id, Schema));
+                
                 return scopeReferences;
             }
         }
