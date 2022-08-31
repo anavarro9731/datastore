@@ -39,6 +39,8 @@
         public async Task<T> AuthoriseDatum<T>(T data, string requiredPermissionWithScopeToData, IIdentityWithDatabasePermissions identity)
             where T : class, IAggregate, new()
         {
+            if (data == null) return null;
+            
             var result = await AuthoriseData(
                              new[]
                              {

@@ -126,18 +126,18 @@ namespace DataStore.Tests.Tests.Partitions.Read
                 {
                     TenantId = tenantId, TimeStamp = DateTime.UtcNow
                 });
-            var thirtyDaysAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+            var oneMonthAgo = DateTime.UtcNow.Subtract(new TimeSpan(32, 0, 0, 0));
             await testHarness.DataStore.Create(
                 new AggregateWithTypeTenantTimePeriodKey
                 {
-                    TenantId = tenantId, TimeStamp = thirtyDaysAgo
+                    TenantId = tenantId, TimeStamp = oneMonthAgo
                 });
             await testHarness.DataStore.CommitChanges();
 
             //when
             var results = await testHarness.DataStore.WithoutEventReplay.ReadActive<AggregateWithTypeTenantTimePeriodKey>(
                              null,
-                             options => options.ProvidePartitionKeyValues(tenantId, MonthInterval.FromDateTime(thirtyDaysAgo)));
+                             options => options.ProvidePartitionKeyValues(tenantId, MonthInterval.FromDateTime(oneMonthAgo)));
             Assert.Single(results);
         }
 

@@ -172,11 +172,30 @@ namespace DataStore.Tests.Tests.Read
                 async () =>
                     {
                     // When
-                    var projectTaskFromDb = await this.testHarness.DataStore.ReadById<Project>(this.task1.id,
+                    var projectTaskFromDb = await this.testHarness.DataStore.ReadById<ProjectTask>(this.task1.id,
                                             o => o.AuthoriseFor(this.user)
                                             );
                     
-                    });
+                    
+                     });
+        }
+        
+        [Fact]
+        public async void ItShouldReturnNullAndNotThrowWhenYouAskForAnItemThatDoesntExistForWhichYouWouldNotHaveAuthorisationIfItDid()
+        {
+            Setup();
+
+            //* the key point about testing Project vs Cars is that it tests a scope hierarchy which has sibling branches
+            //* remove READ
+            this.user.DatabasePermissions.RemoveAll(p => p.PermissionName == SecurableOperations.READ);
+
+                    // When
+                    var projectTaskFromDb = await this.testHarness.DataStore.ReadById<ProjectTask>(Guid.NewGuid(),
+                                                o => o.AuthoriseFor(this.user)
+                                            );
+                    Assert.Null(projectTaskFromDb);
+                    
+                    
         }
 
         [Fact]
