@@ -135,7 +135,7 @@
 
                         if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
                         {
-                            throw new Exception($"Query cost exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
+                            throw new Exception($"Query cost of {aggregatesQueried.StateOperationCost} exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
                         }
 
                         //set updated etag
