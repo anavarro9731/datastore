@@ -11,5 +11,6 @@ namespace DataStore.Interfaces.Options.LibrarySide.Interfaces
         IIdentityWithDatabasePermissions Identity { get; set; }
 
         bool BypassSecurity { get; set; }
+        
     }
 }

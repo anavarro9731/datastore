@@ -27,7 +27,7 @@ namespace DataStore.Models.PureFunctions.Extensions
             newObject.PartitionKey = keys.ToSyntheticKeyString();
             newObject.PartitionKeys = keys;
            
-            newObject.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-set again in commitchanges, still best not to allow any invalid state
+            newObject.VersionHistory = new List<Aggregate.AggregateVersionInfo>(); //-never allow invalid state
             newObject.Modified = newObject.Created;
             newObject.ModifiedAsMillisecondsEpochTime = newObject.CreatedAsMillisecondsEpochTime;
         }

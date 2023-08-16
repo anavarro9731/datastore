@@ -133,7 +133,11 @@
 
                         aggregatesQueried.StateOperationCost += feedResponseEnumerable.RequestCharge;
 
-                        if (aggregatesQueried.StateOperationCost > this.settings.MaxQueryCostInRus)
+                        var ruLimit = aggregatesQueried.QueryOptions.As<IPerformanceOptionsLibrarySide>()?.BypassRULimit ?? false
+                                          ? short.MaxValue
+                                          : this.settings.MaxQueryCostInRus; 
+                        
+                        if (aggregatesQueried.StateOperationCost > ruLimit)
                         {
                             throw new Exception($"Query cost of {aggregatesQueried.StateOperationCost} exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
                         }

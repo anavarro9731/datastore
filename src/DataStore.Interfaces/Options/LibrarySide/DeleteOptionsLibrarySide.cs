@@ -3,7 +3,7 @@ namespace DataStore.Interfaces.Options.LibrarySide
     using DataStore.Interfaces.LowLevel.Permissions;
     using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
-    public class DeleteOptionsLibrarySide : ISecurityOptionsLibrarySide, IOptionsLibrarySide, IPartitionKeyOptionsLibrarySide
+    public class DeleteOptionsLibrarySide : ISecurityOptionsLibrarySide, IOptionsLibrarySide, IPartitionKeyOptionsLibrarySide, IPerformanceOptionsLibrarySide
     {
         public bool BypassSecurity { get; set; }
 
@@ -16,5 +16,7 @@ namespace DataStore.Interfaces.Options.LibrarySide
         public string PartitionKeyTimeInterval { get; set; }
 
         public bool AcceptCrossPartitionQueryCost { get; set; }
+
+        public bool BypassRULimit { get; set; }
     }
 }

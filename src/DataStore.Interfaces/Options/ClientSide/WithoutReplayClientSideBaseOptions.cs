@@ -6,7 +6,7 @@ namespace DataStore.Interfaces.Options.ClientSide
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
     using DataStore.Interfaces.Options.LibrarySide;
 
-    public abstract class WithoutReplayClientSideBaseOptions<T> : IPartitionKeyOptionsClientSide, ISecurityOptionsClientSide
+    public abstract class WithoutReplayClientSideBaseOptions<T> : IPartitionKeyOptionsClientSide, ISecurityOptionsClientSide, IPerformanceOptionsClientSide
     {
         protected WithoutReplayClientSideBaseOptions()
         {
@@ -52,6 +52,11 @@ namespace DataStore.Interfaces.Options.ClientSide
         {
             LibrarySide.PartitionKeyTenantId = tenantId.ToString();
             LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
+        }
+
+        public void BypassRULimit(string reason)
+        {
+            LibrarySide.BypassRULimit = true;
         }
     }
 }

@@ -3,7 +3,7 @@ namespace DataStore.Interfaces.Options.LibrarySide
     using DataStore.Interfaces.LowLevel.Permissions;
     using DataStore.Interfaces.Options.LibrarySide.Interfaces;
 
-    public class UpdateOptionsLibrarySide : ISecurityOptionsLibrarySide, IOptionsLibrarySide, IPartitionKeyOptionsLibrarySide
+    public class UpdateOptionsLibrarySide : ISecurityOptionsLibrarySide, IOptionsLibrarySide, IPartitionKeyOptionsLibrarySide, IPerformanceOptionsLibrarySide
     {
         public bool AllowReadonlyOverwriting { get; set; }
 
@@ -18,5 +18,7 @@ namespace DataStore.Interfaces.Options.LibrarySide
         public string PartitionKeyTimeInterval { get; set; }
 
         public bool AcceptCrossPartitionQueryCost { get; set; }
+
+        public bool BypassRULimit { get; set; }
     }
 }

@@ -223,7 +223,6 @@
                                 return matchingPartitions.Select(x => x.Key).ToList();
                             }
                         
-
                         //* nothing found 
                         return new List<HierarchicalPartitionKey>();
                     }
@@ -240,10 +239,6 @@
                     };
             }
         }
-
-        
-
-
         /* should return the same backing store as any other instances
          so that it mirrors the capability of persistent-state backed providers.
          This will show up as subtle errors otherwise in unit-testing when

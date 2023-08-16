@@ -10,5 +10,6 @@ namespace DataStore.Interfaces.Options.LibrarySide
         public IIdentityWithDatabasePermissions Identity { get; set; }
 
         public bool SetReadonlyFlag { get; set; }
+        
     }
 }

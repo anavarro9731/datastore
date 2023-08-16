@@ -4,7 +4,7 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
 
-    public class ReadClientSideOptions : ReadClientSideBaseOptions, IPartitionKeyOptionsClientSide
+    public class ReadClientSideOptions : ReadClientSideBaseOptions, IPartitionKeyOptionsClientSide, IPerformanceOptionsClientSide
     {
         public void AcceptCrossPartitionQueryCost()
         {
@@ -25,6 +25,11 @@
         {
             LibrarySide.PartitionKeyTenantId = tenantId.ToString();
             LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
+        }
+
+        public void BypassRULimit(string reason)
+        {
+            LibrarySide.BypassRULimit = true;
         }
     }
 }

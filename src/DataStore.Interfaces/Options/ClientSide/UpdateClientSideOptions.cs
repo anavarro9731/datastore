@@ -8,7 +8,7 @@
 
     #endregion
 
-    public class UpdateClientSideOptions : UpdateClientSideBaseOptions, IPartitionKeyOptionsClientSide
+    public class UpdateClientSideOptions : UpdateClientSideBaseOptions, IPartitionKeyOptionsClientSide, IPerformanceOptionsClientSide
     {
         public void AcceptCrossPartitionQueryCost()
         {
@@ -35,6 +35,11 @@
         {
             LibrarySide.PartitionKeyTenantId = tenantId;
             LibrarySide.PartitionKeyTimeInterval = timeInterval;
+        }
+
+        public void BypassRULimit(string reason)
+        {
+            LibrarySide.BypassRULimit = true;
         }
     }
 }
