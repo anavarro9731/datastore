@@ -206,6 +206,8 @@
 
         public Task<T> DeleteById<T>(string longId, Action<DeleteClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
+            if (longId == string.Empty) return null;
+            
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
             Action<DeleteClientSideOptions> longIdUpdateOptions = DataStoreWriteOnly<T>.SetLongIdDeleteOptions(setOptions, keys);
             return DeleteById<T>(keys.Id, longIdUpdateOptions, methodName);
@@ -340,6 +342,8 @@
 
         public Task<T> ReadActiveById<T>(string longId, Action<ReadClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
+            if (longId == string.Empty) return null;
+            
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
             return ReadActiveById<T>(
                 keys.Id,
@@ -388,6 +392,8 @@
 
         public Task<T> ReadById<T>(string longId, Action<ReadClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
+            if (longId == string.Empty) return null;
+            
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
             return ReadById<T>(
                 keys.Id,
@@ -446,6 +452,8 @@
         public Task<T> UpdateById<T>(string longId, Action<T> action, Action<UpdateClientSideBaseOptions> setOptions = null, string methodName = null) 
             where T : class, IAggregate, new()
         {
+            if (longId == string.Empty) return null;
+            
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
             Action<UpdateClientSideOptions> longIdUpdateOptions = DataStoreWriteOnly<T>.SetLongIdUpdateOptions(setOptions, keys);
             return UpdateById(keys.Id, action, longIdUpdateOptions, methodName);
