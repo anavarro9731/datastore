@@ -1,4 +1,4 @@
-Invoke-RestMethod -Uri "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath=load-modules.psm1" -ContentType "text/plain; charset=UTF-8" -OutFile ".\load-modules.psm1"
+Invoke-RestMethod -Uri "https://anavarro9731.visualstudio.com/defaultcollection/soap/_apis/git/repositories/soap/items?api-version=1.0&scopepath=src/pwsh-bootstrap/load-modules.psm1" -ContentType "text/plain; charset=UTF-8" -OutFile ".\load-modules.psm1"
 Import-Module ".\load-modules.psm1" -Verbose -Global -Force
 Remove-Item ".\load-modules.psm1" -Verbose -Recurse
 Load-Modules
