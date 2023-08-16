@@ -8,16 +8,20 @@ trigger:
     - src/.version
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2019'
 
 steps:
+  
+- task: UseDotNet@2
+  inputs:
+    version: '3.1.x' # string. Optional. Use when useGlobalJson = false || packageType = runtime. Version. 
 
-- powershell: |
+- pwsh: |
    & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1
    Run -BuildAndTest   
   displayName: 'Build and Test'
 
-- powershell: |
+- pwsh: |
    & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1
    Run -PackAndPublish -nugetApiKey $(nuget-api-key)   
   displayName: 'Pack and Publish'
