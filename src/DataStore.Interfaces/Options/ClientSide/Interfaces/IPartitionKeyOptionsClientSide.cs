@@ -3,14 +3,15 @@ namespace DataStore.Interfaces.Options.ClientSide.Interfaces
     using System;
     using DataStore.Interfaces.LowLevel;
 
-    public interface IPartitionKeyOptionsClientSide
+    
+    public interface IPartitionKeyOptionsClientSide<T> where T : IPartitionKeyOptionsClientSide<T>
     {
-        void ProvidePartitionKeyValues(Guid tenantId);
+        T ProvidePartitionKeyValues(Guid tenantId);
 
-        void ProvidePartitionKeyValues(IPartitionKeyTimeInterval timeInterval);
+        T ProvidePartitionKeyValues(IPartitionKeyTimeInterval timeInterval);
 
-        void ProvidePartitionKeyValues(Guid tenantId, IPartitionKeyTimeInterval timeInterval);
+        T ProvidePartitionKeyValues(Guid tenantId, IPartitionKeyTimeInterval timeInterval);
 
-        void AcceptCrossPartitionQueryCost();
+        T AcceptCrossPartitionQueryCost();
     }
 }

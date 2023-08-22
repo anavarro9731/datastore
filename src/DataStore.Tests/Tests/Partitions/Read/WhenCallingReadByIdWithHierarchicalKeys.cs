@@ -87,7 +87,7 @@ namespace DataStore.Tests.Tests.Partitions.Read
 
             await Assert.ThrowsAsync<CircuitException>(async  ()=> await testHarness.DataStore.ReadById<AggregateWithTypeTenantIdKey>(newId));
             
-            await Assert.ThrowsAsync<CircuitException>(async  ()=> await testHarness.DataStore.ReadById<AggregateWithTypeTenantIdKey>(newId, options => options.ProvidePartitionKeyValues(timeInterval:DayInterval.FromDateTime(DateTime.UtcNow))));
+            await Assert.ThrowsAsync<CircuitException>(async  ()=> await testHarness.DataStore.ReadById<AggregateWithTypeTenantIdKey>(newId, options => options.ProvidePartitionKeyValues(timeInterval: DayInterval.FromDateTime(DateTime.UtcNow))));
         }
         
         [Fact]
@@ -185,7 +185,7 @@ namespace DataStore.Tests.Tests.Partitions.Read
             
             await Assert.ThrowsAsync<CircuitException>(async  ()=> await testHarness.DataStore.ReadById<AggregateWithTypeTimePeriodIdKey>(newId));
             
-            await Assert.ThrowsAsync<CircuitException>(async  ()=> await testHarness.DataStore.ReadById<AggregateWithTypeTimePeriodIdKey>(newId, options => options.ProvidePartitionKeyValues(tenantId:Guid.NewGuid())));
+            await Assert.ThrowsAsync<CircuitException>(async  ()=> await testHarness.DataStore.ReadById<AggregateWithTypeTimePeriodIdKey>(newId, options => options.ProvidePartitionKeyValues(tenantId: Guid.NewGuid())));
         }
     }
 }

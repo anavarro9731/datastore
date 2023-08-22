@@ -2,10 +2,10 @@ namespace DataStore.Interfaces.Options.ClientSide.Interfaces
 {
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public interface ISecurityOptionsClientSide
+    public interface ISecurityOptionsClientSide<T> where T: ISecurityOptionsClientSide<T>
     {
-        void AuthoriseFor(IIdentityWithDatabasePermissions identity);
+        T AuthoriseFor(IIdentityWithDatabasePermissions identity);
 
-        void BypassSecurity(string reason);
+        T BypassSecurity(string reason);
     }
 }

@@ -76,6 +76,8 @@
             var matchingObjectFromDb = await this.eventAggregator.CollectAndForward(new AggregateQueriedByIdOperationOperation<T>(methodName, id, options))
                                                  .To(DsConnection.GetItemAsync<T>).ConfigureAwait(false);
 
+            
+            
             return (await ProcessUpdateOfObjects(
                         x => x.id == id,
                         action,
@@ -159,7 +161,7 @@
             }
 
             var matchingObjectsDbAndQueued = this.eventReplay.ApplyQueuedOperations(matchingObjectsFromDb, predicate.Compile());
-
+            
             var results = new List<T>(); //* return a list of clones
 
             foreach (var originalObject in matchingObjectsDbAndQueued)

@@ -51,13 +51,16 @@ namespace DataStore.Tests.Tests.Update
             this.testHarness = TestHarness.Create(nameof(WhenCallingUpdateOnAnItemAddedInThisSession));
 
             this.carId = Guid.NewGuid();
+            
             var newCar = new Car
             {
-                id = this.carId, Make = "Volvo"
+                id = this.carId, 
+                Make = "Volvo"
             };
+            
             var create = await this.testHarness.DataStore.Create(newCar);
 
-            //When
+            // When
             var update = await this.testHarness.DataStore.UpdateById<Car>(this.carId, c => c.Make = "Toyota");
             
             await this.testHarness.DataStore.CommitChanges();

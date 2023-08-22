@@ -2,8 +2,8 @@ namespace DataStore.Interfaces.Options.ClientSide.Interfaces
 {
     using DataStore.Interfaces.LowLevel.Permissions;
 
-    public interface IPerformanceOptionsClientSide
+    public interface IPerformanceOptionsClientSide<T> where T: IPerformanceOptionsClientSide<T>
     {
-        void BypassRULimit(string reason);
+        T BypassRULimit(string reason);
     }
 }
