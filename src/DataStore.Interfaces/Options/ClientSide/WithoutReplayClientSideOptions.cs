@@ -1,104 +1,74 @@
 namespace DataStore.Interfaces.Options.ClientSide
 {
     using System;
-    using System.Linq.Expressions;
-    using System.Reflection;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.LowLevel.Permissions;
     using DataStore.Interfaces.Options.ClientSide.Interfaces;
+    using DataStore.Interfaces.Options.LibrarySide;
 
-    public class WithoutReplayClientSideOptions<T> : WithoutReplayClientSideBaseOptions<T>, IWithoutReplayOptionsClientSide<T> where T : class, IAggregate, new()
+    public class WithoutReplayClientSideOptions<T> : IPartitionKeyOptionsClientSide<WithoutReplayClientSideOptions<T>>,
+                                                     ISecurityOptionsClientSide<WithoutReplayClientSideOptions<T>>,
+                                                     IPerformanceOptionsClientSide<WithoutReplayClientSideOptions<T>> where T : class, IAggregate, new()
     {
-        public IWithoutReplayOptionsClientSide<T> ContinueFrom(ContinuationToken currentContinuationToken)
+        public WithoutReplayClientSideOptions()
         {
-            if (currentContinuationToken?.Value == null)
+            LibrarySide = new WithoutReplayOptionsLibrarySide<T>();
+        }
+
+        protected WithoutReplayOptionsLibrarySide<T> LibrarySide { get; }
+
+        public static implicit operator WithoutReplayOptionsLibrarySide<T>(WithoutReplayClientSideOptions<T> options)
+        {
+            return options.LibrarySide;
+        }
+
+        public WithoutReplayClientSideOptions<T> AcceptCrossPartitionQueryCost()
+        {
+            LibrarySide.AcceptCrossPartitionQueryCost = true;
+            return this;
+        }
+
+        public WithoutReplayClientSideOptions<T> AuthoriseFor(IIdentityWithDatabasePermissions identity)
+        {
+            LibrarySide.Identity = identity;
+            return this;
+        }
+
+        public WithoutReplayClientSideOptions<T> BypassRULimit(string reason)
+        {
+            LibrarySide.BypassRULimit = true;
+            return this;
+        }
+
+        public WithoutReplayClientSideOptions<T> BypassSecurity(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
             {
-                throw new Exception("The continuation token provided cannot be used since it's value is null");
+                throw new ArgumentException("You must provide a reason you are bypassing security. Please be clear. This is for other developers to read.");
             }
 
-            LibrarySide.CurrentContinuationToken = currentContinuationToken;
-
+            //* reason is only for reading the source code
+            LibrarySide.BypassSecurity = true;
             return this;
         }
 
-        public IWithoutReplayOptionsClientSide<T> OrderBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
+        public WithoutReplayClientSideOptions<T> ProvidePartitionKeyValues(Guid tenantId)
         {
-            LibrarySide.OrderByProperty = Objects.GetPropertyName(propertyRefExpr);
-            LibrarySide.OrderDescending = descending;
+            LibrarySide.PartitionKeyTenantId = tenantId.ToString();
             return this;
         }
 
-        public IWithoutReplayOptionsClientSide<T> Take(int take, ref ContinuationToken newContinuationToken)
+        public WithoutReplayClientSideOptions<T> ProvidePartitionKeyValues(IPartitionKeyTimeInterval timeInterval)
         {
-            LibrarySide.MaxTake = take;
-            LibrarySide.NextContinuationToken = newContinuationToken ?? throw new Exception("ContinuationToken cannot be null");
-
+            LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
             return this;
         }
 
-        public IWithoutReplayOptionsClientSide<T> ThenBy(Expression<Func<T, object>> propertyRefExpr, bool descending = false)
+        public WithoutReplayClientSideOptions<T> ProvidePartitionKeyValues(Guid tenantId, IPartitionKeyTimeInterval timeInterval)
         {
-            var propertyName = Objects.GetPropertyName(propertyRefExpr);
-            LibrarySide.ThenByQueue.Enqueue((propertyName, descending));
+            LibrarySide.PartitionKeyTenantId = tenantId.ToString();
+            LibrarySide.PartitionKeyTimeInterval = timeInterval.ToString();
             return this;
-        }
-    }
-
-    public static class Objects
-    {
-        /// <summary>
-        ///     get property name from current instance
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="type"></param>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr)
-        {
-            // usage: obj.GetPropertyName(o => o.Member)
-            return GetPropertyNameCore(propertyRefExpr.Body);
-        }
-
-        /// <summary>
-        ///     get property name from any class
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr)
-        {
-            // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
-            return GetPropertyNameCore(propertyRefExpr.Body);
-        }
-
-        /// <summary>
-        ///     get static property name from any class
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression)
-        {
-            // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
-            return GetPropertyNameCore(expression);
-        }
-
-        private static string GetPropertyNameCore(Expression propertyRefExpr)
-        {
-            if (propertyRefExpr == null) throw new ArgumentNullException(nameof(propertyRefExpr), "propertyRefExpr is null.");
-
-            var memberExpr = propertyRefExpr as MemberExpression;
-            if (memberExpr == null)
-            {
-                var unaryExpr = propertyRefExpr as UnaryExpression;
-                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
-                {
-                    memberExpr = unaryExpr.Operand as MemberExpression;
-                }
-            }
-
-            if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property) return memberExpr.Member.Name;
-
-            throw new ArgumentException("No property reference expression was found.", nameof(propertyRefExpr));
         }
     }
 }

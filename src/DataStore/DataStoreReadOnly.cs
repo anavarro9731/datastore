@@ -29,7 +29,7 @@
         public Task<IEnumerable<T>> Read<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new() =>
+            string methodName = null) where T : class, IAggregate, new() where O : ReadClientSideOptions, new() =>
             this.dataStore.Read(predicate, setOptions, methodName);
 
         public Task<IEnumerable<T>> Read<T>(
@@ -41,7 +41,7 @@
         public Task<IEnumerable<T>> ReadActive<T, O>(
             Expression<Func<T, bool>> predicate = null,
             Action<O> setOptions = null,
-            string methodName = null) where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new() =>
+            string methodName = null) where T : class, IAggregate, new() where O : ReadClientSideOptions, new() =>
             this.dataStore.ReadActive(predicate, setOptions, methodName);
 
         public Task<IEnumerable<T>> ReadActive<T>(
@@ -51,14 +51,14 @@
             this.dataStore.ReadActive(predicate, setOptions, methodName);
 
         public Task<T> ReadActiveById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new() =>
+            where T : class, IAggregate, new() where O : ReadClientSideOptions, new() =>
             this.dataStore.ReadActiveById<T, O>(modelId, setOptions, methodName);
 
         public Task<T> ReadActiveById<T>(Guid modelId, Action<ReadClientSideOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new() =>
             this.dataStore.ReadActiveById<T>(modelId, setOptions, methodName);
 
-        public Task<T> ReadActiveById<T>(string longId, Action<ReadClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> ReadActiveById<T>(string longId, Action<ReadClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
             return ReadActiveById<T>(
@@ -67,14 +67,14 @@
         }
 
         public Task<T> ReadById<T, O>(Guid modelId, Action<O> setOptions = null, string methodName = null)
-            where T : class, IAggregate, new() where O : ReadClientSideBaseOptions, new() =>
+            where T : class, IAggregate, new() where O : ReadClientSideOptions, new() =>
             this.dataStore.ReadById<T, O>(modelId, setOptions, methodName);
 
         public Task<T> ReadById<T>(Guid modelId, Action<ReadClientSideOptions> setOptions = null, string methodName = null)
             where T : class, IAggregate, new() =>
             this.dataStore.ReadById<T>(modelId, setOptions, methodName);
 
-        public Task<T> ReadById<T>(string longId, Action<ReadClientSideBaseOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
+        public Task<T> ReadById<T>(string longId, Action<ReadClientSideOptions> setOptions = null, string methodName = null) where T : class, IAggregate, new()
         {
             var keys = PartitionKeyHelpers.DestructurePartitionedIdString(longId);
             return ReadById<T>(
@@ -82,7 +82,7 @@
                 SetLongIdOptions(setOptions, keys), methodName);
         }
 
-        internal static Action<ReadClientSideOptions> SetLongIdOptions(Action<ReadClientSideBaseOptions> setOptions, Aggregate.PartitionedId keys)
+        internal static Action<ReadClientSideOptions> SetLongIdOptions(Action<ReadClientSideOptions> setOptions, Aggregate.PartitionedId keys)
         {
             return o =>
                 {

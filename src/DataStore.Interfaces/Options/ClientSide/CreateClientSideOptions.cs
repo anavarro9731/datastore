@@ -2,15 +2,30 @@
 {
     using System;
     using DataStore.Interfaces.LowLevel.Permissions;
+    using DataStore.Interfaces.Options.ClientSide.Interfaces;
+    using DataStore.Interfaces.Options.LibrarySide;
 
-    public class CreateClientSideOptions : CreateClientSideBaseOptions
+    public class CreateClientSideOptions : ISecurityOptionsClientSide<CreateClientSideOptions>
     {
-        public void AuthoriseFor(IIdentityWithDatabasePermissions identity)
+        public CreateClientSideOptions()
         {
-            LibrarySide.Identity = identity;
+            LibrarySide = new CreateOptionsLibrarySide();
         }
 
-        public void BypassSecurity(string reason)
+        protected CreateOptionsLibrarySide LibrarySide { get; }
+
+        public static implicit operator CreateOptionsLibrarySide(CreateClientSideOptions options)
+        {
+            return options.LibrarySide;
+        }
+
+        public CreateClientSideOptions AuthoriseFor(IIdentityWithDatabasePermissions identity)
+        {
+            LibrarySide.Identity = identity;
+            return this;
+        }
+
+        public CreateClientSideOptions BypassSecurity(string reason)
         {
             if (string.IsNullOrWhiteSpace(reason))
             {
@@ -19,11 +34,13 @@
 
             //* reason is only for reading the source code
             LibrarySide.BypassSecurity = true;
+            return this;
         }
 
-        public void CreateReadonly()
+        public CreateClientSideOptions CreateReadonly()
         {
             LibrarySide.SetReadonlyFlag = true;
+            return this;
         }
     }
 }
