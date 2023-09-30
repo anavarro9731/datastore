@@ -106,6 +106,8 @@ namespace DataStore
                         Modified = aggregate.Modified,
                         ModifiedAsMillisecondsEpochTime = aggregate.ModifiedAsMillisecondsEpochTime,
                         ReadOnly = aggregate.ReadOnly,
+                        PartitionKey = aggregate.PartitionKey,
+                        PartitionKeys = aggregate.PartitionKeys,
                         VersionHistory = aggregate.VersionHistory,
                         Schema = aggregate.Schema
                     });
