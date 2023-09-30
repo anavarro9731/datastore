@@ -3,7 +3,7 @@
     <Description>A Document-Centric Data Access Framework for Cosmos DB</Description>
     <Copyright>Copyright (c) 2022 Aaron Navarro</Copyright>
     <Authors>Aaron Navarro</Authors>
-    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.1</TargetFrameworks>
     <AssemblyName>DataStore</AssemblyName>
     <PackageId>DataStore</PackageId>
     <PackageTags>Cosmos Db;CosmosDb;Azure;DocumentDB,Data Access;Transactions;Paging;LINQ;Profiling</PackageTags>
