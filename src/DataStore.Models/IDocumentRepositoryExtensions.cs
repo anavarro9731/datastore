@@ -8,6 +8,8 @@ namespace DataStore.Models
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options.LibrarySide;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
 
@@ -16,11 +18,11 @@ namespace DataStore.Models
     public static class DocumentRepositoryExtensions
     {
         
-        public static async Task<bool> Exists(this IDocumentRepository repo, IAggregate model, string methodCalled = null)  
+        public static async Task<bool> Exists(this IDocumentRepository repo, IAggregate model, UpdateOptionsLibrarySide options = null,  string methodCalled = null)  
         {
             var type = model.GetType();
 
-            var aggregateQueried = new AggregateQueriedByIdOperationOperation(methodCalled, model.id);
+            var aggregateQueried = new AggregateQueriedByIdOperationOperation(methodCalled, model.id, options);
 
             var getItemAsync = typeof(IDocumentRepository).GetMethod(nameof(IDocumentRepository.GetItemAsync)).MakeGenericMethod(type);
             

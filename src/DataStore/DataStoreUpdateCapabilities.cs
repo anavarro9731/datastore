@@ -191,7 +191,7 @@
 
                     await this.incrementVersions.IncrementAggregateVersionOfItemToBeQueued(modelToPersist, methodName).ConfigureAwait(false);
 
-                    this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, modelToPersist, originalObject, DsConnection, this.eventAggregator));
+                    this.eventAggregator.Collect(new QueuedUpdateOperation<T>(methodName, modelToPersist, originalObject, options, DsConnection, this.eventAggregator));
 
                     var itemToReturnToCaller = modelToPersist.Clone(); //* return clones otherwise its to easy to change the referenced object before committing 
                     itemToReturnToCaller.Etag = "waiting to be committed";

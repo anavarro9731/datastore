@@ -9,6 +9,8 @@
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.Operations;
+    using DataStore.Interfaces.Options.LibrarySide;
+    using DataStore.Interfaces.Options.LibrarySide.Interfaces;
     using DataStore.Models.PureFunctions.Extensions;
 
     #endregion
@@ -24,6 +26,7 @@
             string methodCalled,
             T newModel,
             T previousModel,
+            UpdateOptionsLibrarySide options,
             IDocumentRepository repo,
             IMessageAggregator messageAggregator)
         {
@@ -34,6 +37,7 @@
             PreviousModel = previousModel;
             NewModel = newModel;
             AggregateId = newModel.id;
+            UpdateOptions = options;
         }
 
         public Guid AggregateId { get; set; }
@@ -49,6 +53,8 @@
         public T NewModel { get; set; }
 
         public T PreviousModel { get; set; }
+
+        public UpdateOptionsLibrarySide UpdateOptions { get; set; }
 
         public double StateOperationCost { get; set; }
 
