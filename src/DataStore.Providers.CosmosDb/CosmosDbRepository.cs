@@ -35,6 +35,8 @@
 
         public CosmosDbRepository(CosmosSettings settings)
         {
+            settings.ClientOptions = settings.ClientOptions ?? new CosmosClientOptions();
+            settings.ClientOptions.Serializer = new CosmosJsonDotNetSerializer();
             CosmosDbUtilities.CreateClient(settings, out this.client);
             this.container = this.client.GetContainer(settings.DatabaseName, settings.ContainerName);
             this.settings = settings;
@@ -146,10 +148,18 @@
                         var typedResponses = feedResponseEnumerable.Select(
                             feedItem =>
                                 {
-                                var asT = ((JObject)feedItem).ToObject<T>()
-                                                             /* set Etag */
-                                                             .Op(t => t.As<IHaveAnETag>().Etag = feedItem.ETag);
-                                return asT;
+                                switch (feedItem)
+                                {
+                                    case JObject jObject:
+                                        {
+                                            var asT = jObject.ToObject<T>();
+                                            /* set Etag */
+                                            asT.As<IHaveAnETag>().Etag = feedItem["_etag"];
+                                            return asT;
+                                        }
+                                    default:  // try casting directly and assume the setting of the ETag property has occurred somewhere else outside of Datastore
+                                        return (T)feedItem;
+                                }
                                 });
 
                         results.AddRange(typedResponses);

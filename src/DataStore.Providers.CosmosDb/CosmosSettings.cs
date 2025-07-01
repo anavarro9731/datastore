@@ -19,8 +19,8 @@
             ClientOptions = clientOptions;
             
         }
-        
-        public CosmosClientOptions ClientOptions { get; }
+
+        public CosmosClientOptions ClientOptions { get; internal set; } 
 
         public string AuthKey { get; }
 

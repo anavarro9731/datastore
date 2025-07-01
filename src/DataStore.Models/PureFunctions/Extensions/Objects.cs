@@ -62,7 +62,10 @@
             foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
-        public static T FromJsonString<T>(this string source) => source == null ? default : JsonConvert.DeserializeObject<T>(source);
+        public static T FromJsonString<T>(this string source) => source == null ? default : JsonConvert.DeserializeObject<T>(source, new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.Auto
+        });
 
         /// <summary>
         ///     checks if a class inherits from or implements a base class/interface.
@@ -124,7 +127,10 @@
             return obj;
         }
 
-        public static string ToJsonString(this object source) => source == null ? null : JsonConvert.SerializeObject(source);
+        public static string ToJsonString(this object source) => source == null ? null : JsonConvert.SerializeObject(source, new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.Auto
+        });
 
         
         /// <summary>

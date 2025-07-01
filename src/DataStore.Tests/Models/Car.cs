@@ -29,5 +29,10 @@
 
             public int RimSize { get; set; } = 15;
         }
-    }
+
+        public class FancyWheel : Wheel
+        {
+            public string Coating { get; set; }
+        }
+     }
 }

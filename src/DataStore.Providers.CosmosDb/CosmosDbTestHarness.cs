@@ -12,6 +12,7 @@
     using DataStore.Interfaces.Options.LibrarySide;
     using DataStore.Models.Messages;
     using DataStore.Models.PureFunctions.Extensions;
+    using Microsoft.Azure.Cosmos;
     using Newtonsoft.Json;
 
     #endregion
@@ -44,6 +45,9 @@
             var cosmosSettings = JsonConvert.DeserializeObject<CosmosSettings>(File.ReadAllText(location));
             
             return new CosmosSettings(cosmosSettings.AuthKey, testName, cosmosSettings.DatabaseName, cosmosSettings.EndpointUrl, useHierarchicalPartitionKeys: useHierarchicalPartitionKey);
+            
+            
+            
         }
 
         private CosmosDbTestHarness(IDataStore dataStore)
