@@ -120,7 +120,7 @@
                 which you must have in order to at the updated ETag and copy it back to our customer eTag property.
                 So for now we convert the CosmosLINQQueryable into a generic one. */
 
-                using (var setIterator = this.container.GetItemQueryIterator<dynamic>(
+                using (var setIterator = this.container.GetItemQueryIterator<T>(
                            aggregatesQueried.Query.ToQueryDefinition(),
                            (aggregatesQueried.QueryOptions as WithoutReplayOptionsLibrarySide<T>)?.CurrentContinuationToken?.ToString(),
                            new QueryRequestOptions
@@ -144,25 +144,7 @@
                             throw new Exception($"Query cost of {aggregatesQueried.StateOperationCost} exceeds limit of {this.settings.MaxQueryCostInRus} RUs, abandoning");
                         }
 
-                        //set updated etag
-                        var typedResponses = feedResponseEnumerable.Select(
-                            feedItem =>
-                                {
-                                switch (feedItem)
-                                {
-                                    case JObject jObject:
-                                        {
-                                            var asT = jObject.ToObject<T>();
-                                            /* set Etag */
-                                            asT.As<IHaveAnETag>().Etag = feedItem["_etag"];
-                                            return asT;
-                                        }
-                                    default:  // try casting directly and assume the setting of the ETag property has occurred somewhere else outside of Datastore
-                                        return (T)feedItem;
-                                }
-                                });
-
-                        results.AddRange(typedResponses);
+                        results.AddRange(feedResponseEnumerable);
 
                         SetContinuationToken(feedResponseEnumerable);
                     }
@@ -178,7 +160,7 @@
                 return userRequestedLimit == null || results.Count < userRequestedLimit;
             }
 
-            void SetContinuationToken(FeedResponse<dynamic> result)
+            void SetContinuationToken(FeedResponse<T> result)
             {
                 if (aggregatesQueried.QueryOptions is WithoutReplayOptionsLibrarySide<T> continueAndTakeOptions && continueAndTakeOptions.MaxTake != null)
                 {

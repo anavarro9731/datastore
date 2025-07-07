@@ -13,9 +13,9 @@
     {
         private static readonly Encoding DefaultEncoding = new UTF8Encoding(false, true);
 
-        private readonly JsonSerializerSettings _settings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.Auto, ContractResolver = new CosmosMetadataPreservingResolver(), SerializationBinder = new TypeNameOnlyBinder()
+        private readonly JsonSerializerSettings _settings =
+        new JsonSerializerSettings() {
+            ContractResolver = new CosmosMetadataPreservingResolver()
         };
 
         public override T FromStream<T>(Stream stream)
@@ -28,7 +28,7 @@
             using (var sr = new StreamReader(stream))
             using (var jr = new JsonTextReader(sr))
             {
-                var js = JsonSerializer.Create(this._settings);
+                var js = JsonSerializer.CreateDefault(this._settings);
                 return js.Deserialize<T>(jr);
             }
         }
@@ -42,7 +42,7 @@
                 Formatting = Formatting.None
             };
 
-            JsonSerializer.Create(this._settings).Serialize(jw, input);
+            JsonSerializer.CreateDefault(this._settings).Serialize(jw, input);
 
             jw.Flush();
             sw.Flush();
