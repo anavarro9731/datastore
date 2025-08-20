@@ -2,6 +2,7 @@ namespace DataStore.Providers.CosmosDb
 {
     #region
 
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -64,6 +65,17 @@ namespace DataStore.Providers.CosmosDb
 
         private static async Task CreateContainerIfNotExists(CosmosSettings cosmosStoreSettings, Database db)
         {
+            // Check if database has shared throughput configured
+            var databaseResponse = await db.ReadAsync().ConfigureAwait(false);
+            var databaseThroughput = await db.ReadThroughputAsync().ConfigureAwait(false);
+            
+            if (databaseThroughput == null)
+            {
+                throw new InvalidOperationException(
+                    $"Database '{cosmosStoreSettings.DatabaseName}' does not have shared throughput configured. " +
+                    "Cannot create container without dedicated RUs. Please recreate the database with shared throughput.");
+            }
+
             var containerProperties = new ContainerProperties
             {
                 Id = cosmosStoreSettings.ContainerName, PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2
@@ -83,7 +95,8 @@ namespace DataStore.Providers.CosmosDb
                 containerProperties.PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey);
             }
 
-            await db.CreateContainerIfNotExistsAsync(containerProperties).ConfigureAwait(false);
+            // Create container without specifying throughput so it uses shared database throughput
+            await db.CreateContainerIfNotExistsAsync(containerProperties, throughput: null).ConfigureAwait(false);
         }
 
         private static async Task CreateDbAndContainerIfNotExists(CosmosClient client, CosmosSettings cosmosStoreSettings)
@@ -94,10 +107,10 @@ namespace DataStore.Providers.CosmosDb
 
             if (!databases.Contains(cosmosStoreSettings.DatabaseName))
             {
+                // Create database with shared throughput (400 RU minimum) so containers can share RUs
                 db = await client.CreateDatabaseAsync(
-                         cosmosStoreSettings.DatabaseName /* WARNING if you set the throughput here manually units are 
-                unable to create more than 25 containers in the emulator. Im not sure what setting this is affecting but straying from the defaults
-                really causes pain */).ConfigureAwait(false);
+                         cosmosStoreSettings.DatabaseName, 
+                         throughput: 400).ConfigureAwait(false);
             }
             else
             {

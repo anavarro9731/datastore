@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.Cosmos;
@@ -15,7 +16,8 @@
 
         private readonly JsonSerializerSettings _settings =
         new JsonSerializerSettings() {
-            ContractResolver = new CosmosMetadataPreservingResolver()
+            ContractResolver = new CosmosMetadataPreservingResolver(),
+            SerializationBinder = new TypeNameOnlyBinder()
         };
 
         public override T FromStream<T>(Stream stream)
@@ -28,7 +30,7 @@
             using (var sr = new StreamReader(stream))
             using (var jr = new JsonTextReader(sr))
             {
-                var js = JsonSerializer.CreateDefault(this._settings);
+                var js = typeof(T).Name == "ProcessState" ? JsonSerializer.CreateDefault() : JsonSerializer.CreateDefault(this._settings);
                 return js.Deserialize<T>(jr);
             }
         }
@@ -42,7 +44,8 @@
                 Formatting = Formatting.None
             };
 
-            JsonSerializer.CreateDefault(this._settings).Serialize(jw, input);
+            var js = typeof(T).Name == "ProcessState" ? JsonSerializer.CreateDefault() : JsonSerializer.CreateDefault(this._settings);
+            js.Serialize(jw, input);
 
             jw.Flush();
             sw.Flush();
@@ -98,26 +101,37 @@
             public void BindToName(Type serializedType, out string assemblyName, out string typeName)
             {
                 assemblyName = null;
-                typeName = serializedType.Name; // Just the class name
+                
+                // Always use just the class name instead of full type name - this enables progressive data migration
+                typeName = serializedType.Name;
             }
 
             public Type BindToType(string assemblyName, string typeName)
             {
-                var matches = AppDomain.CurrentDomain.GetAssemblies()
-                                       .SelectMany(a => a.GetTypes())
-                                       .Where(t => t.Name == typeName)
-                                       .ToList();
+                var allTypes = AppDomain.CurrentDomain.GetAssemblies()
+                                        .SelectMany(a => a.GetTypes())
+                                        .Where(t => typeof(DataStore.Interfaces.LowLevel.IEntity).IsAssignableFrom(t)) // Only allow IEntity types
+                                        .ToList();
+
+                // First, look for types whose actual class name matches
+                var nameMatches = allTypes.Where(t => t.Name == typeName).ToList();
+                
+                // Then, look for types with SerialisedNames attribute matching the requested name
+                var attributeMatches = allTypes.Where(t => 
+                {
+                    var attribute = t.GetCustomAttribute<SerialisedNamesAttribute>();
+                    return attribute?.Names?.Contains(typeName) == true;
+                }).ToList();
+
+                var allMatches = nameMatches.Concat(attributeMatches).Distinct().ToList();
     
-                if (matches.Count == 1) return matches[0];
+                if (allMatches.Count == 1) return allMatches[0];
     
-                if (matches.Count == 0)
-                    throw new JsonSerializationException($"No type found with name '{typeName}'");
+                if (allMatches.Count == 0)
+                    throw new JsonSerializationException($"Attempted to deserialize a type '{typeName}' that doesn't implement the {nameof(IEntity)} interface. An unconstrained $type property is a security vulnerability and may indicate malicious or corrupted data.");
     
-                if (matches.Count > 1)
-                    throw new JsonSerializationException(
-                        $"Multiple types found with name '{typeName}': {string.Join(", ", matches.Select(t => t.FullName))}");
-            
-                return matches[0]; // Won't reach here, but compiler needs it
+                throw new JsonSerializationException(
+                    $"Multiple IEntity types found with name '{typeName}': {string.Join(", ", allMatches.Select(t => t.FullName))}");
             }
         }
     }

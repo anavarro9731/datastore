@@ -6,6 +6,7 @@
     using System.Collections.Generic;
     using global::DataStore.Interfaces.LowLevel;
     using global::DataStore.Models.PartitionKeys;
+    using global::DataStore.Providers.CosmosDb;
 
     #endregion
 
@@ -30,6 +31,7 @@
             public int RimSize { get; set; } = 15;
         }
 
+        [SerialisedNames("Previous", "Names")]
         public class FancyWheel : Wheel
         {
             public string Coating { get; set; }
