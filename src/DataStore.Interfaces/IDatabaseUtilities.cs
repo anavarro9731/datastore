@@ -8,8 +8,8 @@ namespace DataStore.Interfaces
 
     public interface IDatabaseUtilities
     {
-        Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings);
+        Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings, bool useSharedThroughput);
 
-        Task ResetDatabase(IDatabaseSettings cosmosStoreSettings);
+        Task ResetDatabase(IDatabaseSettings cosmosStoreSettings, bool useSharedThroughput);
     }
 }

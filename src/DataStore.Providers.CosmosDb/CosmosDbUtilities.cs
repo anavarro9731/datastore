@@ -17,29 +17,29 @@ namespace DataStore.Providers.CosmosDb
 
     public class CosmosDbUtilities : IDatabaseUtilities
     {
-        public static async Task CreateContainerIfNotExists(CosmosSettings cosmosSettings)
+        public static async Task CreateContainerIfNotExists(CosmosSettings cosmosSettings, bool requireSharedThroughput = false)
         {
             CreateClient(cosmosSettings, out var cosmosClient);
 
-            await CreateContainerIfNotExists(cosmosSettings, cosmosClient.GetDatabase(cosmosSettings.DatabaseName)).ConfigureAwait(false);
+            await CreateContainerIfNotExists(cosmosSettings, cosmosClient.GetDatabase(cosmosSettings.DatabaseName), requireSharedThroughput).ConfigureAwait(false);
         }
 
-        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings)
+        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings, bool useSharedThroughput)
         {
             {
                 CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);
-                await CreateDbAndContainerIfNotExists(cosmosClient, (CosmosSettings)cosmosStoreSettings).ConfigureAwait(false);
+                await CreateDbAndContainerIfNotExists(cosmosClient, (CosmosSettings)cosmosStoreSettings, useSharedThroughput).ConfigureAwait(false);
             }
         }
 
-        public async Task ResetDatabase(IDatabaseSettings cosmosStoreSettings)
+        public async Task ResetDatabase(IDatabaseSettings cosmosStoreSettings, bool useSharedThroughput = false)
         {
             {
                 var cosmosSettings = (CosmosSettings)cosmosStoreSettings;
 
                 CreateClient(cosmosSettings, out var cosmosClient);
                 await DeleteContainerIfDbExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
-                await CreateDbAndContainerIfNotExists(cosmosClient, cosmosSettings).ConfigureAwait(false);
+                await CreateDbAndContainerIfNotExists(cosmosClient, cosmosSettings, useSharedThroughput).ConfigureAwait(false);
             }
 
             async Task DeleteContainerIfDbExists(CosmosClient client, CosmosSettings cosmosSettings)
@@ -63,19 +63,11 @@ namespace DataStore.Providers.CosmosDb
             client = new CosmosClient(cosmosSettings.EndpointUrl, cosmosSettings.AuthKey, cosmosSettings.ClientOptions);
         }
 
-        private static async Task CreateContainerIfNotExists(CosmosSettings cosmosStoreSettings, Database db)
+        private static async Task CreateContainerIfNotExists(CosmosSettings cosmosStoreSettings, Database db, bool requireSharedThroughput)
         {
             // Check if database has shared throughput configured
-            var databaseResponse = await db.ReadAsync().ConfigureAwait(false);
             var databaseThroughput = await db.ReadThroughputAsync().ConfigureAwait(false);
             
-            if (databaseThroughput == null)
-            {
-                throw new InvalidOperationException(
-                    $"Database '{cosmosStoreSettings.DatabaseName}' does not have shared throughput configured. " +
-                    "Cannot create container without dedicated RUs. Please recreate the database with shared throughput.");
-            }
-
             var containerProperties = new ContainerProperties
             {
                 Id = cosmosStoreSettings.ContainerName, PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2
@@ -94,12 +86,26 @@ namespace DataStore.Providers.CosmosDb
             {
                 containerProperties.PartitionKeyPath = "/" + nameof(Aggregate.PartitionKey);
             }
-
-            // Create container without specifying throughput so it uses shared database throughput
-            await db.CreateContainerIfNotExistsAsync(containerProperties, throughput: null).ConfigureAwait(false);
+            
+            if (requireSharedThroughput)
+            {
+                if (databaseThroughput == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Database '{cosmosStoreSettings.DatabaseName}' does not have shared throughput configured. "
+                        + "Cannot create container without dedicated RUs. Please recreate the database with shared throughput.");
+                }
+                // Create container so it requires shared database throughput
+                await db.CreateContainerIfNotExistsAsync(containerProperties, throughput: null).ConfigureAwait(false);
+            }
+            else
+            {
+                // Create container without specifying throughput so it uses the database settings to determine the container throughput
+                await db.CreateContainerIfNotExistsAsync(containerProperties).ConfigureAwait(false);
+            }
         }
 
-        private static async Task CreateDbAndContainerIfNotExists(CosmosClient client, CosmosSettings cosmosStoreSettings)
+        private static async Task CreateDbAndContainerIfNotExists(CosmosClient client, CosmosSettings cosmosStoreSettings, bool useSharedThroughput)
         {
             var databases = await ListDatabases(client).ConfigureAwait(false);
 
@@ -107,17 +113,18 @@ namespace DataStore.Providers.CosmosDb
 
             if (!databases.Contains(cosmosStoreSettings.DatabaseName))
             {
+                
                 // Create database with shared throughput (400 RU minimum) so containers can share RUs
                 db = await client.CreateDatabaseAsync(
-                         cosmosStoreSettings.DatabaseName, 
-                         throughput: 400).ConfigureAwait(false);
+                         cosmosStoreSettings.DatabaseName,  
+                         throughput: useSharedThroughput? 400: (int?)null).ConfigureAwait(false);
             }
             else
             {
                 db = client.GetDatabase(cosmosStoreSettings.DatabaseName);
             }
 
-            await CreateContainerIfNotExists(cosmosStoreSettings, db).ConfigureAwait(false);
+            await CreateContainerIfNotExists(cosmosStoreSettings, db, useSharedThroughput).ConfigureAwait(false);
 
             
             /* in some tests the above call seemed not to wait for the container to be ready before returning

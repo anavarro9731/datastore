@@ -23,7 +23,7 @@
         {
             var cosmosStoreSettings = GetCosmosStoreSettings(testName, useHierarchicalPartitionKey);
 
-            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings).ConfigureAwait(false);
+            await new CosmosDbUtilities().ResetDatabase(cosmosStoreSettings, useSharedThroughput:true).ConfigureAwait(false);
 
             return new CosmosDbTestHarness(createDataStore(options, cosmosStoreSettings));
         }
