@@ -24,7 +24,7 @@ namespace DataStore.Providers.CosmosDb
             await CreateContainerIfNotExists(cosmosSettings, cosmosClient.GetDatabase(cosmosSettings.DatabaseName), requireSharedThroughput).ConfigureAwait(false);
         }
 
-        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings, bool useSharedThroughput)
+        public async Task CreateDatabaseIfNotExists(IDatabaseSettings cosmosStoreSettings, bool useSharedThroughput = false)
         {
             {
                 CreateClient((CosmosSettings)cosmosStoreSettings, out var cosmosClient);
