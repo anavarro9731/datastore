@@ -109,6 +109,7 @@
             public Type BindToType(string assemblyName, string typeName)
             {
                 var allTypes = AppDomain.CurrentDomain.GetAssemblies()
+                                        .Where(x => x.GetName().Name.StartsWith("QCS.") || x.GetName().Name.StartsWith("Dapper"))
                                         .SelectMany(a => a.GetTypes())
                                         .Where(t => typeof(DataStore.Interfaces.LowLevel.IEntity).IsAssignableFrom(t)) // Only allow IEntity types
                                         .ToList();
