@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using System.Text.RegularExpressions;
     using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.Cosmos;
     using Newtonsoft.Json;
@@ -98,6 +99,32 @@
 
         public class TypeNameOnlyBinder : ISerializationBinder
         {
+            private static readonly Regex[] ExcludedAssemblyPatterns = GetExcludedAssemblyPatterns();
+
+            private static Regex[] GetExcludedAssemblyPatterns()
+            {
+                var envValue = Environment.GetEnvironmentVariable("DATASTORE_EXCLUDED_ASSEMBLIES");
+                if (string.IsNullOrWhiteSpace(envValue))
+                {
+                    return Array.Empty<Regex>();
+                }
+                return envValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(s => WildcardToRegex(s.Trim()))
+                               .ToArray();
+            }
+
+            private static Regex WildcardToRegex(string pattern)
+            {
+                var regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", ".") + "$";
+                return new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            }
+
+            private static bool IsAllowedAssembly(Assembly assembly)
+            {
+                var name = assembly.GetName().Name;
+                return !ExcludedAssemblyPatterns.Any(regex => regex.IsMatch(name));
+            }
+
             public void BindToName(Type serializedType, out string assemblyName, out string typeName)
             {
                 assemblyName = null;
@@ -109,7 +136,7 @@
             public Type BindToType(string assemblyName, string typeName)
             {
                 var allTypes = AppDomain.CurrentDomain.GetAssemblies()
-                                        .Where(x => x.GetName().Name.StartsWith("QCS.") || x.GetName().Name.StartsWith("Dapper") || x.GetName().Name.Equals("System.Data.SqlClient"))
+                                        .Where(IsAllowedAssembly)
                                         .SelectMany(a => a.GetTypes())
                                         .Where(t => typeof(DataStore.Interfaces.LowLevel.IEntity).IsAssignableFrom(t)) // Only allow IEntity types
                                         .ToList();
