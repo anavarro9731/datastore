@@ -103,7 +103,7 @@
 
             private static Regex[] GetExcludedAssemblyPatterns()
             {
-                var envValue = Environment.GetEnvironmentVariable("DATASTORE_EXCLUDED_ASSEMBLIES");
+                var envValue = Environment.GetEnvironmentVariable("DATASTORE_TYPENAMEBINDER_EXCLUDEDTYPES");
                 if (string.IsNullOrWhiteSpace(envValue))
                 {
                     return Array.Empty<Regex>();
@@ -138,7 +138,7 @@
                 var allTypes = AppDomain.CurrentDomain.GetAssemblies()
                                         .Where(IsAllowedAssembly)
                                         .SelectMany(a => a.GetTypes())
-                                        .Where(t => typeof(DataStore.Interfaces.LowLevel.IEntity).IsAssignableFrom(t)) // Only allow IEntity types
+                                        .Where(t => typeof(DataStore.Interfaces.LowLevel.IDatastoreSerializable).IsAssignableFrom(t)) //whitelist types for security 
                                         .ToList();
 
                 // First, look for types whose actual class name matches
@@ -156,10 +156,10 @@
                 if (allMatches.Count == 1) return allMatches[0];
     
                 if (allMatches.Count == 0)
-                    throw new JsonSerializationException($"Attempted to deserialize a type '{typeName}' that doesn't implement the {nameof(IEntity)} interface. An unconstrained $type property is a security vulnerability and may indicate malicious or corrupted data.");
+                    throw new JsonSerializationException($"Attempted to deserialize a type '{typeName}' that doesn't implement the {nameof(IDatastoreSerializable)} interface. An unconstrained $type property is a security vulnerability and may indicate malicious or corrupted data.");
     
                 throw new JsonSerializationException(
-                    $"Multiple IEntity types found with name '{typeName}': {string.Join(", ", allMatches.Select(t => t.FullName))}");
+                    $"Multiple {typeof(IDatastoreSerializable)} types found with name '{typeName}': {string.Join(", ", allMatches.Select(t => t.FullName))}");
             }
         }
     }
