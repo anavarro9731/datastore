@@ -14,7 +14,7 @@ steps:
   
 - task: UseDotNet@2
   inputs:
-    version: '3.1.x' # string. Optional. Use when useGlobalJson = false || packageType = runtime. Version. 
+    version: '8.0.x' # string. Optional. Use when useGlobalJson = false || packageType = runtime. Version. 
 
 - pwsh: |
    & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1

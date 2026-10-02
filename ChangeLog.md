@@ -1,5 +1,17 @@
 
+## 16.49
 
+### 16.49.0-alpha
+
+Typename binding, when TypenameHandling is set to Auto, now only resolves types that implement IDatastoreSerializable. IEntity extends that interface, so existing aggregates continue to bind.
+Assemblies can be left out of that scan by setting DATASTORE_TYPENAMEBINDER_EXCLUDEDTYPES to a semicolon-separated list of assembly names. * and ? wildcards are supported.
+In 16.48 the same setting was named DATASTORE_EXCLUDED_ASSEMBLIES. 16.46 and 16.47 temporarily limited the scan to QCS.*, Dapper, and System.Data.SqlClient. That allow-list was removed in 16.48.
+
+### 16.44.0-alpha
+
+Shared throughput is optional and off by default when creating or resetting a Cosmos database.
+CreateDatabaseIfNotExists and ResetDatabase take a useSharedThroughput argument. Leave it false and a new database is created without shared throughput. Pass true to keep the previous behaviour of provisioning 400 RU of shared throughput, and to fail container creation when the database does not have it.
+From 16.45 the argument defaults to false, so existing calls compile without passing it.
 
 ## 16.42
 
