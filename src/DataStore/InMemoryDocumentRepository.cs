@@ -62,7 +62,8 @@
         {
             var query = CreateQueryable<T>(aggregatesCounted.QueryOptions);
 
-            var count = aggregatesCounted.Predicate == null ? query.Count() : query.Count(aggregatesCounted.Predicate);
+            var predicate = CosmosFunctionRewriter.Rewrite(aggregatesCounted.Predicate);
+            var count = predicate == null ? query.Count() : query.Count(predicate);
 
             return Task.FromResult(count);
         }
@@ -103,6 +104,9 @@
 
         public Task<IEnumerable<T>> ExecuteQuery<T>(IDataStoreReadFromQueryable<T> aggregatesQueried) where T : class, IAggregate, new()
         {
+            //* Cosmos-only functions (IsDefined, IsNull) throw if executed directly, so swap them for in-memory equivalents
+            aggregatesQueried.Query = CosmosFunctionRewriter.Rewrite(aggregatesQueried.Query);
+
             var results = new List<T>();
             
             

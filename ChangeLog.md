@@ -3,6 +3,10 @@
 
 ### 16.49.0-alpha
 
+The in-memory repository now supports the Cosmos IsDefined() and IsNull() LINQ functions in predicates, so unit tests can use the same predicates as production code.
+In memory there is no difference between a missing and a null property: IsDefined() means not null, IsNull() means null. If a parent object in the member chain is null, both return false instead of throwing.
+Caveat: non-nullable value types (int, bool, Guid, DateTime, enums) are always treated as filled in memory, even when they hold their default value, because there is no stored JSON to be missing a field. Cosmos would treat documents saved before the property existed as not defined. Use a nullable property (e.g. int?) in tests that need to simulate that.
+
 Typename binding, when TypenameHandling is set to Auto, now only resolves types that implement IDatastoreSerializable. IEntity extends that interface, so existing aggregates continue to bind.
 Assemblies can be left out of that scan by setting DATASTORE_TYPENAMEBINDER_EXCLUDEDTYPES to a semicolon-separated list of assembly names. * and ? wildcards are supported.
 In 16.48 the same setting was named DATASTORE_EXCLUDED_ASSEMBLIES. 16.46 and 16.47 temporarily limited the scan to QCS.*, Dapper, and System.Data.SqlClient. That allow-list was removed in 16.48.
